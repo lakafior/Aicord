@@ -263,6 +263,7 @@ extension DiscordChannel {
       message_snapshots: [MessageSnapshot]? = nil,
       flags: IntBitField<Flag>? = nil,
       referenced_message: DereferenceBox<Message>? = nil,
+      interaction_metadata: InteractionMetadata? = nil,
       interaction: MessageInteraction? = nil,
       thread: DiscordChannel? = nil,
       components: Interaction.ComponentSwitch? = nil,
@@ -301,7 +302,7 @@ extension DiscordChannel {
       self.message_snapshots = message_snapshots
       self.flags = flags
       self.referenced_message = referenced_message
-      //			self.interaction_metadata = interaction_metadata
+      self.interaction_metadata = interaction_metadata
       self.interaction = interaction
       self.thread = thread
       self.components = components
@@ -338,6 +339,18 @@ extension DiscordChannel {
       public var channel_id: ChannelSnowflake?
       public var guild_id: GuildSnowflake?
       public var fail_if_not_exists: Bool?
+
+      private enum CodingKeys: String, CodingKey {
+        case type, message_id, channel_id, guild_id, fail_if_not_exists
+      }
+      public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        type = try values.decodeIfPresent(Kind.self, forKey: .type) ?? .reply
+        message_id = try values.decodeIfPresent(MessageSnowflake.self, forKey: .message_id)
+        channel_id = try values.decodeIfPresent(ChannelSnowflake.self, forKey: .channel_id)
+        guild_id = try values.decodeIfPresent(GuildSnowflake.self, forKey: .guild_id)
+        fail_if_not_exists = try values.decodeIfPresent(Bool.self, forKey: .fail_if_not_exists)
+      }
 
       public init(
         type: Kind,
