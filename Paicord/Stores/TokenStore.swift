@@ -6,11 +6,11 @@
 // Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Algorithms
 import Foundation
 import PaicordLib
 import Security
 
+@MainActor
 @Observable
 final class TokenStore {
   private static let keychainService = "com.llsc12.Paicord.Accounts"

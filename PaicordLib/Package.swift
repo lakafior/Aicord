@@ -45,29 +45,15 @@ let package = Package(
     "Non64BitSystemsCompatibility"
   ],
   dependencies: [
-    .package(url: "https://github.com/apple/swift-nio.git", from: "2.49.0"),
     .package(url: "https://github.com/apple/swift-log.git", from: "1.5.2"),
-    .package(
-      url: "https://github.com/swift-server/async-http-client.git",
-      from: "1.21.0"
-    ),
-    .package(url: "https://github.com/vapor/multipart-kit.git", from: "4.5.3"),
     .package(
       url: "https://github.com/swiftlang/swift-syntax.git",
       "509.0.0"..<"603.0.0"
     ),
     .package(url: "https://github.com/facebook/zstd.git", from: "1.5.7"),
     .package(
-      url: "https://github.com/hummingbird-project/swift-websocket.git",
-      from: "1.2.0"
-    ),
-    .package(
       url: "https://github.com/apple/swift-protobuf.git",
       from: "1.27.0"
-    ),
-    .package(
-      url: "https://github.com/apple/swift-crypto.git",
-      "1.0.0"..<"5.0.0"
     ),
   ],
   targets: [
@@ -86,37 +72,28 @@ let package = Package(
     .target(
       name: "DiscordCore",
       dependencies: [
-        .product(name: "Logging", package: "swift-log"),
-        .product(name: "MultipartKit", package: "multipart-kit"),
+        .product(name: "Logging", package: "swift-log")
       ],
       swiftSettings: swiftSettings
     ),
     .target(
       name: "DiscordHTTP",
       dependencies: [
-        .product(name: "AsyncHTTPClient", package: "async-http-client"),
-        .target(name: "DiscordModels"),
+        .target(name: "DiscordModels")
       ],
       swiftSettings: swiftSettings
     ),
     .target(
       name: "DiscordGateway",
       dependencies: [
-        .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "AsyncHTTPClient", package: "async-http-client"),
-        .product(name: "WSClient", package: "swift-websocket"),
         .product(name: "libzstd", package: "zstd"),
         .target(name: "DiscordHTTP"),
-        .product(name: "Crypto", package: "swift-crypto"),
-        .product(name: "_CryptoExtras", package: "swift-crypto"),
       ],
       swiftSettings: swiftSettings
     ),
     .target(
       name: "DiscordModels",
       dependencies: [
-        .product(name: "NIOFoundationCompat", package: "swift-nio"),
-        .product(name: "MultipartKit", package: "multipart-kit"),
         .target(name: "DiscordCore"),
         .target(name: "UnstableEnumMacro"),
         .product(name: "SwiftProtobuf", package: "swift-protobuf"),
@@ -165,13 +142,6 @@ let package = Package(
       dependencies: [
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
         .target(name: "UnstableEnumMacro"),
-      ],
-      swiftSettings: swiftSettings
-    ),
-    .testTarget(
-      name: "IntegrationTests",
-      dependencies: [
-        .target(name: "PaicordLib")
       ],
       swiftSettings: swiftSettings
     ),

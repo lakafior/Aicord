@@ -6,12 +6,12 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Collections
 import Foundation
 import PaicordLib
 import PhotosUI
 import SwiftUI
 
+@MainActor
 @Observable
 class MessageDrainStore: DiscordDataStore {
   var gateway: GatewayStore?
@@ -24,7 +24,7 @@ class MessageDrainStore: DiscordDataStore {
   func setupEventHandling() {
     guard let gateway = gateway?.gateway else { return }
     let events = gateway.events
-    eventTask = Task { @MainActor in
+    eventTask = Task {
       for await event in events {
         switch event.data {
         case .messageCreate(let message):
@@ -73,7 +73,7 @@ class MessageDrainStore: DiscordDataStore {
   ]()
   var failedMessages: [MessageSnowflake: Error] = [:]
   var messageSendQueueTask: Task<Void, Never>?
-  var messageTasks: [MessageSnowflake: @Sendable () async throws -> Void] = [:]
+  var messageTasks: [MessageSnowflake: @MainActor () async throws -> Void] = [:]
 
   func startQueueIfNeeded() {
     guard messageSendQueueTask == nil else { return }
@@ -82,7 +82,7 @@ class MessageDrainStore: DiscordDataStore {
 
   func setupQueueTask() {
     messageSendQueueTask?.cancel()
-    messageSendQueueTask = Task { @MainActor [weak self] in
+    messageSendQueueTask = Task { [weak self] in
       guard let self else { return }
       defer { self.messageSendQueueTask = nil }
       guard !self.messageTasks.isEmpty else { return }
@@ -137,7 +137,7 @@ class MessageDrainStore: DiscordDataStore {
 
   private func _enqueueMessage(_ vm: ChatView.InputBar.InputVM, in channel: ChannelSnowflake) {
     // the message instance will die inside the task
-    guard let gateway = gateway?.gateway else { return }
+    guard let gatewayStore = gateway, let gateway = gatewayStore.gateway else { return }
 
     // the swiftui side inits the message with a nonce already btw
     // set our message up
@@ -157,7 +157,7 @@ class MessageDrainStore: DiscordDataStore {
         message.allowed_mentions = .init(replied_user: false)
       }
     }
-    let task: @Sendable () async throws -> Void = { [weak self] in
+    let task: @MainActor () async throws -> Void = { [weak self] in
       guard let self else { return }
       do {
         print("[SendTask] Starting send for nonce:", nonce)
@@ -289,7 +289,10 @@ class MessageDrainStore: DiscordDataStore {
             "[SendTask Attachments] Discord returned \(createdAttachments.count) upload URLs"
           )
 
-          await withThrowingTaskGroup { group in
+          let uploadedFiles = try await withThrowingTaskGroup(
+            of: (Int, Payloads.Attachment).self,
+            returning: [Payloads.Attachment].self
+          ) { group in
             for (index, attachment) in createdAttachments {
               let item = vm.uploadItems[index]
 
@@ -428,27 +431,33 @@ class MessageDrainStore: DiscordDataStore {
                 #endif
                 }
 
-                message.attachments?.append(
-                  .init(
-                    index: index,
-                    filename: URL(
-                      string:
-                        attachment
-                        .upload_url
-                    )!
-                    .lastPathComponent,
-                    uploaded_filename:
+                let payloadAttachment = Payloads.Attachment(
+                  index: index,
+                  filename: URL(
+                    string:
                       attachment
-                      .upload_filename
-                  )
+                      .upload_url
+                  )!
+                  .lastPathComponent,
+                  uploaded_filename:
+                    attachment
+                    .upload_filename
                 )
 
                 print(
                   "[SendTask Attachments] Added attachment to payload index=\(index)"
                 )
+                return (index, payloadAttachment)
               }
             }
+
+            var attachmentsResult: [Payloads.Attachment] = []
+            for try await (_, attachment) in group {
+              attachmentsResult.append(attachment)
+            }
+            return attachmentsResult
           }
+          message.attachments?.append(contentsOf: uploadedFiles)
 
           print(
             "[SendTask Attachments] Final attachment payload count:",
@@ -494,10 +503,7 @@ class MessageDrainStore: DiscordDataStore {
     messageTasks[nonce] = task
 
     // notify ui to scroll to the newly pending message
-    NotificationCenter.default.post(
-      name: .chatViewShouldScrollToBottom,
-      object: ["channelId": channel]
-    )
+    gatewayStore.getChannelStore(for: channel).requestScrollToBottom()
 
     startQueueIfNeeded()
   }

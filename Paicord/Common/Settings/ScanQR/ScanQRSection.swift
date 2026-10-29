@@ -9,7 +9,9 @@
 import SwiftUI
 
 #if os(iOS)
-  import AVFoundation
+  // AVCaptureSession is not Sendable-annotated, but Apple documents start/stopRunning as safe
+  // (and recommended) to call from a background queue.
+  @preconcurrency import AVFoundation
   import AudioToolbox
   import UIKit
 #endif
@@ -139,7 +141,10 @@ extension SettingsView {
 
     func updateUIViewController(_ uiViewController: ScannerViewController, context: Context) {}
 
-    final class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+    // Metadata callbacks are delivered on `.main` (see `setMetadataObjectsDelegate`).
+    final class ScannerViewController: UIViewController,
+      @preconcurrency AVCaptureMetadataOutputObjectsDelegate
+    {
       var completion: ((Result<String, Error>) -> Void)?
       private let captureSession = AVCaptureSession()
       private var previewLayer: AVCaptureVideoPreviewLayer?

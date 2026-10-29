@@ -14,6 +14,7 @@ extension DiscordUser.PremiumKind {
   ///   - size: The size of the file in bytes.
   ///   - channel: The ChannelStore to upload to.
   /// - Returns: Whether the user can upload the file, and the upload limit in bytes.
+  @MainActor
   func fileUpload(size: Int, to channel: ChannelStore) -> (allowed: Bool, limit: Int) {
     // https://docs.discord.food/reference#uploading-files
 

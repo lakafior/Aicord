@@ -6,57 +6,46 @@
 // Copyright © 2025 Lakhan Lothiyi.
 //
 
-import AsyncHTTPClient
-import Atomics
 import DiscordHTTP
 import DiscordModels
 import Foundation
 import Logging
-import NIO
-import WSClient
-
-import enum NIOWebSocket.WebSocketErrorCode
-import struct NIOWebSocket.WebSocketOpcode
+import Synchronization
 
 public actor UserGatewayManager: GatewayManager {
 
-  private struct Message {
+  private struct Message: Sendable {
     let payload: Gateway.Event
-    let opcode: WebSocketOpcode?
     let connectionId: UInt?
     var tryCount: Int
 
     init(
       payload: Gateway.Event,
-      opcode: WebSocketOpcode? = nil,
       connectionId: UInt? = nil,
       tryCount: Int = 0
     ) {
       self.payload = payload
-      self.opcode = opcode
       self.connectionId = connectionId
       self.tryCount = tryCount
     }
   }
 
-  var outboundWriter: WebSocketOutboundWriter?
-  let eventLoopGroup: any EventLoopGroup
+  var webSocketTask: URLSessionWebSocketTask?
+  let session: URLSession
   /// A client to send requests to Discord.
   public nonisolated let client: any DiscordClient
   /// Max frame size we accept to receive through the web-socket connection.
   let maxFrameSize: Int
   /// Generator of `UserGatewayManager` ids.
-  static let idGenerator = ManagedAtomic(UInt(0))
+  static let idGenerator = Atomic<UInt>(0)
   /// This gateway manager's identifier.
-  public nonisolated let id = idGenerator.wrappingIncrementThenLoad(
-    ordering: .relaxed
-  )
+  public nonisolated let id = idGenerator.wrappingAdd(1, ordering: .relaxed).newValue
   let logger: Logger
 
   //MARK: Event streams
   nonisolated let eventsStreamContinuations = ContinuationBox<Gateway.Event>()
   nonisolated let eventsParseFailureContinuations = ContinuationBox<
-    (any Error, ByteBuffer)
+    (any Error, Data)
   >()
 
   /// An async sequence of Gateway events.
@@ -68,9 +57,9 @@ public actor UserGatewayManager: GatewayManager {
     )
   }
   /// An async sequence of Gateway event parse failures.
-  public nonisolated var eventFailures: DiscordAsyncSequence<(any Error, ByteBuffer)> {
-    DiscordAsyncSequence<(any Error, ByteBuffer)>(
-      base: AsyncStream<(any Error, ByteBuffer)> { continuation in
+  public nonisolated var eventFailures: DiscordAsyncSequence<(any Error, Data)> {
+    DiscordAsyncSequence<(any Error, Data)>(
+      base: AsyncStream<(any Error, Data)> { continuation in
         self.eventsParseFailureContinuations.append(continuation)
       }
     )
@@ -80,7 +69,7 @@ public actor UserGatewayManager: GatewayManager {
   public nonisolated let identifyPayload: Gateway.Identify
 
   //MARK: Connection state
-  public nonisolated let state = ManagedAtomic(GatewayState.noConnection)
+  public nonisolated let state = Atomic<GatewayState>(.noConnection)
   public nonisolated let stateCallback: (@Sendable (GatewayState) -> Void)?
 
   //MARK: Send queue
@@ -92,7 +81,7 @@ public actor UserGatewayManager: GatewayManager {
   //MARK: Current connection properties
 
   /// An ID to keep track of connection changes.
-  nonisolated let connectionId = ManagedAtomic(UInt(0))
+  nonisolated let connectionId = Atomic<UInt>(0)
 
   //MARK: Resume-related current-connection properties
 
@@ -105,42 +94,19 @@ public actor UserGatewayManager: GatewayManager {
 
   //MARK: Backoff
 
-  /// Discord cares about the identify payload for rate-limiting and if you send
-  /// more than 1000 identifies in a day, Discord will revoke your bot token
-  /// (unless your bot is big enough that has a bigger identify-limit than 1000 per day).
-  /// This does not apply for users, but could be deemed suspicious behaviour.
-  ///
-  /// This Backoff does not necessarily prevent your bot token getting revoked,
-  /// but in the worst case, doesn't let it happen sooner than ~6 hours.
-  /// This also helps in other situations, for example when there is a Discord outage.
   let connectionBackoff = Backoff(
     base: 2,
     maxExponentiation: 7,
     coefficient: 1,
     minBackoff: 15
   )
-  // TODO: - Reconfigure the backoff to be more suitable for users.
 
   //MARK: Ping-pong tracking properties
   var unsuccessfulPingsCount = 0
   var lastPongDate = Date()
 
-  /// - Parameters:
-  ///   - eventLoopGroup: An `EventLoopGroup`.
-  ///   - httpClient: A `HTTPClient`.
-  ///   - clientConfiguration: Configuration of the `DiscordClient`.
-  ///   - maxFrameSize: Max frame size the WebSocket should allow receiving.
-  ///   - token: Your Discord user-token.
-  ///   - appId: Your Discord application-id. If not provided, it'll be extracted from user-token.
-  ///   - largeThreshold: Value between 50 and 250, total number of members where the gateway
-  ///     will stop sending offline members in the guild member list.
-  ///   - presence: The initial presence of the user.
-  ///   - capabilities: The Discord capabilities you want to use.
-  ///   - captchaCallback: A callback to solve captcha challenges.
-  ///   - mfaCallback: A callback to solve multi-factor authentication challenges.
   public init(
-    eventLoopGroup: any EventLoopGroup = HTTPClient.shared.eventLoopGroup,
-    httpClient: HTTPClient = .shared,
+    session: URLSession = .shared,
     clientConfiguration: ClientConfiguration = .init(),
     maxFrameSize: Int = 1 << 28,
     token: Secret,
@@ -158,10 +124,10 @@ public actor UserGatewayManager: GatewayManager {
     mfaCallback: MFAVerificationHandler? = nil,
     stateCallback: (@Sendable (GatewayState) -> Void)? = nil
   ) async {
-    self.eventLoopGroup = eventLoopGroup
+    self.session = session
     self.stateCallback = stateCallback
-    self.client = await DefaultDiscordClient.init(
-      httpClient: httpClient,
+    self.client = await DefaultDiscordClient(
+      session: session,
       header: .userToken(token),
       appId: appId,
       configuration: clientConfiguration,
@@ -186,7 +152,6 @@ public actor UserGatewayManager: GatewayManager {
   /// `state` must be set to an appropriate value before triggering this function.
   public func connect() async {
     logger.debug("Connect method triggered")
-    /// Guard we're attempting to connect too fast
     if let connectIn = connectionBackoff.canPerformIn() {
       logger.warning(
         "Cannot try to connect immediately due to backoff",
@@ -196,7 +161,6 @@ public actor UserGatewayManager: GatewayManager {
       )
       try? await Task.sleep(for: connectIn)
     }
-    /// Guard if other connections are in process
     let state = self.state.load(ordering: .relaxed)
     guard [.noConnection, .configured, .stopped].contains(state) else {
       logger.error(
@@ -212,113 +176,91 @@ public actor UserGatewayManager: GatewayManager {
 
     await self.sendQueue.reset()
     let gatewayURL = await getGatewayURL()
-    //    #if DEBUGo
     let queries: [(String, String)] = [
       ("v", "\(DiscordGlobalConfiguration.apiVersion)"),
       ("encoding", "json"),
       ("compress", "zstd-stream"),
     ]
-    let decompressorWSExtension: ZstdDecompressorWSExtension
+    let decompressor: ZstdStreamingDecompressor
     do {
-      decompressorWSExtension = try ZstdDecompressorWSExtension(
-        logger: self.logger
-      )
+      decompressor = try ZstdStreamingDecompressor()
     } catch {
       self.logger.critical(
-        "Will not connect because can't create a decompressor. Something is wrong. Please report this failure at https://github.com/DiscordBM/DiscordBM/issues",
+        "Will not connect because can't create a decompressor.",
         metadata: ["error": .string(String(reflecting: error))]
       )
       return
     }
-    //    #endif
 
-    //    #if DEBUG
-    //    let configuration = WebSocketClientConfiguration(
-    //      maxFrameSize: self.maxFrameSize,
-    //      additionalHeaders: [
-    //        .userAgent: SuperProperties.useragent(ws: false)!,
-    //        .origin: "https://discord.com",
-    //        .cacheControl: "no-cache",
-    //        .acceptLanguage: SuperProperties.GenerateLocaleHeader(),
-    //
-    //      ],
-    //      extensions: []
-    //    )
-    //    #else
-    let configuration = WebSocketClientConfiguration(
-      maxFrameSize: self.maxFrameSize,
-      additionalHeaders: [
-        .userAgent: SuperProperties.useragent(ws: false)!,
-        .origin: "https://discord.com",
-        .cacheControl: "no-cache",
-        .acceptLanguage: SuperProperties.GenerateLocaleHeader(),
+    guard let wsURL = URL(string: gatewayURL + queries.makeForURLQuery()) else {
+      self.logger.critical("Invalid Gateway URL: \(gatewayURL)")
+      return
+    }
 
-      ],
-      extensions: [.nonNegotiatedExtension { decompressorWSExtension }]
-    )
-    //    #endif
+    var request = URLRequest(url: wsURL)
+    request.setValue(SuperProperties.useragent(ws: false)!, forHTTPHeaderField: "User-Agent")
+    request.setValue("https://discord.com", forHTTPHeaderField: "Origin")
+    request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+    request.setValue(SuperProperties.GenerateLocaleHeader(), forHTTPHeaderField: "Accept-Language")
 
     logger.trace("Will try to connect to Discord through web-socket")
-    let connectionId = self.connectionId.wrappingIncrementThenLoad(
-      ordering: .relaxed
-    )
-    /// FIXME: remove this `Task` in a future major version.
-    /// This is so the `connect()` method does still exit, like it used to.
-    /// But for proper structured concurrency, this method should never exit (optimally).
+    let connectionId = self.connectionId.wrappingAdd(1, ordering: .relaxed).newValue
+
+    let wsTask = self.session.webSocketTask(with: request)
+    wsTask.maximumMessageSize = self.maxFrameSize
+    self.webSocketTask = wsTask
+    wsTask.resume()
+
+    self.logger.debug("Connected to Discord through web-socket. Will configure")
+    self.state.store(.configured, ordering: .relaxed)
+    self.stateCallback?(.configured)
+
     Task {
       do {
-        let closeFrame = try await WebSocketClient.connect(
-          url: gatewayURL + queries.makeForURLQuery(),
-          configuration: configuration,
-          eventLoopGroup: self.eventLoopGroup,
-          logger: self.logger
-        ) { inbound, outbound, context in
-          await self.setupOutboundWriter(outbound)
-
-          self.logger.debug(
-            "Connected to Discord through web-socket. Will configure"
+        while self.connectionId.load(ordering: .relaxed) == connectionId {
+          let message = try await wsTask.receive()
+          self.processMessage(
+            message,
+            decompressor: decompressor,
+            forConnectionWithId: connectionId
           )
-          self.state.store(.configured, ordering: .relaxed)
-          self.stateCallback?(.configured)
-
-          for try await message in inbound.messages(maxSize: self.maxFrameSize) {
-            await self.processBinaryData(
-              message,
-              forConnectionWithId: connectionId
-            )
-          }
         }
-
-        logger.debug(
-          "web-socket connection closed",
-          metadata: [
-            "closeCode": .string(String(reflecting: closeFrame?.closeCode)),
-            "closeReason": .string(String(reflecting: closeFrame?.reason)),
-            "connectionId": .stringConvertible(
-              self.connectionId.load(ordering: .relaxed)
-            ),
-          ]
-        )
-        await self.onClose(
-          closeReason: .closeFrame(closeFrame),
-          forConnectionWithId: connectionId
-        )
       } catch {
-        logger.debug(
-          "web-socket error while connecting to Discord. Will try again",
-          metadata: [
-            "error": .string(String(reflecting: error)),
-            "connectionId": .stringConvertible(
-              self.connectionId.load(ordering: .relaxed)
-            ),
-          ]
-        )
-        self.state.store(.noConnection, ordering: .relaxed)
-        self.stateCallback?(.noConnection)
-        await self.onClose(
-          closeReason: .error(error),
-          forConnectionWithId: connectionId
-        )
+        let closeCode = wsTask.closeCode
+        let closeReasonData = wsTask.closeReason
+        let closeReasonStr = closeReasonData.flatMap { String(data: $0, encoding: .utf8) }
+        if closeCode != .invalid {
+          logger.debug(
+            "web-socket connection closed",
+            metadata: [
+              "closeCode": .string("\(closeCode.rawValue)"),
+              "closeReason": .string(closeReasonStr ?? "nil"),
+              "connectionId": .stringConvertible(
+                self.connectionId.load(ordering: .relaxed)
+              ),
+            ]
+          )
+          await self.onClose(
+            closeReason: .closeFrame(code: UInt16(clamping: closeCode.rawValue), reason: closeReasonStr),
+            forConnectionWithId: connectionId
+          )
+        } else {
+          logger.debug(
+            "web-socket error while connecting to Discord. Will try again",
+            metadata: [
+              "error": .string(String(reflecting: error)),
+              "connectionId": .stringConvertible(
+                self.connectionId.load(ordering: .relaxed)
+              ),
+            ]
+          )
+          self.state.store(.noConnection, ordering: .relaxed)
+          self.stateCallback?(.noConnection)
+          await self.onClose(
+            closeReason: .error(error),
+            forConnectionWithId: connectionId
+          )
+        }
       }
     }
   }
@@ -332,8 +274,7 @@ public actor UserGatewayManager: GatewayManager {
         payload: .init(
           opcode: .presenceUpdate,
           data: .requestPresenceUpdate(payload)
-        ),
-        opcode: .text
+        )
       )
     )
   }
@@ -345,8 +286,7 @@ public actor UserGatewayManager: GatewayManager {
         payload: .init(
           opcode: .voiceStateUpdate,
           data: .requestVoiceStateUpdate(payload)
-        ),
-        opcode: .text
+        )
       )
     )
   }
@@ -358,8 +298,7 @@ public actor UserGatewayManager: GatewayManager {
         payload: .init(
           opcode: .voiceServerPing,
           data: nil
-        ),
-        opcode: .text
+        )
       )
     )
   }
@@ -372,8 +311,7 @@ public actor UserGatewayManager: GatewayManager {
         payload: .init(
           opcode: .requestGuildMembers,
           data: .requestGuildMembers(payload)
-        ),
-        opcode: .text
+        )
       )
     )
   }
@@ -387,37 +325,10 @@ public actor UserGatewayManager: GatewayManager {
         payload: .init(
           opcode: .guildSubscriptionsBulk,
           data: .updateGuildSubscriptions(payload)
-        ),
-        opcode: .text
+        )
       )
     )
   }
-
-  //	/// https://docs.discord.food/topics/gateway-events#request-call-connect
-  //	public func requestCallConnect(payload: Gateway.) {
-  //		self.send(
-  //			message: .init(
-  //				payload: .init(
-  //					opcode:
-  //					data:
-  //				),
-  //				opcode: .text
-  //			)
-  //		)
-  //	}
-
-  //	/// https://docs.discord.food/topics/gateway-events#request-soundboard-sounds
-  //	public func requestSoundboardSounds(payload: Gateway.) {
-  //		self.send(
-  //			message: .init(
-  //				payload: .init(
-  //					opcode:
-  //					data:
-  //				),
-  //				opcode: .text
-  //			)
-  //		)
-  //	}
 
   /// https://docs.discord.food/topics/gateway-events#request-last-messages
   public func requestLastMessages(payload: Gateway.RequestLastMessages) {
@@ -426,8 +337,7 @@ public actor UserGatewayManager: GatewayManager {
         payload: .init(
           opcode: .requestLastMessages,
           data: .requestLastMessages(payload)
-        ),
-        opcode: .text
+        )
       )
     )
   }
@@ -443,7 +353,7 @@ public actor UserGatewayManager: GatewayManager {
   /// Makes an stream of Gateway event parse failures.
   @available(*, deprecated, renamed: "eventFailures")
   public func makeEventsParseFailureStream() -> AsyncStream<
-    (any Error, ByteBuffer)
+    (any Error, Data)
   > {
     self.eventFailures.base
   }
@@ -470,12 +380,12 @@ public actor UserGatewayManager: GatewayManager {
       )
       return
     }
-    self.connectionId.wrappingIncrement(ordering: .relaxed)
+    _ = self.connectionId.wrappingAdd(1, ordering: .relaxed)
     self.state.store(.noConnection, ordering: .relaxed)
     self.stateCallback?(.noConnection)
     connectionBackoff.resetTryCount()
     await self.sendQueue.reset()
-    await self.closeWebSocket()
+    self.closeWebSocket()
   }
 }
 
@@ -518,18 +428,16 @@ extension UserGatewayManager {
       await self.connect()
     case .hello(let hello):
       logger.debug("Received 'hello'")
-      /// Start heart-beating right-away.
       self.setupPingTask(
         forConnectionWithId: self.connectionId.load(ordering: .relaxed),
         every: .milliseconds(Int64(hello.heartbeat_interval))
       )
-      /// Sends the update time spent session id payload every 30 minutes, but also on connect too.
       self.sendUpdateTimeSpentSessionID(
         forConnectionWithId: self.connectionId.load(ordering: .relaxed)
       )
       self.setupUpdateTimeSpentSessionID(
         forConnectionWithId: self.connectionId.load(ordering: .relaxed),
-        every: .minutes(30)
+        every: .seconds(1800)
       )
       logger.trace("Will resume or identify")
       await self.sendResumeOrIdentify()
@@ -563,7 +471,6 @@ extension UserGatewayManager {
   private func getGatewayURL() async -> String {
     logger.debug("Will try to get Discord gateway url")
     if self.sequenceNumber != nil,
-      /// If can resume at all
       let gatewayURL = self.resumeGatewayURL
     {
       logger.trace("Got Discord gateway url from 'resumeGatewayURL'")
@@ -601,11 +508,8 @@ extension UserGatewayManager {
         )
       )
     )
-    self.send(message: .init(payload: resume, opcode: .text))
+    self.send(message: .init(payload: resume))
 
-    /// Invalidate `sequenceNumber` info for the next connection, incase this one fails.
-    /// This will be a notice for the next connection to
-    /// not try resuming anymore, if this connection has failed.
     self.sequenceNumber = nil
 
     logger.debug("Sent resume request to Discord")
@@ -617,41 +521,52 @@ extension UserGatewayManager {
       opcode: .identify,
       data: .identify(identifyPayload)
     )
-    self.send(message: .init(payload: identify, opcode: .text))
+    self.send(message: .init(payload: identify))
   }
 
-  private func processBinaryData(
-    _ message: WebSocketMessage,
+  private func processMessage(
+    _ message: URLSessionWebSocketTask.Message,
+    decompressor: ZstdStreamingDecompressor,
     forConnectionWithId connectionId: UInt
   ) {
     guard self.connectionId.load(ordering: .relaxed) == connectionId else {
       return
     }
 
-    let buffer: ByteBuffer
+    let data: Data
     switch message {
-    case .text(let string):
+    case .string(let string):
       self.logger.debug(
         "Got text from websocket",
         metadata: [
           "text": .string(string)
         ]
       )
-      buffer = ByteBuffer(string: string)
-    case .binary(let _buffer):
-      self.logger.debug(
-        "Got binary from websocket",
-        metadata: [
-          "text": .string(String(buffer: _buffer))
-        ]
-      )
-      buffer = _buffer
+      data = Data(string.utf8)
+    case .data(let rawData):
+      do {
+        data = try decompressor.decompress(data: rawData)
+        self.logger.debug(
+          "Got binary from websocket",
+          metadata: [
+            "text": .string(String(buffer: data))
+          ]
+        )
+      } catch {
+        self.logger.error(
+          "Failed to decompress zstd frame",
+          metadata: ["error": .string("\(error)")]
+        )
+        return
+      }
+    @unknown default:
+      return
     }
 
     do {
       let event = try DiscordGlobalConfiguration.decoder.decode(
         Gateway.Event.self,
-        from: Data(buffer: buffer, byteTransferStrategy: .noCopy)
+        from: data
       )
       self.logger.debug(
         "Decoded event",
@@ -669,12 +584,12 @@ extension UserGatewayManager {
           "error": .string("\(error)")
         ]
       )
-      self.eventsParseFailureContinuations.yieldToAll((error, buffer))
+      self.eventsParseFailureContinuations.yieldToAll((error, data))
     }
   }
 
   private enum CloseReason {
-    case closeFrame(WebSocketCloseFrame?)
+    case closeFrame(code: UInt16?, reason: String?)
     case error(any Error)
   }
 
@@ -687,9 +602,7 @@ extension UserGatewayManager {
       return
     }
     let (code, codeDesc) = self.getCloseCodeAndDescription(of: closeReason)
-    let isDebugLevelCode = [nil, .goingAway, .unexpectedServerError].contains(
-      code
-    )
+    let isDebugLevelCode = [nil, 1000, 1001, 1011].contains(code)
     self.logger.log(
       level: isDebugLevelCode ? .debug : .warning,
       "Received connection close notification. Will try to reconnect",
@@ -716,52 +629,35 @@ extension UserGatewayManager {
     } else {
       self.state.store(.stopped, ordering: .relaxed)
       self.stateCallback?(.stopped)
-      self.connectionId.wrappingIncrement(ordering: .relaxed)
+      _ = self.connectionId.wrappingAdd(1, ordering: .relaxed)
       self.logger.critical(
         "Will not reconnect because Discord does not allow it. Something is wrong. Your close code is '\(codeDesc)'."
       )
-
-      /// Don't remove/end the event streams just to stop apps from crashing/restarting
-      /// which could result in bot-token revocations or even temporary ip bans.
     }
   }
 
   private nonisolated func getCloseCodeAndDescription(
     of closeReason: CloseReason
-  ) -> (WebSocketErrorCode?, String) {
+  ) -> (UInt16?, String) {
     switch closeReason {
     case .error(let error):
       return (nil, String(reflecting: error))
-    case .closeFrame(let closeFrame):
-      guard let closeFrame else {
+    case .closeFrame(let code, let reason):
+      guard let code else {
         return (nil, "nil")
       }
-      let code = closeFrame.closeCode
-      let description: String
-      switch code {
-      case .unknown(let codeNumber):
-        switch GatewayCloseCode(rawValue: codeNumber) {
-        case .some(let discordCode):
-          description = "\(discordCode)"
-        case .none:
-          description = "\(codeNumber)"
-        }
-      default:
-        description = closeFrame.reason ?? "\(code)"
+      if let discordCode = GatewayCloseCode(rawValue: code) {
+        return (code, "\(discordCode)")
       }
-      return (code, description)
+      return (code, reason ?? "\(code)")
     }
   }
 
-  private nonisolated func canTryReconnect(code: WebSocketErrorCode?) -> Bool {
-    switch code {
-    case .unknown(let codeNumber):
-      guard let discordCode = GatewayCloseCode(rawValue: codeNumber) else {
-        return true
-      }
-      return discordCode.canTryReconnect
-    default: return true
+  private nonisolated func canTryReconnect(code: UInt16?) -> Bool {
+    guard let code, let discordCode = GatewayCloseCode(rawValue: code) else {
+      return true
     }
+    return discordCode.canTryReconnect
   }
 
   private func setupPingTask(
@@ -777,7 +673,7 @@ extension UserGatewayManager {
             "connectionId": .stringConvertible(connectionId)
           ]
         )
-        return/// cancel
+        return
       }
       self.logger.debug(
         "Will send automatic ping",
@@ -803,7 +699,7 @@ extension UserGatewayManager {
             "connectionId": .stringConvertible(connectionId)
           ]
         )
-        return/// cancel
+        return
       }
       self.logger.debug(
         "Will send automatic session time spent update",
@@ -827,21 +723,12 @@ extension UserGatewayManager {
         "connectionId": .stringConvertible(connectionId)
       ]
     )
-    //        self.send(
-    //          message: .init(
-    //            payload: .init(
-    //              opcode: .heartbeat,
-    //              data: .heartbeat(lastSequenceNumber: self.sequenceNumber)
-    //            )
-    //          )
-    //        )
-    // use QoS Heartbeat instead
     self.send(
       message: .init(
         payload: .init(
           opcode: .qosHeartbeat,
-          data: .qosHeartbeat(.init(seq: self.sequenceNumber, qos: .init()))  // TODO: use actual client focus data instead
-        ),
+          data: .qosHeartbeat(.init(seq: self.sequenceNumber, qos: .init()))
+        )
       )
     )
     Task {
@@ -849,9 +736,6 @@ extension UserGatewayManager {
       guard self.connectionId.load(ordering: .relaxed) == connectionId else {
         return
       }
-      /// 15 == 10 + 5. 10 seconds that we slept, + 5 seconds tolerance.
-      /// The tolerance being too long should not matter as pings usually happen
-      /// only once in ~45 seconds, and a successful ping will reset the counter anyway.
       if self.lastPongDate.addingTimeInterval(15) > Date() {
         logger.trace("Successful ping")
         self.unsuccessfulPingsCount = 0
@@ -914,8 +798,6 @@ extension UserGatewayManager {
         case true:
           break
         case false:
-          /// Recursively try to send through the queue.
-          /// The send queue has slowdown mechanisms so it's fine.
           self.send(message: message)
           return
         }
@@ -926,15 +808,6 @@ extension UserGatewayManager {
         return
       }
       Task {
-        // discordbm tried to turn discord's opcodes into a ws opcode. this only work for heartbeats.
-        // this is really jank. fall back to .text opcode instead
-        //        let opcode: WebSocketOpcode =
-        //          message.opcode ?? .init(
-        //            encodedWebSocketOpcode: message.payload.opcode.rawValue
-        //          )!
-        let opcode: WebSocketOpcode =
-          message.opcode ?? .text
-
         let data: Data
         do {
           data = try DiscordGlobalConfiguration.encoder.encode(message.payload)
@@ -943,7 +816,6 @@ extension UserGatewayManager {
             "Could not encode payload, \(error)",
             metadata: [
               "payload": .string("\(message.payload)"),
-              "opcode": .stringConvertible(opcode),
               "connectionId": .stringConvertible(
                 self.connectionId.load(ordering: .relaxed)
               ),
@@ -952,7 +824,7 @@ extension UserGatewayManager {
           return
         }
 
-        if let outboundWriter = await self.outboundWriter {
+        if let wsTask = await self.webSocketTask {
           do {
             self.logger.debug(
               "Will send a payload with opcode",
@@ -960,60 +832,24 @@ extension UserGatewayManager {
                 "opcode": .string(message.payload.opcode.description)
               ]
             )
-            self.logger.trace(
-              "Will send a payload",
+            let stringPayload = String(decoding: data, as: UTF8.self)
+            try await wsTask.send(.string(stringPayload))
+          } catch {
+            self.logger.error(
+              "Could not send payload through web-socket",
               metadata: [
+                "error": .string(String(reflecting: error)),
                 "payload": .string("\(message.payload)"),
-                "opcode": .stringConvertible(opcode),
+                "state": .stringConvertible(
+                  self.state.load(ordering: .relaxed)
+                ),
+                "connectionId": .stringConvertible(
+                  self.connectionId.load(ordering: .relaxed)
+                ),
               ]
             )
-            try await outboundWriter.write(
-              .custom(
-                .init(
-                  fin: true,
-                  opcode: opcode,
-                  data: ByteBuffer(data: data)
-                )
-              )
-            )
-          } catch {
-            if let channelError = error as? ChannelError,
-              case .ioOnClosedChannel = channelError
-            {
-              self.logger.error(
-                "Received 'ChannelError.ioOnClosedChannel' error while sending payload through web-socket. Will fully disconnect and reconnect again"
-              )
-              await self.disconnect()
-              await self.connect()
-            } else if message.payload.opcode == .heartbeat,
-              let writerError = error as? NIOAsyncWriterError,
-              writerError == .alreadyFinished()
-            {
-              self.logger.debug(
-                "Received 'NIOAsyncWriterError.alreadyFinished' error while sending heartbeat through web-socket. Will ignore"
-              )
-            } else {
-              self.logger.error(
-                "Could not send payload through web-socket",
-                metadata: [
-                  "error": .string(String(reflecting: error)),
-                  "payload": .string("\(message.payload)"),
-                  "opcode": .stringConvertible(opcode),
-                  "state": .stringConvertible(
-                    self.state.load(ordering: .relaxed)
-                  ),
-                  "connectionId": .stringConvertible(
-                    self.connectionId.load(ordering: .relaxed)
-                  ),
-                ]
-              )
-            }
           }
         } else {
-          /// Pings aka `heartbeat`s are fine if they are sent when a ws connection
-          /// is not established. Pings are not disabled after a connection goes down
-          /// so long story short, the gateway manager never gets stuck in a bad
-          /// cycle of no-connection.
           self.logger.log(
             level: (message.payload.opcode == .heartbeat) ? .debug : .warning,
             "Trying to send through ws when a connection is not established",
@@ -1038,23 +874,10 @@ extension UserGatewayManager {
     await self.sendQueue.reset()
   }
 
-  func setupOutboundWriter(_ outboundWriter: WebSocketOutboundWriter) {
-    self.outboundWriter = outboundWriter
-  }
-
-  private func closeWebSocket() async {
+  private func closeWebSocket() {
     logger.debug("Will possibly close a web-socket")
-    do {
-      try await self.outboundWriter?.close(.goingAway, reason: nil)
-    } catch {
-      logger.warning(
-        "Will ignore WS closure failure",
-        metadata: [
-          "error": .string(String(reflecting: error))
-        ]
-      )
-    }
-    self.outboundWriter = nil
+    self.webSocketTask?.cancel(with: .goingAway, reason: nil)
+    self.webSocketTask = nil
   }
 
   public func getSessionID() -> String? {
@@ -1070,7 +893,7 @@ extension UserGatewayManager {
   }
 
   func addEventsParseFailureContinuation(
-    _ continuation: AsyncStream<(any Error, ByteBuffer)>.Continuation
+    _ continuation: AsyncStream<(any Error, Data)>.Continuation
   ) {
     self.eventsParseFailureContinuations.append(continuation)
   }
@@ -1078,7 +901,7 @@ extension UserGatewayManager {
 
 //MARK: - GatewayState
 /// Represents the current state of the gateway connection lifecycle.
-public enum GatewayState: Int, Sendable, AtomicValue, CustomStringConvertible {
+public enum GatewayState: Int, Sendable, AtomicRepresentable, CustomStringConvertible {
   /// The gateway manager has been intentionally stopped and will not reconnect.
   case stopped
   /// No active connection exists; the gateway is disconnected and idle.

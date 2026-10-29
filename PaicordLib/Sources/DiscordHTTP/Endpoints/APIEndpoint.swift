@@ -5,7 +5,6 @@
 /// the `GenerateAPIEndpoints` plugin (right click on `DiscordBM` in the file navigator)
 
 import DiscordModels
-import NIOHTTP1
 
 public enum APIEndpoint: Endpoint {
 

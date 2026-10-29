@@ -10,6 +10,7 @@ import Foundation
 import PaicordLib
 import Playgrounds
 
+@MainActor
 enum PermissionsHelper {
   static func computeBasePermissions(
     member: Guild.PartialMember,

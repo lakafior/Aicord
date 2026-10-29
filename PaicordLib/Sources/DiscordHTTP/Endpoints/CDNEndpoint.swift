@@ -1,5 +1,4 @@
 import DiscordModels
-import NIOHTTP1
 
 /// CDN Endpoints.
 /// https://discord.com/developers/docs/reference#image-formatting-cdn-endpoints

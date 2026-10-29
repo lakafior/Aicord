@@ -8,6 +8,7 @@
 
 import PaicordLib
 
+@MainActor
 protocol DiscordDataStore: AnyObject {
   var gateway: GatewayStore? { get set }
   var eventTask: Task<Void, Never>? { get set }

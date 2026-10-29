@@ -1,5 +1,3 @@
-import enum NIOHTTP1.HTTPMethod
-
 /// A loose endpoint.
 /// Useful for getting data directly from a url.
 public struct LooseEndpoint: Endpoint, Hashable {

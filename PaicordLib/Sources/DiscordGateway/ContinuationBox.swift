@@ -7,21 +7,17 @@
 //
 
 import Foundation
+import Synchronization
 
-final class ContinuationBox<Value: Sendable>: @unchecked Sendable {
-  private let lock = NSLock()
-  private var continuations: [AsyncStream<Value>.Continuation] = []
+final class ContinuationBox<Value: Sendable>: Sendable {
+  private let continuations = Mutex<[AsyncStream<Value>.Continuation]>([])
 
   func append(_ continuation: AsyncStream<Value>.Continuation) {
-    lock.lock()
-    continuations.append(continuation)
-    lock.unlock()
+    continuations.withLock { $0.append(continuation) }
   }
 
   func yieldToAll(_ value: Value) {
-    lock.lock()
-    let current = continuations
-    lock.unlock()
+    let current = continuations.withLock { $0 }
     for continuation in current {
       continuation.yield(value)
     }

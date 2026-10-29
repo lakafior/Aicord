@@ -1,4 +1,4 @@
-import Atomics
+import Synchronization
 import XCTest
 
 @testable import DiscordGateway
@@ -7,16 +7,16 @@ class SerialQueueTests: XCTestCase {
 
   func testFirstTrySucceedsImmediately() async {
     let queue = SerialQueue(waitTime: .milliseconds(250))
-    let number = ManagedAtomic(0)
+    let number = Counter()
 
     Task {
       queue.perform {
-        number.wrappingIncrement(ordering: .relaxed)
+        number.value.wrappingAdd(1, ordering: .relaxed)
       }
     }
 
     try! await Task.sleep(for: .milliseconds(20))
-    XCTAssertEqual(number.load(ordering: .relaxed), 1)
+    XCTAssertEqual(number.value.load(ordering: .relaxed), 1)
   }
 
   func testSecondTryNeedsToWait() async {
@@ -70,6 +70,10 @@ class SerialQueueTests: XCTestCase {
       }
     }
   }
+}
+
+private final class Counter: Sendable {
+  let value = Atomic<Int>(0)
 }
 
 private actor Container {

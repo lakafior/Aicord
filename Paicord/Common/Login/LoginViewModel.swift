@@ -9,6 +9,7 @@
 import Foundation
 import PaicordLib
 
+@MainActor
 @Observable
 final class LoginViewModel {
   init() {

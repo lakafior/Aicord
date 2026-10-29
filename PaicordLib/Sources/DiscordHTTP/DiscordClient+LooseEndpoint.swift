@@ -1,5 +1,3 @@
-import enum NIOHTTP1.HTTPMethod
-
 extension DiscordClient {
   /// Get a file from CDN using the raw url.
   /// This is useful to use with for example

@@ -21,6 +21,7 @@ enum UserInterfaceIdiom: Hashable, Sendable {
   case vision
   case unspecified
 
+  @MainActor
   static var current: UserInterfaceIdiom {
     #if os(macOS)
       return .mac
@@ -40,7 +41,7 @@ enum UserInterfaceIdiom: Hashable, Sendable {
 }
 
 extension EnvironmentValues {
-  @Entry var userInterfaceIdiom: UserInterfaceIdiom = .current
+  @Entry var userInterfaceIdiom: UserInterfaceIdiom = MainActor.assumeIsolated { .current }
 }
 
 extension Shape where Self == RoundedRectangle {

@@ -19,6 +19,7 @@ import UniformTypeIdentifiers
 #endif
 
 extension ChatView.InputBar {
+  @MainActor
   @Observable
   class InputVM {
     var channelStore: ChannelStore
@@ -274,7 +275,7 @@ extension ChatView.InputBar.InputVM {
     case edit(message: DiscordChannel.Message)
   }
 
-  enum UploadItem: Identifiable, Equatable {
+  enum UploadItem: Identifiable, Equatable, Sendable {
     static func == (
       lhs: ChatView.InputBar.InputVM.UploadItem, rhs: ChatView.InputBar.InputVM.UploadItem
     ) -> Bool {

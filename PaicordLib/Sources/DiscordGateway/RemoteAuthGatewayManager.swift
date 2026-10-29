@@ -6,20 +6,12 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import AsyncHTTPClient
-import Atomics
-import Crypto
 import DiscordHTTP
 import DiscordModels
 import Foundation
 import Logging
-import NIO
-import NIOSSL
-import WSClient
-import _CryptoExtras
-
-import enum NIOWebSocket.WebSocketErrorCode
-import struct NIOWebSocket.WebSocketOpcode
+import Security
+import Synchronization
 
 public actor RemoteAuthGatewayManager {
 
@@ -35,9 +27,7 @@ public actor RemoteAuthGatewayManager {
     case cancel
   }
 
-  /// A flat payload structure used by the remote-auth gateway. The gateway
-  /// uses a flat packet where `op` identifies the payload kind and other keys
-  /// are optional depending on the op. Just being lazy sorry
+  /// A flat payload structure used by the remote-auth gateway.
   public struct RemoteAuthPayload: Codable, CustomStringConvertible, Sendable {
     public let op: RemoteAuthOpcode
 
@@ -101,39 +91,34 @@ public actor RemoteAuthGatewayManager {
 
   private struct Message: Sendable {
     let payload: RemoteAuthPayload
-    let opcode: WebSocketOpcode?
     let connectionId: UInt?
     var tryCount: Int
 
     init(
       payload: RemoteAuthPayload,
-      opcode: WebSocketOpcode? = nil,
       connectionId: UInt? = nil,
       tryCount: Int = 0
     ) {
       self.payload = payload
-      self.opcode = opcode
       self.connectionId = connectionId
       self.tryCount = tryCount
     }
   }
 
-  var outboundWriter: WebSocketOutboundWriter?
-  let eventLoopGroup: any EventLoopGroup
+  var webSocketTask: URLSessionWebSocketTask?
+  let session: URLSession
   /// Max frame size we accept to receive through the web-socket connection.
   let maxFrameSize: Int
   /// Generator of `RemoteAuthGatewayManager` ids.
-  static let idGenerator = ManagedAtomic(UInt(0))
+  static let idGenerator = Atomic<UInt>(0)
   /// This gateway manager's identifier.
-  public nonisolated let id = idGenerator.wrappingIncrementThenLoad(
-    ordering: .relaxed
-  )
+  public nonisolated let id = idGenerator.wrappingAdd(1, ordering: .relaxed).newValue
   let logger: Logger
 
   //MARK: Event streams
   var eventsStreamContinuations: [AsyncStream<RemoteAuthPayload>.Continuation] =
     []
-  var eventsParseFailureContinuations: [AsyncStream<(any Error, ByteBuffer)>.Continuation] = []
+  var eventsParseFailureContinuations: [AsyncStream<(any Error, Data)>.Continuation] = []
 
   /// An async sequence of Gateway events.
   public var events: DiscordAsyncSequence<RemoteAuthPayload> {
@@ -144,16 +129,16 @@ public actor RemoteAuthGatewayManager {
     )
   }
   /// An async sequence of Gateway event parse failures.
-  public var eventFailures: DiscordAsyncSequence<(any Error, ByteBuffer)> {
-    DiscordAsyncSequence<(any Error, ByteBuffer)>(
-      base: AsyncStream<(any Error, ByteBuffer)> { continuation in
+  public var eventFailures: DiscordAsyncSequence<(any Error, Data)> {
+    DiscordAsyncSequence<(any Error, Data)>(
+      base: AsyncStream<(any Error, Data)> { continuation in
         self.eventsParseFailureContinuations.append(continuation)
       }
     )
   }
 
   //MARK: Connection state
-  public nonisolated let state = ManagedAtomic(GatewayState.noConnection)
+  public nonisolated let state = Atomic<GatewayState>(.noConnection)
   public nonisolated let stateCallback: (@Sendable (GatewayState) -> Void)?
 
   //MARK: Send queue
@@ -165,20 +150,20 @@ public actor RemoteAuthGatewayManager {
   //MARK: Current connection properties
 
   /// An ID to keep track of connection changes.
-  nonisolated let connectionId = ManagedAtomic(UInt(0))
+  nonisolated let connectionId = Atomic<UInt>(0)
 
-  // MARK: - RSA keypair and fingerprint (SwiftCrypto _RSA)
+  // MARK: - RSA keypair and fingerprint (Apple Security SecKey)
   /// The client's RSA private key used to decrypt nonces and payloads.
-  private var swiftCryptoPrivateKey: _RSA.Encryption.PrivateKey?
+  private var privateKey: SecKey?
   /// The base64-encoded SPKI of the public key.
   private var encodedPublicKeySPKI: String?
 
   public init(
-    eventLoopGroup: any EventLoopGroup = HTTPClient.shared.eventLoopGroup,
+    session: URLSession = .shared,
     maxFrameSize: Int = 1 << 28,
     stateCallback: (@Sendable (GatewayState) -> Void)? = nil
   ) {
-    self.eventLoopGroup = eventLoopGroup
+    self.session = session
     self.stateCallback = stateCallback
     self.maxFrameSize = maxFrameSize
 
@@ -186,21 +171,13 @@ public actor RemoteAuthGatewayManager {
       "RemoteAuthGatewayManager"
     )
     logger[metadataKey: "gateway-id"] = .string(
-      "\(Self.idGenerator.wrappingIncrementThenLoad(ordering: .relaxed))"
+      "\(Self.idGenerator.wrappingAdd(1, ordering: .relaxed).newValue)"
     )
     self.logger = logger
   }
 
   //MARK: Backoff
 
-  /// Discord cares about the identify payload for rate-limiting and if you send
-  /// more than 1000 identifies in a day, Discord will revoke your bot token
-  /// (unless your bot is big enough that has a bigger identify-limit than 1000 per day).
-  /// This does not apply for users, but could be deemed suspicious behaviour.
-  ///
-  /// This Backoff does not necessarily prevent your bot token getting revoked,
-  /// but in the worst case, doesn't let it happen sooner than ~6 hours.
-  /// This also helps in other situations, for example when there is a Discord outage.
   let connectionBackoff = Backoff(
     base: 2,
     maxExponentiation: 7,
@@ -216,7 +193,6 @@ public actor RemoteAuthGatewayManager {
   /// `state` must be set to an appropriate value before triggering this function.
   public func connect() async {
     logger.debug("Connect method triggered")
-    /// Guard we're attempting to connect too fast
     if let connectIn = connectionBackoff.canPerformIn() {
       logger.warning(
         "Cannot try to connect immediately due to backoff",
@@ -226,7 +202,6 @@ public actor RemoteAuthGatewayManager {
       )
       try? await Task.sleep(for: connectIn)
     }
-    /// Guard if other connections are in process
     let state = self.state.load(ordering: .relaxed)
     guard [.noConnection, .configured, .stopped].contains(state) else {
       logger.error(
@@ -246,79 +221,75 @@ public actor RemoteAuthGatewayManager {
       ("v", "2")
     ]
 
-    let configuration = WebSocketClientConfiguration(
-      maxFrameSize: self.maxFrameSize,
-      additionalHeaders: [
-        .userAgent: SuperProperties.useragent(ws: false)!,
-        .origin: "https://discord.com",
-        .cacheControl: "no-cache",
-        .acceptLanguage: SuperProperties.GenerateLocaleHeader(),
+    guard let wsURL = URL(string: gatewayURL + queries.makeForURLQuery()) else {
+      logger.critical("Invalid Remote Auth Gateway URL: \(gatewayURL)")
+      return
+    }
 
-      ]
-    )
+    var request = URLRequest(url: wsURL)
+    request.setValue(SuperProperties.useragent(ws: false)!, forHTTPHeaderField: "User-Agent")
+    request.setValue("https://discord.com", forHTTPHeaderField: "Origin")
+    request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+    request.setValue(SuperProperties.GenerateLocaleHeader(), forHTTPHeaderField: "Accept-Language")
 
     logger.trace(
       "Will try to connect to Remote Auth Gateway through web-socket"
     )
-    let connectionId = self.connectionId.wrappingIncrementThenLoad(
-      ordering: .relaxed
-    )
-    /// FIXME: remove this `Task` in a future major version.
-    /// This is so the `connect()` method does still exit, like it used to.
-    /// But for proper structured concurrency, this method should never exit (optimally).
+    let connectionId = self.connectionId.wrappingAdd(1, ordering: .relaxed).newValue
+
+    let wsTask = self.session.webSocketTask(with: request)
+    wsTask.maximumMessageSize = self.maxFrameSize
+    self.webSocketTask = wsTask
+    wsTask.resume()
+
+    self.logger.debug("Connected to Remote Auth Gateway through web-socket.")
+    await self.onSuccessfulConnection()
+
     Task {
       do {
-        let closeFrame = try await WebSocketClient.connect(
-          url: gatewayURL + queries.makeForURLQuery(),
-          configuration: configuration,
-          eventLoopGroup: self.eventLoopGroup,
-          logger: self.logger
-        ) { inbound, outbound, context in
-          await self.setupOutboundWriter(outbound)
-
-          self.logger.debug(
-            "Connected to Remote Auth Gateway through web-socket."
+        while self.connectionId.load(ordering: .relaxed) == connectionId {
+          let message = try await wsTask.receive()
+          await self.processMessage(
+            message,
+            forConnectionWithId: connectionId
           )
-          await self.onSuccessfulConnection()
-
-          for try await message in inbound.messages(maxSize: self.maxFrameSize) {
-            await self.processBinaryData(
-              message,
-              forConnectionWithId: connectionId
-            )
-          }
         }
-
-        logger.debug(
-          "web-socket connection closed",
-          metadata: [
-            "closeCode": .string(String(reflecting: closeFrame?.closeCode)),
-            "closeReason": .string(String(reflecting: closeFrame?.reason)),
-            "connectionId": .stringConvertible(
-              self.connectionId.load(ordering: .relaxed)
-            ),
-          ]
-        )
-        await self.onClose(
-          closeReason: .closeFrame(closeFrame),
-          forConnectionWithId: connectionId
-        )
       } catch {
-        logger.debug(
-          "web-socket error while connecting to Remote Auth Gateway. Will try again",
-          metadata: [
-            "error": .string(String(reflecting: error)),
-            "connectionId": .stringConvertible(
-              self.connectionId.load(ordering: .relaxed)
-            ),
-          ]
-        )
-        self.state.store(.noConnection, ordering: .relaxed)
-        self.stateCallback?(.noConnection)
-        await self.onClose(
-          closeReason: .error(error),
-          forConnectionWithId: connectionId
-        )
+        let closeCode = wsTask.closeCode
+        let closeReasonData = wsTask.closeReason
+        let closeReasonStr = closeReasonData.flatMap { String(data: $0, encoding: .utf8) }
+        if closeCode != .invalid {
+          logger.debug(
+            "web-socket connection closed",
+            metadata: [
+              "closeCode": .string("\(closeCode.rawValue)"),
+              "closeReason": .string(closeReasonStr ?? "nil"),
+              "connectionId": .stringConvertible(
+                self.connectionId.load(ordering: .relaxed)
+              ),
+            ]
+          )
+          await self.onClose(
+            closeReason: .closeFrame(code: UInt16(clamping: closeCode.rawValue), reason: closeReasonStr),
+            forConnectionWithId: connectionId
+          )
+        } else {
+          logger.debug(
+            "web-socket error while connecting to Remote Auth Gateway. Will try again",
+            metadata: [
+              "error": .string(String(reflecting: error)),
+              "connectionId": .stringConvertible(
+                self.connectionId.load(ordering: .relaxed)
+              ),
+            ]
+          )
+          self.state.store(.noConnection, ordering: .relaxed)
+          self.stateCallback?(.noConnection)
+          await self.onClose(
+            closeReason: .error(error),
+            forConnectionWithId: connectionId
+          )
+        }
       }
     }
   }
@@ -330,17 +301,17 @@ public actor RemoteAuthGatewayManager {
       op: .`init`,
       encoded_public_key: encodedPublicKey
     )
-    self.send(message: .init(payload: payload, opcode: .text))
+    self.send(message: .init(payload: payload))
   }
 
   public func sendHeartbeat() {
     let payload = RemoteAuthPayload(op: .heartbeat)
-    self.send(message: .init(payload: payload, opcode: .text))
+    self.send(message: .init(payload: payload))
   }
 
   public func sendNonceProof(nonce: String) {
     let payload = RemoteAuthPayload(op: .nonce_proof, nonce: nonce)
-    self.send(message: .init(payload: payload, opcode: .text))
+    self.send(message: .init(payload: payload))
   }
 
   // MARK: End of Gateway actions -
@@ -354,7 +325,7 @@ public actor RemoteAuthGatewayManager {
   /// Makes an stream of Gateway event parse failures.
   @available(*, deprecated, renamed: "eventFailures")
   public func makeEventsParseFailureStream() -> AsyncStream<
-    (any Error, ByteBuffer)
+    (any Error, Data)
   > {
     self.eventFailures.base
   }
@@ -381,12 +352,12 @@ public actor RemoteAuthGatewayManager {
       )
       return
     }
-    self.connectionId.wrappingIncrement(ordering: .relaxed)
+    _ = self.connectionId.wrappingAdd(1, ordering: .relaxed)
     self.state.store(.noConnection, ordering: .relaxed)
     self.stateCallback?(.noConnection)
     connectionBackoff.resetTryCount()
     await self.sendQueue.reset()
-    await self.closeWebSocket()
+    self.closeWebSocket()
   }
 }
 
@@ -399,18 +370,15 @@ extension RemoteAuthGatewayManager {
       self.lastPongDate = Date()
     case .hello:
       guard let interval = event.heartbeat_interval else { break }
-      // Start heart-beating right-away.
       self.setupPingTask(
         forConnectionWithId: self.connectionId.load(ordering: .relaxed),
         every: .milliseconds(Int64(interval))
       )
-      // Generate RSA keypair and send Init automatically.
       await self.generateRSAKeyPairIfNeeded()
       if let encodedKey = self.encodedPublicKeySPKI {
         self.sendInit(encodedPublicKey: encodedKey)
       }
     case .nonce_proof:
-
       guard let encNonce = event.encrypted_nonce,
         let decryptedNonce = self.rsaDecryptOAEPSHA256(encNonce)
       else {
@@ -435,38 +403,40 @@ extension RemoteAuthGatewayManager {
     }
   }
 
-  private func processBinaryData(
-    _ message: WebSocketMessage,
+  private func processMessage(
+    _ message: URLSessionWebSocketTask.Message,
     forConnectionWithId connectionId: UInt
   ) async {
     guard self.connectionId.load(ordering: .relaxed) == connectionId else {
       return
     }
 
-    let buffer: ByteBuffer
+    let data: Data
     switch message {
-    case .text(let string):
+    case .string(let string):
       self.logger.debug(
         "Got text from websocket",
         metadata: [
           "text": .string(string)
         ]
       )
-      buffer = ByteBuffer(string: string)
-    case .binary(let _buffer):
+      data = Data(string.utf8)
+    case .data(let rawData):
       self.logger.debug(
         "Got binary from websocket",
         metadata: [
-          "text": .string(String(buffer: _buffer))
+          "text": .string(String(buffer: rawData))
         ]
       )
-      buffer = _buffer
+      data = rawData
+    @unknown default:
+      return
     }
 
     do {
       var event = try DiscordGlobalConfiguration.decoder.decode(
         RemoteAuthPayload.self,
-        from: Data(buffer: buffer, byteTransferStrategy: .noCopy)
+        from: data
       )
       self.logger.debug(
         "Decoded remote-auth event",
@@ -476,14 +446,11 @@ extension RemoteAuthGatewayManager {
         ]
       )
 
-      // If we have an encrypted user payload and our private key exists,
-      // attempt to decrypt and populate `user_payload`.
       if let enc = event.encrypted_user_payload,
-        self.swiftCryptoPrivateKey != nil
+        self.privateKey != nil
       {
         if let decrypted = self.rsaDecryptOAEPSHA256(enc) {
           if let decryptedString = String(data: decrypted, encoding: .utf8) {
-            // id:discriminator:avatar:username
             let parts = decryptedString.split(
               separator: ":",
               omittingEmptySubsequences: false
@@ -523,13 +490,13 @@ extension RemoteAuthGatewayManager {
         ]
       )
       for continuation in self.eventsParseFailureContinuations {
-        continuation.yield((error, buffer))
+        continuation.yield((error, data))
       }
     }
   }
 
   private enum CloseReason {
-    case closeFrame(WebSocketCloseFrame?)
+    case closeFrame(code: UInt16?, reason: String?)
     case error(any Error)
   }
 
@@ -542,9 +509,7 @@ extension RemoteAuthGatewayManager {
       return
     }
     let (code, codeDesc) = self.getCloseCodeAndDescription(of: closeReason)
-    let isDebugLevelCode = [nil, .goingAway, .unexpectedServerError].contains(
-      code
-    )
+    let isDebugLevelCode = [nil, 1000, 1001, 1011].contains(code)
     self.logger.log(
       level: isDebugLevelCode ? .debug : .warning,
       "Received connection close notification. Will try to reconnect",
@@ -571,52 +536,35 @@ extension RemoteAuthGatewayManager {
     } else {
       self.state.store(.stopped, ordering: .relaxed)
       self.stateCallback?(.stopped)
-      self.connectionId.wrappingIncrement(ordering: .relaxed)
+      _ = self.connectionId.wrappingAdd(1, ordering: .relaxed)
       self.logger.critical(
         "Will not reconnect because gateway does not allow it. Your close code is '\(codeDesc)'."
       )
-
-      /// Don't remove/end the event streams just to stop apps from crashing/restarting
-      /// which could result in bot-token revocations or even temporary ip bans.
     }
   }
 
   private nonisolated func getCloseCodeAndDescription(
     of closeReason: CloseReason
-  ) -> (WebSocketErrorCode?, String) {
+  ) -> (UInt16?, String) {
     switch closeReason {
     case .error(let error):
       return (nil, String(reflecting: error))
-    case .closeFrame(let closeFrame):
-      guard let closeFrame else {
+    case .closeFrame(let code, let reason):
+      guard let code else {
         return (nil, "nil")
       }
-      let code = closeFrame.closeCode
-      let description: String
-      switch code {
-      case .unknown(let codeNumber):
-        switch GatewayCloseCode(rawValue: codeNumber) {
-        case .some(let discordCode):
-          description = "\(discordCode)"
-        case .none:
-          description = "\(codeNumber)"
-        }
-      default:
-        description = closeFrame.reason ?? "\(code)"
+      if let discordCode = GatewayCloseCode(rawValue: code) {
+        return (code, "\(discordCode)")
       }
-      return (code, description)
+      return (code, reason ?? "\(code)")
     }
   }
 
-  private nonisolated func canTryReconnect(code: WebSocketErrorCode?) -> Bool {
-    switch code {
-    case .unknown(let codeNumber):
-      guard let discordCode = GatewayCloseCode(rawValue: codeNumber) else {
-        return true
-      }
-      return discordCode.canTryReconnect
-    default: return true
+  private nonisolated func canTryReconnect(code: UInt16?) -> Bool {
+    guard let code, let discordCode = GatewayCloseCode(rawValue: code) else {
+      return true
     }
+    return discordCode.canTryReconnect
   }
 
   private func setupPingTask(
@@ -632,7 +580,7 @@ extension RemoteAuthGatewayManager {
             "connectionId": .stringConvertible(connectionId)
           ]
         )
-        return/// cancel
+        return
       }
       self.logger.debug(
         "Will send automatic ping",
@@ -658,9 +606,6 @@ extension RemoteAuthGatewayManager {
       guard self.connectionId.load(ordering: .relaxed) == connectionId else {
         return
       }
-      /// 15 == 10 + 5. 10 seconds that we slept, + 5 seconds tolerance.
-      /// The tolerance being too long should not matter as pings usually happen
-      /// only once in ~45 seconds, and a successful ping will reset the counter anyway.
       if self.lastPongDate.addingTimeInterval(15) > Date() {
         logger.trace("Successful ping")
         self.unsuccessfulPingsCount = 0
@@ -700,13 +645,10 @@ extension RemoteAuthGatewayManager {
         )
         return
       case .noConnection, .connecting, .configured:
-        // For remote-auth, init and heartbeat are allowed prior to connected state
         switch message.payload.op {
         case .`init`, .heartbeat, .heartbeat_ack:
           break
         default:
-          /// Recursively try to send through the queue.
-          /// The send queue has slowdown mechanisms so it's fine.
           self.send(message: message)
           return
         }
@@ -717,9 +659,6 @@ extension RemoteAuthGatewayManager {
         return
       }
       Task {
-        let opcode: WebSocketOpcode =
-          message.opcode ?? .text
-
         let data: Data
         do {
           data = try DiscordGlobalConfiguration.encoder.encode(message.payload)
@@ -728,7 +667,6 @@ extension RemoteAuthGatewayManager {
             "Could not encode payload, \(error)",
             metadata: [
               "payload": .string("\(message.payload)"),
-              "opcode": .stringConvertible(opcode),
               "connectionId": .stringConvertible(
                 self.connectionId.load(ordering: .relaxed)
               ),
@@ -737,7 +675,7 @@ extension RemoteAuthGatewayManager {
           return
         }
 
-        if let outboundWriter = await self.outboundWriter {
+        if let wsTask = await self.webSocketTask {
           do {
             self.logger.debug(
               "Will send payload",
@@ -745,58 +683,24 @@ extension RemoteAuthGatewayManager {
                 "op": .string(message.payload.op.rawValue)
               ]
             )
-            self.logger.trace(
-              "Will send payload",
+            let stringPayload = String(decoding: data, as: UTF8.self)
+            try await wsTask.send(.string(stringPayload))
+          } catch {
+            self.logger.error(
+              "Could not send payload through web-socket",
               metadata: [
+                "error": .string(String(reflecting: error)),
                 "payload": .string("\(message.payload)"),
-                "opcode": .stringConvertible(opcode),
+                "state": .stringConvertible(
+                  self.state.load(ordering: .relaxed)
+                ),
+                "connectionId": .stringConvertible(
+                  self.connectionId.load(ordering: .relaxed)
+                ),
               ]
             )
-            try await outboundWriter.write(
-              .custom(
-                .init(
-                  fin: true,
-                  opcode: opcode,
-                  data: ByteBuffer(data: data)
-                )
-              )
-            )
-          } catch {
-            if let channelError = error as? ChannelError,
-              case .ioOnClosedChannel = channelError
-            {
-              self.logger.error(
-                "Received 'ChannelError.ioOnClosedChannel' error while sending payload through web-socket. Will fully disconnect and reconnect again"
-              )
-              await self.disconnect()
-              await self.connect()
-            } else if message.payload.op == .heartbeat,
-              let writerError = error as? NIOAsyncWriterError,
-              writerError == .alreadyFinished()
-            {
-              self.logger.debug(
-                "Received 'NIOAsyncWriterError.alreadyFinished' error while sending heartbeat through web-socket. Will ignore"
-              )
-            } else {
-              self.logger.error(
-                "Could not send payload through web-socket",
-                metadata: [
-                  "error": .string(String(reflecting: error)),
-                  "payload": .string("\(message.payload)"),
-                  "opcode": .stringConvertible(opcode),
-                  "state": .stringConvertible(
-                    self.state.load(ordering: .relaxed)
-                  ),
-                  "connectionId": .stringConvertible(
-                    self.connectionId.load(ordering: .relaxed)
-                  ),
-                ]
-              )
-            }
           }
         } else {
-          /// Heartbeats are fine if they are sent when a ws connection
-          /// is not established.
           self.logger.log(
             level: (message.payload.op == .heartbeat) ? .debug : .warning,
             "Trying to send through ws when a connection is not established",
@@ -821,23 +725,10 @@ extension RemoteAuthGatewayManager {
     await self.sendQueue.reset()
   }
 
-  func setupOutboundWriter(_ outboundWriter: WebSocketOutboundWriter) {
-    self.outboundWriter = outboundWriter
-  }
-
-  private func closeWebSocket() async {
+  private func closeWebSocket() {
     logger.debug("Will possibly close a web-socket")
-    do {
-      try await self.outboundWriter?.close(.goingAway, reason: nil)
-    } catch {
-      logger.warning(
-        "Will ignore WS closure failure",
-        metadata: [
-          "error": .string(String(reflecting: error))
-        ]
-      )
-    }
-    self.outboundWriter = nil
+    self.webSocketTask?.cancel(with: .goingAway, reason: nil)
+    self.webSocketTask = nil
   }
 
   /// Use this to exchange a remote auth ticket for a Discord auth token.
@@ -851,70 +742,85 @@ extension RemoteAuthGatewayManager {
     let data = try req.decode()
     let encrypted_token = data.encrypted_token
 
-    guard let privKey = self.swiftCryptoPrivateKey else {
+    guard self.privateKey != nil else {
       self.logger.error("No private key available to decrypt remote auth token")
       throw RemoteAuthError.noPrivateKey
     }
 
-    guard let encryptedData = Data(base64Encoded: encrypted_token) else {
+    guard Data(base64Encoded: encrypted_token) != nil else {
       self.logger.error("Remote auth token is not valid base64")
       throw RemoteAuthError.invalidBase64
     }
 
-    do {
-      let decryptedData = try privKey.decrypt(
-        encryptedData,
-        padding: .PKCS1_OAEP_SHA256
-      )
-      guard var tokenString = String(data: decryptedData, encoding: .utf8)
-      else {
-        self.logger.error("Decrypted token is not valid UTF-8")
-        throw RemoteAuthError.decryptionFailed(underlying: nil)
-      }
-      tokenString = tokenString.trimmingCharacters(in: .whitespacesAndNewlines)
-      if tokenString.isEmpty {
-        self.logger.error("Decrypted remote auth token is empty")
-        throw RemoteAuthError.emptyToken
-      }
-      return Secret(tokenString)
-    } catch {
-      self.logger.error("Failed to decrypt remote auth token: \(error)")
-      throw RemoteAuthError.decryptionFailed(underlying: error)
+    guard let decryptedData = self.rsaDecryptOAEPSHA256(encrypted_token) else {
+      self.logger.error("Failed to decrypt remote auth token")
+      throw RemoteAuthError.decryptionFailed(underlying: nil)
     }
+
+    guard var tokenString = String(data: decryptedData, encoding: .utf8) else {
+      self.logger.error("Decrypted token is not valid UTF-8")
+      throw RemoteAuthError.decryptionFailed(underlying: nil)
+    }
+    tokenString = tokenString.trimmingCharacters(in: .whitespacesAndNewlines)
+    if tokenString.isEmpty {
+      self.logger.error("Decrypted remote auth token is empty")
+      throw RemoteAuthError.emptyToken
+    }
+    return Secret(tokenString)
   }
 
   // MARK: - Helpers for RSA and fingerprints
   private func generateRSAKeyPairIfNeeded() async {
-    if self.swiftCryptoPrivateKey != nil { return }
-    do {
-      // Use SwiftCrypto's _RSA API to generate a 2048-bit keypair.
-      let priv = try _RSA.Encryption.PrivateKey(keySize: .bits2048)
-      self.swiftCryptoPrivateKey = priv
-
-      // Export SPKI from the public key.
-      let spki = priv.publicKey.derRepresentation
-      self.encodedPublicKeySPKI = spki.base64EncodedString()
-    } catch {
-      self.logger.error("SwiftCrypto RSA key generation failed: \(error)")
+    if self.privateKey != nil { return }
+    let attributes: [CFString: Any] = [
+      kSecAttrKeyType: kSecAttrKeyTypeRSA,
+      kSecAttrKeySizeInBits: 2048,
+    ]
+    var error: Unmanaged<CFError>?
+    guard let privKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error),
+      let pubKey = SecKeyCopyPublicKey(privKey),
+      let pkcs1Data = SecKeyCopyExternalRepresentation(pubKey, &error) as Data?
+    else {
+      self.logger.error("SecKey RSA key generation failed: \(String(describing: error?.takeRetainedValue()))")
+      return
     }
+    self.privateKey = privKey
+
+    // Standard 24-byte ASN.1 DER SubjectPublicKeyInfo header for a 2048-bit RSA PKCS#1 public key
+    let spkiHeader: [UInt8] = [
+      0x30, 0x82, 0x01, 0x22,
+      0x30, 0x0D,
+      0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01,
+      0x05, 0x00,
+      0x03, 0x82, 0x01, 0x0F, 0x00,
+    ]
+    var spki = Data(spkiHeader)
+    spki.append(pkcs1Data)
+    self.encodedPublicKeySPKI = spki.base64EncodedString()
   }
 
   private func rsaDecryptOAEPSHA256(_ ciphertextBase64: String) -> Data? {
-    guard let priv = self.swiftCryptoPrivateKey else { return nil }
+    guard let priv = self.privateKey else { return nil }
     guard let cipher = Data(base64Encoded: ciphertextBase64) else {
-      self.logger.error("SwiftCrypto RSA decrypt: invalid base64 ciphertext")
+      self.logger.error("SecKey RSA decrypt: invalid base64 ciphertext")
       return nil
     }
 
-    do {
-      let plain = try priv.decrypt(cipher, padding: .PKCS1_OAEP_SHA256)
-      return plain
-    } catch {
+    var error: Unmanaged<CFError>?
+    guard
+      let plain = SecKeyCreateDecryptedData(
+        priv,
+        .rsaEncryptionOAEPSHA256,
+        cipher as CFData,
+        &error
+      ) as Data?
+    else {
       self.logger.trace(
-        "RSA decrypt attempt failed: \(error)"
+        "RSA decrypt attempt failed: \(String(describing: error?.takeRetainedValue()))"
       )
       return nil
     }
+    return plain
   }
 
   enum RemoteAuthError: Error, Sendable {
@@ -933,7 +839,7 @@ extension RemoteAuthGatewayManager {
   }
 
   func addEventsParseFailureContinuation(
-    _ continuation: AsyncStream<(any Error, ByteBuffer)>.Continuation
+    _ continuation: AsyncStream<(any Error, Data)>.Continuation
   ) {
     self.eventsParseFailureContinuations.append(continuation)
   }

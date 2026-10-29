@@ -1,7 +1,6 @@
 // this file is made by hand :c
 
 import DiscordModels
-import NIOHTTP1
 
 public enum UserAPIEndpoint: Endpoint {
   // MARK: - Authentication

@@ -6,13 +6,13 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Collections
 import Foundation
 import PaicordLib
 
 typealias MemberBox = ObservableBox<Guild.PartialMember>
 typealias RoleBox = ObservableBox<Role>
 
+@MainActor
 @Observable
 class GuildStore: DiscordDataStore {
   // MARK: - Protocol Properties
@@ -148,7 +148,7 @@ class GuildStore: DiscordDataStore {
   func setupEventHandling() {
     guard let gateway = gateway?.gateway else { return }
     let events = gateway.events
-    eventTask = Task { @MainActor in
+    eventTask = Task {
       for await event in events {
         switch event.data {
         case .guildUpdate(let updatedGuild):

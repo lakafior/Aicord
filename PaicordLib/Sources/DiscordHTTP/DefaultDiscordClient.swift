@@ -1,14 +1,10 @@
-import AsyncHTTPClient
-import Atomics
 import DiscordModels
 import Foundation
 import Logging
-import NIOCore
-import NIOFoundationCompat
-import NIOHTTP1
+import Synchronization
 
 public struct DefaultDiscordClient: DiscordClient {
-  public let client: HTTPClient
+  public let session: URLSession
   public let authentication: AuthenticationHeader
   public let appId: ApplicationSnowflake?
   public let configuration: ClientConfiguration
@@ -19,12 +15,7 @@ public struct DefaultDiscordClient: DiscordClient {
   public var captchaCallback: CaptchaChallengeHandler? = nil
   public var mfaCallback: MFAVerificationHandler? = nil
 
-  /// Discord apparently looks at this for figuring out library-usages.
-  /// Technically they could also look at the info passed in Gateway's identify payload, for that.
-  /// From what I've figured, if Discord sees a lot of people are using the same library, they
-  /// will contact the owner and add the library to the list of suggested libraries on their website.
   public var userAgent: String {
-    // only use the default bot useragent of discordbm if it is a bot token
     if self.authentication.userMode {
       return SuperProperties.useragent(ws: false)!
     } else {
@@ -43,21 +34,20 @@ public struct DefaultDiscordClient: DiscordClient {
   let _cookieStore: CookieStore = .init()
 
   @usableFromInline
-  static let requestIdGenerator = ManagedAtomic(UInt(0))
+  static let requestIdGenerator = Atomic<UInt>(0)
+
+  @usableFromInline
+  static func nextRequestId() -> UInt {
+    requestIdGenerator.wrappingAdd(1, ordering: .relaxed).newValue
+  }
 
   /// The fact that this could be used by multiple different `DiscordClient`s with
   /// different `token`s should not matter because buckets are random anyway.
   @usableFromInline
   static let rateLimiter = HTTPRateLimiter(label: "DiscordClientRateLimiter")
 
-  /// - Parameters:
-  ///   - httpClient: A ``HTTPClient``.
-  ///   - token: Must be a **bot token**.
-  ///   - appId: Your Discord application-id. If not provided, it'll be extracted from bot token.
-  ///   This is used as a default when no app-id is passed to a ``DiscordClient`` function.
-  ///   - configuration: The configuration affecting this ``DefaultDiscordClient``.
   public init(
-    httpClient: HTTPClient = .shared,
+    session: URLSession = .shared,
     token: Secret,
     appId: ApplicationSnowflake? = nil,
     configuration: ClientConfiguration = .init(),
@@ -66,7 +56,7 @@ public struct DefaultDiscordClient: DiscordClient {
   ) async {
     self.captchaCallback = captchaCallback
     self.mfaCallback = mfaCallback
-    self.client = httpClient
+    self.session = session
     self.authentication = .botToken(token)
     self.appId = appId ?? self.authentication.extractAppIdIfAvailable()
     self.configuration = configuration
@@ -75,19 +65,13 @@ public struct DefaultDiscordClient: DiscordClient {
     )
   }
 
-  /// - Parameters:
-  ///   - httpClient: A ``HTTPClient``.
-  ///   - token: Must be a **bot token**.
-  ///   - appId: Your Discord application-id. If not provided, it'll be extracted from bot token.
-  ///   This is used as a default when no app-id is passed to a ``DiscordClient`` function.
-  ///   - configuration: The configuration affecting this ``DefaultDiscordClient``.
   public init(
-    httpClient: HTTPClient = .shared,
+    session: URLSession = .shared,
     token: String,
     appId: ApplicationSnowflake? = nil,
     configuration: ClientConfiguration = .init()
   ) async {
-    self.client = httpClient
+    self.session = session
     self.authentication = .botToken(Secret(token))
     self.appId = appId ?? self.authentication.extractAppIdIfAvailable()
     self.configuration = configuration
@@ -96,14 +80,8 @@ public struct DefaultDiscordClient: DiscordClient {
     )
   }
 
-  /// - Parameters:
-  ///   - httpClient: A ``HTTPClient``.
-  ///   - token: Must be a **bot token**.
-  ///   - appId: Your Discord application-id. If not provided, it'll be extracted from bot token.
-  ///   This is used as a default when no app-id is passed to a ``DiscordClient`` function.
-  ///   - configuration: The configuration affecting this ``DefaultDiscordClient``.
   public init(
-    httpClient: HTTPClient = .shared,
+    session: URLSession = .shared,
     header: AuthenticationHeader,
     appId: ApplicationSnowflake? = nil,
     configuration: ClientConfiguration = .init(),
@@ -112,7 +90,7 @@ public struct DefaultDiscordClient: DiscordClient {
   ) async {
     self.captchaCallback = captchaCallback
     self.mfaCallback = mfaCallback
-    self.client = httpClient
+    self.session = session
     self.authentication = header
     self.appId = appId ?? self.authentication.extractAppIdIfAvailable()
     self.configuration = configuration
@@ -121,21 +99,14 @@ public struct DefaultDiscordClient: DiscordClient {
     )
   }
 
-  /// - Parameters:
-  ///   - httpClient: A ``HTTPClient``.
-  ///   - oAuthToken: Must be an **OAuth token**.
-  ///   - appId: Your Discord application-id. It **can't** be extracted from the token, if not provided.
-  ///   This is used as a default when no app-id is passed to a ``DiscordClient`` function.
-  ///   - configuration: The configuration affecting this ``DefaultDiscordClient``.
   public init(
-    httpClient: HTTPClient = .shared,
+    session: URLSession = .shared,
     oAuthToken: Secret,
     appId: ApplicationSnowflake? = nil,
     configuration: ClientConfiguration = .init()
   ) async {
-    self.client = httpClient
+    self.session = session
     self.authentication = .oAuthToken(oAuthToken)
-    /// OAuth tokens don't contain an app-id to extract
     self.appId = appId
     self.configuration = configuration
     self._authCache = await ClientCacheStorage.shared.cache(
@@ -143,21 +114,14 @@ public struct DefaultDiscordClient: DiscordClient {
     )
   }
 
-  /// - Parameters:
-  ///   - httpClient: A ``HTTPClient``.
-  ///   - oAuthToken: Must be an **OAuth token**.
-  ///   - appId: Your Discord application-id. It **can't** be extracted from the token, if not provided.
-  ///   This is used as a default when no app-id is passed to a ``DiscordClient`` function.
-  ///   - configuration: The configuration affecting this ``DefaultDiscordClient``.
   public init(
-    httpClient: HTTPClient = .shared,
+    session: URLSession = .shared,
     oAuthToken: String,
     appId: ApplicationSnowflake? = nil,
     configuration: ClientConfiguration = .init()
   ) async {
-    self.client = httpClient
+    self.session = session
     self.authentication = .oAuthToken(Secret(oAuthToken))
-    /// OAuth tokens don't contain an app-id to extract
     self.appId = appId
     self.configuration = configuration
     self._authCache = await ClientCacheStorage.shared.cache(
@@ -165,21 +129,13 @@ public struct DefaultDiscordClient: DiscordClient {
     )
   }
 
-  /// - Parameters:
-  ///   - httpClient: A ``HTTPClient``.
-  ///   - authentication: The authentication method when sending requests to Discord.
-  ///   - appId: Your Discord application-id.
-  ///   If `authentication` is a **bot** token, the app-id will be extracted from bot token.
-  ///   Otherwise it can't be automatically extracted.
-  ///   This is used as a default when no app-id is passed to a ``DiscordClient`` function.
-  ///   - configuration: The configuration affecting this ``DefaultDiscordClient``.
   public init(
-    httpClient: HTTPClient = .shared,
+    session: URLSession = .shared,
     authentication: AuthenticationHeader,
     appId: ApplicationSnowflake? = nil,
     configuration: ClientConfiguration = .init()
   ) async {
-    self.client = httpClient
+    self.session = session
     self.authentication = authentication
     self.appId = appId ?? self.authentication.extractAppIdIfAvailable()
     self.configuration = configuration
@@ -188,22 +144,15 @@ public struct DefaultDiscordClient: DiscordClient {
     )
   }
 
-  /// - Parameters:
-  ///   - httpClient: A ``HTTPClient``.
-  ///   - appId: Your Discord application-id.
-  ///   If `authentication` is a **bot** token, the app-id will be extracted from bot token.
-  ///   Otherwise it can't be automatically extracted.
-  ///   This is used as a default when no app-id is passed to a ``DiscordClient`` function.
-  ///   - configuration: The configuration affecting this ``DefaultDiscordClient``.
   public init(
-    httpClient: HTTPClient = .shared,
+    session: URLSession = .shared,
     configuration: ClientConfiguration = .init(),
     captchaCallback: CaptchaChallengeHandler? = nil,
     mfaCallback: MFAVerificationHandler? = nil
   ) {
     self.captchaCallback = captchaCallback
     self.mfaCallback = mfaCallback
-    self.client = httpClient
+    self.session = session
     self.authentication = captchaCallback == nil ? .none : .userNone
     self.configuration = configuration
     self._authCache = .global
@@ -270,9 +219,6 @@ public struct DefaultDiscordClient: DiscordClient {
     )
   }
 
-  /// To centralize the way the is-cacheable checking is done.
-  /// Because this must be the same in `getFromCache` and `saveInCache`.
-  /// Returns the `CacheableEndpointIdentity` and the `TTL`.
   @inlinable
   func isCacheable(identity: CacheableEndpointIdentity?) -> (
     CacheableEndpointIdentity, Duration
@@ -283,9 +229,6 @@ public struct DefaultDiscordClient: DiscordClient {
     return (identity, ttl)
   }
 
-  /// Gets the response from cache if available.
-  /// If there is another request in queue with the same identity, waits for that to finish.
-  /// This means that this func is trusting that a response is always made if this returns `nil`.
   @inlinable
   func getFromCache(
     identity: CacheableEndpointIdentity?,
@@ -293,9 +236,6 @@ public struct DefaultDiscordClient: DiscordClient {
     parameters: [String],
     queries: [(String, String?)]
   ) async -> DiscordHTTPResponse? {
-    /// Since the `ClientCache` is shared and another `DiscordClient` could have
-    /// had added a response to it, at least make sure that this
-    /// `DiscordClient` should be using any caching at all for the endpoint.
     guard let (identity, _) = self.isCacheable(identity: identity) else {
       return nil
     }
@@ -359,20 +299,40 @@ public struct DefaultDiscordClient: DiscordClient {
   }
 
   @usableFromInline
-  func execute(_ request: HTTPClient.Request) async throws
-    -> DiscordHTTPResponse
-  {
-    DiscordHTTPResponse(
-      _response: try await self.client.execute(
-        request: request,
-        deadline: .now() + configuration.requestTimeoutAmount,
-        logger: configuration.enableLoggingForRequests
-          ? DiscordGlobalConfiguration.makeLogger("DBM+HTTPClient")
-          : Logger(
-            label: "DBM-no-op-logger",
-            factory: SwiftLogNoOpLogHandler.init
-          )
-      ).get()
+  func execute(
+    url: String,
+    method: HTTPMethod,
+    headers: HTTPHeaders,
+    body: Data? = nil
+  ) async throws -> DiscordHTTPResponse {
+    guard let parsedURL = URL(string: url) else {
+      throw URLError(.badURL)
+    }
+    var urlRequest = URLRequest(url: parsedURL)
+    urlRequest.httpMethod = method.rawValue
+    urlRequest.timeoutInterval = configuration.requestTimeoutInterval
+    urlRequest.httpShouldHandleCookies = false
+    for (name, value) in headers {
+      urlRequest.addValue(value, forHTTPHeaderField: name)
+    }
+    urlRequest.httpBody = body
+
+    let (data, urlResponse) = try await self.session.data(for: urlRequest)
+    let httpResponse = urlResponse as? HTTPURLResponse
+    let statusCode = httpResponse?.statusCode ?? 200
+    var responseHeaders = HTTPHeaders()
+    if let headerFields = httpResponse?.allHeaderFields {
+      for (key, value) in headerFields {
+        responseHeaders.add(name: String(describing: key), value: String(describing: value))
+      }
+    }
+
+    return DiscordHTTPResponse(
+      host: parsedURL.host ?? "discord.com",
+      status: HTTPResponseStatus(statusCode: statusCode),
+      version: .http2,
+      headers: responseHeaders,
+      body: data.isEmpty ? nil : data
     )
   }
 
@@ -428,9 +388,7 @@ public struct DefaultDiscordClient: DiscordClient {
       )
   ) async throws -> DiscordHTTPResponse {
     let identity = CacheableEndpointIdentity(endpoint: req.endpoint)
-    let requestId = Self.requestIdGenerator.wrappingIncrementThenLoad(
-      ordering: .relaxed
-    )
+    let requestId = Self.nextRequestId()
 
     var retriesSoFar = 0
     var cached = false
@@ -448,8 +406,6 @@ public struct DefaultDiscordClient: DiscordClient {
 
       await _cookieStore.checkIncomingHeaders(headers)
 
-      // Check for captcha challenge
-      // this variable will be flipped to true if either captcha was solved or mfa was passed
       var challengeSolved = false
 
       if let captchaData = extractCaptchaChallenge(from: response) {
@@ -566,22 +522,21 @@ public struct DefaultDiscordClient: DiscordClient {
         requestId: requestId,
         retriesSoFar: retryCounter
       )
-      var request = try HTTPClient.Request(
-        url: req.endpoint.url + req.queries.makeForURLQuery(),
-        method: req.endpoint.httpMethod
-      )
-      request.headers = overrideHeaders ?? req.headers
-      request.headers.add(name: "User-Agent", value: userAgent)
+      var headers = overrideHeaders ?? req.headers
+      headers.add(name: "User-Agent", value: userAgent)
       if authentication.userMode {
-        try self.addUserHeaders(&request.headers)
-        await _cookieStore.applyCookies(to: &request.headers)
+        try self.addUserHeaders(&headers)
+        await _cookieStore.applyCookies(to: &headers)
       }
       if req.endpoint.requiresAuthorizationHeader {
         try self.authentication.addHeader(
-          headers: &request.headers,
+          headers: &headers,
           request: req
         )
       }
+
+      let fullURL = req.endpoint.url + req.queries.makeForURLQuery()
+      let method = req.endpoint.httpMethod
 
       logger.debug(
         "Will send a request to Discord",
@@ -589,12 +544,16 @@ public struct DefaultDiscordClient: DiscordClient {
           "url": .stringConvertible(
             req.endpoint.urlDescription + req.queries.makeForURLQuery()
           ),
-          "method": .string(request.method.rawValue),
+          "method": .string(method.rawValue),
           "retry": .stringConvertible(retryCounter),
           "request-id": .stringConvertible(requestId),
         ]
       )
-      let response = try await self.execute(request)
+      let response = try await self.execute(
+        url: fullURL,
+        method: method,
+        headers: headers
+      )
       logger.debug(
         "Received a response from Discord",
         metadata: [
@@ -636,14 +595,6 @@ public struct DefaultDiscordClient: DiscordClient {
         parameters: req.endpoint.parameters,
         queries: req.queries
       ) {
-        return (cached, true)
-      }
-      if let cached = await self.getFromCache(
-        identity: identity,
-        requiresAuthHeader: req.endpoint.requiresAuthorizationHeader,
-        parameters: req.endpoint.parameters,
-        queries: req.queries
-      ) {
         logger.debug(
           "Got cached response",
           metadata: [
@@ -662,28 +613,25 @@ public struct DefaultDiscordClient: DiscordClient {
       )
 
       let data = try DiscordGlobalConfiguration.encoder.encode(payload)
-      var request = try HTTPClient.Request(
-        url: req.endpoint.url + req.queries.makeForURLQuery(),
-        method: req.endpoint.httpMethod
-      )
-      request.headers = overrideHeaders ?? req.headers
-      request.headers.add(name: "User-Agent", value: userAgent)
+      var headers = overrideHeaders ?? req.headers
+      headers.add(name: "User-Agent", value: userAgent)
       if authentication.userMode {
-        try self.addUserHeaders(&request.headers)
-        await _cookieStore.applyCookies(to: &request.headers)
+        try self.addUserHeaders(&headers)
+        await _cookieStore.applyCookies(to: &headers)
       }
-      request.headers.replaceOrAdd(
+      headers.replaceOrAdd(
         name: "Content-Type",
         value: "application/json"
       )
       if req.endpoint.requiresAuthorizationHeader {
         try self.authentication.addHeader(
-          headers: &request.headers,
+          headers: &headers,
           request: req
         )
       }
 
-      request.body = .bytes(data)
+      let fullURL = req.endpoint.url + req.queries.makeForURLQuery()
+      let method = req.endpoint.httpMethod
 
       logger.debug(
         "Will send a request to Discord",
@@ -692,12 +640,17 @@ public struct DefaultDiscordClient: DiscordClient {
           "url": .stringConvertible(
             req.endpoint.urlDescription + req.queries.makeForURLQuery()
           ),
-          "method": .string(request.method.rawValue),
+          "method": .string(method.rawValue),
           "retry": .stringConvertible(retryCounter),
           "request-id": .stringConvertible(requestId),
         ]
       )
-      let response = try await self.execute(request)
+      let response = try await self.execute(
+        url: fullURL,
+        method: method,
+        headers: headers,
+        body: data
+      )
       logger.debug(
         "Received a response from Discord",
         metadata: [
@@ -741,14 +694,6 @@ public struct DefaultDiscordClient: DiscordClient {
         parameters: req.endpoint.parameters,
         queries: req.queries
       ) {
-        return (cached, true)
-      }
-      if let cached = await self.getFromCache(
-        identity: identity,
-        requiresAuthHeader: req.endpoint.requiresAuthorizationHeader,
-        parameters: req.endpoint.parameters,
-        queries: req.queries
-      ) {
         logger.debug(
           "Got cached response",
           metadata: [
@@ -767,50 +712,50 @@ public struct DefaultDiscordClient: DiscordClient {
       )
 
       let contentType: String
-      let buffer: ByteBuffer
+      let bodyData: Data
       if let multipart = try payload.encodeMultipart() {
         contentType =
           "multipart/form-data; boundary=\(MultipartConfiguration.boundary)"
-        buffer = multipart
+        bodyData = multipart
       } else {
         contentType = "application/json"
-        buffer = ByteBuffer(
-          data: try DiscordGlobalConfiguration.encoder.encode(payload)
-        )
+        bodyData = try DiscordGlobalConfiguration.encoder.encode(payload)
       }
-      var request = try HTTPClient.Request(
-        url: req.endpoint.url + req.queries.makeForURLQuery(),
-        method: req.endpoint.httpMethod
-      )
-      request.headers = overrideHeaders ?? req.headers
-      request.headers.add(name: "User-Agent", value: userAgent)
+      var headers = overrideHeaders ?? req.headers
+      headers.add(name: "User-Agent", value: userAgent)
       if authentication.userMode {
-        try self.addUserHeaders(&request.headers)
-        await _cookieStore.applyCookies(to: &request.headers)
+        try self.addUserHeaders(&headers)
+        await _cookieStore.applyCookies(to: &headers)
       }
-      request.headers.replaceOrAdd(name: "Content-Type", value: contentType)
+      headers.replaceOrAdd(name: "Content-Type", value: contentType)
       if req.endpoint.requiresAuthorizationHeader {
         try self.authentication.addHeader(
-          headers: &request.headers,
+          headers: &headers,
           request: req
         )
       }
 
-      request.body = .byteBuffer(buffer)
+      let fullURL = req.endpoint.url + req.queries.makeForURLQuery()
+      let method = req.endpoint.httpMethod
 
       logger.debug(
         "Will send a request to Discord",
         metadata: [
-          "body": .string(String(buffer: buffer)),
+          "body": .string(String(buffer: bodyData)),
           "url": .stringConvertible(
             req.endpoint.urlDescription + req.queries.makeForURLQuery()
           ),
-          "method": .string(request.method.rawValue),
+          "method": .string(method.rawValue),
           "retry": .stringConvertible(retryCounter),
           "request-id": .stringConvertible(requestId),
         ]
       )
-      let response = try await self.execute(request)
+      let response = try await self.execute(
+        url: fullURL,
+        method: method,
+        headers: headers,
+        body: bodyData
+      )
       logger.debug(
         "Received a response from Discord",
         metadata: [
@@ -860,8 +805,8 @@ public struct DefaultDiscordClient: DiscordClient {
     guard response.status.code == 401,
       let data = response.body,
       let json = try? JSONSerialization.jsonObject(with: data, options: [])
-        as? [String: Any],  // error object but with mfa field
-      json["code"] as? Int == 60003,  // MFA required error code
+        as? [String: Any],
+      json["code"] as? Int == 60003,
       let mfa = json["mfa"] as? [String: Any],
       let mfaData = try? JSONSerialization.data(withJSONObject: mfa),
       let mfaRequest = try? DiscordGlobalConfiguration.decoder.decode(
@@ -875,7 +820,6 @@ public struct DefaultDiscordClient: DiscordClient {
 
   @inlinable
   func addUserHeaders(_ headers: inout HTTPHeaders) throws {
-    // discord special headers
     let superProperties = SuperProperties.GenerateSuperPropertiesHeader()
     let locale = SuperProperties.GenerateLocaleHeader()
     let timezone = SuperProperties.GenerateTimezoneHeader()
@@ -884,7 +828,6 @@ public struct DefaultDiscordClient: DiscordClient {
     headers.add(name: "X-Discord-Timezone", value: timezone)
     headers.add(name: "X-Debug-Options", value: "bugReporterEnabled")
 
-    // general
     headers.add(name: "Accept", value: "*/*")
     headers.add(name: "Accept-Language", value: locale)
     headers.add(name: "Priority", value: "u=1, i")
@@ -894,18 +837,16 @@ public struct DefaultDiscordClient: DiscordClient {
       headers.add(name: "Sec-Fetch-Mode", value: "cors")
       headers.add(name: "Sec-Fetch-Site", value: "same-origin")
       headers.add(name: "Sec-CH-UA-Mobile", value: "?0")
-      headers.add(name: "Sec-CH-UA-Platform", value: "\"macOS\"")  // in speechmarks
+      headers.add(name: "Sec-CH-UA-Platform", value: "\"macOS\"")
       headers.add(
         name: "Sec-CH-UA",
         value:
           "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"\(SuperProperties.chromeMajorVer())\""
-      )  // in speechmarks
-      /// dolfies says this being static is ok, though im thinking about login flows bc it'd have like https://discord.com/login as referer
+      )
       headers.add(name: "Referer", value: "https://discord.com/channels/@me")
       headers.add(name: "Origin", value: "https://discord.com")
-
     #elseif os(iOS)
-      // lol theres no special headers on ios, they all mirror the shared headers
+      // shared headers are sufficient on iOS
     #endif
   }
 }

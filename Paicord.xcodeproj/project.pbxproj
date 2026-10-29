@@ -1016,7 +1016,7 @@
 				9E27420250444A05FCADE929 /* PaicordLib */,
 				6EFB9068924331EC09343396 /* Textual */,
 			);
-			productName = PaiCord;
+			productName = Aicord;
 			productReference = AA1096DB2E63BE84005BC3D2 /* Paicord.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -1404,7 +1404,7 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
@@ -1468,7 +1468,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};

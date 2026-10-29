@@ -1,6 +1,5 @@
 import Foundation
 import Logging
-import NIOCore
 
 actor SerialQueue {
 

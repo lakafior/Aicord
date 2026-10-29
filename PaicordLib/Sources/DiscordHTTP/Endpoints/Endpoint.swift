@@ -1,5 +1,3 @@
-import NIOHTTP1
-
 public protocol Endpoint: Sendable, CustomStringConvertible {
   var url: String { get }
   /// Doesn't expose secret url path parameters.

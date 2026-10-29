@@ -1,13 +1,15 @@
 import Foundation
 import Logging
-import MultipartKit
+import Synchronization
 
-/// The point of this storage is to disable Sendable warnings when using
-/// `-strict-concurrency=complete`
-private class ConfigurationStorage: @unchecked Sendable {
-  var decoder: any DiscordDecoder = JSONDecoder()
-  var encoder: any DiscordEncoder = JSONEncoder()
-  var makeLogger: @Sendable (String) -> Logger = { Logger(label: $0) }
+private final class ConfigurationStorage: Sendable {
+  struct State: Sendable {
+    var decoder: any DiscordDecoder = JSONDecoder()
+    var encoder: any DiscordEncoder = JSONEncoder()
+    var makeLogger: @Sendable (String) -> Logger = { Logger(label: $0) }
+  }
+
+  let state = Mutex(State())
 
   static let shared = ConfigurationStorage()
 }
@@ -27,31 +29,31 @@ public enum DiscordGlobalConfiguration {
 
   /// The global decoder to decode JSONs with.
   public static var decoder: any DiscordDecoder {
-    get { ConfigurationStorage.shared.decoder }
-    set { ConfigurationStorage.shared.decoder = newValue }
+    get { ConfigurationStorage.shared.state.withLock { $0.decoder } }
+    set { ConfigurationStorage.shared.state.withLock { $0.decoder = newValue } }
   }
   /// The global encoder to encode JSONs with.
   public static var encoder: any DiscordEncoder {
-    get { ConfigurationStorage.shared.encoder }
-    set { ConfigurationStorage.shared.encoder = newValue }
+    get { ConfigurationStorage.shared.state.withLock { $0.encoder } }
+    set { ConfigurationStorage.shared.state.withLock { $0.encoder = newValue } }
   }
   /// Function to make loggers with. You can override it with your own logger.
   /// The `String` argument represents the label of the logger.
   public static var makeLogger: @Sendable (String) -> Logger {
-    get { ConfigurationStorage.shared.makeLogger }
-    set { ConfigurationStorage.shared.makeLogger = newValue }
+    get { ConfigurationStorage.shared.state.withLock { $0.makeLogger } }
+    set { ConfigurationStorage.shared.state.withLock { $0.makeLogger = newValue } }
   }
 }
 
 //MARK: - DiscordDecoder
-public protocol DiscordDecoder {
+public protocol DiscordDecoder: Sendable {
   func decode<D: Decodable>(_ type: D.Type, from: Data) throws -> D
 }
 
 extension JSONDecoder: DiscordDecoder {}
 
 //MARK: - DiscordEncoder
-public protocol DiscordEncoder {
+public protocol DiscordEncoder: Sendable {
   func encode<E: Encodable>(_ value: E) throws -> Data
 }
 

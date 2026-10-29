@@ -9,6 +9,7 @@
 import PaicordLib
 import SwiftUI
 
+@MainActor
 @Observable
 final class PaicordAppState {
   // each window gets its own app state
@@ -29,7 +30,10 @@ final class PaicordAppState {
     }
   }
   deinit {
-    Self.instances.removeValue(forKey: id)
+    let instanceId = id
+    Task { @MainActor in
+      Self.instances.removeValue(forKey: instanceId)
+    }
   }
 
   let id = UUID()

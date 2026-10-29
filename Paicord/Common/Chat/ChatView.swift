@@ -6,7 +6,6 @@
 // Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Collections
 import PaicordLib
 import SwiftUI
 
@@ -112,10 +111,7 @@ struct ChatView: View {
         .onTapGesture { isChatFocused = true }
         .focused($isChatFocused)
         .onKeyPress(.escape, phases: .down) { _ in
-          NotificationCenter.default.post(
-            name: .chatViewShouldScrollToBottom,
-            object: ["channelId": vm.channelId, "immediate": true]
-          )
+          vm.requestScrollToBottom(immediate: true)
           InputBar.inputVMs[vm.channelId]?.uploadItems = []
           return .handled
         }
@@ -135,10 +131,7 @@ struct ChatView: View {
           !lastMessages.contains(current)
         {
           Button(action: {
-            NotificationCenter.default.post(
-              name: .chatViewShouldScrollToBottom,
-              object: ["channelId": vm.channelId, "immediate": true]
-            )
+            vm.requestScrollToBottom(immediate: true)
           }) {
             Image(systemName: "arrow.down")
               .tint(.primary)
@@ -173,46 +166,32 @@ struct ChatView: View {
         ChannelHeader(vm: vm)
       }
     }
-    .onReceive(
-      NotificationCenter.default.publisher(
-        for: .chatViewShouldScrollToBottom
-      )
-    ) { object in
-      guard let info = object.object as? [String: Any],
-        let channelId = info["channelId"] as? ChannelSnowflake,
-        channelId == vm.channelId
-      else { return }
-      let isNearBottom =
-        (orderedMessages.suffix(10).map(\.id)
-        + pendingMessages.values.compactMap(\.nonce).map({
-          MessageSnowflake($0.asString)
-        }))
-        .contains {
-          $0 == self.currentScrollPosition
+    .onChange(of: vm.scrollRequest) { _, request in
+      guard let request else { return }
+      switch request.kind {
+      case .bottom(let immediate, let pending):
+        let isNearBottom =
+          (orderedMessages.suffix(10).map(\.id)
+          + pendingMessages.values.compactMap(\.nonce).map({
+            MessageSnowflake($0.asString)
+          }))
+          .contains {
+            $0 == self.currentScrollPosition
+          }
+        guard isNearBottom || immediate else {
+          return
         }
-      let immediate = (info["immediate"] as? Bool == true)
-      guard isNearBottom || immediate else {
-        return
+        let resolvedId = pending ?? orderedMessages.last?.id
+        withAnimation(immediate ? .default : nil) {
+          self.currentScrollPosition = resolvedId ?? self.currentScrollPosition
+        }
+        if let resolvedId {
+          acknowledge(messageId: resolvedId)
+        }
+      case .message(let messageId):
+        self.currentScrollPosition = messageId
       }
-      let pending: MessageSnowflake? = info["id"] as? MessageSnowflake
-      let resolvedId = pending ?? orderedMessages.last?.id
-      withAnimation(immediate ? .default : nil) {
-        self.currentScrollPosition = resolvedId ?? self.currentScrollPosition
-      }
-      if let resolvedId {
-        acknowledge(messageId: resolvedId)
-      }
-    }  // handle scroll to bottom event
-    .onReceive(
-      NotificationCenter.default.publisher(for: .chatViewShouldScrollToID)
-    ) { object in
-      guard let info = object.object as? [String: Any],
-        let channelId = info["channelId"] as? ChannelSnowflake,
-        channelId == vm.channelId,
-        let messageId = info["messageId"] as? MessageSnowflake
-      else { return }
-      self.currentScrollPosition = messageId
-    }  // handle scroll to ID event
+    }
   }
 
   func messageAllowed(_ msg: DiscordChannel.Message) -> Bool {
@@ -272,15 +251,4 @@ extension View {
       .defaultScrollAnchor(.bottom, for: .alignment)
       .defaultScrollAnchor(.bottom, for: .sizeChanges)
   }
-}
-
-// add a new notification that channelstore can notify to scroll down in chat
-extension Notification.Name {
-  static let chatViewShouldScrollToBottom = Notification.Name(
-    "chatViewShouldScrollToBottom"
-  )
-
-  static let chatViewShouldScrollToID = Notification.Name(
-    "chatViewShouldScrollToID"
-  )
 }

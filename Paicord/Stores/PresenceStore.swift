@@ -12,6 +12,7 @@ import SwiftUI
 
 // When it's time to add support for rich presence data from other apps and games, this will need reworking.
 
+@MainActor
 @Observable
 class PresenceStore: DiscordDataStore {
   var gateway: GatewayStore?
@@ -21,7 +22,7 @@ class PresenceStore: DiscordDataStore {
   func setupEventHandling() {
     guard let gateway = gateway?.gateway else { return }
     let events = gateway.events
-    eventTask = Task { @MainActor in
+    eventTask = Task {
       for await event in events {
         switch event.data {
         case .ready(let readyData):

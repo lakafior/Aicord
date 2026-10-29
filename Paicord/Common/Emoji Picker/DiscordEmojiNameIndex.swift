@@ -63,95 +63,51 @@ enum DiscordEmojiNameIndex {
     let s: String
   }
 
-  @MainActor private static var byCharacter: [String: [String]]?
-  @MainActor private static var byName: [String: String]?
-  /// Discord's spelling of each emoji, keyed by the character with every
-  /// variation selector removed.
-  @MainActor private static var byBareCharacter: [String: String]?
-  @MainActor private static var categorizedEmojis: [EmojiCategory: [DiscordUnicodeEmoji]]?
-  @MainActor private static var baseEmojis: [DiscordUnicodeEmoji]?
-
-  @MainActor
-  static var categories: [EmojiCategory: [DiscordUnicodeEmoji]] {
-    loadIfNeeded()
-    return categorizedEmojis ?? [:]
+  private struct IndexStorage: Sendable {
+    let byCharacter: [String: [String]]
+    let byName: [String: String]
+    let byBareCharacter: [String: String]
+    let categorizedEmojis: [EmojiCategory: [DiscordUnicodeEmoji]]
+    let baseEmojis: [DiscordUnicodeEmoji]
   }
 
-  @MainActor
-  static func search(_ query: String) -> [DiscordUnicodeEmoji] {
-    loadIfNeeded()
-    let lower = query.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !lower.isEmpty, let baseEmojis else { return [] }
-    return baseEmojis.filter { emoji in
-      emoji.names.contains { $0.lowercased().contains(lower) }
-    }
-  }
-
-  @MainActor
-  static func names(for character: String) -> [String]? {
-    loadIfNeeded()
-    if let exact = byCharacter?[character] {
-      return exact
-    }
-    if let matched = byBareCharacter?[bare(character)] {
-      return byCharacter?[matched]
-    }
-    return nil
-  }
-
-  @MainActor
-  static func character(forName name: String) -> String? {
-    loadIfNeeded()
-    return byName?[name]
-  }
-
-  /// Maps a character onto Discord's spelling of it, or nil if Discord has no
-  /// such emoji.
-  @MainActor
-  static func discordCharacter(matching character: String) -> String? {
-    loadIfNeeded()
-    if byCharacter?[character] != nil { return character }
-    return byBareCharacter?[bare(character)]
-  }
-
-  private static func bare(_ character: String) -> String {
-    character.replacingOccurrences(of: "\u{FE0F}", with: "")
-  }
-
-  @MainActor
-  private static func loadIfNeeded() {
-    guard byCharacter == nil else { return }
+  /// Lazily initialized, immutable, and thread-safe (`Sendable`) storage.
+  private static let storage: IndexStorage = {
     guard
       let url = Bundle.main.url(forResource: "DiscordEmojiNames", withExtension: "json"),
       let data = try? Data(contentsOf: url),
       let entries = try? JSONDecoder().decode([Entry].self, from: data)
     else {
-      byCharacter = [:]
-      byName = [:]
-      byBareCharacter = [:]
-      categorizedEmojis = [:]
-      baseEmojis = []
-      return
+      return IndexStorage(
+        byCharacter: [:],
+        byName: [:],
+        byBareCharacter: [:],
+        categorizedEmojis: [:],
+        baseEmojis: []
+      )
     }
-    byCharacter = Dictionary(entries.map { ($0.s, $0.n) }, uniquingKeysWith: { first, _ in first })
-    var nameLookup: [String: String] = [:]
-    for entry in entries {
-      for name in entry.n where nameLookup[name] == nil {
-        nameLookup[name] = entry.s
-      }
-    }
-    byName = nameLookup
-    var bareLookup: [String: String] = [:]
-    for entry in entries where bareLookup[bare(entry.s)] == nil {
-      bareLookup[bare(entry.s)] = entry.s
-    }
-    byBareCharacter = bareLookup
 
+    var byCharacter: [String: [String]] = [:]
+    byCharacter.reserveCapacity(entries.count)
+    var nameLookup: [String: String] = [:]
+    var bareLookup: [String: String] = [:]
     var categoriesDict: [EmojiCategory: [DiscordUnicodeEmoji]] = [:]
     var allBase: [DiscordUnicodeEmoji] = []
+    var seenBaseCharacters = Set<String>()
     var currentCategory: EmojiCategory = .people
 
     for entry in entries {
+      if byCharacter[entry.s] == nil {
+        byCharacter[entry.s] = entry.n
+      }
+      for name in entry.n where nameLookup[name] == nil {
+        nameLookup[name] = entry.s
+      }
+      let bareChar = bare(entry.s)
+      if bareLookup[bareChar] == nil {
+        bareLookup[bareChar] = entry.s
+      }
+
       if let first = entry.n.first {
         switch first {
         case "dog": currentCategory = .nature
@@ -165,8 +121,11 @@ enum DiscordEmojiNameIndex {
         }
       }
 
-      // Exclude skin-tone variants from the default category grid and search list
+      // Exclude skin-tone variants and deduplicate base emojis
       if entry.n.contains(where: { $0.contains("_tone") }) {
+        continue
+      }
+      guard seenBaseCharacters.insert(entry.s).inserted else {
         continue
       }
 
@@ -175,7 +134,49 @@ enum DiscordEmojiNameIndex {
       allBase.append(emoji)
     }
 
-    categorizedEmojis = categoriesDict
-    baseEmojis = allBase
+    return IndexStorage(
+      byCharacter: byCharacter,
+      byName: nameLookup,
+      byBareCharacter: bareLookup,
+      categorizedEmojis: categoriesDict,
+      baseEmojis: allBase
+    )
+  }()
+
+  static var categories: [EmojiCategory: [DiscordUnicodeEmoji]] {
+    storage.categorizedEmojis
+  }
+
+  static func search(_ query: String) -> [DiscordUnicodeEmoji] {
+    let lower = query.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !lower.isEmpty else { return [] }
+    return storage.baseEmojis.filter { emoji in
+      emoji.names.contains { $0.lowercased().contains(lower) }
+    }
+  }
+
+  static func names(for character: String) -> [String]? {
+    if let exact = storage.byCharacter[character] {
+      return exact
+    }
+    if let matched = storage.byBareCharacter[bare(character)] {
+      return storage.byCharacter[matched]
+    }
+    return nil
+  }
+
+  static func character(forName name: String) -> String? {
+    storage.byName[name]
+  }
+
+  /// Maps a character onto Discord's spelling of it, or nil if Discord has no
+  /// such emoji.
+  static func discordCharacter(matching character: String) -> String? {
+    if storage.byCharacter[character] != nil { return character }
+    return storage.byBareCharacter[bare(character)]
+  }
+
+  private static func bare(_ character: String) -> String {
+    character.replacingOccurrences(of: "\u{FE0F}", with: "")
   }
 }

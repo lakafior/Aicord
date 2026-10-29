@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import NIOHTTP1
 
 public struct Cookie: Codable, Sendable {
   public let name: String

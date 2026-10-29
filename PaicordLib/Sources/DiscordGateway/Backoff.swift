@@ -1,5 +1,4 @@
 import Foundation
-import NIOCore
 
 /// Exponential backoff
 final class Backoff {

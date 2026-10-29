@@ -37,12 +37,7 @@ extension Storage where T: ExpressibleByNilLiteral {
 extension Binding {
   // TODO: this should ideally be exposed via `projectedValue
   func binding<T>() -> Binding<T> where Value == Storage<T> {
-    return .init(
-      get: { wrappedValue.wrappedValue },
-      set: { value, transaction in
-        self.transaction(transaction).wrappedValue.wrappedValue = value
-      }
-    )
+    self[dynamicMember: \Storage<T>.wrappedValue]
   }
 }
 

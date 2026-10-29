@@ -1,6 +1,5 @@
 import DiscordModels
 import Foundation
-import NIOHTTP1
 
 nonisolated(unsafe) private let iso8601DateFormatter = ISO8601DateFormatter()
 

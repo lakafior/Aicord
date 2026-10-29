@@ -1,6 +1,5 @@
 import XCTest
 
-import struct NIOHTTP1.HTTPHeaders
 
 @testable import DiscordHTTP
 
@@ -504,7 +503,7 @@ class ClientConfigurationTests: XCTestCase {
         status: .ok,
         version: .http2,
         headers: [:],
-        body: .init(string: "body right here :)")
+        body: Data("body right here :)".utf8)
       )
       let item = ClientCache.CacheableItem(
         identity: .api(.getChannel),
@@ -524,7 +523,7 @@ class ClientConfigurationTests: XCTestCase {
         status: .ok,
         version: .http2,
         headers: [:],
-        body: .init(string: "body right here :)")
+        body: Data("body right here :)".utf8)
       )
 
       let item = ClientCache.CacheableItem(
@@ -547,7 +546,7 @@ class ClientConfigurationTests: XCTestCase {
         status: .ok,
         version: .http2,
         headers: [:],
-        body: .init(string: "body right here :)")
+        body: Data("body right here :)".utf8)
       )
       let item = ClientCache.CacheableItem(
         identity: .api(.getChannel),
@@ -567,7 +566,7 @@ class ClientConfigurationTests: XCTestCase {
         status: .ok,
         version: .http2,
         headers: [:],
-        body: .init(string: "body right here :)")
+        body: Data("body right here :)".utf8)
       )
       let item = ClientCache.CacheableItem(
         identity: .api(.getChannel),
@@ -593,7 +592,7 @@ class ClientConfigurationTests: XCTestCase {
         status: .ok,
         version: .http2,
         headers: [:],
-        body: .init(string: "body right here :)")
+        body: Data("body right here :)".utf8)
       )
       let item = ClientCache.CacheableItem(
         identity: .api(.getChannel),
@@ -619,7 +618,7 @@ class ClientConfigurationTests: XCTestCase {
         status: .ok,
         version: .http2,
         headers: [:],
-        body: .init(string: "body right here :)")
+        body: Data("body right here :)".utf8)
       )
       let item = ClientCache.CacheableItem(
         identity: .api(.getChannel),
@@ -645,7 +644,7 @@ class ClientConfigurationTests: XCTestCase {
         status: .ok,
         version: .http2,
         headers: [:],
-        body: .init(string: "body right here :)")
+        body: Data("body right here :)".utf8)
       )
       let item = ClientCache.CacheableItem(
         identity: .api(.getChannel),
@@ -671,7 +670,7 @@ class ClientConfigurationTests: XCTestCase {
         status: .ok,
         version: .http2,
         headers: [:],
-        body: .init(string: "body right here :)")
+        body: Data("body right here :)".utf8)
       )
       let item = ClientCache.CacheableItem(
         identity: .api(.getChannel),

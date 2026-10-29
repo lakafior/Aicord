@@ -32,9 +32,9 @@ struct DownloadButton<T: Sendable>: View {
   @State var downloadState: DownloadState = .inactive
 
   /// Passed into action to provide a way to report progress, safe to use from any thread
-  public struct DownloadProxy {
-    let onUpdate: (Progress?) -> Void
-    let onReset: () -> Void
+  public struct DownloadProxy: Sendable {
+    let onUpdate: @Sendable (Progress?) -> Void
+    let onReset: @Sendable () -> Void
     func progress(_ progress: Progress?) {
       onUpdate(progress)
     }
@@ -44,8 +44,8 @@ struct DownloadButton<T: Sendable>: View {
   }
 
   // async throws func to run in a detached task
-  var action: (DownloadProxy) async throws -> T
-  var completion: ((DownloadProxy, T) -> Void)? = nil
+  var action: @Sendable (DownloadProxy) async throws -> T
+  var completion: (@MainActor @Sendable (DownloadProxy, T) -> Void)? = nil
 
   @State var pendingIndicatorAnimationTrigger = false
   @State var warningShown = false
@@ -67,7 +67,7 @@ struct DownloadButton<T: Sendable>: View {
 
   init(
     action: @Sendable @escaping (DownloadProxy) async throws -> T,
-    completion: (@Sendable (DownloadProxy, T) -> Void)? = nil
+    completion: (@MainActor @Sendable (DownloadProxy, T) -> Void)? = nil
   ) {
     self.action = action
     self.completion = completion
@@ -226,14 +226,17 @@ struct DownloadButton<T: Sendable>: View {
     downloadState = .pending
     task?.cancel()
     task = nil
+    guard let currentProxy = proxy else { return }
+    let currentAction = action
+    let currentCompletion = completion
     task = Task.detached {
       // also handle cancellation
       do {
-        let result = try await action(proxy!)
+        let result = try await currentAction(currentProxy)
         await MainActor.run {
           self.result = result
           downloadState = .completed
-          completion?(proxy!, result)
+          currentCompletion?(currentProxy, result)
         }
       } catch {
         if error is CancellationError { return }

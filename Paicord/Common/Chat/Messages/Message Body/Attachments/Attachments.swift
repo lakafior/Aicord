@@ -10,6 +10,7 @@ import AVKit
 import PaicordLib
 import Speech
 import SwiftUI
+import Synchronization
 
 #if canImport(AppKit)
   import AppKit
@@ -543,7 +544,7 @@ extension MessageCell {
             forInterval: CMTime(seconds: 0.5, preferredTimescale: 600),
             queue: .main
           ) { time in
-            self.currentTime = time
+            MainActor.assumeIsolated { self.currentTime = time }
           }
           // observe end of playback
           NotificationCenter.default.addObserver(
@@ -551,8 +552,10 @@ extension MessageCell {
             object: player.currentItem,
             queue: .main
           ) { _ in
-            self.isPlaying = false
-            self.currentTime = .zero
+            MainActor.assumeIsolated {
+              self.isPlaying = false
+              self.currentTime = .zero
+            }
             player.seek(to: .zero)
             #if os(iOS)
               try? AVAudioSession.sharedInstance().setActive(false)
@@ -573,16 +576,15 @@ extension MessageCell {
         }  // load waveform
       }
 
-      static var transcriptCache: [URL: String] = [:]
+      nonisolated static let transcriptCache = Mutex<[URL: String]>([:])
       @State var transcript: String? = nil
       @State var showingTranscript: Bool = false
 
       @ViewBuilder
       var transcriptButton: some View {
         DownloadButton { proxy in
-          if let cached = AttachmentAudioPlayer.transcriptCache[
-            URL(string: attachment.url)!
-          ] {
+          let attachmentURL = URL(string: attachment.url)!
+          if let cached = AttachmentAudioPlayer.transcriptCache.withLock({ $0[attachmentURL] }) {
             return cached
           }
 
@@ -594,16 +596,16 @@ extension MessageCell {
           }
 
           // set up session delegate to track progress
-          final class SessionDelegate: NSObject, URLSessionDownloadDelegate {
+          final class SessionDelegate: NSObject, URLSessionDownloadDelegate, Sendable {
             let proxy: DownloadProxyType
-            nonisolated(unsafe) var continuation: CheckedContinuation<String, Error>?
+            let continuation = Mutex<CheckedContinuation<String, Error>?>(nil)
 
             func urlSession(
               _ session: URLSession,
               downloadTask: URLSessionDownloadTask,
               didFinishDownloadingTo location: URL
             ) {
-              continuation?.resume(returning: location.path)
+              continuation.withLock { $0?.resume(returning: location.path) }
             }
 
             func urlSession(
@@ -625,10 +627,8 @@ extension MessageCell {
               task: URLSessionTask,
               didCompleteWithError error: Error?
             ) {
-              DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                if let error {
-                  self.continuation?.resume(throwing: error)
-                }
+              if let error {
+                continuation.withLock { $0?.resume(throwing: error) }
               }
             }
 
@@ -644,7 +644,7 @@ extension MessageCell {
             delegateQueue: nil
           )
 
-          let url = URL(string: attachment.url)!
+          let url = attachmentURL
           let (tempURL, res) = try await session.download(from: url)
           proxy.progress(nil)  // go back to indeterminate
           let fileURL = tempURL.deletingLastPathComponent()
@@ -656,13 +656,12 @@ extension MessageCell {
           try FileManager.default.moveItem(at: tempURL, to: fileURL)
           let recognizer = SFSpeechRecognizer()
           let request = SFSpeechURLRecognitionRequest(url: fileURL)
-          let result = try await recognizer?.recognition(with: request)
-          guard let transcription = result?.bestTranscription.formattedString
+          guard let transcription = try await recognizer?.transcription(with: request)
           else {
             throw "Transcription failed."
           }
 
-          AttachmentAudioPlayer.transcriptCache[url] = transcription
+          AttachmentAudioPlayer.transcriptCache.withLock { $0[url] = transcription }
           return transcription
         } completion: { proxy, transcription in
           self.transcript = transcription
@@ -742,13 +741,13 @@ extension MessageCell {
       }
 
       struct WaveformExtractor {
-        static var waveformCache: [URL: [Float]] = [:]
+        nonisolated static let waveformCache = Mutex<[URL: [Float]]>([:])
 
         static func extract(
           from url: URL,
           samplesCount: Int = 120
         ) async throws -> [Float] {
-          if let cached = waveformCache[url] {
+          if let cached = waveformCache.withLock({ $0[url] }) {
             return cached
           }
 
@@ -824,7 +823,7 @@ extension MessageCell {
 
           let normalisedWaveform = waveform.map { $0 / maxVal }
 
-          waveformCache[url] = normalisedWaveform
+          waveformCache.withLock { $0[url] = normalisedWaveform }
 
           return normalisedWaveform
         }
@@ -866,10 +865,10 @@ extension MessageCell {
           }
           .frame(maxWidth: .infinity, alignment: .leading)
 
-          DownloadButton { proxy in
-            final class SessionDelegate: NSObject, URLSessionDownloadDelegate {
+          DownloadButton { [ephemeralDownloads] proxy in
+            final class SessionDelegate: NSObject, URLSessionDownloadDelegate, Sendable {
               let proxy: DownloadButton<URL>.DownloadProxy
-              nonisolated(unsafe) var continuation: CheckedContinuation<URL, Error>?
+              let continuation = Mutex<CheckedContinuation<URL, Error>?>(nil)
               let destinationURL: URL
 
               func urlSession(
@@ -885,9 +884,15 @@ extension MessageCell {
                     at: location,
                     to: destinationURL
                   )
-                  continuation?.resume(returning: destinationURL)
+                  continuation.withLock {
+                    $0?.resume(returning: destinationURL)
+                    $0 = nil
+                  }
                 } catch {
-                  continuation?.resume(throwing: error)
+                  continuation.withLock {
+                    $0?.resume(throwing: error)
+                    $0 = nil
+                  }
                 }
               }
 
@@ -910,9 +915,10 @@ extension MessageCell {
                 task: URLSessionTask,
                 didCompleteWithError error: Error?
               ) {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                  if let error {
-                    self.continuation?.resume(throwing: error)
+                if let error {
+                  continuation.withLock {
+                    $0?.resume(throwing: error)
+                    $0 = nil
                   }
                 }
               }
@@ -948,7 +954,7 @@ extension MessageCell {
             )
             try await Task.sleep(for: .seconds(0.8))  // simulate delay
             return try await withCheckedThrowingContinuation { continuation in
-              delegate.continuation = continuation
+              delegate.continuation.withLock { $0 = continuation }
 
               let session = URLSession(
                 configuration: .default,
@@ -1046,6 +1052,7 @@ extension MessageCell {
           .onDisappear { controller.pauseAndReset() }
       }
 
+      @MainActor
       @Observable
       final class PlayerController {
         let player: AVPlayer
@@ -1070,7 +1077,7 @@ extension MessageCell {
           }
         }
 
-        deinit {
+        isolated deinit {
           if let o = observerToken {
             NotificationCenter.default.removeObserver(o)
           }
@@ -1280,24 +1287,20 @@ extension SFSpeechRecognizer {
     }
   }
 
-  func recognition(
+  /// Recognises speech in the request and returns the final best transcription.
+  func transcription(
     with request: SFSpeechRecognitionRequest
-  ) async throws -> SFSpeechRecognitionResult {
-
-    var task: SFSpeechRecognitionTask?
-
-    return try await withCheckedThrowingContinuation { continuation in
-      task = self.recognitionTask(with: request) { result, error in
+  ) async throws -> String {
+    try await withCheckedThrowingContinuation { continuation in
+      _ = self.recognitionTask(with: request) { result, error in
         if let error {
           continuation.resume(throwing: error)
-          task?.cancel()
           return
         }
 
         guard let result, result.isFinal else { return }
 
-        continuation.resume(returning: result)
-        task?.cancel()
+        continuation.resume(returning: result.bestTranscription.formattedString)
       }
     }
   }

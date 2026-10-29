@@ -1,5 +1,4 @@
 import Logging
-import NIOHTTP1
 import XCTest
 
 @testable import DiscordHTTP

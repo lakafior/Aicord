@@ -538,6 +538,7 @@ struct MarkdownText: View {
 extension AttributedStringMarkdownParser.SyntaxExtension {
   /// User (`<@id>`), channel (`<#id>`), role (`<@&id>`), `@everyone`, and `@here` mentions,
   /// resolved against live gateway/guild state and styled with the current theme.
+  @MainActor
   fileprivate static func paicordMentions(
     guildStore: GuildStore?,
     theme: Theming.Theme

@@ -1,123 +1,8 @@
+import Foundation
 import Logging
-import NIOCore
-import NIOWebSocket
-import WSClient
 import libzstd
 
-private let zstdAllocator = ByteBufferAllocator()
 private let minimumAllocation = 4096
-
-/// Will be used for only 1 WS connection so won't need concurrency guards.
-struct ZstdDecompressorWSExtension: WebSocketExtension, @unchecked Sendable {
-  let decompressor: ZstdStreamingDecompressor
-  let name = "zstd-stream-decompressor"
-  let logger: Logger
-
-  init(logger: Logger) throws {
-    self.decompressor = try ZstdStreamingDecompressor()
-    self.logger = logger
-  }
-
-  func processReceivedFrame(
-    _ frame: WebSocketFrame,
-    context: WebSocketExtensionContext
-  ) throws -> WebSocketFrame {
-    var frame = frame
-    let compressedBytes = frame.data.readableBytes
-    frame.data = try self.decompress(
-      compressedBytes: compressedBytes,
-      from: &frame.data
-    )
-    logger.trace(
-      "Decompressed a Discord message",
-      metadata: [
-        "compressedBytes": .stringConvertible(compressedBytes),
-        "decompressedBytes": .stringConvertible(frame.data.readableBytes),
-        "firstAllocation": .stringConvertible(
-          self.nextAllocation(
-            compressedBytes: compressedBytes,
-            currentlyAllocated: nil
-          )
-        ),
-      ]
-    )
-
-    return frame
-  }
-
-  func decompress(
-    compressedBytes: Int,
-    from frame: inout ByteBuffer
-  ) throws -> ByteBuffer {
-    // Estimate decompressed size - typically 4x compressed size, minimum 4KB
-    let initialCapacity = self.nextAllocation(
-      compressedBytes: compressedBytes,
-      currentlyAllocated: nil
-    )
-    var buffer = zstdAllocator.buffer(capacity: initialCapacity)
-
-    var offset = 0
-    while true {
-      let result = try self.decompressor.decompressStreamingChunk(
-        from: frame,
-        into: &buffer,
-        offset: offset
-      )
-      switch result {
-      case .ok:
-        return buffer
-      case .continue(let newOffset):
-        if buffer.writableBytes == 0 {
-          buffer.reserveCapacity(
-            minimumWritableBytes: self.nextAllocation(
-              compressedBytes: compressedBytes,
-              currentlyAllocated: buffer.readableBytes
-            )
-          )
-        }
-        offset = newOffset
-      }
-    }
-  }
-
-  func processFrameToSend(
-    _ frame: WebSocketFrame,
-    context: WebSocketExtensionContext
-  ) -> WebSocketFrame {
-    frame
-  }
-
-  func shutdown() {}
-
-  private func nextAllocation(
-    compressedBytes: Int,
-    currentlyAllocated: Int?
-  ) -> Int {
-    switch currentlyAllocated {
-    case .some(let currentlyAllocated):
-      if compressedBytes > 10 || currentlyAllocated > 60 {
-        return currentlyAllocated
-      } else {
-        return minimumAllocation - currentlyAllocated
-      }
-    case .none:
-      if compressedBytes >= 800 {
-        return max(minimumAllocation, 8 * compressedBytes)
-      } else if compressedBytes > 10 {
-        return max(minimumAllocation, 16 * compressedBytes)
-      } else {
-        /// Frames smaller than 10 bytes usually don't take more than 4.5x space
-        /// after decompression.
-        return compressedBytes * 5
-      }
-    }
-  }
-}
-
-enum DecompressStreamingResult {
-  case ok
-  case `continue`(newOffset: Int)
-}
 
 enum DecompressionError: Error {
   case initializationFailed
@@ -126,7 +11,7 @@ enum DecompressionError: Error {
   case decompressionError(description: String)
 }
 
-final class ZstdStreamingDecompressor {
+final class ZstdStreamingDecompressor: @unchecked Sendable {
   private let dctx: OpaquePointer
 
   init() throws {
@@ -140,53 +25,50 @@ final class ZstdStreamingDecompressor {
     ZSTD_freeDCtx(dctx)
   }
 
-  func decompressStreamingChunk(
-    from buffer: ByteBuffer,
-    into outBuffer: inout ByteBuffer,
-    offset: Int
-  ) throws -> DecompressStreamingResult {
-    var writtenBytes = 0
-    let result: DecompressStreamingResult = try buffer.withUnsafeReadableBytes {
-      srcBytes in
-      try outBuffer.withUnsafeMutableWritableBytes { dstBytes in
-        var input = ZSTD_inBuffer(
-          src: srcBytes.baseAddress,
-          size: srcBytes.count,
-          pos: offset
-        )
-        var output = ZSTD_outBuffer(
-          dst: dstBytes.baseAddress,
-          size: dstBytes.count,
-          pos: 0
-        )
+  func decompress(data: Data) throws -> Data {
+    guard !data.isEmpty else { return Data() }
 
-        let resultCode = ZSTD_decompressStream(dctx, &output, &input)
+    let chunkSize = max(minimumAllocation, data.count * 8)
+    var outData = Data()
+    outData.reserveCapacity(chunkSize)
+    var chunkBuffer = [UInt8](repeating: 0, count: chunkSize)
 
-        writtenBytes = output.pos
+    try data.withUnsafeBytes { srcBytes in
+      var input = ZSTD_inBuffer(
+        src: srcBytes.baseAddress,
+        size: srcBytes.count,
+        pos: 0
+      )
 
-        if resultCode < 0 {
-          let errorName = ZSTD_getErrorName(resultCode).map {
-            String(cString: $0)
+      while true {
+        try chunkBuffer.withUnsafeMutableBytes { dstBytes in
+          var output = ZSTD_outBuffer(
+            dst: dstBytes.baseAddress,
+            size: dstBytes.count,
+            pos: 0
+          )
+
+          let resultCode = ZSTD_decompressStream(dctx, &output, &input)
+          if ZSTD_isError(resultCode) != 0 {
+            let errorName = ZSTD_getErrorName(resultCode).map {
+              String(cString: $0)
+            }
+            let description =
+              errorName ?? "Failed with error result '\(resultCode)'"
+            throw DecompressionError.decompressionError(description: description)
           }
-          let description =
-            errorName ?? "Failed with error result '\(resultCode)'"
-          throw DecompressionError.decompressionError(description: description)
+
+          if output.pos > 0, let base = dstBytes.baseAddress {
+            outData.append(base.assumingMemoryBound(to: UInt8.self), count: output.pos)
+          }
         }
 
-        if input.pos < input.size {
-          throw DecompressionError.incompleteFrame
-        }
-
-        if output.pos < output.size {
-          return .ok
-        } else {
-          return .continue(newOffset: input.pos)
+        if input.pos >= input.size {
+          break
         }
       }
     }
 
-    outBuffer.moveWriterIndex(forwardBy: writtenBytes)
-
-    return result
+    return outData
   }
 }

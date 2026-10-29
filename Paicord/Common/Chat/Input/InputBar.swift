@@ -51,6 +51,7 @@ extension ChatView {
           showPhotosPicker || showFilePicker || showEmojiPicker
         }
 
+        @MainActor
         var safeArea: UIEdgeInsets {
           if let safeArea = UIApplication.shared.connectedScenes.compactMap({
             ($0 as? UIWindowScene)?.keyWindow
@@ -60,6 +61,7 @@ extension ChatView {
           return .zero
         }
 
+        @MainActor
         var screenSize: CGSize {
           if let screen = UIApplication.shared.connectedScenes.compactMap({
             ($0 as? UIWindowScene)?.screen

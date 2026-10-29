@@ -374,7 +374,7 @@ struct AnimatedImageRenderer: View {
       }
     }
 
-    deinit { link?.invalidate() }
+    isolated deinit { link?.invalidate() }
   }
 #elseif os(macOS)
   final class AnimatedImagePlayerView: NSView {
@@ -479,7 +479,7 @@ struct AnimatedImageRenderer: View {
       }
     }
 
-    deinit { link?.invalidate() }
+    isolated deinit { link?.invalidate() }
   }
 #endif
 

@@ -9,6 +9,7 @@
 import Foundation
 import PaicordLib
 
+@MainActor
 @Observable
 final class GatewayStore {
   static let shared = GatewayStore()
@@ -93,7 +94,7 @@ final class GatewayStore {
   func setupEventHandling() {
     if let gateway {
       let events = gateway.events
-      eventTask = Task { @MainActor in
+      eventTask = Task {
         for await event in events {
           switch event.data {
           case .ready(let readyData):
@@ -104,7 +105,7 @@ final class GatewayStore {
       }
 
       let eventFailures = gateway.eventFailures
-      errorTask = Task { @MainActor in
+      errorTask = Task {
         for await (error, buffer) in eventFailures {
           print("[GatewayStore Error]", String(buffer: buffer), error)
         }
@@ -250,12 +251,9 @@ final class GatewayStore {
         "[GatewayStore] Refetching messages on behalf of focused channel \(channel.channelId.rawValue)."
       )
       channel.messages.removeAll()
-      Task { @MainActor in
+      Task {
         defer {
-          NotificationCenter.default.post(
-            name: .chatViewShouldScrollToBottom,
-            object: ["channelId": channel.channelId]
-          )
+          channel.requestScrollToBottom()
         }
         do {
           try await channel.fetchMessages()

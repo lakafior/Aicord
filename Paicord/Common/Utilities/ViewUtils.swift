@@ -95,6 +95,7 @@ enum Utils {
     }
   }
 
+  @MainActor
   static func fetchGuildBannerURL(guild: GuildStore?, animated: Bool) -> URL? {
     DiscordImageURL.guildBanner(
       guildId: guild?.guildId,
@@ -104,7 +105,7 @@ enum Utils {
   }
 }
 
-private struct EquatableByView<Content: View, Value: Equatable>: View, Equatable {
+private struct EquatableByView<Content: View, Value: Equatable & Sendable>: View, Equatable {
   let content: Content
   nonisolated let value: Value
 
@@ -118,7 +119,7 @@ private struct EquatableByView<Content: View, Value: Equatable>: View, Equatable
 }
 
 extension View {
-  func equatable<V: Equatable>(by value: V) -> some View {
+  func equatable<V: Equatable & Sendable>(by value: V) -> some View {
     EquatableView(content: EquatableByView(content: self, value: value))
   }
 }

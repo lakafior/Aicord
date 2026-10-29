@@ -7,7 +7,6 @@
 //
 
 import DiscordModels
-import NIOHTTP1
 
 extension DiscordClient {
   // MARK: - Authentication

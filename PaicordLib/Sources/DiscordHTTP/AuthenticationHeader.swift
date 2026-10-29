@@ -1,6 +1,5 @@
 import DiscordModels
 import Logging
-import NIOHTTP1
 
 import struct Foundation.Data
 

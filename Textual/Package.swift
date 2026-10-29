@@ -17,9 +17,6 @@ let package = Package(
   targets: [
     .target(
       name: "Textual",
-      resources: [
-        .process("Internal/Highlighter/Prism")
-      ],
       swiftSettings: [
         .define(
           "TEXTUAL_ENABLE_LINKS",

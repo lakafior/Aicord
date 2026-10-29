@@ -8,6 +8,7 @@
 
 import SwiftUI
 
+@MainActor
 enum ImpactGenerator {
   #if os(iOS)
     private static let light = UIImpactFeedbackGenerator(style: .light)

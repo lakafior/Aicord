@@ -118,13 +118,8 @@ extension MessageCell {
             .font(.caption2)
             .lineLimit(1)
             .onTapGesture {
-              NotificationCenter.default.post(
-                name: .chatViewShouldScrollToID,
-                object: [
-                  "channelId": message.referenced_message?.channel_id
-                    ?? message.channel_id,
-                  "messageId": message.referenced_message?.id ?? message.id,
-                ]
+              channelStore.requestScrollToMessage(
+                message.referenced_message?.id ?? message.id
               )
             }
         }

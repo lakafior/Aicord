@@ -9,6 +9,7 @@
 import Foundation
 import PaicordLib
 
+@MainActor
 @Observable
 class ReadStateStore: DiscordDataStore {
   var gateway: GatewayStore?
@@ -26,7 +27,7 @@ class ReadStateStore: DiscordDataStore {
     eventTask?.cancel()
     guard let gateway = gateway?.gateway else { return }
     let events = gateway.events
-    eventTask = Task { @MainActor in
+    eventTask = Task {
       for await event in events {
         switch event.data {
         case .ready(let readyData):

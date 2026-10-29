@@ -6,7 +6,6 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Collections
 import PaicordLib
 import Playgrounds
 import SwiftUI
@@ -18,7 +17,7 @@ struct ReactionsView: View {
 
   var body: some View {
     FlowLayout(spacing: 4) {
-      ForEach(reactions.values.elements) { reaction in
+      ForEach(reactions.values) { reaction in
         AsyncButton {
           ImpactGenerator.impact(style: .light)
           let channelID = reaction.channelID

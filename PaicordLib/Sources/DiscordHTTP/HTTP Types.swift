@@ -1,10 +1,178 @@
-@preconcurrency import AsyncHTTPClient
 import DiscordModels
 import Foundation
-import NIOFoundationCompat
-import NIOHTTP1
 
-import struct NIOCore.ByteBuffer
+public enum HTTPMethod: String, Sendable, Hashable {
+  case GET
+  case PUT
+  case ACL
+  case HEAD
+  case POST
+  case COPY
+  case LOCK
+  case MOVE
+  case BIND
+  case LINK
+  case PATCH
+  case TRACE
+  case MKCOL
+  case MERGE
+  case PURGE
+  case NOTIFY
+  case SEARCH
+  case UNLOCK
+  case REBIND
+  case UNBIND
+  case REPORT
+  case DELETE
+  case UNLINK
+  case OPTIONS
+  case PROPFIND
+  case CHECKOUT
+  case PROPPATCH
+  case SUBSCRIBE
+  case MKCALENDAR
+  case MKACTIVITY
+  case UNSUBSCRIBE
+}
+
+public struct HTTPHeaders: Sendable, ExpressibleByDictionaryLiteral, Sequence, CustomStringConvertible, Equatable {
+  public typealias Element = (name: String, value: String)
+  public typealias Iterator = IndexingIterator<[Element]>
+
+  @usableFromInline
+  internal var storage: [Element]
+
+  @inlinable
+  public init(_ headers: [(String, String)] = []) {
+    self.storage = headers.map { (name: $0.0, value: $0.1) }
+  }
+
+  @inlinable
+  public init(dictionaryLiteral elements: (String, String)...) {
+    self.storage = elements.map { (name: $0.0, value: $0.1) }
+  }
+
+  @inlinable
+  public mutating func add(name: String, value: String) {
+    self.storage.append((name: name, value: value))
+  }
+
+  @inlinable
+  public mutating func replaceOrAdd(name: String, value: String) {
+    let lower = name.lowercased()
+    self.storage.removeAll { $0.name.lowercased() == lower }
+    self.storage.append((name: name, value: value))
+  }
+
+  @inlinable
+  public mutating func remove(name: String) {
+    let lower = name.lowercased()
+    self.storage.removeAll { $0.name.lowercased() == lower }
+  }
+
+  @inlinable
+  public func first(name: String) -> String? {
+    let lower = name.lowercased()
+    return self.storage.first { $0.name.lowercased() == lower }?.value
+  }
+
+  @inlinable
+  public subscript(name: String) -> [String] {
+    let lower = name.lowercased()
+    return self.storage.compactMap { $0.name.lowercased() == lower ? $0.value : nil }
+  }
+
+  @inlinable
+  public subscript(canonicalForm name: String) -> [Substring] {
+    let lower = name.lowercased()
+    return self.storage.compactMap { $0.name.lowercased() == lower ? Substring($0.value) : nil }
+  }
+
+  @inlinable
+  public var isEmpty: Bool {
+    self.storage.isEmpty
+  }
+
+  @inlinable
+  public func makeIterator() -> IndexingIterator<[Element]> {
+    self.storage.makeIterator()
+  }
+
+  public var description: String {
+    self.storage.map { "\($0.name): \($0.value)" }.joined(separator: ", ")
+  }
+
+  public static func == (lhs: HTTPHeaders, rhs: HTTPHeaders) -> Bool {
+    guard lhs.storage.count == rhs.storage.count else { return false }
+    return zip(lhs.storage, rhs.storage).allSatisfy {
+      $0.name.lowercased() == $1.name.lowercased() && $0.value == $1.value
+    }
+  }
+}
+
+public struct HTTPResponseStatus: Sendable, Hashable, CustomStringConvertible {
+  public let code: UInt
+  public let reasonPhrase: String
+
+  public init(statusCode: Int, reasonPhrase: String = "") {
+    self.code = UInt(clamping: statusCode)
+    self.reasonPhrase =
+      reasonPhrase.isEmpty
+      ? HTTPURLResponse.localizedString(forStatusCode: statusCode)
+      : reasonPhrase
+  }
+
+  public static let ok = HTTPResponseStatus(statusCode: 200, reasonPhrase: "OK")
+  public static let created = HTTPResponseStatus(statusCode: 201, reasonPhrase: "Created")
+  public static let accepted = HTTPResponseStatus(statusCode: 202, reasonPhrase: "Accepted")
+  public static let noContent = HTTPResponseStatus(statusCode: 204, reasonPhrase: "No Content")
+  public static let badRequest = HTTPResponseStatus(statusCode: 400, reasonPhrase: "Bad Request")
+  public static let unauthorized = HTTPResponseStatus(statusCode: 401, reasonPhrase: "Unauthorized")
+  public static let forbidden = HTTPResponseStatus(statusCode: 403, reasonPhrase: "Forbidden")
+  public static let notFound = HTTPResponseStatus(statusCode: 404, reasonPhrase: "Not Found")
+  public static let tooManyRequests = HTTPResponseStatus(statusCode: 429, reasonPhrase: "Too Many Requests")
+  public static let internalServerError = HTTPResponseStatus(statusCode: 500, reasonPhrase: "Internal Server Error")
+  public static let badGateway = HTTPResponseStatus(statusCode: 502, reasonPhrase: "Bad Gateway")
+  public static let serviceUnavailable = HTTPResponseStatus(statusCode: 503, reasonPhrase: "Service Unavailable")
+  public static let gatewayTimeout = HTTPResponseStatus(statusCode: 504, reasonPhrase: "Gateway Timeout")
+
+  public var description: String {
+    "\(code) \(reasonPhrase)"
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(code)
+  }
+
+  public static func == (lhs: HTTPResponseStatus, rhs: HTTPResponseStatus) -> Bool {
+    lhs.code == rhs.code
+  }
+}
+
+public struct HTTPVersion: Sendable, Hashable, CustomStringConvertible {
+  public let major: Int
+  public let minor: Int
+
+  public init(major: Int, minor: Int) {
+    self.major = major
+    self.minor = minor
+  }
+
+  public static let http1_1 = HTTPVersion(major: 1, minor: 1)
+  public static let http2 = HTTPVersion(major: 2, minor: 0)
+  public static let http3 = HTTPVersion(major: 3, minor: 0)
+
+  public var description: String {
+    "HTTP/\(major).\(minor)"
+  }
+}
+
+extension String {
+  @inlinable
+  public init(buffer: Data) {
+    self = String(decoding: buffer, as: UTF8.self)
+  }
+}
 
 public struct DiscordHTTPRequest: Sendable {
   /// The endpoint to send the request to.
@@ -53,47 +221,29 @@ public struct DiscordHTTPRequest: Sendable {
 
 /// Represents a raw Discord HTTP response.
 public struct DiscordHTTPResponse: Sendable, CustomStringConvertible {
-  let _response: HTTPClient.Response
-
-  internal init(_response: HTTPClient.Response) {
-    self._response = _response
-  }
+  /// Remote host of the request.
+  public let host: String
+  /// Response HTTP status.
+  public let status: HTTPResponseStatus
+  /// Response HTTP version.
+  public let version: HTTPVersion
+  /// Response HTTP headers.
+  public let headers: HTTPHeaders
+  /// Response body.
+  public let body: Data?
 
   public init(
     host: String,
     status: HTTPResponseStatus,
-    version: HTTPVersion,
+    version: HTTPVersion = .http2,
     headers: HTTPHeaders = [:],
-    body: ByteBuffer? = nil
+    body: Data? = nil
   ) {
-    self._response = .init(
-      host: host,
-      status: status,
-      version: version,
-      headers: headers,
-      body: body
-    )
-  }
-
-  /// Remote host of the request.
-  public var host: String {
-    _response.host
-  }
-  /// Response HTTP status.
-  public var status: HTTPResponseStatus {
-    _response.status
-  }
-  /// Response HTTP version.
-  public var version: HTTPVersion {
-    _response.version
-  }
-  /// Response HTTP headers.
-  public var headers: HTTPHeaders {
-    _response.headers
-  }
-  /// Response body.
-  public var body: ByteBuffer? {
-    _response.body
+    self.host = host
+    self.status = status
+    self.version = version
+    self.headers = headers
+    self.body = body
   }
 
   public var description: String {
@@ -120,13 +270,6 @@ public struct DiscordHTTPResponse: Sendable, CustomStringConvertible {
   /// Returns `.none` if the response is a success response.
   /// Returns `.jsonError` if it's a recognizable error.
   /// Otherwise returns `.badStatusCode`.
-  ///
-  /// The `JSONError` does not contain the full Discord error response.
-  /// For manual debugging, it's better to directly read the contents of the response:
-  /// ```
-  /// let httpResponse: DiscordHTTPResponse = ...
-  /// print(httpResponse.description)
-  /// ```
   @inlinable
   public func asError() -> DiscordHTTPErrorResponse? {
     if (200..<300).contains(self.status.code) {
@@ -160,7 +303,7 @@ public struct DiscordHTTPResponse: Sendable, CustomStringConvertible {
   /// Doesn't check for success of the response
   @usableFromInline
   func _decode<D: Decodable>(as _: D.Type = D.self) throws -> D {
-    if let data = body.map({ Data(buffer: $0, byteTransferStrategy: .noCopy) }) {
+    if let data = body, !data.isEmpty {
       do {
         return try DiscordGlobalConfiguration.decoder.decode(D.self, from: data)
       } catch {
@@ -196,19 +339,6 @@ where C: Codable {
     try self.httpResponse.guardSuccess()
   }
 
-  /// Makes sure the response is a success response, or tries to find a `JSONError`
-  /// so you have a chance to process the error and try to recover.
-  ///
-  /// Returns `.none` if the response is a success response.
-  /// Returns `.jsonError` if it's a recognizable error.
-  /// Otherwise returns `.badStatusCode`.
-  ///
-  /// The `JSONError` does not contain the full Discord error response.
-  /// For manual debugging, it's better to directly read the contents of the response:
-  /// ```
-  /// let httpResponse: DiscordHTTPResponse = ...
-  /// print(httpResponse.description)
-  /// ```
   @inlinable
   public func asError() -> DiscordHTTPErrorResponse? {
     self.httpResponse.asError()
@@ -289,7 +419,7 @@ public enum DiscordHTTPError: Error, CustomStringConvertible {
   case badStatusCode(DiscordHTTPResponse)
   /// Discord responded with a 200 status code but you requested DiscordBM to decode a `JSONError`.
   case cantDecodeJSONErrorFromSuccessfulResponse(DiscordHTTPResponse)
-  /// The response body was unexpectedly empty. If it happens frequently, you should report it to me at https://github.com/DiscordBM/DiscordBM/issues.
+  /// The response body was unexpectedly empty.
   case emptyBody(DiscordHTTPResponse)
   /// Discord didn't send a Content-Type header. See if they mentions any errors in the response.
   case noContentTypeHeader(DiscordHTTPResponse)

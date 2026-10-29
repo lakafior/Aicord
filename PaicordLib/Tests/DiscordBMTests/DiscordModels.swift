@@ -1,6 +1,5 @@
 import DiscordHTTP
 import Foundation
-import NIOCore
 import XCTest
 
 @testable import DiscordModels
@@ -396,7 +395,7 @@ class DiscordModelsTests: XCTestCase {
       "code": 50014
       }
       """
-    let data = ByteBuffer(string: json)
+    let data = Data(json.utf8)
     let response = DiscordHTTPResponse(
       host: "discord.com",
       status: .unauthorized,
@@ -422,7 +421,7 @@ class DiscordModelsTests: XCTestCase {
       "some": "thing"
       }
       """
-    let data = ByteBuffer(string: json)
+    let data = Data(json.utf8)
     let response = DiscordHTTPResponse(
       host: "discord.com",
       status: .badGateway,

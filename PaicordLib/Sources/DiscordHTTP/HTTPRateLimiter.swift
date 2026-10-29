@@ -1,5 +1,3 @@
-import NIOHTTP1
-
 import struct Foundation.Date
 
 private let logger = DiscordGlobalConfiguration.makeLogger(

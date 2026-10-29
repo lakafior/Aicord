@@ -17,7 +17,7 @@ import SwiftUI
 #endif
 
 extension EnvironmentValues {
-  @Entry var theme: Theming.Theme = Theming.shared.currentTheme
+  @Entry var theme: Theming.Theme = MainActor.assumeIsolated { Theming.shared.currentTheme }
 }
 
 // A representation of an image that can be encoded and decoded across platforms.

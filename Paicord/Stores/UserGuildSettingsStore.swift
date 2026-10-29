@@ -11,6 +11,7 @@ import PaicordLib
 
 // https://docs.discord.food/topics/read-state#how-unreads-work
 
+@MainActor
 @Observable
 class UserGuildSettingsStore: DiscordDataStore {
   var gateway: GatewayStore?
@@ -22,7 +23,7 @@ class UserGuildSettingsStore: DiscordDataStore {
   func setupEventHandling() {
     guard let gateway = gateway?.gateway else { return }
     let events = gateway.events
-    eventTask = Task { @MainActor in
+    eventTask = Task {
       for await event in events {
         switch event.data {
         case .ready(let readyData):

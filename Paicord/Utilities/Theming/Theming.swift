@@ -9,6 +9,7 @@
 import Playgrounds
 import SwiftUI
 
+@MainActor
 @Observable
 class Theming {
   static let shared = Theming()
@@ -57,15 +58,7 @@ class Theming {
           queue: .main
         ) { _ in
           // update appearance
-          UIApplication.shared.connectedScenes.map { $0 as? UIWindowScene }
-            .compactMap { $0 }
-            .flatMap { $0.windows }
-            .forEach { window in
-              // set accent color
-              window.tintColor = UIColor(
-                self.currentTheme.common.accent
-              )
-            }
+          MainActor.assumeIsolated { self.setupAppearance() }
         }
       } else {
         // update appearance

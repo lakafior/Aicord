@@ -11,7 +11,7 @@ import SwiftUI
 struct ShellView: View {
   @StateObject private var vm = ShellViewModel()
   @State private var doScrolling = true
-  @State private var timer: Timer? = nil
+  @State private var scrollTask: Task<Void, Never>? = nil
 
   @State private var fontSize =
     UserDefaults.standard.value(forKey: "Shell.FontSize") as? CGFloat ?? 12
@@ -72,24 +72,23 @@ struct ShellView: View {
           let bottomIsVisible = bottomY <= (visibleHeight + threshold)
 
           if bottomIsVisible {
-            self.timer?.invalidate()
-            self.timer = Timer.scheduledTimer(
-              withTimeInterval: 5, repeats: false,
-              block: { _ in
-                withAnimation { proxy.scrollTo("bottom") }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                  self.doScrolling = true
-                }
-              })
+            self.scrollTask?.cancel()
+            self.scrollTask = Task {
+              try? await Task.sleep(for: .seconds(5))
+              guard !Task.isCancelled else { return }
+              withAnimation { proxy.scrollTo("bottom") }
+              try? await Task.sleep(for: .milliseconds(500))
+              self.doScrolling = true
+            }
           } else {
-            self.timer?.invalidate()
-            self.timer = nil
+            self.scrollTask?.cancel()
+            self.scrollTask = nil
             if self.doScrolling { self.doScrolling = false }
           }
         }
         .onDisappear {
-          self.timer?.invalidate()
-          self.timer = nil
+          self.scrollTask?.cancel()
+          self.scrollTask = nil
         }
       }
     }
@@ -136,15 +135,16 @@ struct ShellView: View {
 }
 
 private struct BottomPositionPreferenceKey: PreferenceKey {
-  static var defaultValue: CGFloat? = nil
+  static let defaultValue: CGFloat? = nil
   static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
     value = nextValue() ?? value
   }
 }
 
+@MainActor
 final class ShellViewModel: ObservableObject {
   @Published var logs: [StdOutInterceptor.LogItem] = []
-  private var observation: NSObjectProtocol?
+  nonisolated(unsafe) private var observation: NSObjectProtocol?
 
   init() {
     // Load initial logs once
@@ -154,9 +154,9 @@ final class ShellViewModel: ObservableObject {
     self.observation = NotificationCenter.default.addObserver(
       forName: .newLogAdded, object: nil, queue: .main
     ) { [weak self] note in
-      guard let self = self else { return }
-      if let items = note.object as? [StdOutInterceptor.LogItem], !items.isEmpty {
-        self.logs.append(contentsOf: items)
+      guard let items = note.object as? [StdOutInterceptor.LogItem], !items.isEmpty else { return }
+      Task { @MainActor [weak self] in
+        self?.logs.append(contentsOf: items)
       }
     }
   }

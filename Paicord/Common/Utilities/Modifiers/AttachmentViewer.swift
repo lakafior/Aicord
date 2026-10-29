@@ -784,6 +784,7 @@ private struct ZoomableImageView: View {
         Coordinator(isPresented: $isPresented)
       }
 
+      @MainActor
       class Coordinator: NSObject {
         var imageView: AnimatedImagePlayerView?
         var containerView: NSView?
@@ -1141,7 +1142,7 @@ private struct ZoomableGifvView: View {
           onSingleTap?()
         }
 
-        deinit {
+        isolated deinit {
           if let loopObserver {
             NotificationCenter.default.removeObserver(loopObserver)
           }
@@ -1252,6 +1253,7 @@ private struct ZoomableGifvView: View {
         Coordinator(isPresented: $isPresented)
       }
 
+      @MainActor
       class Coordinator: NSObject {
         var playerView: GifvPlayerView?
         var containerView: NSView?
@@ -1387,7 +1389,7 @@ private struct ZoomableGifvView: View {
           }
         }
 
-        deinit {
+        isolated deinit {
           if let loopObserver {
             NotificationCenter.default.removeObserver(loopObserver)
           }

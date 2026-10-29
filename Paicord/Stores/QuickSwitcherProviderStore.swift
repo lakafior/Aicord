@@ -9,6 +9,7 @@
 import Foundation
 import PaicordLib
 
+@MainActor
 @Observable
 class QuickSwitcherProviderStore: DiscordDataStore {
   var gateway: GatewayStore?
@@ -16,17 +17,9 @@ class QuickSwitcherProviderStore: DiscordDataStore {
   var eventTask: Task<Void, Never>?
 
   func setupEventHandling() {
-    //    eventTask = Task { @MainActor in
-    //      guard let gateway = gateway?.gateway else { return }
-    //      for await event in await gateway.events {
-    //        switch event.data {
-    //        default: break
-    //        }
-    //      }
-    //    }
   }
 
-  enum SearchResult: Hashable {
+  enum SearchResult: Hashable, Sendable {
     case user(PartialUser)
     case groupDM(DiscordChannel)
     case guildChannel(DiscordChannel, DiscordChannel?, Guild)
@@ -34,13 +27,12 @@ class QuickSwitcherProviderStore: DiscordDataStore {
   }
 
   func search(_ query: String) -> AsyncStream<[SearchResult]> {
-    AsyncStream { continuation in
-      let task = Task.detached(priority: .userInitiated) { [weak self] in
-        guard let self = self, let gateway = self.gateway else {
-          continuation.finish()
-          return
-        }
+    let guildsSnapshot = Array((gateway?.user.guilds ?? [:]).values)
+    let privateChannelsSnapshot = Array((gateway?.user.privateChannels ?? [:]).values)
+    let relationshipsSnapshot = Array((gateway?.user.relationships ?? [:]).values)
 
+    return AsyncStream { continuation in
+      let task = Task.detached(priority: .userInitiated) {
         let normalizedQuery = query.lowercased()
         if normalizedQuery.isEmpty {
           continuation.yield([])
@@ -79,7 +71,7 @@ class QuickSwitcherProviderStore: DiscordDataStore {
           }
         }
 
-        for guild in gateway.user.guilds.values {
+        for guild in guildsSnapshot {
           if Task.isCancelled { return }
           if guild.name.lowercased().contains(normalizedQuery) {
             addIfNew(
@@ -90,7 +82,7 @@ class QuickSwitcherProviderStore: DiscordDataStore {
           }
         }
 
-        for channel in gateway.user.privateChannels.values {
+        for channel in privateChannelsSnapshot {
           if Task.isCancelled { return }
           if let name = channel.name,
             name.lowercased().contains(normalizedQuery)
@@ -123,14 +115,13 @@ class QuickSwitcherProviderStore: DiscordDataStore {
           }
         }
 
-        for guild in gateway.user.guilds.values {
+        for guild in guildsSnapshot {
           if Task.isCancelled { return }
           for channel in guild.channels ?? [] {
             if Task.isCancelled { return }
             if let name = channel.name,
               name.lowercased().contains(normalizedQuery)
             {
-              // get the category channel if it exists
               let category = guild.channels?.first {
                 $0.id.rawValue == channel.parent_id?.rawValue
               }
@@ -143,7 +134,7 @@ class QuickSwitcherProviderStore: DiscordDataStore {
           }
         }
 
-        for relationship in gateway.user.relationships.values {
+        for relationship in relationshipsSnapshot {
           if Task.isCancelled { return }
           let user = relationship.user
           let displayName = user.global_name ?? user.username ?? "Unknown User"

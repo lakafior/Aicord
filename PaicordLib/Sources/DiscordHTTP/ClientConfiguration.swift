@@ -1,6 +1,4 @@
 import Foundation
-import NIOCore
-import NIOHTTP1
 
 /// The configuration of `DefaultDiscordClient`.
 public struct ClientConfiguration: Sendable {
@@ -291,18 +289,17 @@ public struct ClientConfiguration: Sendable {
   /// Due to how it works, you shouldn't use `CachingBehavior`s
   /// with different TTLs for the same bot-token.
   public let cachingBehavior: CachingBehavior
-  var requestTimeoutAmount: TimeAmount
-  /// How much for the `HTTPClient` to wait for a connection before failing.
+  @usableFromInline
+  var requestTimeoutInterval: TimeInterval
+  /// How much for the client to wait for a connection before failing.
   public var requestTimeout: Duration {
     get {
-      .nanoseconds(self.requestTimeoutAmount.nanoseconds)
+      .nanoseconds(Int64(self.requestTimeoutInterval * 1_000_000_000))
     }
     set {
       let comps = newValue.components
-      let seconds = comps.seconds * 1_000_000_000
-      let attos = comps.attoseconds / 1_000_000_000
-      let nanos = seconds + attos
-      self.requestTimeoutAmount = .nanoseconds(nanos)
+      self.requestTimeoutInterval =
+        Double(comps.seconds) + Double(comps.attoseconds) / 1_000_000_000_000_000_000
     }
   }
   /// Ask `HTTPClient` to log when needed. Defaults to no logging.
@@ -360,7 +357,7 @@ public struct ClientConfiguration: Sendable {
     self.retryPolicy = retryPolicy
     self.performValidations = performValidations
 
-    self.requestTimeoutAmount = .zero
+    self.requestTimeoutInterval = 30
     self.requestTimeout = requestTimeout
   }
 }

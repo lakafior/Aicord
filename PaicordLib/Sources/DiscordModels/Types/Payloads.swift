@@ -1,5 +1,4 @@
 import Foundation
-import NIOFoundationCompat
 
 /// REST API payloads.
 ///
@@ -555,13 +554,12 @@ public enum Payloads {
       guard let data = Data(base64Encoded: String(encodedString)) else {
         return nil
       }
-      return .init(data: .init(data: data), filename: filename ?? "unknown")
+      return .init(data: data, filename: filename ?? "unknown")
     }
 
     func encodeToString() -> String? {
       guard let type = file.type else { return nil }
-      let data = Data(buffer: file.data, byteTransferStrategy: .noCopy)
-      let encoded = data.base64EncodedString()
+      let encoded = file.data.base64EncodedString()
       return "data:\(type);base64,\(encoded)"
     }
   }
@@ -2602,6 +2600,13 @@ public enum Payloads {
     public var file: RawFile
 
     public static var rawEncodable: Bool { true }
+    public var rawFields: [(String, String)] {
+      [
+        ("name", name),
+        ("description", description),
+        ("tags", tags),
+      ]
+    }
     public var files: [RawFile]? {
       [self.file]
     }

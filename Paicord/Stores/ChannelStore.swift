@@ -6,14 +6,32 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Algorithms
-import Collections
 import Foundation
 import PaicordLib
 import SwiftUI
 
+@MainActor
 @Observable
 class ChannelStore: DiscordDataStore {
+  struct ScrollRequest: Equatable {
+    enum Kind: Equatable {
+      case bottom(immediate: Bool, id: MessageSnowflake?)
+      case message(MessageSnowflake)
+    }
+    let id = UUID()
+    let kind: Kind
+  }
+
+  var scrollRequest: ScrollRequest?
+
+  func requestScrollToBottom(immediate: Bool = false, id: MessageSnowflake? = nil) {
+    scrollRequest = ScrollRequest(kind: .bottom(immediate: immediate, id: id))
+  }
+
+  func requestScrollToMessage(_ messageId: MessageSnowflake) {
+    scrollRequest = ScrollRequest(kind: .message(messageId))
+  }
+
   @ObservationIgnored
   let guildStore: GuildStore?
 
@@ -83,15 +101,11 @@ class ChannelStore: DiscordDataStore {
   func setupEventHandling() {
     guard let gateway = gateway?.gateway else { return }
     // not needed anymore, handled by ui
-    self.loadingMessagesTask = Task { @MainActor in
-      // ig also fetch latest messages too
+    self.loadingMessagesTask = Task {
       guard hasPermission(.readMessageHistory) else { return }
 
       defer {
-        NotificationCenter.default.post(
-          name: .chatViewShouldScrollToBottom,
-          object: ["channelId": channelId]
-        )
+        self.requestScrollToBottom()
       }
 
       do {
@@ -103,7 +117,7 @@ class ChannelStore: DiscordDataStore {
       self.loadingMessagesTask = nil
     }
     let events = gateway.events
-    eventTask = Task { @MainActor in
+    eventTask = Task {
       for await event in events {
         switch event.data {
         // Channel updates
@@ -192,10 +206,7 @@ class ChannelStore: DiscordDataStore {
 
   private func handleMessageCreate(_ messageData: Gateway.MessageCreate) {
     defer {
-      NotificationCenter.default.post(
-        name: .chatViewShouldScrollToBottom,
-        object: ["channelId": channelId]
-      )
+      requestScrollToBottom()
     }
 
     // check if latest messages are loaded, if so we append to the end else dont add
@@ -263,7 +274,7 @@ class ChannelStore: DiscordDataStore {
         print(
           "[ChannelStore] Requesting \(unknownMemberIds.count) unknown members in guild \(guildStore.guildId.rawValue)"
         )
-        Task { @MainActor in
+        Task {
           await guildStore.requestMembers(for: unknownMemberIds)
         }
       }
@@ -273,10 +284,7 @@ class ChannelStore: DiscordDataStore {
   private func handleMessageUpdate(_ message: DiscordChannel.PartialMessage) {
     if message.edited_timestamp == nil {
       // must be an embed that discord just loaded for an embed
-      NotificationCenter.default.post(
-        name: .chatViewShouldScrollToBottom,
-        object: ["channelId": channelId]
-      )
+      requestScrollToBottom()
     }
     guard var msg = messages[message.id] else { return }
     msg.update(with: message)
@@ -300,7 +308,7 @@ class ChannelStore: DiscordDataStore {
         print(
           "[ChannelStore] Requesting \(unknownMemberIds.count) unknown members in guild \(guildStore.guildId.rawValue)"
         )
-        Task { @MainActor in
+        Task {
           await guildStore.requestMembers(for: unknownMemberIds)
         }
       }
@@ -433,10 +441,8 @@ class ChannelStore: DiscordDataStore {
     Task { [weak self] in
       try? await Task.sleep(nanoseconds: 10_000_000_000)
       guard let self else { return }
-      await MainActor.run {
-        if self.typingTimeoutTokens[userId] == token {
-          self.typingTimeoutTokens.removeValue(forKey: userId)
-        }
+      if self.typingTimeoutTokens[userId] == token {
+        self.typingTimeoutTokens.removeValue(forKey: userId)
       }
     }
   }
@@ -480,7 +486,7 @@ class ChannelStore: DiscordDataStore {
     print("[ChannelStore] Trying to fetch more message history...")
     // fetching messages into the past, get the first message id we have and fetch before that
     let firstMessage = messages.values.first
-    self.loadingMessagesTask = Task { @MainActor in
+    self.loadingMessagesTask = Task {
       do {
         try await self.fetchMessages(before: firstMessage?.id)
       } catch {
@@ -497,7 +503,7 @@ class ChannelStore: DiscordDataStore {
     guard !hasLatestMessages else { return }
     // fetching messages into the past, get the first message id we have and fetch before that
     guard let lastMessage = messages.values.last else { return }
-    self.loadingMessagesTask = Task { @MainActor in
+    self.loadingMessagesTask = Task {
       do {
         try await self.fetchMessages(after: lastMessage.id)
       } catch {
@@ -572,16 +578,7 @@ class ChannelStore: DiscordDataStore {
 
         // get the "newest" message from the fetched batch to scroll to
         if let newestMessage = fetched.first {
-          await MainActor.run {
-            NotificationCenter.default.post(
-              name: .chatViewShouldScrollToID,
-              object: [
-                "channelId": channelId,
-                "messageId": newestMessage.id,
-                "alignment": UnitPoint.top,
-              ]
-            )
-          }
+          requestScrollToMessage(newestMessage.id)
         }
       } else {
         var transaction = Transaction()
@@ -742,6 +739,7 @@ extension ChannelStore {
     ///   - messageReactionData: Message reaction data if initialising from rest api data.
     ///   - gatewayReactionAdd: Gateway reaction add data if initialising from a gateway event.
     ///   - gatewayReactionAddMany: Gateway reaction add many data if initialising from a gateway event.
+    @MainActor
     init(
       message: DiscordChannel.Message,
       messageReactionData: DiscordChannel.Message.Reaction?,
@@ -818,6 +816,7 @@ extension ChannelStore {
     var selfReacted: Bool
 
     /// This computes the total count of users who have reacted with this reaction, merging data from rest api and known user ids.
+    @MainActor
     var count: Int {
       var total = 0
       // count from rest api message list data needs to be merged with new counts appropriately.
@@ -862,6 +861,7 @@ extension ChannelStore {
     // the user to fetch after while paginating
     private var afterPoint: UserSnowflake?
     private var hasMoreUsers = true
+    @MainActor
     mutating func addReactionData(
       client: DefaultDiscordClient,
       after: UserSnowflake?,
@@ -884,6 +884,7 @@ extension ChannelStore {
 
       return reactors
     }
+    @MainActor
     mutating func addReactionData(
       event: Gateway.MessageReactionAddMany,
       reactions: [Gateway.MessageReactionAddMany.DebouncedReactions]
@@ -906,6 +907,7 @@ extension ChannelStore {
         }
       }
     }
+    @MainActor
     mutating func addReactionData(event: Gateway.MessageReactionAdd) {
       // ensure the reaction data does belong to this reaction structure
       guard event.channel_id == message.channel_id,
@@ -920,6 +922,7 @@ extension ChannelStore {
         self.selfReacted = true
       }
     }
+    @MainActor
     mutating func removeReactionData(event: Gateway.MessageReactionRemove) {
       // ensure the reaction data does belong to this reaction structure
       guard event.channel_id == message.channel_id,
@@ -959,6 +962,23 @@ extension ChannelStore {
   }
 }
 
+extension ChannelStore.Reaction {
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.emoji == rhs.emoji && lhs.messageID == rhs.messageID && lhs.isBurst == rhs.isBurst
+      && lhs.selfReacted == rhs.selfReacted && lhs.userIds == rhs.userIds
+      && lhs.messageReactionData == rhs.messageReactionData
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(emoji)
+    hasher.combine(messageID)
+    hasher.combine(isBurst)
+    hasher.combine(selfReacted)
+    hasher.combine(userIds)
+    hasher.combine(messageReactionData)
+  }
+}
+
 extension ChannelStore {
   /// Sends a bulk guild subscription update for updating the member list subscriptions in this guild.
   /// - Parameter threeIntPairs: Either three pairs representing the ranges of the member list to subscribe to, or an empty array to subscribe to the default top 100 members.
@@ -987,6 +1007,7 @@ extension ChannelStore {
   typealias MemberListRow = ObservableBox<MixedItem?>
 
   // class representing member list items and where the groups lie
+  @MainActor
   @Observable
   class MemberListAccumulator {
     var primaryChannelStore: ChannelStore!
