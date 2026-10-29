@@ -8,7 +8,6 @@
 
 import Foundation
 import PaicordLib
-import SwiftPrettyPrint
 import SwiftUIX
 
 // When it's time to add support for rich presence data from other apps and games, this will need reworking.

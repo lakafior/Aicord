@@ -7,7 +7,6 @@
 //
 
 import PaicordLib
-import SwiftPrettyPrint
 import SwiftUIX
 
 struct ProfileBar: View {

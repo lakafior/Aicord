@@ -52,7 +52,6 @@ let package = Package(
       from: "1.21.0"
     ),
     .package(url: "https://github.com/vapor/multipart-kit.git", from: "4.5.3"),
-    .package(url: "https://github.com/jpsim/Yams.git", from: "5.0.5"),
     .package(
       url: "https://github.com/swiftlang/swift-syntax.git",
       "509.0.0"..<"603.0.0"
@@ -141,31 +140,6 @@ let package = Package(
       dependencies: [
         .target(name: "DiscordModels")
       ],
-      swiftSettings: swiftSettings
-    ),
-    .plugin(
-      name: "GenerateAPIEndpoints",
-      capability: .command(
-        intent: .custom(
-          verb: "generate-api-endpoints",
-          description: "Generates API Endpoints"
-        ),
-        permissions: [
-          .writeToPackageDirectory(reason: "Add Generated Endpoints")
-        ]
-      ),
-      dependencies: [
-        .target(name: "GenerateAPIEndpointsExec")
-      ]
-    ),
-    .executableTarget(
-      name: "GenerateAPIEndpointsExec",
-      dependencies: [
-        .product(name: "NIOHTTP1", package: "swift-nio"),
-        .product(name: "Yams", package: "Yams"),
-      ],
-      path: "Plugins/GenerateAPIEndpointsExec",
-      resources: [.copy("Resources/openapi.yml")],
       swiftSettings: swiftSettings
     ),
     .executableTarget(

@@ -1017,6 +1017,7 @@
       }
     },
     "Show FLEX" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -7,7 +7,6 @@
 //
 
 import AVKit
-import Loupe
 import PaicordLib
 import Speech
 import SwiftUIX
@@ -76,15 +75,11 @@ extension MessageCell {
         // audio files
         ForEach(audioAttachments) { audio in
           AttachmentAudioPlayer(attachment: audio)
-            .debugRender()
-            .debugCompute()
         }
 
         // files
         ForEach(fileAttachments) { file in
           FileAttachmentView(attachment: file)
-            .debugRender()
-            .debugCompute()
         }
       }
     }
@@ -117,8 +112,6 @@ extension MessageCell {
           }
         }
         .buttonStyle(.borderless)
-        .debugRender()
-        .debugCompute()
       }
     }
 
@@ -1245,7 +1238,7 @@ extension MessageCell {
     url:
       "https://cdn.discordapp.com/attachments/1026504914131759104/1467183399901991087/01_Ocean_Eyes.m4a?ex=697f7485&is=697e2305&hm=523155ab2204604c3b4f09d2dfd5b0b15dd04d628eb49de4a05a81fcc716a01f&",
     proxy_url:
-      "https://media.discordapp.net/attachments/1026504914131759104/1467183399901991087/01_Ocean_Eyes.m4a?ex=697f7485&is=697e2305&hm=523155ab2204604c3b4f09d2dfd5b0b15dd04d628eb49de4a05a81fcc716a01f&",
+      "https://media.discordapp.com/attachments/1026504914131759104/1467183399901991087/01_Ocean_Eyes.m4a?ex=697f7485&is=697e2305&hm=523155ab2204604c3b4f09d2dfd5b0b15dd04d628eb49de4a05a81fcc716a01f&",
     placeholder: nil,
     height: nil,
     width: nil,

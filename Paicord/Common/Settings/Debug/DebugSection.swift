@@ -10,10 +10,6 @@ import Logging
 import SettingsKit
 import SwiftUIX
 
-#if canImport(FLEX)
-  import FLEX
-#endif
-
 extension SettingsView {
   var debugSection: some SettingsContent {
     CustomSettingsGroup("Debug", systemImage: "ladybug") {
@@ -23,13 +19,6 @@ extension SettingsView {
         } label: {
           Label("View Logs", systemImage: "apple.terminal")
         }
-        #if canImport(FLEX)
-          Button {
-            FLEXManager.shared.showExplorer()
-          } label: {
-            Label("Show FLEX", systemImage: "scope")
-          }
-        #endif
       }
 
       Section("Playgrounds") {
