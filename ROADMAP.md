@@ -108,7 +108,7 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
 2. **Poprawki błędów:**
    - [x] fix: wejście na kanał i przeczytanie nowych wiadomości nie oznacza ich jako przeczytane. `ChatView` wysyła ack przy wejściu na kanał, po przewinięciu na dół i po powrocie do aplikacji; pozycja `nil` (widok na dolnej kotwicy) liczy się jako „na dole”.
 3. **README:**
-   - [ ] Powód forka: blokada PR-ów tworzonych ze wsparciem AI w głównym repozytorium.
-   - [ ] Lista zmian względem oryginalnego kodu (podsumowanie Etapów 1–5).
-   - [ ] Usunięcie linków do pobrania oryginalnej aplikacji.
-   - [ ] Przebudowa README od nowa w nowoczesnej formie.
+   - [x] Powód forka: blokada PR-ów tworzonych ze wsparciem AI w głównym repozytorium.
+   - [x] Lista zmian względem oryginalnego kodu (podsumowanie Etapów 1–5).
+   - [x] Usunięcie linków do pobrania oryginalnej aplikacji.
+   - [x] Przebudowa README od nowa w nowoczesnej formie.

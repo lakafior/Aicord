@@ -1,58 +1,71 @@
-# Paicord
+<div align="center">
 
-A  native Discord client written in Swift using SwiftUI, with a goal of feature parity with customisation and Quality-of-Life additions!
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/icon-dark.png">
+  <img src=".github/assets/icon-light.png" width="128" height="128" alt="Aicord icon">
+</picture>
 
- [![GitHub Release](https://img.shields.io/github/v/release/llsc12/Paicord?include_prereleases)](https://github.com/llsc12/Paicord/releases) ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/llsc12/paicord/build.yml) [![GitHub License](https://img.shields.io/github/license/llsc12/Paicord)](https://github.com/llsc12/Paicord/blob/main/LICENSE) [![Discord](https://img.shields.io/discord/1417976730303463436?style=flat&label=discord)](https://discord.gg/fqhPGHPyaK) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/llsc12/paicord/total)
+# Aicord
 
-> [!NOTE]
->
-> Paicord is still in development! Expect a number of issues or unimplemented features. If you encounter a bug, please create an issue!
+A native Discord client for iOS and macOS, written in pure Swift 6 and SwiftUI.
 
-<img width="371" height="298" alt="screenshot of Paicord" src="https://github.com/user-attachments/assets/d6b73ecb-c008-412e-9715-5817954f93f2" />
+![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
+![iOS 26](https://img.shields.io/badge/iOS-26%2B-000000?logo=apple&logoColor=white)
+![macOS 26](https://img.shields.io/badge/macOS-26%2B-000000?logo=apple&logoColor=white)
+![Dependencies](https://img.shields.io/badge/dependencies-4-EA6532)
+![License](https://img.shields.io/badge/license-GPL--3.0-blue)
+
+</div>
 
 ---
 
-Paicord currently supports sending messages, replying to messages, uploading files and photos, it has partial Discord-flavoured markdown support, partial reactions support, partial embeds support etc.
+## Why a fork
 
-This list is not exhaustive but the goal for Paicord is to have parity with the official Discord client, excluding unfavourable things like upselling of services. A real feature/todo list will be made eventually. 
+Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](https://github.com/llsc12). The upstream project doesn't accept AI-assisted pull requests, so the modernisation work lives here instead. Same app at heart, rebuilt on the newest Apple platforms with almost nothing but Apple's own frameworks.
 
-> [!WARNING]
->
-> As all third-party clients and client mods do, using Paicord is a violation of Discord ToS! Whilst Paicord ensures to pretend to be Discord as close as possible, the risk of account bans is ever-present. Beware! 
+## What changed
 
-## Cross-platform
-We have subprojects in the works to port the client to other platforms natively too! Keep an eye out on the repo or join the [Discord Server](https://discord.gg/fqhPGHPyaK)!
+|                         | Paicord                         | Aicord                                   |
+| ----------------------- | ------------------------------- | ---------------------------------------- |
+| App size (macOS, universal) | 193.5 MB                    | **80.8 MB** (−58%)                       |
+| Swift packages          | 58 resolved (31 direct)         | **4**                                    |
+| Language mode           | Swift 5                         | **Swift 6**, strict concurrency, no warnings |
+| Minimum OS              | iOS 17 · macOS 14               | **iOS 26 · macOS 26**                    |
+| Networking              | SwiftNIO, AsyncHTTPClient       | **URLSession**, `URLSessionWebSocketTask` |
+| Code highlighting       | Prism.js in JavaScriptCore      | **Native Swift tokenizer**               |
+| Design                  | Custom blur and mesh hacks      | **Liquid Glass**, `MeshGradient`          |
 
-## Installing
+**Swapped for system APIs or removed:** SwiftUIX, Nuke, Sparkle, Lottie, SettingsKit, SwiftUIIntrospect, HCaptcha, KeychainAccess, CodeScanner, MijickCamera, MeshGradient, ColorCube, SwiftEmoji, FLEX, Loupe, Conditionals, SwiftPrettyPrint, UInt128, Yams, swift-crypto, multipart-kit and the whole SwiftNIO stack. What's left: swift-log, swift-protobuf, zstd and swift-syntax (build-time macros only).
 
-These downloads are nightly releases of Paicord, built from source.
+The full history is in [ROADMAP.md](ROADMAP.md).
 
-| iOS (17.0+)                                                  | macOS (14.0+)                                                | Linux |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [Download iOS Artifact](https://nightly.link/llsc12/Paicord/workflows/build/main/Paicord-iOS) | [Download macOS Artifact](https://nightly.link/llsc12/Paicord/workflows/build/main/Paicord-macOS) | TBA |
+## New & fixed
 
+- **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
+- **New** · Logging goes through `os.Logger` instead of capturing stdout into memory
+- **Fixed** · Opening a channel or scrolling to the bottom now marks it as read
+- **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file
+- **Removed** · Third-party sponsor badges and the telemetry requests behind them
 
-## Sponsoring
+## Building
 
-If you've enjoyed using Paicord, I would apprecate a [sponsor](https://github.com/sponsors/llsc12)! I work on Paicord in my free time outside of Uni work, so it would be awesome if you chipped in. Sponsors over $5 get custom profile badges! Refer to sponsor page for information. Benefits are managed via a bot in the [Discord Server](https://discord.gg/fqhPGHPyaK) so be sure to join! Builds are also available here.
+Requires **Xcode 26** on macOS 26.
 
-[![Github-sponsors](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/llsc12)
-## Star History
+```bash
+git clone https://github.com/lakafior/Paicord.git
+open Paicord/Paicord.xcworkspace
+```
 
-<a href="https://www.star-history.com/?repos=llsc12%2Fpaicord&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=llsc12/paicord&type=date&theme=dark&legend=top-left&sealed_token=5D01_R-EeDxO5XXBNqQrIXBQM5yB66HmS-rl78xyyHv39Vx67iUbxaR0p649moIaIJQoPeaTV13Ole6JxpmtJ78_oLemoOto3ww2_2AxTu5VyRCtptN0qNJvNaTKNPtednFDJXmmbPHC1A5CUrTV43kuXsvc3NbEOuPG37MpDyq1w68HWBDe6B1IOATo" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=llsc12/paicord&type=date&legend=top-left&sealed_token=5D01_R-EeDxO5XXBNqQrIXBQM5yB66HmS-rl78xyyHv39Vx67iUbxaR0p649moIaIJQoPeaTV13Ole6JxpmtJ78_oLemoOto3ww2_2AxTu5VyRCtptN0qNJvNaTKNPtednFDJXmmbPHC1A5CUrTV43kuXsvc3NbEOuPG37MpDyq1w68HWBDe6B1IOATo" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=llsc12/paicord&type=date&legend=top-left&sealed_token=5D01_R-EeDxO5XXBNqQrIXBQM5yB66HmS-rl78xyyHv39Vx67iUbxaR0p649moIaIJQoPeaTV13Ole6JxpmtJ78_oLemoOto3ww2_2AxTu5VyRCtptN0qNJvNaTKNPtednFDJXmmbPHC1A5CUrTV43kuXsvc3NbEOuPG37MpDyq1w68HWBDe6B1IOATo" />
- </picture>
-</a>
+Pick the **Paicord** scheme, choose a Mac or an iOS 26 device or simulator, and run. There are no prebuilt releases of Aicord yet.
 
-## References
+## A word of caution
 
-Paicord uses modified versions of [DiscordBM](https://github.com/DiscordBM/DiscordBM) and [Textual](https://github.com/gonzalezreal/textual). These other references are mentioned since I read their code to learn from others.
+Like every third-party client, using Aicord breaks Discord's Terms of Service. It identifies itself as close to the official client as it can, but the risk of an account ban never goes away. Use it at your own risk.
 
-- [Accord](https://github.com/tealbathingsuit/accord)
-- [Swiftcord](https://github.com/SwiftcordApp/Swiftcord)
-- [Cyclone](https://github.com/slice/cyclone)
+## Credits
 
-And of course, [Discord Userdoccers and its maintainers](https://docs.discord.food) helped massively with their unofficial documentation and direct help.
+- [Paicord](https://github.com/llsc12/Paicord) by llsc12, the project this fork is built on
+- [DiscordBM](https://github.com/DiscordBM/DiscordBM) and [Textual](https://github.com/gonzalezreal/textual), modified versions of which live in `PaicordLib` and `Textual`
+- [Discord Userdoccers](https://docs.discord.food) for the unofficial API documentation
+
+Licensed under [GPL-3.0](LICENSE).
