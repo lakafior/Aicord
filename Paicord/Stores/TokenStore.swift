@@ -8,12 +8,12 @@
 
 import Algorithms
 import Foundation
-import KeychainAccess
 import PaicordLib
+import Security
 
 @Observable
 final class TokenStore {
-  private static let keychain = Keychain(service: "com.llsc12.Paicord.Accounts")
+  private static let keychainService = "com.llsc12.Paicord.Accounts"
   private static let currentAccountIDKey = "TokenStore.CurrentAccountID"
   private static let accountDataKey = "AccountData"
 
@@ -125,7 +125,7 @@ final class TokenStore {
   // MARK: - Persistence
 
   private static func load() -> [AccountData] {
-    let data = (try? keychain.getData(accountDataKey)) ?? Data()
+    let data = getKeychainData(forKey: accountDataKey) ?? Data()
     return
       Array(
         ((try? DiscordGlobalConfiguration.decoder.decode(
@@ -139,7 +139,38 @@ final class TokenStore {
     let dedupedData = Array(data.uniqued(on: \.user.id))
     guard let encoded = try? DiscordGlobalConfiguration.encoder.encode(dedupedData)
     else { return }
-    try? keychain.set(encoded, key: accountDataKey)
+    setKeychainData(encoded, forKey: accountDataKey)
+  }
+
+  private static func getKeychainData(forKey key: String) -> Data? {
+    let query: [String: Any] = [
+      kSecClass as String: kSecClassGenericPassword,
+      kSecAttrService as String: keychainService,
+      kSecAttrAccount as String: key,
+      kSecReturnData as String: true,
+      kSecMatchLimit as String: kSecMatchLimitOne,
+    ]
+    var result: AnyObject?
+    let status = SecItemCopyMatching(query as CFDictionary, &result)
+    guard status == errSecSuccess else { return nil }
+    return result as? Data
+  }
+
+  private static func setKeychainData(_ data: Data, forKey key: String) {
+    let query: [String: Any] = [
+      kSecClass as String: kSecClassGenericPassword,
+      kSecAttrService as String: keychainService,
+      kSecAttrAccount as String: key,
+    ]
+    let attributes: [String: Any] = [
+      kSecValueData as String: data
+    ]
+    let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+    if status == errSecItemNotFound {
+      var addQuery = query
+      addQuery[kSecValueData as String] = data
+      SecItemAdd(addQuery as CFDictionary, nil)
+    }
   }
 
   struct AccountData: Codable, Equatable, Identifiable, Sendable {

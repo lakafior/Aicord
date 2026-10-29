@@ -6,7 +6,6 @@
 // Copyright © 2025 Lakhan Lothiyi.
 //
 
-import ColorCube
 import Nuke
 import PaicordLib
 import SwiftUIX
@@ -182,7 +181,6 @@ struct ProfileView: View {
 
   @Sendable
   func grabColor() async {
-    let cc = CCColorCube()
     // shares the pipeline with every NukeImage on screen, so the avatar is usually
     // already warm in memory by the time this runs
     guard
@@ -190,16 +188,11 @@ struct ProfileView: View {
         user: user,
         animated: false
       ),
-      let image = try? await ImagePipeline.shared.image(for: avatarURL)
+      let image = try? await ImagePipeline.shared.image(for: avatarURL),
+      let extractedColor = image.extractAccentColor()
     else {
       return
     }
-    let colors = cc.extractColors(
-      from: image,
-      flags: [.orderByBrightness, .avoidBlack, .avoidWhite]
-    )
-    if let firstColor = colors?.first {
-      await MainActor.run { self.accentColor = Color(firstColor) }
-    }
+    await MainActor.run { self.accentColor = extractedColor }
   }
 }

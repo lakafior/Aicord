@@ -682,7 +682,7 @@ struct EmojiPicker: View {
             if case .custom(_, let guild) = item,
               let guild = gw.user.guilds[guild]
             {
-              Text("from ") + Text(verbatim: guild.name).bold()
+              Text("from \(Text(verbatim: guild.name).bold())")
             }
           }
 

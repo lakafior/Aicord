@@ -6,9 +6,14 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import CodeScanner
 import SettingsKit
 import SwiftUIX
+
+#if os(iOS)
+  import AVFoundation
+  import AudioToolbox
+  import UIKit
+#endif
 
 extension SettingsView {
   @SettingsContentBuilder
@@ -22,28 +27,22 @@ extension SettingsView {
     #endif
   }
 }
+
 #if os(iOS)
   private struct QRCodeScanView: View {
     @Environment(\.gateway) var gw
     @Environment(\.appState) var appState
     @Environment(\.dismiss) var dismiss
-    @State var isScanning: Bool = false
     @State var scannedData: String? = nil
     @State var handshake_token: String? = nil
+
     var body: some View {
       if scannedData == nil {
-        CodeScannerView(
-          codeTypes: [.qr],
-          scanMode: .once,
-          showViewfinder: true,
-          shouldVibrateOnSuccess: true,
-          isTorchOn: false,
-        ) {
-          response in
+        NativeQRScannerView { response in
           switch response {
-          case .success(let result):
+          case .success(let string):
             do {
-              try self.handleScannedString(result.string)
+              try self.handleScannedString(string)
             } catch {
               appState.error = error
             }
@@ -52,6 +51,7 @@ extension SettingsView {
           }
         }
         .frame(maxWidth: 300, maxHeight: 300)
+        .clipShape(.rect(cornerRadius: 16))
       } else {
         VStack(spacing: 16) {
           if let token = handshake_token {
@@ -112,26 +112,115 @@ extension SettingsView {
     }
 
     func handleScannedString(_ string: String) throws {
-      // Check that the string is a valid URL
       guard let url = URL(string: string), UIApplication.shared.canOpenURL(url)
       else {
         throw QRCodeScanError.invalidURL
       }
-      // ensure url is discord.com
       guard url.host?.contains("discord.com") == true else {
         throw QRCodeScanError.invalidURL
       }
-
-      // ensure it has /ra/<data> path
       guard url.pathComponents.count >= 3,
         url.pathComponents[1] == "ra"
       else {
         throw QRCodeScanError.unrelatedURL
       }
-
-      // must be a remote auth URL, extract fingerprint
       let fingerprint = url.pathComponents[2]
       self.scannedData = fingerprint
+    }
+  }
+
+  private struct NativeQRScannerView: UIViewControllerRepresentable {
+    var completion: (Result<String, Error>) -> Void
+
+    func makeUIViewController(context: Context) -> ScannerViewController {
+      let vc = ScannerViewController()
+      vc.completion = completion
+      return vc
+    }
+
+    func updateUIViewController(_ uiViewController: ScannerViewController, context: Context) {}
+
+    final class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+      var completion: ((Result<String, Error>) -> Void)?
+      private let captureSession = AVCaptureSession()
+      private var previewLayer: AVCaptureVideoPreviewLayer?
+      private var didScan = false
+
+      override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+
+        guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else {
+          return
+        }
+        let videoInput: AVCaptureDeviceInput
+        do {
+          videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
+        } catch {
+          completion?(.failure(error))
+          return
+        }
+
+        if captureSession.canAddInput(videoInput) {
+          captureSession.addInput(videoInput)
+        } else {
+          return
+        }
+
+        let metadataOutput = AVCaptureMetadataOutput()
+        if captureSession.canAddOutput(metadataOutput) {
+          captureSession.addOutput(metadataOutput)
+          metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
+          metadataOutput.metadataObjectTypes = [.qr]
+        } else {
+          return
+        }
+
+        let preview = AVCaptureVideoPreviewLayer(session: captureSession)
+        preview.frame = view.layer.bounds
+        preview.videoGravity = .resizeAspectFill
+        view.layer.addSublayer(preview)
+        self.previewLayer = preview
+
+        let session = captureSession
+        DispatchQueue.global(qos: .userInitiated).async {
+          session.startRunning()
+        }
+      }
+
+      override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        previewLayer?.frame = view.layer.bounds
+      }
+
+      override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        let session = captureSession
+        if session.isRunning {
+          DispatchQueue.global(qos: .userInitiated).async {
+            session.stopRunning()
+          }
+        }
+      }
+
+      func metadataOutput(
+        _ output: AVCaptureMetadataOutput,
+        didOutput metadataObjects: [AVMetadataObject],
+        from connection: AVCaptureConnection
+      ) {
+        guard !didScan,
+          let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+          let stringValue = metadataObject.stringValue
+        else { return }
+
+        didScan = true
+        let session = captureSession
+        DispatchQueue.global(qos: .userInitiated).async {
+          session.stopRunning()
+        }
+        AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+        completion?(.success(stringValue))
+      }
     }
   }
 #endif

@@ -64,7 +64,7 @@ extension MessageCell {
       return f
     }()
 
-    static func == (lhs: ChatInputCommandMessage, rhs: ChatInputCommandMessage) -> Bool {
+    nonisolated static func == (lhs: ChatInputCommandMessage, rhs: ChatInputCommandMessage) -> Bool {
       lhs.message.id == rhs.message.id
         && lhs.message.edited_timestamp == rhs.message.edited_timestamp
         && lhs.message.embeds == rhs.message.embeds

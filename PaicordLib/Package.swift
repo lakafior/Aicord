@@ -6,10 +6,10 @@ import PackageDescription
 let package = Package(
   name: "PaicordLib",
   platforms: [
-    .macOS(.v13),
-    .iOS(.v16),
-    .tvOS(.v16),
-    .watchOS(.v9),
+    .macOS(.v26),
+    .iOS(.v26),
+    .tvOS(.v26),
+    .watchOS(.v26),
   ],
   products: [
     .library(
@@ -66,10 +66,6 @@ let package = Package(
       from: "1.27.0"
     ),
     .package(
-      url: "https://github.com/Jitsusama/UInt128.git",
-      branch: "master"
-    ),
-    .package(
       url: "https://github.com/apple/swift-crypto.git",
       "1.0.0"..<"5.0.0"
     ),
@@ -124,7 +120,6 @@ let package = Package(
         .target(name: "DiscordCore"),
         .target(name: "UnstableEnumMacro"),
         .product(name: "SwiftProtobuf", package: "swift-protobuf"),
-        .product(name: "UInt128", package: "UInt128"),
       ],
       swiftSettings: swiftSettings
     ),

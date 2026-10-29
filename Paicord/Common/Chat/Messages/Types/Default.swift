@@ -65,7 +65,7 @@ extension MessageCell {
       return f
     }()
 
-    static func == (lhs: DefaultMessage, rhs: DefaultMessage) -> Bool {
+    nonisolated static func == (lhs: DefaultMessage, rhs: DefaultMessage) -> Bool {
       lhs.message.id == rhs.message.id
         && lhs.message.edited_timestamp == rhs.message.edited_timestamp
         && lhs.message.embeds == rhs.message.embeds

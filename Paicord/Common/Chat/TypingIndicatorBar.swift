@@ -29,27 +29,23 @@ extension ChatView {
             TypingIndicator()
               .padding(.horizontal, 9)
             if typingUsernames.count == 1, let username = typingUsernames.first {
-              Text(username).fontWeight(.heavy) + Text(" is typing...")
+              Text("\(Text(username).fontWeight(.heavy)) is typing...")
             } else if typingUsernames.count == 2,
               let first = typingUsernames.first,
               let last = typingUsernames.last
             {
-              Text(first).fontWeight(.heavy) + Text(" and ")
-                + Text(last).fontWeight(.heavy)
-                + Text(" are typing...")
+              Text("\(Text(first).fontWeight(.heavy)) and \(Text(last).fontWeight(.heavy)) are typing...")
             } else {
               let ppl = typingUsernames.reduce(Text(verbatim: "")) {
                 partialResult,
                 username in
                 if username == typingUsernames.last {
-                  return partialResult + Text("and ")
-                    + Text(username).fontWeight(.heavy)
+                  return Text("\(partialResult)and \(Text(username).fontWeight(.heavy))")
                 } else {
-                  return partialResult + Text(username).fontWeight(.heavy)
-                    + Text(", ")
+                  return Text("\(partialResult)\(Text(username).fontWeight(.heavy)), ")
                 }
               }
-              ppl + Text(" are typing...")
+              Text("\(ppl) are typing...")
             }
             Spacer()
           }

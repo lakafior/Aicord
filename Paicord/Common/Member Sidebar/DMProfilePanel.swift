@@ -6,7 +6,6 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import ColorCube
 import Nuke
 import PaicordLib
 import SwiftUIX
@@ -143,29 +142,18 @@ extension MemberSidebarView {
 
     @Sendable
     func grabColor() async {
-      let cc = CCColorCube()
       // shares the pipeline with every image on screen, avatar probably cached.
       guard
         let avatarURL = Utils.fetchUserAvatarURL(
           user: user,
           animated: false
         ),
-        let image = try? await ImagePipeline.shared.image(for: avatarURL)
+        let image = try? await ImagePipeline.shared.image(for: avatarURL),
+        let extractedColor = image.extractAccentColor()
       else {
         return
       }
-      let colors = cc.extractColors(
-        from: image,
-        flags: [.orderByBrightness, .avoidBlack, .avoidWhite]
-      )
-      if let firstColor = colors?.first {
-        print(
-          "[Profile] Extracted accent color: \(firstColor.debugDescription)"
-        )
-        await MainActor.run { self.accentColor = Color(firstColor) }
-      } else {
-        print("[Profile] No colors extracted from avatar.")
-      }
+      await MainActor.run { self.accentColor = extractedColor }
     }
   }
 }

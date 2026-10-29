@@ -6,138 +6,70 @@
 // Copyright © 2025 Lakhan Lothiyi.
 //
 
-import MeshGradient
 import SwiftUI
 import simd
 
-import struct MeshGradient.Grid
-
 extension LoginView {
   struct MeshGradientBackground: View {
-    typealias MeshColor = SIMD3<Float>
+    @Environment(\.colorScheme) private var colorScheme
 
-    // You can provide custom `locationRandomizer` and `turbulencyRandomizer` for advanced usage
+    private static let lightColors: [Color] = [
+      Color(red: 0.345, green: 0.396, blue: 0.949),  // Blurple (#5865F2)
+      Color(red: 0.557, green: 0.631, blue: 0.882),  // Soft Indigo (#8EA1E1)
+      Color(red: 0.655, green: 0.686, blue: 1.000),  // Periwinkle (#A7AFFF)
+      Color(red: 0.765, green: 0.749, blue: 0.992),  // Lavender (#C3BFFD)
+      Color(red: 0.278, green: 0.251, blue: 0.631),  // Deep Purple (#4740A1)
+      Color(red: 0.557, green: 0.631, blue: 0.882),
+      Color(red: 0.345, green: 0.396, blue: 0.949),
+      Color(red: 0.655, green: 0.686, blue: 1.000),
+      Color(red: 0.278, green: 0.251, blue: 0.631),
+    ]
 
-    private static var meshColorsLight: [simd_float3] {
-      return [
-        .init(0.345, 0.396, 0.949),  // Blurple (#5865F2)
-        .init(0.557, 0.631, 0.882),  // Soft Indigo (#8EA1E1)
-        .init(0.655, 0.686, 1.000),  // Periwinkle (#A7AFFF)
-        .init(0.765, 0.749, 0.992),  // Lavender (#C3BFFD)
-        .init(0.278, 0.251, 0.631),  // Deep Purple (#4740A1)
-      ]
-    }
-
-    private static var meshColorsDark: [simd_float3] {
-      return [
-        .init(0.345, 0.396, 0.949),  // Blurple (#5865F2)
-        .init(0.227, 0.243, 0.675),  // Royal Blue (#3A3EAC)
-        .init(0.157, 0.173, 0.329),  // Deep Indigo (#282C54)
-        .init(0.118, 0.098, 0.231),  // Midnight Purple (#1E193B)
-        .init(0.137, 0.153, 0.165),  // Slate (#23272A)
-      ]
-    }
-
-    // This methods prepares the grid model that will be sent to metal for rendering
-    fileprivate func generatePlainGrid(size: Int = 6) -> Grid<ControlPoint> {
-      let preparationGrid = Grid<MeshColor>(
-        repeating: .zero,
-        width: size,
-        height: size
-      )
-
-      // At first we create grid without randomisation. This is smooth mesh gradient without
-      // any turbulency and overlaps
-      var result = MeshGenerator.generate(colorDistribution: preparationGrid)
-
-      // And here we shuffle the grid using randomizer that we created
-      for x in stride(from: 0, to: result.width, by: 1) {
-        for y in stride(from: 0, to: result.height, by: 1) {
-          meshRandomizer.locationRandomizer(
-            &result[x, y].location,
-            x,
-            y,
-            result.width,
-            result.height
-          )
-          meshRandomizer.turbulencyRandomizer(
-            &result[x, y].uTangent,
-            x,
-            y,
-            result.width,
-            result.height
-          )
-          meshRandomizer.turbulencyRandomizer(
-            &result[x, y].vTangent,
-            x,
-            y,
-            result.width,
-            result.height
-          )
-
-          meshRandomizer.colorRandomizer(
-            &result[x, y].color,
-            result[x, y].color,
-            x,
-            y,
-            result.width,
-            result.height
-          )
-        }
-      }
-
-      return result
-    }
-
-    // MeshRandomizer is a plain struct with just the functions. So you can dynamically change it!
-    @State var meshRandomizer: MeshRandomizer
-
-    init() {
-      self.meshRandomizer = MeshRandomizer(
-        colorRandomizer: MeshRandomizer.arrayBasedColorRandomizer(
-          availableColors: Self.meshColorsDark
-        )
-      )
-    }
-
-    @Environment(\.colorScheme) var cs
+    private static let darkColors: [Color] = [
+      Color(red: 0.345, green: 0.396, blue: 0.949),  // Blurple (#5865F2)
+      Color(red: 0.227, green: 0.243, blue: 0.675),  // Royal Blue (#3A3EAC)
+      Color(red: 0.157, green: 0.173, blue: 0.329),  // Deep Indigo (#282C54)
+      Color(red: 0.118, green: 0.098, blue: 0.231),  // Midnight Purple (#1E193B)
+      Color(red: 0.227, green: 0.243, blue: 0.675),
+      Color(red: 0.137, green: 0.153, blue: 0.165),  // Slate (#23272A)
+      Color(red: 0.157, green: 0.173, blue: 0.329),
+      Color(red: 0.345, green: 0.396, blue: 0.949),
+      Color(red: 0.118, green: 0.098, blue: 0.231),
+    ]
 
     var body: some View {
-      Group {
-        #if os(iOS)
-          LegacyMeshGradient(
-            initialGrid: generatePlainGrid(),
-            animatorConfiguration: .init(
-              animationSpeedRange: 2...4,
-              meshRandomizer: meshRandomizer
-            )
-          )
-        #elseif os(macOS)
-          MeshGradient(
-            initialGrid: generatePlainGrid(),
-            animatorConfiguration: .init(
-              animationSpeedRange: 2...4,
-              meshRandomizer: meshRandomizer
-            )
-          )
-        #endif
-      }
-      .onAppear {
-        let colors = cs == .light ? Self.meshColorsLight : Self.meshColorsDark
-        self.meshRandomizer = MeshRandomizer(
-          colorRandomizer: MeshRandomizer.arrayBasedColorRandomizer(
-            availableColors: colors
-          )
+      TimelineView(.animation) { timeline in
+        let t = Float(timeline.date.timeIntervalSinceReferenceDate)
+        SwiftUI.MeshGradient(
+          width: 3,
+          height: 3,
+          points: Self.animatedPoints(at: t),
+          colors: colorScheme == .light ? Self.lightColors : Self.darkColors,
+          smoothsColors: true
         )
       }
-      .onChange(of: cs) {
-        let colors = cs == .light ? Self.meshColorsLight : Self.meshColorsDark
-        self.meshRandomizer = MeshRandomizer(
-          colorRandomizer: MeshRandomizer.arrayBasedColorRandomizer(
-            availableColors: colors
-          )
-        )
-      }
+      .ignoresSafeArea()
+    }
+
+    private static func animatedPoints(at t: Float) -> [SIMD2<Float>] {
+      let dx1 = 0.12 * sin(t * 0.45)
+      let dy1 = 0.12 * cos(t * 0.38)
+      let dx2 = 0.10 * cos(t * 0.52)
+      let dy2 = 0.10 * sin(t * 0.41)
+
+      return [
+        SIMD2<Float>(0.0, 0.0),
+        SIMD2<Float>(0.5 + dx1 * 0.5, 0.0),
+        SIMD2<Float>(1.0, 0.0),
+
+        SIMD2<Float>(0.0, 0.5 + dy1 * 0.5),
+        SIMD2<Float>(0.5 + dx1, 0.5 + dy2),
+        SIMD2<Float>(1.0, 0.5 - dy1 * 0.5),
+
+        SIMD2<Float>(0.0, 1.0),
+        SIMD2<Float>(0.5 - dx2 * 0.5, 1.0),
+        SIMD2<Float>(1.0, 1.0),
+      ]
     }
   }
 }

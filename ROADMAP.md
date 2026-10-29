@@ -20,36 +20,36 @@ Przekształcenie projektu **Paicord** w czystą, szybką i łatwą w utrzymaniu 
 
 ---
 
-### ⏳ Etap 2: Podniesienie wersji do Swift 6 + iOS/macOS 26 oraz zamiana bibliotek na natywne API Apple
+### ✅ Etap 2: Podniesienie wersji do Swift 6 + iOS/macOS 26 oraz zamiana bibliotek na natywne API Apple (ZAKOŃCZONY)
 Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do najnowszych wbudowanych funkcji systemowych bez żadnych fallbacków dla starych systemów:
 
 1. **Konfiguracja Projektu i Pakietów:**
-   - [ ] Ustawienie `MACOSX_DEPLOYMENT_TARGET = 26.0`, `IPHONEOS_DEPLOYMENT_TARGET = 26.0` oraz `SWIFT_VERSION = 6.0` (lub z odpowiednim trybem współbieżności) w `Paicord.xcodeproj`.
-   - [ ] Aktualizacja platform w `PaicordLib/Package.swift` i `Textual/Package.swift`.
-   - [ ] Usunięcie warunkowych sprawdzeń `#available(iOS 26.0, macOS 26.0, *)` (np. w `LoginView.swift` przy generowaniu zaokrąglonych kodów QR `CIFilter.roundedQRCodeGenerator()`).
+   - [x] Ustawienie `MACOSX_DEPLOYMENT_TARGET = 26.0` i `IPHONEOS_DEPLOYMENT_TARGET = 26.0` w `Paicord.xcodeproj` (toolchain Swift 6.2; target aplikacji zostaje w trybie językowym Swift 5 — przejście na tryb Swift 6 przeniesione do Etapu 5).
+   - [x] Aktualizacja platform w `PaicordLib/Package.swift` i `Textual/Package.swift`.
+   - [x] Usunięcie warunkowych sprawdzeń `#available(iOS 26.0, macOS 26.0, *)` (np. w `LoginView.swift` przy generowaniu zaokrąglonych kodów QR `CIFilter.roundedQRCodeGenerator()`).
 
 2. **`MeshGradient` + `MeshGradientCHeaders` (Zewnętrzny Metal + C Headers) -> Natywny `SwiftUI.MeshGradient`:**
-   - [ ] Usunięcie paczki `https://github.com/patskovn/MeshGradient`.
-   - [ ] Przepisanie `Paicord/Common/Login/MeshGradient.swift` na wbudowany w system `SwiftUI.MeshGradient` z płynną animacją (`TimelineView` / `PhaseAnimator`).
+   - [x] Usunięcie paczki `https://github.com/patskovn/MeshGradient`.
+   - [x] Przepisanie `Paicord/Common/Login/MeshGradient.swift` na wbudowany w system `SwiftUI.MeshGradient` z płynną animacją (`TimelineView` / `PhaseAnimator`).
 
 3. **`MijickCamera` (`Camera` + `Timer`) -> Natywny `CameraPicker`:**
-   - [ ] Usunięcie paczki `https://github.com/Mijick/Camera`.
-   - [ ] Podpięcie istniejącego w projekcie natywnego `CameraPicker.swift` (`UIImagePickerController`) w `InputBar.swift`.
+   - [x] Usunięcie paczki `https://github.com/Mijick/Camera`.
+   - [x] Podpięcie istniejącego w projekcie natywnego `CameraPicker.swift` (`UIImagePickerController`) w `InputBar.swift`.
 
 4. **`KeychainAccess` -> Natywny `Security` Framework:**
-   - [ ] Usunięcie paczki `https://github.com/kishikawakatsumi/KeychainAccess`.
-   - [ ] Zastąpienie zapisu/odczytu w `TokenStore.swift` lekkim, czystym wrapperem na `SecItemCopyMatching` / `SecItemAdd` / `SecItemUpdate`.
+   - [x] Usunięcie paczki `https://github.com/kishikawakatsumi/KeychainAccess`.
+   - [x] Zastąpienie zapisu/odczytu w `TokenStore.swift` lekkim, czystym wrapperem na `SecItemCopyMatching` / `SecItemAdd` / `SecItemUpdate`.
 
 5. **`ColorCube` (Objective-C) -> Natywny `CoreImage` / `CGContext`:**
-   - [ ] Usunięcie paczki `https://github.com/llsc12/ColorCube`.
-   - [ ] Zastąpienie ekstrakcji koloru avatara w `ProfilePopoutView.swift`, `DMProfilePanel.swift` i `ProfileView.swift` czystą funkcją w Swift (np. `CIAreaAverage` / szybki sampling pikseli).
+   - [x] Usunięcie paczki `https://github.com/llsc12/ColorCube`.
+   - [x] Zastąpienie ekstrakcji koloru avatara w `ProfilePopoutView.swift`, `DMProfilePanel.swift` i `ProfileView.swift` czystą funkcją w Swift (np. `CIAreaAverage` / szybki sampling pikseli).
 
 6. **`CodeScanner` -> Natywny skaner QR (`VisionKit` / `AVFoundation`):**
-   - [ ] Usunięcie paczki `https://github.com/twostraws/CodeScanner`.
-   - [ ] Zastąpienie skanera w `ScanQRSection.swift` natywnym `DataScannerViewController` (`VisionKit`) lub `AVCaptureSession`.
+   - [x] Usunięcie paczki `https://github.com/twostraws/CodeScanner`.
+   - [x] Zastąpienie skanera w `ScanQRSection.swift` natywnym `DataScannerViewController` (`VisionKit`) lub `AVCaptureSession`.
 
 7. **`UInt128` (w `PaicordLib`) -> Natywny `Swift.UInt128`:**
-   - [ ] Usunięcie paczki `https://github.com/Jitsusama/UInt128.git` z `PaicordLib/Package.swift` — Swift 6 posiada wbudowany typ `UInt128` w bibliotece standardowej.
+   - [x] Usunięcie paczki `https://github.com/Jitsusama/UInt128.git` z `PaicordLib/Package.swift` — Swift 6 posiada wbudowany typ `UInt128` w bibliotece standardowej.
 
 ---
 
@@ -86,6 +86,7 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
 ### ⏳ Etap 5: Optymalizacja Architektury, Sieci i Rebranding do Aicord
 1. **Strict Concurrency & Porządki w Store'ach (Swift 6):**
    - [ ] Oznaczenie Store'ów (`GatewayStore`, `GuildStore`, `ChannelStore`, `CurrentUserStore` itd.) jako `@MainActor` i usunięcie zbędnych bloków `Task { @MainActor in }` oraz komunikacji przez `NotificationCenter`.
+   - [ ] Przełączenie targetu aplikacji na `SWIFT_VERSION = 6.0`. Znane blokery: statyczne mutowalne stany (`PaicordAppState.instances`/`sharedEphemeral`, `transcriptCache`/`waveformCache` w `Attachments.swift`, `defaultGradientMask` w `VariableBlurView.swift`, `ShellView`), typy non-Sendable w `DownloadButton.swift`, `Sending 'self'` w `Task { @MainActor in }` Store'ów. Nie maskować tego przez `@unchecked Sendable`.
 2. **Odchudzenie Logowania i Zasobów:**
    - [ ] Wyłączenie domyślnego przechwytywania `stdout`/`stderr` w `StdOutInterceptor.swift` (trzymającego logi w tablicy w RAM-ie) na rzecz lekkiego, natywnego `os.Logger` (`OSLog`).
    - [ ] Leniwe ładowanie (lazy loading) i deduplikacja słownika emoji (`DiscordEmojiNames.json`).

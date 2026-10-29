@@ -8,7 +8,6 @@
 
 import DiscordCore
 import Foundation
-import UInt128
 
 #if canImport(UIKit)
   import UIKit
@@ -460,24 +459,24 @@ public enum SuperProperties {
 // https://docs.discord.food/reference#launch-signature
 extension UUID {
   func toUInt128() -> UInt128 {
-    let bytes = withUnsafeBytes(of: uuid) { Array($0) }  // 16 bytes, in order
-    var value = UInt128(0)
-    for b in bytes {
-      value = (value << 8) | UInt128(b)
+    withUnsafeBytes(of: uuid) {
+      UInt128(bigEndian: $0.loadUnaligned(as: UInt128.self))
     }
-    return value
   }
 
   static func generateLaunchSignature() -> UUID {
-    let bits = UInt128(
-      "0b00000000100000000001000000010000000010000001000000001000000000000010000010000001000000000100000000000001000000000000100000000000"
-    )!
+    let bits: UInt128 =
+      0b00000000100000000001000000010000000010000001000000001000000000000010000010000001000000000100000000000001000000000000100000000000
 
     let randomUInt = UUID().toUInt128()
     let maskInverted = ~bits & UInt128.max
     let newUInt = randomUInt & maskInverted
     let finalUInt = newUInt | bits
 
-    return UUID.init(finalUInt)
+    var bigEndian = finalUInt.bigEndian
+    let uuidBytes = withUnsafeBytes(of: &bigEndian) {
+      $0.load(as: uuid_t.self)
+    }
+    return UUID(uuid: uuidBytes)
   }
 }

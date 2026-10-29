@@ -106,7 +106,7 @@ extension MemberSidebarView {
       if let group = accumulator.groups[groupID] {
         let text: Text = {
           if let role = guildStore.role(groupID) {
-            return (Text(verbatim: role.name) + Text(verbatim: " - \(group.count)"))
+            return Text(verbatim: "\(role.name) - \(group.count)")
           } else {
             let name: String = groupID.rawValue.capitalized
             return Text(verbatim: "\(name) - \(group.count)")

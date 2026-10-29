@@ -318,17 +318,10 @@ struct ChatView: View {
 
 extension View {
   fileprivate func bottomAnchored() -> some View {
-    if #available(iOS 18.0, macOS 15.0, *) {
-      return
-        self
-        .defaultScrollAnchor(.bottom, for: .initialOffset)
-        .defaultScrollAnchor(.bottom, for: .alignment)
-        .defaultScrollAnchor(.bottom, for: .sizeChanges)
-    } else {
-      return
-        self
-        .defaultScrollAnchor(.bottom)
-    }
+    self
+      .defaultScrollAnchor(.bottom, for: .initialOffset)
+      .defaultScrollAnchor(.bottom, for: .alignment)
+      .defaultScrollAnchor(.bottom, for: .sizeChanges)
   }
 }
 

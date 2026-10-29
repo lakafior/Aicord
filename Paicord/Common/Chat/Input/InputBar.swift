@@ -10,10 +10,6 @@ import PaicordLib
 import PhotosUI
 import SwiftUIX
 
-#if os(iOS)
-  import MijickCamera
-#endif
-
 extension ChatView {
   struct InputBar: View {
     static var inputVMs: [ChannelSnowflake: InputVM] = [:]
@@ -240,12 +236,20 @@ extension ChatView {
           )
         }
         .fullScreenCover(isPresented: $cameraPickerPresented) {
-          MCamera()
-          .setCameraOutputType(.photo)
-          .setCloseMCameraAction(closeMCameraAction)
-          .onImageCaptured(onImageCaptured)
-          .onVideoCaptured(onVideoCaptured)
-          .startSession()
+          CameraPicker { result in
+            switch result {
+            case .success(let media):
+              switch media {
+              case .photo(let image):
+                onImageCaptured(image)
+              case .video(let videoURL):
+                onVideoCaptured(videoURL)
+              }
+            case .failure(let error):
+              print("CameraPicker error: \(error)")
+            }
+          }
+          .ignoresSafeArea()
         }
         .onChange(of: isFocused) {
           guard !isManualUpdate else { return }
@@ -617,10 +621,7 @@ extension ChatView {
     }
 
     #if os(iOS)
-      func closeMCameraAction() {
-        self.cameraPickerPresented = false
-      }
-      func onImageCaptured(_ image: UIImage, _ controller: MCamera.Controller) {
+      func onImageCaptured(_ image: UIImage) {
         Task {
           let tempDir = FileManager.default.temporaryDirectory
           let fileURL = tempDir.appendingPathComponent(
@@ -635,10 +636,9 @@ extension ChatView {
               print("Failed to save captured image: \(error)")
             }
           }
-          controller.closeMCamera()
         }
       }
-      func onVideoCaptured(_ videoURL: URL, _ controller: MCamera.Controller) {
+      func onVideoCaptured(_ videoURL: URL) {
         Task {
           let newVideoURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(
@@ -650,8 +650,6 @@ extension ChatView {
           )
           inputVM.trackTempFile(newVideoURL)
           inputVM.selectedFiles.append(newVideoURL)
-
-          controller.closeMCamera()
         }
       }
     #endif

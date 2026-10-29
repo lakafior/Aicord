@@ -6,7 +6,6 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import ColorCube
 import Nuke
 import PaicordLib
 import SwiftUIX
@@ -217,7 +216,6 @@ struct ProfilePopoutView: View {
 
   @Sendable
   func grabColor() async {
-    let cc = CCColorCube()
     // shares the pipeline with every image on screen, avatar probably cached.
     let m: Guild.PartialMember? = showMainProfile ? nil : member
     guard
@@ -227,16 +225,11 @@ struct ProfilePopoutView: View {
         user: user,
         animated: false
       ),
-      let image = try? await ImagePipeline.shared.image(for: avatarURL)
+      let image = try? await ImagePipeline.shared.image(for: avatarURL),
+      let extractedColor = image.extractAccentColor()
     else {
       return
     }
-    let colors = cc.extractColors(
-      from: image,
-      flags: [.orderByBrightness, .avoidBlack, .avoidWhite]
-    )
-    if let firstColor = colors?.first {
-      await MainActor.run { self.accentColor = Color(firstColor) }
-    }
+    await MainActor.run { self.accentColor = extractedColor }
   }
 }

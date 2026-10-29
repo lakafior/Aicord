@@ -290,7 +290,7 @@ extension ChatView {
         if Calendar.current.isDateInToday(date) {
           Text(date, style: .time)
         } else if Calendar.current.isDateInYesterday(date) {
-          Text("Yesterday at ") + Text(date, style: .time)
+          Text("Yesterday at \(Text(date, style: .time))")
         } else {
           Text(date, format: .dateTime.month().day().year())
         }

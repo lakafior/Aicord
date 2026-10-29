@@ -14,7 +14,7 @@ import SwiftUIX
 struct LoginView: View {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
-  var viewModel: LoginViewModel = .init()
+  @State var viewModel: LoginViewModel = .init()
   @Environment(\.theme) var theme
 
   // Focus states must be here (cannot live in viewmodel)
@@ -24,17 +24,6 @@ struct LoginView: View {
   // used for form background animation
   @State var chosenMFAMethod: Payloads.MFASubmitData.MFAKind?
 
-  init() {
-    setup()
-  }
-  func setup() {
-    Task {
-      try? await Task.sleep(for: .seconds(0.5))  // edge case problem when logging out ???
-      viewModel.gw = gw
-      viewModel.appState = appState
-      await viewModel.fingerprintSetup()
-    }
-  }
   var body: some View {
     IntrinsicSizeReader { size in
       ZStack {
@@ -107,6 +96,14 @@ struct LoginView: View {
       .animation(.default, value: viewModel.raFingerprint)
       .animation(.default, value: chosenMFAMethod)
       .animation(.default, value: size)
+      .task {
+        let currentGw = gw
+        let currentAppState = appState
+        try? await Task.sleep(for: .seconds(0.5))
+        viewModel.gw = currentGw
+        viewModel.appState = currentAppState
+        await viewModel.fingerprintSetup()
+      }
     }
   }
 }
@@ -255,22 +252,13 @@ struct LoginForm: View {
         }
       }
       .task(id: data) {
-        var filter: CIFilter
-        if #available(iOS 26.0, macOS 26.0, *) {
-          let rfilter = CIFilter.roundedQRCodeGenerator()
-          rfilter.roundedData = true
-          rfilter.roundedMarkers = 2
-          rfilter.message = data.data(using: .ascii) ?? Data()
-          rfilter.correctionLevel = "L"
-          filter = rfilter
-        } else {
-          let nfilter = CIFilter.qrCodeGenerator()
-          nfilter.message = data.data(using: .ascii) ?? Data()
-          nfilter.correctionLevel = "L"
-          filter = nfilter
-        }
+        let rfilter = CIFilter.roundedQRCodeGenerator()
+        rfilter.roundedData = true
+        rfilter.roundedMarkers = 2
+        rfilter.message = data.data(using: .ascii) ?? Data()
+        rfilter.correctionLevel = "L"
 
-        if let outputImage = filter.outputImage {
+        if let outputImage = rfilter.outputImage {
           let context = CIContext()
           if let cgImage = context.createCGImage(
             outputImage,

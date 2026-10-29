@@ -40,7 +40,7 @@ extension MessageCell {
       return f
     }()
 
-    static func == (lhs: GuildMemberJoinMessage, rhs: GuildMemberJoinMessage) -> Bool {
+    nonisolated static func == (lhs: GuildMemberJoinMessage, rhs: GuildMemberJoinMessage) -> Bool {
       lhs.message.id == rhs.message.id
     }
 

@@ -508,7 +508,11 @@ extension ChatView.InputBar.InputVM {
     #if canImport(AppKit)
       scale = NSScreen.main?.backingScaleFactor ?? 2.0
     #else
-      scale = await UIScreen.main.scale
+      scale = await MainActor.run {
+        UIApplication.shared.connectedScenes
+          .compactMap { ($0 as? UIWindowScene)?.screen.scale }
+          .first ?? 2.0
+      }
     #endif
 
     let request = QLThumbnailGenerator.Request(

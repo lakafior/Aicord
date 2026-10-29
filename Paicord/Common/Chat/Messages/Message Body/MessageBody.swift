@@ -76,8 +76,7 @@ extension MessageCell {
         if let msgSnapshot = message.partialMessageForSnapshot() {
           VStack(alignment: .leading, spacing: 4) {
             Group {
-              Text(Image(systemName: "arrowshape.turn.up.right.fill"))
-                + Text(" Forwarded").italic()
+              Text("\(Image(systemName: "arrowshape.turn.up.right.fill")) \(Text("Forwarded").italic())")
             }
             .font(.caption.italic())
             .foregroundStyle(.tertiary)

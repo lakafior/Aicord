@@ -1055,7 +1055,7 @@ extension MessageCell {
             self.player = AVPlayer()
             return
           }
-          let item = AVPlayerItem(asset: AVAsset(url: url))
+          let item = AVPlayerItem(asset: AVURLAsset(url: url))
           self.player = AVPlayer(playerItem: item)
 
           observerToken = NotificationCenter.default.addObserver(
