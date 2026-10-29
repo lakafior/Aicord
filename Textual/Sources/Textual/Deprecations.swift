@@ -62,7 +62,6 @@ extension AttributedStringMarkdownParser {
       options: options,
       syntaxExtensions: [
         patternOptions.emoji.isEmpty ? nil : .emoji(patternOptions.emoji),
-        patternOptions.mathExpressions ? .math : nil,
       ].compactMap(\.self)
     )
   }

@@ -9,7 +9,7 @@
 import Collections
 import PaicordLib
 import Playgrounds
-import SwiftUIX
+import SwiftUI
 
 struct ReactionsView: View {
   @Environment(\.gateway) var gw
@@ -104,8 +104,8 @@ struct ReactionsView: View {
           Text(emoji.name ?? " ")
             .font(.title2)
             .minimumScaleFactor(0.1)
-            .maxWidth(22)
-            .maxHeight(18)
+            .frame(maxWidth: 22)
+            .frame(maxHeight: 18)
             .padding(2)
             .padding(.horizontal, -2)
         }
@@ -123,7 +123,10 @@ struct ReactionsView: View {
         theme.common.primaryButton.opacity(currentUserReacted ? 0.35 : 0)
       )
       .clipShape(.rounded)
-      .border(.rounded, stroke: .init(burstColorStroke, lineWidth: 1.5))
+      .overlay {
+        RoundedRectangle()
+          .strokeBorder(burstColorStroke, lineWidth: 1.5)
+      }
       .shadow(color: burstColorShadow, radius: 8, x: 0, y: 0)
     }
 

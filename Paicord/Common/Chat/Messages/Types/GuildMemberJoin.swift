@@ -6,7 +6,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 extension MessageCell {
   struct GuildMemberJoinMessage: View, Equatable {
@@ -47,7 +47,7 @@ extension MessageCell {
     var body: some View {
       HStack(spacing: 8) {
         Image(systemName: "arrow.right")
-          .width(avatarSize)
+          .frame(width: avatarSize)
           .foregroundStyle(.green)
 
         HStack(spacing: 6) {

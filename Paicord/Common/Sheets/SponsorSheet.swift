@@ -6,7 +6,7 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 extension View {
   func sponsorSheet() -> some View {
@@ -88,7 +88,7 @@ private struct SponsorSheetModifier: ViewModifier {
                   .linear(duration: 30).repeatForever(autoreverses: false)
                 }
 
-              Image(systemName: .heartCircleFill)
+              Image(systemName: "heart.circle.fill")
                 .resizable()
                 .scaledToFit()
                 .padding(80)
@@ -113,7 +113,7 @@ private struct SponsorSheetModifier: ViewModifier {
                       .foregroundStyle(.white, .clear)
                   }
                   .scaleEffect(1.8)
-                Image(systemName: .heartCircleFill)
+                Image(systemName: "heart.circle.fill")
                   .resizable()
                   .scaledToFit()
                   .padding(80)
@@ -187,7 +187,7 @@ private struct SponsorSheetModifier: ViewModifier {
           .fontWeight(.semibold)
           .padding([.horizontal, .top], 5)
         }
-        .maxWidth(.infinity)
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
         .background(.thinMaterial)

@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 extension ChatView {
   struct ChannelHeader: View {

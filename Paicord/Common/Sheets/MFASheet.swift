@@ -128,7 +128,7 @@ struct MFASheet: View {
             .foregroundStyle(.tertiary)
             .font(.caption2)
 
-          TextField(text: $input)
+          TextField("", text: $input)
             .textFieldStyle(.plain)
             .padding(10)
             .frame(maxWidth: .infinity)
@@ -141,7 +141,6 @@ struct MFASheet: View {
                   inputFocused ? theme.common.primaryButton : Color.clear,
                   lineWidth: 1
                 )
-                .fill(.clear)
             }
             .disabled(taskInProgress)
             .onChange(of: input) {
@@ -159,15 +158,17 @@ struct MFASheet: View {
             .font(.caption)
 
           HStack {
-            TextField(text: $input)
+            TextField("", text: $input)
               .textFieldStyle(.plain)
-              .keyboardType(.numberPad)
+              #if os(iOS)
+                .keyboardType(.numberPad)
+              #endif
               .padding(10)
               .frame(maxWidth: .infinity)
               .focused($inputFocused)
 
             Divider()
-              .maxHeight(10)
+              .frame(maxHeight: 10)
 
             AsyncButton("Send SMS") {
               let req = try await gw.client.verifySendSMS(
@@ -188,7 +189,6 @@ struct MFASheet: View {
                 inputFocused ? theme.common.primaryButton : Color.clear,
                 lineWidth: 1
               )
-              .fill(.clear)
           }
           .disabled(taskInProgress)
           .onChange(of: input) {
@@ -293,7 +293,7 @@ struct SixDigitInput: View {
     }
     .background(theme.common.primaryBackground.opacity(0.001))
     .overlay(
-      TextField(text: $input)
+      TextField("", text: $input)
         .textFieldStyle(.plain)
         .textContentType(.oneTimeCode)
         .opacity(0.008)

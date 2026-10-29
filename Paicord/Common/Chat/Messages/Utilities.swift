@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 extension MessageCell {
   struct AvatarBalancing: View {
@@ -17,7 +17,7 @@ extension MessageCell {
           .frame(width: avatarSize)
       }
       .buttonStyle(.borderless)
-      .height(1)
+      .frame(height: 1)
       .disabled(true)  // btn used for spacing only
     }
   }

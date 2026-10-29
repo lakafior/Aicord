@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 struct ShellView: View {
   @StateObject private var vm = ShellViewModel()

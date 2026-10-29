@@ -1,5 +1,5 @@
-import ConcurrencyExtras
 import SwiftUI
+import os
 
 // MARK: - Overview
 //
@@ -30,10 +30,10 @@ extension Font.ProviderCache {
 }
 
 extension Font {
-  private static let providerCache = LockIsolated(ProviderCache.default)
+  private static let providerCache = OSAllocatedUnfairLock(uncheckedState: ProviderCache.default)
 
   func provider() -> AnyFontProvider? {
-    Self.providerCache.withValue {
+    Self.providerCache.withLockUnchecked {
       let cacheKey = KeyBox(self)
       if let provider = $0.object(forKey: cacheKey) {
         return provider.wrappedValue

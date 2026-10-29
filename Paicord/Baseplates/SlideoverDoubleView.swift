@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 struct SlideoverDoubleView<Primary: View, Secondary: View>: View {
   @Binding var swap: Bool
@@ -15,7 +15,7 @@ struct SlideoverDoubleView<Primary: View, Secondary: View>: View {
 
   private let animation: Animation = .easeOut(duration: 0.2)
   @State private var dragOffset: CGFloat = 0
-  @ViewStorage var width: CGFloat = 0
+  @State var width: CGFloat = 0
 
   @Environment(\.slideoverDisabled) var slideoverDisabled
 

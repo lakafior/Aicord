@@ -14,17 +14,9 @@ let package = Package(
   products: [
     .library(name: "Textual", targets: ["Textual"])
   ],
-  dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.3.1"),
-    .package(url: "https://github.com/gonzalezreal/swiftui-math", from: "0.1.0"),
-  ],
   targets: [
     .target(
       name: "Textual",
-      dependencies: [
-        .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
-        .product(name: "SwiftUIMath", package: "swiftui-math"),
-      ],
       resources: [
         .process("Internal/Highlighter/Prism")
       ],

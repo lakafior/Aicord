@@ -7,7 +7,7 @@
 //
 
 import DiscordModels
-import SwiftUIX
+import SwiftUI
 
 // makes a fallback to .automatic on iOS because topBarLeading is not available on macOS
 @available(iOS, unavailable)

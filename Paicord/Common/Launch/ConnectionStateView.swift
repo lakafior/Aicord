@@ -20,14 +20,14 @@ struct ConnectionStateView: View {
           Image(nsImage: NSImage(named: "AppIcon")!)
             .resizable()
             .scaledToFit()
-            .maxWidth(80)
-            .maxHeight(80)
+            .frame(maxWidth: 80)
+            .frame(maxHeight: 80)
         #else
           Image(uiImage: UIImage(named: "AppIcon")!)
             .resizable()
             .scaledToFit()
-            .maxWidth(80)
-            .maxHeight(80)
+            .frame(maxWidth: 80)
+            .frame(maxHeight: 80)
         #endif
         Text("Paicord")
           .font(.title2)

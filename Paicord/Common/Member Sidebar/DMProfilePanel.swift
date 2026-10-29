@@ -6,9 +6,8 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import Nuke
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 extension MemberSidebarView {
   struct DMProfilePanel: View {

@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 enum ChatHeaders {
   struct WelcomeStartOfChannelHeader: View {

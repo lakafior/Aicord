@@ -8,7 +8,7 @@
 
 import PaicordLib
 import PhotosUI
-import SwiftUIX
+import SwiftUI
 
 extension ChatView {
   struct InputBar: View {
@@ -18,7 +18,7 @@ extension ChatView {
     @Environment(\.theme) var theme
     var vm: ChannelStore
     @State var inputVM: InputVM
-    @ViewStorage private var isManualUpdate = false
+    @State private var isManualUpdate = false
 
     static func vm(for channel: ChannelStore) -> InputVM {
       if let existingVM = InputBar.inputVMs[channel.channelId] {
@@ -150,12 +150,10 @@ extension ChatView {
       #endif
       .animation(.default, value: inputVM.messageAction.debugDescription)
       .animation(.default, value: inputVM.uploadItems)
-      .onFileDrop(
-        delegate: .init(onDrop: { droppedItems in
-          let files = droppedItems.compactMap(\.loadedURL)
-          inputVM.selectedFiles = filterUploadableURLs(files)
-        })
-      )
+      .dropDestination(for: URL.self) { urls, _ in
+        inputVM.selectedFiles = filterUploadableURLs(urls)
+        return !urls.isEmpty
+      }
     }
 
     @ViewBuilder

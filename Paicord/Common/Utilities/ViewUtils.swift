@@ -9,7 +9,7 @@
 // big fuckoff collection of tools for use in views
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 enum Utils {
   /// Passes the avatar URL to the content closure, ensure the guild in environment is correct for the member.
@@ -101,5 +101,24 @@ enum Utils {
       banner: guild?.guild?.banner,
       animated: animated
     )
+  }
+}
+
+private struct EquatableByView<Content: View, Value: Equatable>: View, Equatable {
+  let content: Content
+  nonisolated let value: Value
+
+  nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.value == rhs.value
+  }
+
+  var body: some View {
+    content
+  }
+}
+
+extension View {
+  func equatable<V: Equatable>(by value: V) -> some View {
+    EquatableView(content: EquatableByView(content: self, value: value))
   }
 }

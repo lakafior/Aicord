@@ -6,9 +6,8 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Nuke
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 /// Sheet on iOS, else its the popover on macOS/ipadOS.
 struct ProfilePopoutView: View {
@@ -58,13 +57,13 @@ struct ProfilePopoutView: View {
         profileBody
           .padding()
       }
-      .minWidth(idiom == .phone ? nil : 300)  // popover limits on larger devices
-      .maxWidth(idiom == .phone ? nil : 300)  // popover limits on larger devices
+      .frame(minWidth: idiom == .phone ? nil : 300)  // popover limits on larger devices
+      .frame(maxWidth: idiom == .phone ? nil : 300)  // popover limits on larger devices
       .task(fetchProfile)
       .task(grabColor)  // way faster than profile fetch
       .scenePadding(.bottom)
     }
-    .minHeight(idiom == .phone ? nil : 400)  // popover limits on larger devices
+    .frame(minHeight: idiom == .phone ? nil : 400)  // popover limits on larger devices
     .presentationDetents([.medium, .large])
     .scrollClipDisabled()
     .background(

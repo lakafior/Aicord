@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 #if os(iOS) && !DEBUG
 
@@ -182,7 +182,7 @@ import SwiftUIX
             .padding([.horizontal, .top], 5)
           }
         }
-        .maxWidth(.infinity)
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
         .background(.thinMaterial)

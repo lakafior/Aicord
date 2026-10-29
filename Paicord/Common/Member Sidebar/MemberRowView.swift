@@ -6,7 +6,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 extension MemberSidebarView {
   struct MemberRowView: View {

@@ -8,7 +8,7 @@
 
 import Foundation
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 // When it's time to add support for rich presence data from other apps and games, this will need reworking.
 

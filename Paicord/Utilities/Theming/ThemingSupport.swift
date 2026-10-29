@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 #if canImport(AppKit)
   import AppKit
@@ -22,8 +22,8 @@ extension EnvironmentValues {
 
 // A representation of an image that can be encoded and decoded across platforms.
 struct PlatformImageRepresentation: Codable, Hashable, Equatable, Sendable {
-  let light: AppKitOrUIKitImage
-  let dark: AppKitOrUIKitImage
+  let light: PlatformImage
+  let dark: PlatformImage
 
   init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -162,11 +162,11 @@ extension Color: @retroactive Codable {
 
   public func encode(to encoder: any Encoder) throws {
     let light: CGColor = {
-      let platformColor: AppKitOrUIKitColor = .init(self)
+      let platformColor: PlatformColor = .init(self)
       return platformColor.resolvedColor(with: .light).cgColor
     }()
     let dark: CGColor = {
-      let platformColor: AppKitOrUIKitColor = .init(self)
+      let platformColor: PlatformColor = .init(self)
       return platformColor.resolvedColor(with: .dark).cgColor
     }()
 
@@ -237,8 +237,8 @@ extension Color: @retroactive Codable {
   }
 }
 
-extension AppKitOrUIKitColor {
-  func resolvedColor(with colorScheme: ColorScheme) -> AppKitOrUIKitColor {
+extension PlatformColor {
+  func resolvedColor(with colorScheme: ColorScheme) -> PlatformColor {
     #if os(iOS) || os(tvOS) || os(watchOS)
       let uiStyle: UIUserInterfaceStyle =
         (colorScheme == .dark) ? .dark : .light

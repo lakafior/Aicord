@@ -7,89 +7,144 @@
 //
 
 import Foundation
-import Nuke
+import ImageIO
+import os
 
-final class AnimatableImageDecoder: ImageDecoding, @unchecked Sendable {
-  private let base = ImageDecoders.Default()
+#if os(macOS)
+  import AppKit
+  typealias PlatformImage = NSImage
+#else
+  import UIKit
+  typealias PlatformImage = UIImage
+#endif
 
-  func decode(_ data: Data) throws -> ImageContainer {
-    var container = try base.decode(data)
-    switch container.type {
-    case .some(.gif):
-      break  // base already keeps it
-    case .some(.webp):
-      container.data = data
-    case .some(.png) where Self.isAnimatedPNG(data):
-      container.data = data
-    default:
-      break
-    }
-    return container
+final class ImageContainer: @unchecked Sendable {
+  let image: PlatformImage
+  let data: Data?
+  let utType: CFString?
+  let animatedSource: AnimatedImageFrameSource?
+
+  init(
+    image: PlatformImage,
+    data: Data? = nil,
+    utType: CFString? = nil,
+    animatedSource: AnimatedImageFrameSource? = nil
+  ) {
+    self.image = image
+    self.data = data
+    self.utType = utType
+    self.animatedSource = animatedSource
+  }
+}
+
+actor ImagePipeline {
+  static let shared = ImagePipeline()
+
+  nonisolated private let memoryCache = OSAllocatedUnfairLock<NSCache<NSURL, ImageContainer>>(
+    uncheckedState: {
+      let cache = NSCache<NSURL, ImageContainer>()
+      cache.countLimit = 500
+      cache.totalCostLimit = 128 * 1024 * 1024
+      return cache
+    }()
+  )
+
+  private let session: URLSession
+  private var ongoingTasks: [URL: Task<ImageContainer, Error>] = [:]
+
+  init() {
+    let config = URLSessionConfiguration.default
+    let cacheDir = URL.cachesDirectory.appending(path: "com.llsc12.paicord.imagecache")
+    let urlCache = URLCache(
+      memoryCapacity: 64 * 1024 * 1024,
+      diskCapacity: 250 * 1024 * 1024,
+      directory: cacheDir
+    )
+    config.urlCache = urlCache
+    config.requestCachePolicy = .returnCacheDataElseLoad
+    self.session = URLSession(configuration: config)
   }
 
-  // check for animated png by looking for the acTL chunk before any IDAT chunks
-  private static func isAnimatedPNG(_ data: Data) -> Bool {
-    let pngSignature: [UInt8] = [
-      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-    ]
-    let acTLSignature: [UInt8] = [0x61, 0x63, 0x54, 0x4C]  // "acTL"
-    let idatSignature: [UInt8] = [0x49, 0x44, 0x41, 0x54]  // "IDAT"
+  nonisolated func cachedContainer(for url: URL) -> ImageContainer? {
+    memoryCache.withLockUnchecked { $0.object(forKey: url as NSURL) }
+  }
 
-    guard data.count >= (pngSignature.count + 4) else { return false }
-
-    return data.withUnsafeBytes { (rawBuffer: UnsafeRawBufferPointer) -> Bool in
-      guard let baseAddress = rawBuffer.baseAddress else { return false }
-
-      // ensure png
-      for i in 0..<pngSignature.count {
-        if baseAddress.load(fromByteOffset: i, as: UInt8.self)
-          != pngSignature[i]
-        {
-          return false
-        }
-      }
-
-      let endOffset = data.count - 3
-      var offset = pngSignature.count
-
-      while offset < endOffset {
-        let b0 = baseAddress.load(fromByteOffset: offset, as: UInt8.self)
-        let b1 = baseAddress.load(fromByteOffset: offset + 1, as: UInt8.self)
-        let b2 = baseAddress.load(fromByteOffset: offset + 2, as: UInt8.self)
-        let b3 = baseAddress.load(fromByteOffset: offset + 3, as: UInt8.self)
-
-        // check for acTL
-        if b0 == acTLSignature[0] && b1 == acTLSignature[1]
-          && b2 == acTLSignature[2] && b3 == acTLSignature[3]
-        {
-          return true
-        }
-
-        // exit if idat found
-        if b0 == idatSignature[0] && b1 == idatSignature[1]
-          && b2 == idatSignature[2] && b3 == idatSignature[3]
-        {
-          return false
-        }
-
-        offset += 1
-      }
-
-      return false
+  func container(for url: URL) async throws -> ImageContainer {
+    if let cached = cachedContainer(for: url) {
+      return cached
     }
+
+    if let existingTask = ongoingTasks[url] {
+      return try await existingTask.value
+    }
+
+    let task = Task<ImageContainer, Error> {
+      defer {
+        ongoingTasks.removeValue(forKey: url)
+      }
+
+      let (data, response) = try await session.data(from: url)
+      if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
+        throw URLError(.badServerResponse)
+      }
+
+      let container = try await Task.detached(priority: .userInitiated) {
+        try Self.decodeContainer(from: data)
+      }.value
+
+      memoryCache.withLockUnchecked {
+        $0.setObject(container, forKey: url as NSURL, cost: data.count)
+      }
+      return container
+    }
+
+    ongoingTasks[url] = task
+    return try await task.value
+  }
+
+  func image(for url: URL) async throws -> PlatformImage {
+    try await container(for: url).image
+  }
+
+  nonisolated private static func decodeContainer(from data: Data) throws -> ImageContainer {
+    guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+      throw URLError(.cannotDecodeContentData)
+    }
+
+    let utType = CGImageSourceGetType(source)
+    let count = CGImageSourceGetCount(source)
+
+    guard let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+      throw URLError(.cannotDecodeContentData)
+    }
+
+    #if os(macOS)
+      let platformImage = NSImage(
+        cgImage: cgImage,
+        size: NSSize(width: cgImage.width, height: cgImage.height)
+      )
+    #else
+      let platformImage = UIImage(cgImage: cgImage)
+    #endif
+
+    var animatedSource: AnimatedImageFrameSource? = nil
+    if count > 1, let frames = AnimatedImageFrameSource(data: data, utType: utType),
+      frames.isAnimated
+    {
+      animatedSource = frames
+    }
+
+    return ImageContainer(
+      image: platformImage,
+      data: animatedSource != nil ? data : nil,
+      utType: utType,
+      animatedSource: animatedSource
+    )
   }
 }
 
 enum PaicordImagePipeline {
   static func configure() {
-    ImageDecoderRegistry.shared.register { _ in AnimatableImageDecoder() }
-
-    ImagePipeline.shared = ImagePipeline {
-      $0.dataCache = try? DataCache(name: "com.llsc12.paicord.imagecache")
-      $0.dataCachePolicy = .automatic
-      $0.imageCache = ImageCache.shared
-      // large attachments break by default
-      $0.maximumResponseDataSize = nil
-    }
+    _ = ImagePipeline.shared
   }
 }

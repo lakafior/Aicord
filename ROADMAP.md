@@ -71,15 +71,16 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
 
 ---
 
-### ⏳ Etap 4: Eliminacja `SwiftUIX` i głęboka modernizacja architektury
+### ✅ Etap 4: Eliminacja `SwiftUIX` i głęboka modernizacja architektury (ZAKOŃCZONY)
 1. **Usunięcie `SwiftUIX` (`https://github.com/llsc12/SwiftUIX`):**
-   - [ ] Zamiana `import SwiftUIX` na `import SwiftUI` we wszystkich 69 plikach.
-   - [ ] Zastąpienie `IntrinsicSizeReader` natywnym modyfikatorem `.onGeometryChange(for: CGSize.self)` (dostępnym natywnie w nowym SwiftUI!).
-   - [ ] Zastąpienie `@ViewStorage` standardowym `@State` lub `@ObservationIgnored`.
-   - [ ] Zastąpienie helperów typu `.maxWidth()`, `.minHeight()`, `AppKitOrUIKitViewRepresentable`, `Image(cgImage:)` czystym SwiftUI.
+   - [x] Zamiana `import SwiftUIX` na `import SwiftUI` we wszystkich 69 plikach.
+   - [x] Zastąpienie `IntrinsicSizeReader` natywnym modyfikatorem `.onGeometryChange(for: CGSize.self)` (dostępnym natywnie w nowym SwiftUI!).
+   - [x] Zastąpienie `@ViewStorage` standardowym `@State` lub `@ObservationIgnored`.
+   - [x] Zastąpienie helperów typu `.maxWidth()`, `.minHeight()`, `AppKitOrUIKitViewRepresentable`, `Image(cgImage:)` czystym SwiftUI.
 2. **Odchudzenie `Textual` / Markdown i pozostałych paczek (`SwiftEmoji`, `Nuke`, `PaicordLib`):**
-   - [ ] Usunięcie `swift-concurrency-extras` z `Textual/Package.swift`.
-   - [ ] Przegląd i ewentualna zamiana pozostałych zależności (`swiftui-math`, duplikacja danych emoji między `DiscordEmojiNames.json` 1.9 MB a `SwiftEmojiIndex`).
+   - [x] Usunięcie `swift-concurrency-extras` oraz `swiftui-math` z `Textual/Package.swift` (0 zewnętrznych zależności w `Textual`!).
+   - [x] Usunięcie `SwiftEmoji` / `SwiftEmojiIndex` (`https://github.com/Aeastr/SwiftEmoji`) — kategoryzacja, wyszukiwanie i indeksowanie emoji oparte bezpośrednio na natywnym `DiscordEmojiNameIndex` (`DiscordEmojiNames.json`) bez duplikacji bazy.
+   - [x] Usunięcie `Nuke` / `NukeUI` (`https://github.com/kean/Nuke.git`) — zastąpienie lekkim, natywnym `actor ImagePipeline` (`URLSession` + `URLCache` + `NSCache` + `ImageIO` + współdzielony `AnimatedImageFrameSource`).
 
 ---
 
@@ -87,9 +88,10 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
 1. **Strict Concurrency & Porządki w Store'ach (Swift 6):**
    - [ ] Oznaczenie Store'ów (`GatewayStore`, `GuildStore`, `ChannelStore`, `CurrentUserStore` itd.) jako `@MainActor` i usunięcie zbędnych bloków `Task { @MainActor in }` oraz komunikacji przez `NotificationCenter`.
    - [ ] Przełączenie targetu aplikacji na `SWIFT_VERSION = 6.0`. Znane blokery: statyczne mutowalne stany (`PaicordAppState.instances`/`sharedEphemeral`, `transcriptCache`/`waveformCache` w `Attachments.swift`, `defaultGradientMask` w `VariableBlurView.swift`, `ShellView`), typy non-Sendable w `DownloadButton.swift`, `Sending 'self'` w `Task { @MainActor in }` Store'ów. Nie maskować tego przez `@unchecked Sendable`.
-2. **Odchudzenie Logowania i Zasobów:**
+2. **Odchudzenie Logowania, Zasobów i `Textual`:**
    - [ ] Wyłączenie domyślnego przechwytywania `stdout`/`stderr` w `StdOutInterceptor.swift` (trzymającego logi w tablicy w RAM-ie) na rzecz lekkiego, natywnego `os.Logger` (`OSLog`).
    - [ ] Leniwe ładowanie (lazy loading) i deduplikacja słownika emoji (`DiscordEmojiNames.json`).
+   - [ ] Zastąpienie zasobu `prism-bundle.js` i `JavaScriptCore` (`JSContext`) w `Textual` (`CodeTokenizer.swift`) lekkim, natywnym tokenizerem składni w czystym Swifcie (bez silnika JS w tle).
 3. **Migracja warstwy sieciowej `PaicordLib` na natywne API Apple:**
    - [ ] Zastąpienie ciężkiego, serwerowego stosu `SwiftNIO` (`swift-nio`, `async-http-client`, `swift-websocket`, `multipart-kit`, `swift-crypto`) natywnym `URLSession` (`URLSessionWebSocketTask`, HTTP/3) oraz systemowym `CryptoKit`.
 4. **Rebranding `Paicord` → `Aicord`:**

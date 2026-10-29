@@ -35,8 +35,6 @@ extension StructuredText {
 
     var body: some View {
       switch intent?.kind {
-      case .paragraph where content.isMathBlock:
-        MathBlock(content)
       case .paragraph:
         Paragraph(content)
       case .header(let level):
@@ -45,8 +43,6 @@ extension StructuredText {
         OrderedList(intent: intent, content: content)
       case .unorderedList:
         UnorderedList(intent: intent, content: content)
-      case .codeBlock(let languageHint) where languageHint?.lowercased() == "math":
-        MathCodeBlock(content)
       case .codeBlock(let languageHint):
         CodeBlock(content, languageHint: languageHint)
       case .blockQuote:

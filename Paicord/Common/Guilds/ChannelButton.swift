@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct ChannelButton: View {
   @Environment(\.gateway) var gw
@@ -169,7 +169,7 @@ struct ChannelButton: View {
         }
         .foregroundStyle(isUnread || selected ? .primary : .secondary)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .minHeight(35)
+        .frame(minHeight: 35)
         .padding(.horizontal, 12)
         .overlay(alignment: .leading) {
           if isUnread {
@@ -194,7 +194,7 @@ struct ChannelButton: View {
         }
         .foregroundStyle(isUnread || selected ? .primary : .secondary)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .minHeight(35)
+        .frame(minHeight: 35)
         .padding(.horizontal, 12)
         .overlay(alignment: .leading) {
           if isUnread {
@@ -214,7 +214,7 @@ struct ChannelButton: View {
           Text(channel.name ?? "unknown")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .minHeight(35)
+        .frame(minHeight: 35)
         .padding(.horizontal, 12)
       }
       .tint(.primary)
@@ -231,7 +231,7 @@ struct ChannelButton: View {
         }
         .foregroundStyle(isUnread || selected ? .primary : .secondary)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .minHeight(35)
+        .frame(minHeight: 35)
         .padding(.horizontal, 12)
         .overlay(alignment: .leading) {
           if isUnread {
@@ -377,7 +377,7 @@ struct ChannelButton: View {
               }
               Text(channel.name ?? "Unknown Category")
                 .font(.subheadline)
-                .semibold()
+                .fontWeight(.semibold)
 
               Spacer()
 

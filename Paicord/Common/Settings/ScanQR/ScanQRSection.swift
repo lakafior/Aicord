@@ -6,7 +6,7 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 #if os(iOS)
   import AVFoundation
@@ -20,7 +20,7 @@ extension SettingsView {
     #if os(iOS)
       Section("Scan QR Code") {
         QRCodeScanView()
-          .listRowInsets(.zero)
+          .listRowInsets(EdgeInsets())
           .listRowBackground(Color.clear)
       }
     #endif

@@ -8,6 +8,55 @@
 
 import Foundation
 
+enum EmojiCategory: String, CaseIterable, Hashable, Sendable {
+  case people
+  case nature
+  case food
+  case activity
+  case travel
+  case objects
+  case symbols
+  case flags
+
+  var displayName: String {
+    switch self {
+    case .people: "People"
+    case .nature: "Nature"
+    case .food: "Food & Drink"
+    case .activity: "Activities"
+    case .travel: "Travel & Places"
+    case .objects: "Objects"
+    case .symbols: "Symbols"
+    case .flags: "Flags"
+    }
+  }
+
+  var symbolName: String {
+    switch self {
+    case .people: "face.smiling.inverse"
+    case .nature: "leaf.fill"
+    case .food: "fork.knife"
+    case .activity: "soccerball"
+    case .travel: "car.fill"
+    case .objects: "lightbulb.fill"
+    case .symbols: "heart.fill"
+    case .flags: "flag.fill"
+    }
+  }
+}
+
+struct DiscordUnicodeEmoji: Identifiable, Hashable, Sendable {
+  let character: String
+  let names: [String]
+  var name: String { names.first ?? character }
+  var id: String { character }
+
+  init(_ character: String, names: [String] = []) {
+    self.character = character
+    self.names = names
+  }
+}
+
 enum DiscordEmojiNameIndex {
   private struct Entry: Decodable {
     let n: [String]
@@ -19,11 +68,35 @@ enum DiscordEmojiNameIndex {
   /// Discord's spelling of each emoji, keyed by the character with every
   /// variation selector removed.
   @MainActor private static var byBareCharacter: [String: String]?
+  @MainActor private static var categorizedEmojis: [EmojiCategory: [DiscordUnicodeEmoji]]?
+  @MainActor private static var baseEmojis: [DiscordUnicodeEmoji]?
+
+  @MainActor
+  static var categories: [EmojiCategory: [DiscordUnicodeEmoji]] {
+    loadIfNeeded()
+    return categorizedEmojis ?? [:]
+  }
+
+  @MainActor
+  static func search(_ query: String) -> [DiscordUnicodeEmoji] {
+    loadIfNeeded()
+    let lower = query.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !lower.isEmpty, let baseEmojis else { return [] }
+    return baseEmojis.filter { emoji in
+      emoji.names.contains { $0.lowercased().contains(lower) }
+    }
+  }
 
   @MainActor
   static func names(for character: String) -> [String]? {
     loadIfNeeded()
-    return byCharacter?[character]
+    if let exact = byCharacter?[character] {
+      return exact
+    }
+    if let matched = byBareCharacter?[bare(character)] {
+      return byCharacter?[matched]
+    }
+    return nil
   }
 
   @MainActor
@@ -34,12 +107,6 @@ enum DiscordEmojiNameIndex {
 
   /// Maps a character onto Discord's spelling of it, or nil if Discord has no
   /// such emoji.
-  ///
-  /// Discord matches reaction emoji against its own table byte for byte, and
-  /// the picker's grid comes from SwiftEmojiIndex, which spells some sequences
-  /// differently - almost always a U+FE0F variation selector that one side
-  /// includes and the other doesn't. Reacting with the unnormalised character
-  /// fails with "Unknown Emoji" (10014).
   @MainActor
   static func discordCharacter(matching character: String) -> String? {
     loadIfNeeded()
@@ -62,6 +129,8 @@ enum DiscordEmojiNameIndex {
       byCharacter = [:]
       byName = [:]
       byBareCharacter = [:]
+      categorizedEmojis = [:]
+      baseEmojis = []
       return
     }
     byCharacter = Dictionary(entries.map { ($0.s, $0.n) }, uniquingKeysWith: { first, _ in first })
@@ -77,5 +146,36 @@ enum DiscordEmojiNameIndex {
       bareLookup[bare(entry.s)] = entry.s
     }
     byBareCharacter = bareLookup
+
+    var categoriesDict: [EmojiCategory: [DiscordUnicodeEmoji]] = [:]
+    var allBase: [DiscordUnicodeEmoji] = []
+    var currentCategory: EmojiCategory = .people
+
+    for entry in entries {
+      if let first = entry.n.first {
+        switch first {
+        case "dog": currentCategory = .nature
+        case "green_apple": currentCategory = .food
+        case "soccer": currentCategory = .activity
+        case "red_car": currentCategory = .travel
+        case "watch": currentCategory = .objects
+        case "pink_heart": currentCategory = .symbols
+        case "flag_white": currentCategory = .flags
+        default: break
+        }
+      }
+
+      // Exclude skin-tone variants from the default category grid and search list
+      if entry.n.contains(where: { $0.contains("_tone") }) {
+        continue
+      }
+
+      let emoji = DiscordUnicodeEmoji(entry.s, names: entry.n)
+      categoriesDict[currentCategory, default: []].append(emoji)
+      allBase.append(emoji)
+    }
+
+    categorizedEmojis = categoriesDict
+    baseEmojis = allBase
   }
 }

@@ -9,7 +9,7 @@
 import AVFoundation
 import AVKit
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 #if os(macOS)
   import AppKit
@@ -450,7 +450,7 @@ private struct AttachmentViewer: View {
             }
           }
         }
-        .maxHeight(38 * 1.5)
+        .frame(maxHeight: 38 * 1.5)
         .onGeometryChange(for: CGSize.self) {
           $0.size
         } action: {
@@ -463,7 +463,7 @@ private struct AttachmentViewer: View {
       } action: {
         scrollViewSize = $0
       }
-      .maxWidth(min(contentSize.width, 380))
+      .frame(maxWidth: min(contentSize.width, 380))
     }
   }
 }
@@ -478,7 +478,7 @@ private struct VideoPlayerView: View {
         #if os(macOS)
           .padding(.vertical, 70)
         #endif
-        .maxWidth(.infinity)
+        .frame(maxWidth: .infinity)
     } else {
       Text("Invalid video URL")
     }
@@ -880,11 +880,10 @@ private struct ZoomableImageView: View {
               y: min(max(minScrollY, currentOrigin.y), maxScrollY)
             )
             if clampedOrigin != currentOrigin {
-              NSView.animate(
-                withDuration: 0.2,
-                delay: 0,
-                options: .curveEaseOut
-              ) {
+              NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.2
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                context.allowsImplicitAnimation = true
                 scrollView.contentView.bounds.origin = clampedOrigin
               }
             }
@@ -1378,11 +1377,10 @@ private struct ZoomableGifvView: View {
               y: min(max(minScrollY, currentOrigin.y), maxScrollY)
             )
             if clampedOrigin != currentOrigin {
-              NSView.animate(
-                withDuration: 0.2,
-                delay: 0,
-                options: .curveEaseOut
-              ) {
+              NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.2
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                context.allowsImplicitAnimation = true
                 scrollView.contentView.bounds.origin = clampedOrigin
               }
             }

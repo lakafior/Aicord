@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct PlaceholderMessageSet: View {
   var body: some View {

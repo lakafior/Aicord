@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 extension SettingsView {
   @ViewBuilder
@@ -33,10 +33,10 @@ extension SettingsView {
           )
           .resizable()
           .scaledToFit()
-          .maxHeight(120)
+          .frame(maxHeight: 120)
         }
-        .maxWidth(.infinity)
-        .minHeight(120)
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 120)
         .padding()
         .background(LoginView.MeshGradientBackground())
         .clipShape(.rounded)

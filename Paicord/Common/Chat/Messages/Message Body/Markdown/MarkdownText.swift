@@ -6,9 +6,7 @@
 //
 
 import PaicordLib
-import SwiftEmojiIndex
 import SwiftUI
-import SwiftUIX
 import Textual
 
 struct MarkdownText: View {
@@ -24,7 +22,7 @@ struct MarkdownText: View {
   @State private var emojiPopover: DiscordModels.Emoji?
   @State private var unicodeEmojiPopover: String?
 
-  @ViewStorage private var documentFrame: CGRect = .zero
+  @State private var documentFrame: CGRect = .zero
   @State private var tapLocalPoint: (point: CGPoint, size: CGSize) = (.zero, .zero)
 
   init(
@@ -73,12 +71,11 @@ struct MarkdownText: View {
     .textual.textSelection(.enabled)
     .textual.overflowMode(.wrap)
     .foregroundStyle(foregroundColorOverride ?? theme.markdown.text)
-    .background(
-      GeometryReader { geometry in
-        documentFrame = geometry.frame(in: .global)
-        return Color.clear
-      }
-    )
+    .onGeometryChange(for: CGRect.self) { geometry in
+      geometry.frame(in: .global)
+    } action: { newFrame in
+      documentFrame = newFrame
+    }
     .popover(
       isPresented: isPopoverPresented,
       attachmentAnchor: .rect(.rect(CGRect(origin: tapLocalPoint.point, size: tapLocalPoint.size))),
@@ -183,14 +180,11 @@ struct MarkdownText: View {
             .padding(.bottom, -30)
           #endif
         }
-        .modify(for: .macOS, modify: { view in
-          view
-            .frame(minWidth: 290, maxWidth: 290, alignment: .leading)
-        })
-        .modify(for: .iOS, modify: { view in
-          view
-            .sheetFitted()
-        })
+        #if os(macOS)
+          .frame(minWidth: 290, maxWidth: 290, alignment: .leading)
+        #elseif os(iOS)
+          .sheetFitted()
+        #endif
         .task(id: id) {
           await loadSource(id: id)
         }
@@ -330,8 +324,6 @@ struct MarkdownText: View {
 
   struct UnicodeEmojiDetailsView: View {
     var character: String
-    @State private var fallbackEmoji: SwiftEmojiIndex.Emoji?
-    @State private var loadedFallback = false
 
     private var discordName: String? {
       DiscordEmojiNameIndex.names(for: character)?.first
@@ -346,17 +338,9 @@ struct MarkdownText: View {
           if let discordName {
             Text(":\(discordName):")
               .bold()
-          } else if let fallbackEmoji {
-            Text(":\(fallbackEmoji.shortcodes.first ?? character):")
-              .bold()
-            Text(fallbackEmoji.name.capitalized)
-              .font(.caption)
-              .foregroundStyle(.secondary)
-          } else if loadedFallback {
+          } else {
             Text(character)
               .bold()
-          } else {
-            ProgressView()
           }
 
           Text("A default emoji. You can use this emoji everywhere on Discord.")
@@ -365,19 +349,11 @@ struct MarkdownText: View {
         }
       }
       .padding(12)
-      .modify(for: .macOS, modify: { view in
-        view
-          .frame(minWidth: 290, maxWidth: 290, alignment: .leading)
-      })
-      .modify(for: .iOS, modify: { view in
-        view
-          .sheetFitted()
-      })
-      .task(id: character) {
-        guard discordName == nil else { return }
-        fallbackEmoji = await SwiftEmojiIndex.Emoji.lookup(character)
-        loadedFallback = true
-      }
+      #if os(macOS)
+        .frame(minWidth: 290, maxWidth: 290, alignment: .leading)
+      #elseif os(iOS)
+        .sheetFitted()
+      #endif
       .ignoresSafeArea()
     }
   }
@@ -536,24 +512,23 @@ struct MarkdownText: View {
 
     func makeBody(configuration: Configuration) -> some View {
       StructuredText.DefaultCodeBlockStyle().makeBody(configuration: configuration)
-        .modify(for: .macOS) { view in
-          view
-            .overlay(alignment: .topTrailing) {
-                if isHovered {
-                  Button {
-                    configuration.codeBlock.copyToPasteboard()
-                  } label: {
-                    Image(systemName: "doc.on.doc")
-                      .padding(6)
-                      .background(.ultraThinMaterial)
-                      .clipShape(Circle())
-                  }
-                  .buttonStyle(.plain)
+        #if os(macOS)
+          .overlay(alignment: .topTrailing) {
+            if isHovered {
+              Button {
+                configuration.codeBlock.copyToPasteboard()
+              } label: {
+                Image(systemName: "doc.on.doc")
                   .padding(6)
-                }
+                  .background(.ultraThinMaterial)
+                  .clipShape(Circle())
+              }
+              .buttonStyle(.plain)
+              .padding(6)
             }
-            .onHover { isHovered = $0 }
-        }
+          }
+          .onHover { isHovered = $0 }
+        #endif
     }
   }
 }

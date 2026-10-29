@@ -6,8 +6,6 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import Nuke
-import NukeUI
 import SwiftUI
 
 enum ImageAnimation {
@@ -31,37 +29,66 @@ struct NukeImage<Placeholder: View>: View {
 
   private var isResizable = false
 
+  @State private var loadedContainer: ImageContainer?
+  @State private var loadedURL: URL?
+
   private var wantsAnimation: Bool { animation.wantsAnimation }
+  private var primaryURL: URL? { urlForVariant(wantsAnimation) }
+  private var fallbackStillURL: URL? {
+    guard wantsAnimation, let still = urlForVariant(false), still != primaryURL else {
+      return nil
+    }
+    return still
+  }
+
+  private var effectiveContainer: ImageContainer? {
+    guard let primaryURL else { return nil }
+    if loadedURL == primaryURL, let loadedContainer {
+      return loadedContainer
+    }
+    return ImagePipeline.shared.cachedContainer(for: primaryURL)
+  }
+
+  private var fallbackStillContainer: ImageContainer? {
+    guard let fallbackStillURL else { return nil }
+    return ImagePipeline.shared.cachedContainer(for: fallbackStillURL)
+  }
 
   var body: some View {
-    LazyImage(url: urlForVariant(wantsAnimation)) { state in
-      if let container = state.imageContainer {
+    Group {
+      if let container = effectiveContainer {
         content(for: container)
-      } else if wantsAnimation, let stillURL = urlForVariant(false),
-        stillURL != urlForVariant(true)
-      {
-        // the animated variant is the heavy one, so hold the still (usually already cached from
-        // before the policy flipped on) rather than blanking out while it loads.
-        // old paicord problem i wanted to fix for a while.
-        stillContent(for: stillURL)
+      } else if let stillContainer = fallbackStillContainer {
+        resized(Image(platformImage: stillContainer.image))
       } else if let placeholder {
         placeholder()
       } else {
         Color.clear
       }
     }
+    .task(id: primaryURL) {
+      guard let url = primaryURL else {
+        loadedContainer = nil
+        loadedURL = nil
+        return
+      }
+      if let cached = ImagePipeline.shared.cachedContainer(for: url) {
+        loadedContainer = cached
+        loadedURL = url
+        return
+      }
+      if let container = try? await ImagePipeline.shared.container(for: url),
+        !Task.isCancelled
+      {
+        loadedContainer = container
+        loadedURL = url
+      }
+    }
   }
 
   @ViewBuilder
   private func content(for container: ImageContainer) -> some View {
-    // only build animation setup work if the image is even animated
-    if wantsAnimation, let data = container.data,
-      let source = AnimatedImageFrameSource(
-        data: data,
-        utType: container.type?.rawValue as CFString?
-      ),
-      source.isAnimated
-    {
+    if wantsAnimation, let source = container.animatedSource, source.isAnimated {
       AnimatedImageRenderer(
         source: source,
         isAnimating: true,
@@ -69,19 +96,6 @@ struct NukeImage<Placeholder: View>: View {
       )
     } else {
       resized(Image(platformImage: container.image))
-    }
-  }
-
-  @ViewBuilder
-  private func stillContent(for url: URL) -> some View {
-    LazyImage(url: url) { state in
-      if let container = state.imageContainer {
-        resized(Image(platformImage: container.image))
-      } else if let placeholder {
-        placeholder()
-      } else {
-        Color.clear
-      }
     }
   }
 

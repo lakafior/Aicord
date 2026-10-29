@@ -8,7 +8,7 @@
 
 import PaicordLib
 import Playgrounds
-import SwiftUIX
+import SwiftUI
 
 /// Shows a guild folder or standalone guild
 struct GuildButton: View {

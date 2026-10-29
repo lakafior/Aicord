@@ -6,9 +6,8 @@
 // Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Nuke
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct ProfileView: View {
   @Environment(\.gateway) var gw
@@ -157,7 +156,7 @@ struct ProfileView: View {
             Profile.Badge(badge: badge)
           }
         }
-        .maxHeight(16)
+        .frame(maxHeight: 16)
       }
 
       if let bio =

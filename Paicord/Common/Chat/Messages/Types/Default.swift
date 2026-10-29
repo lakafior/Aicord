@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 extension MessageCell {
   struct DefaultMessage: View, Equatable {

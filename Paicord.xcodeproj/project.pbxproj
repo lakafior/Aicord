@@ -12,7 +12,6 @@
 		575DA6A030006C3D00CBA394 /* MentionCountBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575DA69F30006C3D00CBA394 /* MentionCountBadge.swift */; };
 		5783AA942E6B8FD100F73F6D /* MeshGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5783AA932E6B8FCD00F73F6D /* MeshGradient.swift */; };
 		578E1CE12E67781700C6DEA3 /* GradientText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578E1CE02E67780B00C6DEA3 /* GradientText.swift */; };
-		579DF34B2E6D9B9800BD8B97 /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = 579DF34A2E6D9B9800BD8B97 /* SwiftUIX */; };
 		57A4E70B2E6B315F00470131 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A4E70A2E6B315C00470131 /* LoginView.swift */; };
 		57A4E7152E6B44C900470131 /* CGSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A4E7142E6B44C200470131 /* CGSize.swift */; };
 		57A55C572E7560CF005C8226 /* MarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A55C562E7560CC005C8226 /* MarkdownText.swift */; };
@@ -104,8 +103,6 @@
 		AA7B0B6A2EE5D809003F0CE9 /* ChatHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7B0B692EE5D804003F0CE9 /* ChatHeaders.swift */; };
 		AA7B38F22EB37F9B00CA4A3C /* PermsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7B38F12EB37F9500CA4A3C /* PermsHelper.swift */; };
 		AA7B38F42EB50F0100CA4A3C /* MessageDrainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7B38F32EB50EFD00CA4A3C /* MessageDrainStore.swift */; };
-		AA8ABACA2F2A794E00557278 /* SwiftEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = AA8ABAC92F2A794E00557278 /* SwiftEmoji */; };
-		AA8ABACC2F2A794E00557278 /* SwiftEmojiIndex in Frameworks */ = {isa = PBXBuildFile; productRef = AA8ABACB2F2A794E00557278 /* SwiftEmojiIndex */; };
 		AA9C81832E6660BE0086B1DA /* GuildButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C81822E6660BE0086B1DA /* GuildButton.swift */; };
 		AA9C81862E66670E0086B1DA /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C81852E66670E0086B1DA /* CornerRadius.swift */; };
 		AA9D26B12EC95EE4006071FE /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9D26B02EC95EE3006071FE /* FlowLayout.swift */; };
@@ -148,8 +145,6 @@
 		AAEEC71F2E65120000EB5FC9 /* TokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEC71E2E6511F800EB5FC9 /* TokenStore.swift */; };
 		AAEEF5012E9900F60034FA04 /* Default.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEF5002E9900E50034FA04 /* Default.swift */; };
 		AAF0A1022F30A1020000AAA2 /* ReactionPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF0A1012F30A1010000AAA1 /* ReactionPicker.swift */; };
-		AAFACE0400000000000000A4 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = AAFACE0200000000000000A2 /* Nuke */; };
-		AAFACE0500000000000000A5 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = AAFACE0300000000000000A3 /* NukeUI */; };
 		AAFACE2000000000000000C1 /* AnimatedImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFACE1000000000000000B1 /* AnimatedImageRenderer.swift */; };
 		AAFACE2100000000000000C2 /* NukeImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFACE1100000000000000B2 /* NukeImage.swift */; };
 		AAFACE2200000000000000C3 /* PaicordImagePipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFACE1200000000000000B3 /* PaicordImagePipeline.swift */; };
@@ -313,11 +308,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAFACE0400000000000000A4 /* Nuke in Frameworks */,
-				AAFACE0500000000000000A5 /* NukeUI in Frameworks */,
-				AA8ABACC2F2A794E00557278 /* SwiftEmojiIndex in Frameworks */,
-				AA8ABACA2F2A794E00557278 /* SwiftEmoji in Frameworks */,
-				579DF34B2E6D9B9800BD8B97 /* SwiftUIX in Frameworks */,
 				93F6E65657BE21186C1C19E6 /* PaicordLib in Frameworks */,
 				608EDA4BB4D7C45A5BC93CFA /* Textual in Frameworks */,
 			);
@@ -1023,11 +1013,6 @@
 			);
 			name = Paicord;
 			packageProductDependencies = (
-				579DF34A2E6D9B9800BD8B97 /* SwiftUIX */,
-				AAFACE0200000000000000A2 /* Nuke */,
-				AAFACE0300000000000000A3 /* NukeUI */,
-				AA8ABAC92F2A794E00557278 /* SwiftEmoji */,
-				AA8ABACB2F2A794E00557278 /* SwiftEmojiIndex */,
 				9E27420250444A05FCADE929 /* PaicordLib */,
 				6EFB9068924331EC09343396 /* Textual */,
 			);
@@ -1061,9 +1046,6 @@
 			mainGroup = AA1096D22E63BE84005BC3D2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				579DF3492E6D9B9800BD8B97 /* XCRemoteSwiftPackageReference "SwiftUIX" */,
-				AAFACE0100000000000000A1 /* XCRemoteSwiftPackageReference "Nuke" */,
-				AA8ABAC82F2A794E00557278 /* XCRemoteSwiftPackageReference "SwiftEmoji" */,
 				A7A8FDAA28C8D8576D77D9DF /* XCLocalSwiftPackageReference "PaicordLib" */,
 				96E1E9909CA7AFE9B89478C2 /* XCLocalSwiftPackageReference "Textual" */,
 			);
@@ -1523,42 +1505,12 @@
 		A7A8FDAA28C8D8576D77D9DF /* XCLocalSwiftPackageReference "PaicordLib" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = PaicordLib;
+			traits = (
+			);
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		579DF3492E6D9B9800BD8B97 /* XCRemoteSwiftPackageReference "SwiftUIX" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/llsc12/SwiftUIX";
-			requirement = {
-				kind = revision;
-				revision = 5596922e2a2daef2e084b4a62713de1615e664d5;
-			};
-		};
-		AA8ABAC82F2A794E00557278 /* XCRemoteSwiftPackageReference "SwiftEmoji" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Aeastr/SwiftEmoji";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.0;
-			};
-		};
-		AAFACE0100000000000000A1 /* XCRemoteSwiftPackageReference "Nuke" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kean/Nuke.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 13.0.6;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		579DF34A2E6D9B9800BD8B97 /* SwiftUIX */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 579DF3492E6D9B9800BD8B97 /* XCRemoteSwiftPackageReference "SwiftUIX" */;
-			productName = SwiftUIX;
-		};
 		6EFB9068924331EC09343396 /* Textual */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Textual;
@@ -1566,26 +1518,6 @@
 		9E27420250444A05FCADE929 /* PaicordLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PaicordLib;
-		};
-		AA8ABAC92F2A794E00557278 /* SwiftEmoji */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA8ABAC82F2A794E00557278 /* XCRemoteSwiftPackageReference "SwiftEmoji" */;
-			productName = SwiftEmoji;
-		};
-		AA8ABACB2F2A794E00557278 /* SwiftEmojiIndex */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA8ABAC82F2A794E00557278 /* XCRemoteSwiftPackageReference "SwiftEmoji" */;
-			productName = SwiftEmojiIndex;
-		};
-		AAFACE0200000000000000A2 /* Nuke */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAFACE0100000000000000A1 /* XCRemoteSwiftPackageReference "Nuke" */;
-			productName = Nuke;
-		};
-		AAFACE0300000000000000A3 /* NukeUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAFACE0100000000000000A1 /* XCRemoteSwiftPackageReference "Nuke" */;
-			productName = NukeUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

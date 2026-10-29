@@ -6,9 +6,43 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
-extension AppKitOrUIKitColor {
+#if os(macOS)
+  import AppKit
+  typealias PlatformColor = NSColor
+#else
+  import UIKit
+  typealias PlatformColor = UIColor
+#endif
+
+extension Color {
+  init(hexadecimal6: Int, opacity: Double = 1.0) {
+    let red = Double((hexadecimal6 >> 16) & 0xFF) / 255.0
+    let green = Double((hexadecimal6 >> 8) & 0xFF) / 255.0
+    let blue = Double(hexadecimal6 & 0xFF) / 255.0
+    self.init(.sRGB, red: red, green: green, blue: blue, opacity: opacity)
+  }
+
+  static var almostClear: Color {
+    Color.white.opacity(0.0001)
+  }
+
+  static var quaternaryLabel: Color {
+    #if os(macOS)
+      Color(nsColor: .quaternaryLabelColor)
+    #else
+      Color(uiColor: .quaternaryLabel)
+    #endif
+  }
+}
+
+extension ShapeStyle where Self == Color {
+  static var almostClear: Color { .almostClear }
+  static var quaternaryLabel: Color { .quaternaryLabel }
+}
+
+extension PlatformColor {
   var components: (r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat) {
     #if os(macOS)
       var r: CGFloat = 0
@@ -30,7 +64,7 @@ extension AppKitOrUIKitColor {
 
 extension Color {
   func relativeLuminance() -> CGFloat {
-    let uiColor = AppKitOrUIKitColor(self)
+    let uiColor = PlatformColor(self)
     let (r, g, b, _) = uiColor.components
 
     func toLinear(_ c: CGFloat) -> CGFloat {
@@ -53,7 +87,7 @@ extension Color {
   }
 }
 
-extension AppKitOrUIKitImage {
+extension PlatformImage {
   /// Extracts a vibrant/bright dominant color from the image, avoiding near-black and near-white pixels.
   func extractAccentColor() -> Color? {
     #if os(macOS)

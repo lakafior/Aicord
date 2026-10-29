@@ -10,7 +10,7 @@
 // root so the picker survives the message cell that asked for it going away.
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 /// Identifies the message a reaction is being picked for.
 struct ReactionPickerTarget: Identifiable, Hashable {

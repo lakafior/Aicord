@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 @available(macOS, unavailable)
 struct SmallBaseplate: View {

@@ -8,7 +8,7 @@
 
 import Logging
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 @main
 struct PaicordApp: App {

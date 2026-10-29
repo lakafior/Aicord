@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 extension View {
   func quickSwitcher() -> some View {
@@ -110,7 +110,7 @@ struct QuickSwitcherModifier: ViewModifier {
     }
   }
 
-  @ViewStorage private var dragStartPosition: CGPoint = .zero
+  @State private var dragStartPosition: CGPoint = .zero
 
   var barDragGesture: some Gesture {
     DragGesture()
@@ -228,7 +228,7 @@ struct QuickSwitcherView: View {
         }
       }
       .padding(14)
-      .maxHeight(50)
+      .frame(maxHeight: 50)
 
       if !query.isEmpty, !results.isEmpty {
         Divider()
@@ -262,7 +262,7 @@ struct QuickSwitcherView: View {
         .scrollClipDisabled()
         .scrollPosition(id: $scrolledRow)
         .scrollDisabled(contentSize.height <= 300)
-        .maxHeight(min(contentSize.height, 300))
+        .frame(maxHeight: min(contentSize.height, 300))
         .padding(.vertical, 8)
         .clipped()
         .onChange(of: focusedRow) { scrolledRow = focusedRow }
@@ -271,7 +271,7 @@ struct QuickSwitcherView: View {
         }
       }
     }
-    .maxWidth(600)
+    .frame(maxWidth: 600)
     .background(.ultraThinMaterial.blendMode(.darken))
     .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .circular))
     .overlay {
@@ -510,7 +510,7 @@ struct LargeTextFieldStyle: TextFieldStyle {
 #Preview {
   TextField("Where would you like to go?", text: .constant(""))
     .textFieldStyle(LargeTextFieldStyle())
-    .width(600)
+    .frame(width: 600)
     .padding()
 }
 

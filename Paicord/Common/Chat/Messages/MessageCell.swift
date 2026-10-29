@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct MessageCell: View {
 
@@ -100,7 +100,7 @@ struct MessageCell: View {
     .background(Color(hexadecimal6: 0xcc8735).opacity(userMentioned ? 0.05 : 0))
     .background(alignment: .leading) {
       Color(hexadecimal6: 0xce9c5c).opacity(userMentioned ? 1 : 0)
-        .maxWidth(2)
+        .frame(maxWidth: 2)
     }
     #if os(macOS)
       .onHover { self.cellHighlighted = $0 }

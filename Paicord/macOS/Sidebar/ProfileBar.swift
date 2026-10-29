@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct ProfileBar: View {
   @Environment(\.gateway) var gw
@@ -30,7 +30,7 @@ struct ProfileBar: View {
               member: nil,
               user: user
             )
-            .maxHeight(30)
+            .frame(maxHeight: 30)
             .profileAnimated(barHovered)
             .profileShowsAvatarDecoration()
           }
@@ -133,8 +133,8 @@ struct ProfileBar: View {
               member: nil,
               user: user
             )
-            .maxWidth(40)
-            .maxHeight(40)
+            .frame(maxWidth: 40)
+            .frame(maxHeight: 40)
             .profileAnimated(false)
             .profileShowsAvatarDecoration()
           }
@@ -202,8 +202,8 @@ struct ProfileBar: View {
                   member: nil,
                   user: account.user
                 )
-                .maxWidth(25)
-                .maxHeight(25)
+                .frame(maxWidth: 25)
+                .frame(maxHeight: 25)
                 .profileAnimated(false)
                 .profileShowsAvatarDecoration()
 
@@ -256,8 +256,8 @@ struct ProfileBar: View {
         }
 
       }
-      .minWidth(250)
-      .minHeight(300)
+      .frame(minWidth: 250)
+      .frame(minHeight: 300)
     }
 
     @ViewBuilder

@@ -8,7 +8,7 @@
 
 import DiscordModels
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct MemberSidebarView: View {
   @Environment(\.gateway) var gw

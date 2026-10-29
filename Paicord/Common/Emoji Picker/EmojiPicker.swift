@@ -7,8 +7,7 @@
 //
 
 import PaicordLib
-import SwiftEmojiIndex
-import SwiftUIX
+import SwiftUI
 
 #if os(macOS)
   import AppKit
@@ -32,10 +31,19 @@ struct EmojiPicker: View {
 
   @State var chosenPicker: ChosenPicker = .emoji
   // only ios uses detents. macos uses popovers and has different layouts
-  @StateOrBinding var detent: PresentationDetent
+  private var externalDetent: Binding<PresentationDetent>?
+  @State private var internalDetent: PresentationDetent = .medium
+
+  var detentBinding: Binding<PresentationDetent> {
+    externalDetent ?? $internalDetent
+  }
+
+  var detent: PresentationDetent {
+    detentBinding.wrappedValue
+  }
 
   init(detent: Binding<PresentationDetent>? = nil) {
-    self._detent = .init(detent, initialValue: .medium)
+    self.externalDetent = detent
   }
 
   var body: some View {
@@ -99,7 +107,7 @@ struct EmojiPicker: View {
           self.chosenPicker = .gif
         }
         .buttonStyle(.plain)
-        .padding(.small)
+        .padding(8)
         .background {
           if chosenPicker == .gif {
             Color.gray.opacity(0.1)
@@ -117,7 +125,7 @@ struct EmojiPicker: View {
           self.chosenPicker = .sticker
         }
         .buttonStyle(.plain)
-        .padding(.small)
+        .padding(8)
         .background {
           if chosenPicker == .sticker {
             Color.gray.opacity(0.1)
@@ -135,7 +143,7 @@ struct EmojiPicker: View {
           self.chosenPicker = .emoji
         }
         .buttonStyle(.plain)
-        .padding(.small)
+        .padding(8)
         .background {
           if chosenPicker == .emoji {
             Color.gray.opacity(0.1)
@@ -169,7 +177,7 @@ struct EmojiPicker: View {
     // discord emoji and source guild
     case custom(DiscordModels.Emoji, guildID: GuildSnowflake)
     // unicode emoji and discord name
-    case unicode(SwiftEmojiIndex.Emoji, String)
+    case unicode(DiscordUnicodeEmoji, String)
 
     var id: String {
       switch self {
@@ -289,22 +297,11 @@ struct EmojiPicker: View {
       EmojiCategory.allCases.compactMap {
         category -> (EmojiCategory, [PickerEmoji])? in
         guard
-          let emojis = EmojiIndexProvider.shared.currentCategories[category],
+          let emojis = DiscordEmojiNameIndex.categories[category],
           !emojis.isEmpty
         else { return nil }
-        // The index carries entries Discord has no emoji for at all (maths and
-        // punctuation symbols); they can't be reacted with, so don't offer them.
-        let items = emojis.compactMap { emoji -> PickerEmoji? in
-          guard
-            let character = DiscordEmojiNameIndex.discordCharacter(
-              matching: emoji.character
-            )
-          else { return nil }
-          return PickerEmoji.unicode(
-            emoji,
-            DiscordEmojiNameIndex.names(for: character)?.first
-              ?? emoji.name.replacingOccurrences(of: " ", with: "_")
-          )
+        let items = emojis.map { emoji in
+          PickerEmoji.unicode(emoji, emoji.name)
         }
         return items.isEmpty ? nil : (category, items)
       }
@@ -386,19 +383,9 @@ struct EmojiPicker: View {
         }
         return false
       }
-      let unicodeMatches = await EmojiIndexProvider.shared.search(query)
-        .compactMap { emoji -> PickerEmoji? in
-          guard
-            let character = DiscordEmojiNameIndex.discordCharacter(
-              matching: emoji.character
-            )
-          else { return nil }
-          return PickerEmoji.unicode(
-            emoji,
-            DiscordEmojiNameIndex.names(for: character)?.first
-              ?? emoji.name.replacingOccurrences(of: " ", with: "_")
-          )
-        }
+      let unicodeMatches = DiscordEmojiNameIndex.search(query).map { emoji in
+        PickerEmoji.unicode(emoji, emoji.name)
+      }
       return customMatches + unicodeMatches
     }
   }
@@ -538,18 +525,14 @@ struct EmojiPicker: View {
           HStack(spacing: 0) {
             guildBar
             gridScrollView
-              .maxWidth(.infinity)
+              .frame(maxWidth: .infinity)
           }
           highlightedPreview
-            .maxWidth(.infinity)
-            .height(50)
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
             .background(.black.opacity(0.2))
         }
         .padding([.horizontal, .bottom], -15)
-      }
-      .task {
-        try? await EmojiIndexProvider.shared.load()
-        rebuildGridSections()
       }
       .onAppear {
         focus = .search
@@ -671,7 +654,7 @@ struct EmojiPicker: View {
       HStack(spacing: 4) {
         if let item = flatItems[safe: highlightedIndex] {
           emojiCell(item)
-            .width(38)
+            .frame(width: 38)
             .padding([.leading, .vertical], 12)
           VStack(alignment: .leading) {
             Text(verbatim: ":\(item.name):")
@@ -726,12 +709,12 @@ struct EmojiPicker: View {
                 .aspectRatio(1, contentMode: .fit)
               }
               .buttonStyle(.borderless)
-              .padding(.horizontal, .small)
+              .padding(.horizontal, 8)
               .id(section.id)
             }
           }
         }
-        .width(50)
+        .frame(width: 50)
         .background(.black.opacity(0.2))
         .scrollIndicators(.never)
         .onChange(of: scrollPosition) { _, newValue in
@@ -850,7 +833,8 @@ struct EmojiPicker: View {
     @State private var searchText = ""
     var body: some View {
       VStack {
-        SearchBar("Search Tenor", text: $searchText)
+        TextField("Search Tenor", text: $searchText)
+          .textFieldStyle(.roundedBorder)
         ScrollView {
           LazyVGrid(
             columns: Array(repeating: GridItem(.flexible()), count: 8),
@@ -868,7 +852,8 @@ struct EmojiPicker: View {
     @State private var searchText = ""
     var body: some View {
       VStack {
-        SearchBar("Find the perfect Sticker", text: $searchText)
+        TextField("Find the perfect Sticker", text: $searchText)
+          .textFieldStyle(.roundedBorder)
         ScrollView {
           LazyVGrid(
             columns: Array(repeating: GridItem(.flexible()), count: 8),
@@ -901,22 +886,22 @@ struct EmojiPicker: View {
         // pickers
         VStack(spacing: 0) {
           if variant == .reactions {
-            SheetEmojiGridView(detent: $detent, variant: variant) { emoji in
+            SheetEmojiGridView(detent: detentBinding, variant: variant) { emoji in
               onEmojiPicked?(emoji)
             }
           } else {
             Group {
               switch chosenPicker {
               case .emoji:
-                SheetEmojiGridView(detent: $detent, variant: variant) { emoji in
+                SheetEmojiGridView(detent: detentBinding, variant: variant) { emoji in
                   onEmojiPicked?(emoji)
                 }
               case .gif:
-                SheetGifGridView(detent: $detent) { gifURL in
+                SheetGifGridView(detent: detentBinding) { gifURL in
                   onGIFPicked?(gifURL)
                 }
               case .sticker:
-                SheetStickerGridView(detent: $detent) { sticker in
+                SheetStickerGridView(detent: detentBinding) { sticker in
                   onStickerPicked?(sticker)
                 }
               }
@@ -924,7 +909,7 @@ struct EmojiPicker: View {
             .animation(.default, value: chosenPicker)
           }
         }
-        .maxHeight(.infinity)
+        .frame(maxHeight: .infinity)
       }
       .ignoresSafeArea(.container, edges: .bottom)
     }
@@ -957,21 +942,23 @@ struct EmojiPicker: View {
       var body: some View {
         VStack(spacing: 0) {
           if detent == .large {
-            SearchBar("Find the perfect emoji", text: $searchText)
-              .searchBarStyle(.prominent)
-              .scaleEffect(1.02)
-              .clipped()
-              .scaleEffect(1 / 1.02)
+            HStack {
+              Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+              TextField("Find the perfect emoji", text: $searchText)
+                .textFieldStyle(.plain)
+            }
+            .padding(8)
+            .background(.quaternary)
+            .clipShape(.rounded)
+            .padding(.horizontal, 8)
+            .padding(.bottom, 6)
           }
           grid
         }
         .safeAreaInset(edge: .bottom, spacing: 0) { sectionBar }
         .ignoresSafeArea(.container, edges: .bottom)
         .animation(.spring(), value: detent)
-        .task {
-          try? await EmojiIndexProvider.shared.load()
-          rebuildGridSections()
-        }
         .onAppear { rebuildGridSections() }
         .onChange(of: gw.user.emojis) { _, _ in rebuildGridSections() }
         .onChange(of: gw.settings.frecencySettings) { _, _ in
@@ -1061,14 +1048,14 @@ struct EmojiPicker: View {
                   .frame(width: 30, height: 30)
                 }
                 .buttonStyle(.borderless)
-                .padding(.horizontal, .small)
+                .padding(.horizontal, 8)
                 .id(section.id)
               }
             }
             .padding(.vertical, 6)
           }
           .scrollIndicators(.never)
-          .height(35)
+          .frame(height: 35)
           .padding(.bottom, bottomSafeAreaInset)
           .background(.bar)
           .onChange(of: scrollPosition) { _, newValue in
@@ -1107,11 +1094,9 @@ struct EmojiPicker: View {
       var body: some View {
         VStack {
           if detent == .large {
-            SearchBar("Search Tenor", text: $searchText)
-              .searchBarStyle(.prominent)
-              .scaleEffect(1.02)
-              .clipped()
-              .scaleEffect(1 / 1.02)
+            TextField("Search Tenor", text: $searchText)
+              .textFieldStyle(.roundedBorder)
+              .padding(.horizontal, 8)
           }
           ScrollView {
             LazyVStack(spacing: 0) {
@@ -1136,11 +1121,9 @@ struct EmojiPicker: View {
       var body: some View {
         VStack {
           if detent == .large {
-            SearchBar("Find the perfect sticker", text: $searchText)
-              .searchBarStyle(.prominent)
-              .scaleEffect(1.02)
-              .clipped()
-              .scaleEffect(1 / 1.02)
+            TextField("Find the perfect sticker", text: $searchText)
+              .textFieldStyle(.roundedBorder)
+              .padding(.horizontal, 8)
           }
           ScrollView {
             LazyVStack(spacing: 0) {

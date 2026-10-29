@@ -9,7 +9,8 @@
 import AVKit
 import Foundation
 import PaicordLib
-import SwiftUIX
+import SwiftUI
+import WebKit
 
 extension MessageCell {
   struct EmbedsView: View {
@@ -431,7 +432,7 @@ extension MessageCell {
 
       @ViewBuilder
       func spotifyTrack(_ url: URL) -> some View {
-        WebView(url: url) {
+        EmbedWebView(url: url) {
           ProgressView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.ultraThinMaterial)
@@ -443,7 +444,7 @@ extension MessageCell {
 
       @ViewBuilder
       func spotifyAlbum(_ url: URL) -> some View {
-        WebView(url: url) {
+        EmbedWebView(url: url) {
           ProgressView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.ultraThinMaterial)
@@ -455,7 +456,7 @@ extension MessageCell {
 
       @ViewBuilder
       func appleMusicTrack(_ url: URL) -> some View {
-        WebView(url: url) {
+        EmbedWebView(url: url) {
           ProgressView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.ultraThinMaterial)
@@ -467,7 +468,7 @@ extension MessageCell {
 
       @ViewBuilder
       func appleMusicAlbum(_ url: URL) -> some View {
-        WebView(url: url) {
+        EmbedWebView(url: url) {
           ProgressView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.ultraThinMaterial)
@@ -883,3 +884,79 @@ extension [Embed] {
     return combined
   }
 }
+
+private struct EmbedWebView<Placeholder: View>: View {
+  let url: URL
+  @ViewBuilder let placeholder: () -> Placeholder
+  @State private var isLoading = true
+
+  var body: some View {
+    ZStack {
+      PlatformEmbedWebView(url: url, isLoading: $isLoading)
+      if isLoading {
+        placeholder()
+      }
+    }
+  }
+}
+
+#if os(macOS)
+  private struct PlatformEmbedWebView: NSViewRepresentable {
+    let url: URL
+    @Binding var isLoading: Bool
+
+    func makeCoordinator() -> Coordinator { Coordinator(isLoading: $isLoading) }
+
+    func makeNSView(context: Context) -> WKWebView {
+      let webView = WKWebView()
+      webView.navigationDelegate = context.coordinator
+      webView.setValue(false, forKey: "drawsBackground")
+      webView.load(URLRequest(url: url))
+      return webView
+    }
+
+    func updateNSView(_ nsView: WKWebView, context: Context) {
+      if nsView.url != url {
+        nsView.load(URLRequest(url: url))
+      }
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+      @Binding var isLoading: Bool
+      init(isLoading: Binding<Bool>) { _isLoading = isLoading }
+      func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        isLoading = false
+      }
+    }
+  }
+#else
+  private struct PlatformEmbedWebView: UIViewRepresentable {
+    let url: URL
+    @Binding var isLoading: Bool
+
+    func makeCoordinator() -> Coordinator { Coordinator(isLoading: $isLoading) }
+
+    func makeUIView(context: Context) -> WKWebView {
+      let webView = WKWebView()
+      webView.navigationDelegate = context.coordinator
+      webView.isOpaque = false
+      webView.backgroundColor = .clear
+      webView.load(URLRequest(url: url))
+      return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+      if uiView.url != url {
+        uiView.load(URLRequest(url: url))
+      }
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+      @Binding var isLoading: Bool
+      init(isLoading: Binding<Bool>) { _isLoading = isLoading }
+      func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        isLoading = false
+      }
+    }
+  }
+#endif

@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 // Handles using phone suitable layout or desktop suitable layout
 
@@ -18,7 +18,7 @@ struct RootView: View {
   @Environment(\.horizontalSizeClass) var hSizeClass
 
   #if os(iOS)
-    @ViewStorage var hasLaunchedAlready: Bool = false
+    @State var hasLaunchedAlready: Bool = false
   #endif
 
   #if os(iOS)

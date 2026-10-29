@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 extension ChatView {
   struct TypingIndicatorBar: View {
@@ -74,14 +74,14 @@ extension ChatView {
         ForEach(0..<3) { i in
           let i = Double(i)
           Circle()
-            .width(dotSize)
-            .height(dotSize)
+            .frame(width: dotSize)
+            .frame(height: dotSize)
             .scaleEffect(dotsToggle ? dotMaxScale : dotMinScale)
             .foregroundStyle(dotsToggle ? .primary : .tertiary)
             .animation(dotAnim.delay(0.2 * i), value: dotsToggle)
         }
       }
-      .onAppearOnce {
+      .onAppear {
         dotsToggle = true
       }
     }

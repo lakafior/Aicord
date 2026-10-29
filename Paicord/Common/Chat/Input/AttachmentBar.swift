@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 import UniformTypeIdentifiers
 
 extension ChatView.InputBar {
@@ -87,15 +87,15 @@ extension ChatView.InputBar {
               .resizable()
               .scaledToFit()
               .scaledToFill()
-              .maxWidth(60)
-              .maxHeight(60)
+              .frame(maxWidth: 60)
+              .frame(maxHeight: 60)
               .aspectRatio(1, contentMode: .fill)
               .clipped()
           } else {
             Color.gray.opacity(0.3)
               .scaledToFill()
-              .maxWidth(60)
-              .maxHeight(60)
+              .frame(maxWidth: 60)
+              .frame(maxHeight: 60)
           }
         }
         .overlay(alignment: .bottomTrailing) {
@@ -121,7 +121,7 @@ extension ChatView.InputBar {
               .resizable()
               .scaledToFit()
               .padding(10)
-              .height(60)
+              .frame(height: 60)
               .aspectRatio(1, contentMode: .fill)
               .background(Color.gray.opacity(0.3))
           } else {
@@ -129,7 +129,7 @@ extension ChatView.InputBar {
               .resizable()
               .scaledToFit()
               .padding(20)
-              .height(60)
+              .frame(height: 60)
               .aspectRatio(1, contentMode: .fill)
               .background(Color.gray.opacity(0.3))
           }
@@ -149,9 +149,9 @@ extension ChatView.InputBar {
             .foregroundStyle(.secondary)
           }
           .padding(5)
-          .height(60)
-          .minWidth(60)
-          .maxWidth(120)
+          .frame(height: 60)
+          .frame(minWidth: 60)
+          .frame(maxWidth: 120)
           .background(Color.black.opacity(0.3))
         }
       }

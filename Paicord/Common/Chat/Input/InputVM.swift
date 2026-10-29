@@ -11,7 +11,7 @@ import ImageIO
 import PaicordLib
 import PhotosUI
 import QuickLookThumbnailing
-import SwiftUIX
+import SwiftUI
 import UniformTypeIdentifiers
 
 #if canImport(AppKit)

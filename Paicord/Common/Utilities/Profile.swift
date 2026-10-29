@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 extension EnvironmentValues {
   @Entry var profileAnimated: Bool = false
@@ -186,7 +186,7 @@ enum Profile {
                   StatusIndicatorShapes.DNDShape()
                 default:
                   StatusIndicatorShapes.InvisibleShape()
-                    .hidden(hideOffline)
+                    .opacity(hideOffline ? 0 : 1)
                 }
               }
               .foregroundStyle(color)
@@ -203,7 +203,7 @@ enum Profile {
                   x: geo.size.width - inset,
                   y: geo.size.height - inset
                 )
-                .hidden(hideOffline)
+                .opacity(hideOffline ? 0 : 1)
             }
           }
           .frame(width: geo.size.width, height: geo.size.height)
@@ -316,8 +316,9 @@ enum Profile {
         let secondaryColor = colors.last?.asColor(ignoringZero: true)
       {
         LinearGradient(
-          gradient: .init(colors: [primaryColor, secondaryColor]),
-          direction: .down
+          colors: [primaryColor, secondaryColor],
+          startPoint: .top,
+          endPoint: .bottom
         )
       }
     }

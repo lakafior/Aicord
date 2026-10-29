@@ -7,7 +7,7 @@
 //
 
 import Playgrounds
-import SwiftUIX
+import SwiftUI
 
 @Observable
 class Theming {
@@ -62,7 +62,7 @@ class Theming {
             .flatMap { $0.windows }
             .forEach { window in
               // set accent color
-              window.tintColor = AppKitOrUIKitColor(
+              window.tintColor = UIColor(
                 self.currentTheme.common.accent
               )
             }
@@ -74,7 +74,7 @@ class Theming {
           .flatMap(\.windows)
           .forEach { window in
             // set accent color
-            window.tintColor = AppKitOrUIKitColor(
+            window.tintColor = UIColor(
               self.currentTheme.common.accent
             )
           }

@@ -15,7 +15,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct DMsView: View {
   @Environment(\.gateway) var gw

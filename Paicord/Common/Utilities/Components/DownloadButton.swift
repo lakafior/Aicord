@@ -6,7 +6,7 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 struct DownloadButton<T: Sendable>: View {
   enum DownloadState: Equatable {
@@ -63,7 +63,7 @@ struct DownloadButton<T: Sendable>: View {
   var completionButtonSymbolName = "checkmark.circle"
   var _completionBehavior: CompletionBehavior = .resetToInactive
 
-  @ViewStorage var proxy: DownloadProxy?
+  @State var proxy: DownloadProxy?
 
   init(
     action: @Sendable @escaping (DownloadProxy) async throws -> T,

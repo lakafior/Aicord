@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct MFAView: View {
   let authentication: UserAuthentication
@@ -75,8 +75,8 @@ struct MFAView: View {
       }
     }
     .padding(.top, 15)
-    .minHeight(200)
-    .maxWidth(.infinity)
+    .frame(minHeight: 200)
+    .frame(maxWidth: .infinity)
     .overlay(alignment: .topLeading) {
       Button {
         if chosenMethod == nil {
@@ -96,7 +96,7 @@ struct MFAView: View {
       .buttonStyle(.borderless)
     }
     .animation(.default, value: chosenMethod == nil)
-    .maxWidth(360)
+    .frame(maxWidth: 360)
   }
 
   func userFriendlyName(for type: Payloads.MFASubmitData.MFAKind) -> some View {
@@ -151,7 +151,7 @@ struct MFAView: View {
             .foregroundStyle(.tertiary)
             .font(.caption2)
 
-          TextField(text: $input)
+          TextField("", text: $input)
             .textFieldStyle(.plain)
             .padding(10)
             .frame(maxWidth: .infinity)
@@ -164,7 +164,6 @@ struct MFAView: View {
                   inputFocused ? theme.common.primaryButton : Color.clear,
                   lineWidth: 1
                 )
-                .fill(.clear)
             }
             .disabled(taskInProgress)
             .onChange(of: input) {
@@ -201,15 +200,17 @@ struct MFAView: View {
             .font(.caption)
 
           HStack {
-            TextField(text: $input)
+            TextField("", text: $input)
               .textFieldStyle(.plain)
-              .keyboardType(.numberPad)
+              #if os(iOS)
+                .keyboardType(.numberPad)
+              #endif
               .padding(10)
               .frame(maxWidth: .infinity)
               .focused($inputFocused)
 
             Divider()
-              .maxHeight(10)
+              .frame(maxHeight: 10)
 
             AsyncButton("Send SMS") {
               let req = try await loginClient.verifySendSMS(
@@ -231,7 +232,6 @@ struct MFAView: View {
                 inputFocused ? theme.common.primaryButton : Color.clear,
                 lineWidth: 1
               )
-              .fill(.clear)
           }
           .disabled(taskInProgress)
           .onChange(of: input) {

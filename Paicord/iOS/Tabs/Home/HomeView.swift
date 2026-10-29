@@ -6,7 +6,7 @@
 // Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 /// Discord iOS Home View, the left side is a list of servers, with the right being the selected server's channels etc.
 /// The left side should be 1/5th of the width of both scroll views

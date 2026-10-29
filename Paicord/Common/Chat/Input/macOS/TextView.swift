@@ -6,7 +6,7 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import SwiftUIX
+import SwiftUI
 
 #if os(macOS)
   extension ChatView.InputBar {

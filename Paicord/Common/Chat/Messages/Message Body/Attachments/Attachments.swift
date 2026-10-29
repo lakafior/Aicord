@@ -9,7 +9,7 @@
 import AVKit
 import PaicordLib
 import Speech
-import SwiftUIX
+import SwiftUI
 
 #if canImport(AppKit)
   import AppKit
@@ -519,7 +519,7 @@ extension MessageCell {
               .frame(width: 10, height: 10)
           }
         }
-        .padding(.small)
+        .padding(8)
         .background(
           theme.common.primaryButtonBackground.brightness(0.2)
             .mask {
@@ -574,7 +574,7 @@ extension MessageCell {
       }
 
       static var transcriptCache: [URL: String] = [:]
-      @ViewStorage var transcript: String? = nil
+      @State var transcript: String? = nil
       @State var showingTranscript: Bool = false
 
       @ViewBuilder
@@ -683,6 +683,7 @@ extension MessageCell {
         let waveform: [Float]
         let progress: Double
         @GestureState private var gestureProgress: Double? = nil
+        @State private var waveformWidth: CGFloat = 1
         let onSeek: ((Double) -> Void)?
 
         init(
@@ -696,34 +697,35 @@ extension MessageCell {
         }
 
         var body: some View {
-          IntrinsicSizeReader { (size: CGSize?) in
-            ZStack(alignment: .leading) {
+          ZStack(alignment: .leading) {
 
-              // unplayed
-              waveformBars(color: .primary.opacity(0.3))
+            // unplayed
+            waveformBars(color: .primary.opacity(0.3))
 
-              // played
-              waveformBars(color: .primary.opacity(0.8))
-                .mask(alignment: .leading) {
-                  Rectangle()
-                    .frame(
-                      width: (size?.width ?? 1) * (gestureProgress ?? progress)
-                    )
-                }
-            }
-            .background(.almostClear)
-            .gesture(
-              DragGesture(minimumDistance: 0)
-                .updating($gestureProgress) { value, state, _ in
-                  let p = min(max(value.location.x / (size?.width ?? 1), 0), 1)
-                  state = p
-                }
-                .onEnded { value in
-                  let p = min(max(value.location.x / (size?.width ?? 1), 0), 1)
-                  onSeek?(p)
-                }
-            )
+            // played
+            waveformBars(color: .primary.opacity(0.8))
+              .mask(alignment: .leading) {
+                Rectangle()
+                  .frame(
+                    width: waveformWidth * (gestureProgress ?? progress)
+                  )
+              }
           }
+          .onGeometryChange(for: CGFloat.self) { $0.size.width } action: {
+            waveformWidth = max($0, 1)
+          }
+          .background(.almostClear)
+          .gesture(
+            DragGesture(minimumDistance: 0)
+              .updating($gestureProgress) { value, state, _ in
+                let p = min(max(value.location.x / waveformWidth, 0), 1)
+                state = p
+              }
+              .onEnded { value in
+                let p = min(max(value.location.x / waveformWidth, 0), 1)
+                onSeek?(p)
+              }
+          )
         }
 
         @ViewBuilder
@@ -837,7 +839,7 @@ extension MessageCell {
       var attachment: DiscordChannel.Message.Attachment
 
       #if os(iOS)
-        @ViewStorage var localURL: URL? = nil
+        @State var localURL: URL? = nil
         @State var showingShareSheet: Bool = false
       #endif
       var body: some View {
@@ -1082,44 +1084,43 @@ extension MessageCell {
         }
       }
 
-      struct AVPlayerLayerContainer: AppKitOrUIKitViewRepresentable {
-        var player: AVPlayer
+      #if os(iOS)
+        struct AVPlayerLayerContainer: UIViewRepresentable {
+          var player: AVPlayer
 
-        typealias AppKitOrUIKitViewType = AppKitOrUIKitView
-
-        func makeAppKitOrUIKitView(context: Context) -> AppKitOrUIKitView {
-          #if os(iOS)
+          func makeUIView(context: Context) -> PlayerView_iOS {
             let view = PlayerView_iOS()
             view.player = player
             return view
-          #elseif os(macOS)
-            let view = PlayerView_macOS()
+          }
+
+          func updateUIView(_ view: PlayerView_iOS, context: Context) {
             view.player = player
-            return view
-          #endif
-        }
+          }
 
-        func updateAppKitOrUIKitView(
-          _ view: AppKitOrUIKitViewType,
-          context: Context
-        ) {
-          #if os(iOS)
-            (view as? PlayerView_iOS)?.player = player
-          #elseif os(macOS)
-            (view as? PlayerView_macOS)?.player = player
-          #endif
-        }
-
-        #if os(iOS)
-          class PlayerView_iOS: AppKitOrUIKitView {
+          class PlayerView_iOS: UIView {
             override class var layerClass: AnyClass { AVPlayerLayer.self }
             var player: AVPlayer? {
               get { (layer as? AVPlayerLayer)?.player }
               set { (layer as? AVPlayerLayer)?.player = newValue }
             }
           }
-        #elseif os(macOS)
-          class PlayerView_macOS: AppKitOrUIKitView {
+        }
+      #elseif os(macOS)
+        struct AVPlayerLayerContainer: NSViewRepresentable {
+          var player: AVPlayer
+
+          func makeNSView(context: Context) -> PlayerView_macOS {
+            let view = PlayerView_macOS()
+            view.player = player
+            return view
+          }
+
+          func updateNSView(_ view: PlayerView_macOS, context: Context) {
+            view.player = player
+          }
+
+          class PlayerView_macOS: NSView {
             override init(frame frameRect: CGRect) {
               super.init(frame: frameRect)
               wantsLayer = true
@@ -1153,8 +1154,8 @@ extension MessageCell {
               playerLayer = pl
             }
           }
-        #endif
-      }
+        }
+      #endif
     }
 
   }

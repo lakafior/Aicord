@@ -7,7 +7,6 @@
 //
 
 import ImageIO
-import Nuke
 import SwiftUI
 
 #if os(macOS)
@@ -498,21 +497,14 @@ extension PlatformImage {
 
 extension AnimatedImagePlayerView {
 
-  /// Drop-in replacement for `sd_setImage` but with Nuke.
+  /// Drop-in replacement for `sd_setImage` using ImagePipeline.
   func load(url: URL, onReady: @escaping (CGSize) -> Void) {
     Task { @MainActor in
       guard
-        let container = try? await ImagePipeline.shared
-          .imageTask(with: url).response.container
+        let container = try? await ImagePipeline.shared.container(for: url)
       else { return }
 
-      if let data = container.data,
-        let frames = AnimatedImageFrameSource(
-          data: data,
-          utType: container.type?.rawValue as CFString?
-        ),
-        frames.isAnimated
-      {
+      if let frames = container.animatedSource, frames.isAnimated {
         configure(with: frames)
       } else if let image = container.image.displayCGImage {
         displayStatic(image)

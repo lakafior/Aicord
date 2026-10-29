@@ -7,7 +7,7 @@
 //
 
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 /// Intended for desktop sheet with full profile details, activities etc.
 struct ProfileFullSheetView: View {

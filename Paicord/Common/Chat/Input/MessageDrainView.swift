@@ -8,7 +8,7 @@
 
 import Collections
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 // copy of MessageCell for messages being sent
 extension ChatView {
@@ -106,7 +106,7 @@ extension ChatView {
       )
       .background(alignment: .leading) {
         Color(hexadecimal6: 0xce9c5c).opacity(userMentioned ? 1 : 0)
-          .maxWidth(2)
+          .frame(maxWidth: 2)
       }
       .equatable(by: cellHash)
       /// stop updates to messages unless messages change.

@@ -9,7 +9,7 @@
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct LoginView: View {
   @Environment(\.gateway) var gw
@@ -23,87 +23,87 @@ struct LoginView: View {
 
   // used for form background animation
   @State var chosenMFAMethod: Payloads.MFASubmitData.MFAKind?
+  @State private var size: CGSize?
 
   var body: some View {
-    IntrinsicSizeReader { size in
-      ZStack {
-        MeshGradientBackground()
-          .ignoresSafeArea()
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
+    ZStack {
+      MeshGradientBackground()
+        .ignoresSafeArea()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-        if viewModel.gw != nil {
-          VStack {
-            if viewModel.gw.accounts.accounts.isEmpty
-              || viewModel.addingNewAccount
+      if viewModel.gw != nil {
+        VStack {
+          if viewModel.gw.accounts.accounts.isEmpty
+            || viewModel.addingNewAccount
+          {
+            if let mfa = viewModel.handleMFA,
+              let fingerprint = viewModel.fingerprint
             {
-              if let mfa = viewModel.handleMFA,
-                let fingerprint = viewModel.fingerprint
-              {
-                MFAView(
-                  authentication: mfa,
-                  fingerprint: fingerprint,
-                  loginClient: viewModel.loginClient,
-                  chosenMethod: $chosenMFAMethod,
-                  onFinish: viewModel.finishMFA(token:)
-                )
-              } else {
-                LoginForm(
-                  viewModel: viewModel,
-                  loginFocused: $loginFocused,
-                  passwordFocused: $passwordFocused,
-                  size: size
-                )
-                .overlay(alignment: .topLeading) {
-                  if !viewModel.gw.accounts.accounts.isEmpty {
-                    Button {
-                      withAnimation {
-                        viewModel.addingNewAccount = false
-                      }
-                    } label: {
-                      Image(systemName: "chevron.left")
-                        .imageScale(.large)
-                        .padding(8)
-                        .background(theme.common.primaryButtonBackground)
-                        .clipShape(.circle)
+              MFAView(
+                authentication: mfa,
+                fingerprint: fingerprint,
+                loginClient: viewModel.loginClient,
+                chosenMethod: $chosenMFAMethod,
+                onFinish: viewModel.finishMFA(token:)
+              )
+            } else {
+              LoginForm(
+                viewModel: viewModel,
+                loginFocused: $loginFocused,
+                passwordFocused: $passwordFocused,
+                size: size
+              )
+              .overlay(alignment: .topLeading) {
+                if !viewModel.gw.accounts.accounts.isEmpty {
+                  Button {
+                    withAnimation {
+                      viewModel.addingNewAccount = false
                     }
-                    .buttonStyle(.borderless)
+                  } label: {
+                    Image(systemName: "chevron.left")
+                      .imageScale(.large)
+                      .padding(8)
+                      .background(theme.common.primaryButtonBackground)
+                      .clipShape(.circle)
                   }
+                  .buttonStyle(.borderless)
                 }
               }
-            } else {
-              AccountPicker(
-                accounts: viewModel.gw.accounts.accounts,
-                onSelect: { viewModel.gw.accounts.currentAccountID = $0 },
-                onAdd: { withAnimation { viewModel.addingNewAccount = true } }
-              )
             }
+          } else {
+            AccountPicker(
+              accounts: viewModel.gw.accounts.accounts,
+              onSelect: { viewModel.gw.accounts.currentAccountID = $0 },
+              onAdd: { withAnimation { viewModel.addingNewAccount = true } }
+            )
           }
-          .padding(20)
-          .background(theme.common.tertiaryBackground.opacity(0.75))
-          .clipShape(.rounded)
-          .shadow(radius: 10)
-          .padding(5)
-          .transition(.scale(scale: 0.8).combined(with: .opacity))
-        } else {
-          ProgressView()
         }
+        .padding(20)
+        .background(theme.common.tertiaryBackground.opacity(0.75))
+        .clipShape(.rounded)
+        .shadow(radius: 10)
+        .padding(5)
+        .transition(.scale(scale: 0.8).combined(with: .opacity))
+      } else {
+        ProgressView()
       }
-      .animation(.default, value: viewModel.gw == nil)
-      .animation(.default, value: viewModel.handleMFA == nil)
-      .animation(.default, value: viewModel.gw?.accounts.accounts.isEmpty)
-      .animation(.default, value: viewModel.addingNewAccount)
-      .animation(.default, value: viewModel.raUser)
-      .animation(.default, value: viewModel.raFingerprint)
-      .animation(.default, value: chosenMFAMethod)
-      .animation(.default, value: size)
-      .task {
-        let currentGw = gw
-        let currentAppState = appState
-        try? await Task.sleep(for: .seconds(0.5))
-        viewModel.gw = currentGw
-        viewModel.appState = currentAppState
-        await viewModel.fingerprintSetup()
-      }
+    }
+    .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+    .animation(.default, value: viewModel.gw == nil)
+    .animation(.default, value: viewModel.handleMFA == nil)
+    .animation(.default, value: viewModel.gw?.accounts.accounts.isEmpty)
+    .animation(.default, value: viewModel.addingNewAccount)
+    .animation(.default, value: viewModel.raUser)
+    .animation(.default, value: viewModel.raFingerprint)
+    .animation(.default, value: chosenMFAMethod)
+    .animation(.default, value: size)
+    .task {
+      let currentGw = gw
+      let currentAppState = appState
+      try? await Task.sleep(for: .seconds(0.5))
+      viewModel.gw = currentGw
+      viewModel.appState = currentAppState
+      await viewModel.fingerprintSetup()
     }
   }
 }
@@ -132,7 +132,7 @@ struct LoginForm: View {
 
         VStack(alignment: .leading, spacing: 5) {
           Text("Email or Phone Number")
-          TextField(text: $viewModel.login)
+          TextField("", text: $viewModel.login)
             .textFieldStyle(.plain)
             .padding(10)
             .frame(maxWidth: .infinity)
@@ -145,7 +145,6 @@ struct LoginForm: View {
                   loginFocused ? theme.common.primaryButton : Color.clear,
                   lineWidth: 1
                 )
-                .fill(.clear)
             }
             .padding(.bottom, 10)
             .onSubmit {
@@ -153,7 +152,7 @@ struct LoginForm: View {
             }
 
           Text("Password")
-          SecureField(text: $viewModel.password)
+          SecureField("", text: $viewModel.password)
             .textFieldStyle(.plain)
             .padding(10)
             .frame(maxWidth: .infinity)
@@ -167,7 +166,6 @@ struct LoginForm: View {
                     ? theme.common.primaryButton : Color.clear,
                   lineWidth: 1
                 )
-                .fill(.clear)
             }
             .onSubmit {
               Task {  // FIXME: this and login button need to share tasks for blocking login button spam when tasks are ongoing from here.
@@ -181,7 +179,7 @@ struct LoginForm: View {
 
         LoginButton(viewModel: viewModel)
       }
-      .maxWidth(360)
+      .frame(maxWidth: 360)
 
       if horizontalSizeClass == .regular, self.viewWidthValidForQRCode {
         // qr code login
@@ -230,7 +228,7 @@ struct LoginForm: View {
               .frame(width: 150, height: 150)
           }
         }
-        .maxWidth(280)
+        .frame(maxWidth: 280)
         .transition(.blurReplace)
       }
     }
@@ -243,7 +241,7 @@ struct LoginForm: View {
     var body: some View {
       VStack {
         if let image {
-          Image(cgImage: image)
+          Image(decorative: image, scale: 1.0)
             .resizable()
             .interpolation(.none)
             .scaledToFit()

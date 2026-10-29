@@ -10,7 +10,7 @@ import Collections
 import Foundation
 import PaicordLib
 import PhotosUI
-import SwiftUIX
+import SwiftUI
 
 @Observable
 class MessageDrainStore: DiscordDataStore {

@@ -8,7 +8,7 @@
 
 import Collections
 import PaicordLib
-import SwiftUIX
+import SwiftUI
 
 struct ChatView: View {
   @State var vm: ChannelStore
@@ -128,7 +128,7 @@ struct ChatView: View {
       // not sure how to fix.
       .bottomAnchored()
       .scrollClipDisabled()
-      .maxHeight(.infinity)
+      .frame(maxHeight: .infinity)
       .overlay(alignment: .bottomTrailing) {
         let lastMessages = orderedMessages.suffix(10).map { $0.id }
         if let current = currentScrollPosition,

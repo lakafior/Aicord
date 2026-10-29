@@ -11,7 +11,22 @@
 // a geometry proxy on content to get the scroll offset.
 
 import SwiftUI
-import SwiftUIX
+
+extension View {
+  @ViewBuilder
+  public func reverseMask<Mask: View>(
+    alignment: Alignment = .center,
+    @ViewBuilder _ mask: () -> Mask
+  ) -> some View {
+    self.mask {
+      Rectangle()
+        .overlay(alignment: alignment) {
+          mask()
+            .blendMode(.destinationOut)
+        }
+    }
+  }
+}
 
 public struct ScrollFadeMask<Content: View>: View {
   var leading: CGFloat = 20

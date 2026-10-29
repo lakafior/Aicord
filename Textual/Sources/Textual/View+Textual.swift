@@ -127,11 +127,6 @@ extension TextualNamespace where Base: View {
     base.environment(\.emojiProperties, emojiProperties)
   }
 
-  /// Sets the math rendering properties.
-  public func mathProperties(_ mathProperties: MathProperties) -> some View {
-    base.environment(\.mathProperties, mathProperties)
-  }
-
   /// Scales the font used within the view by a constant factor.
   @MainActor public func fontScale(_ scale: CGFloat) -> some View {
     base.modifier(FontScaleModifier(scale))

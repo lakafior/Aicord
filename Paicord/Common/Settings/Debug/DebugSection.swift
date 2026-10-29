@@ -7,14 +7,14 @@
 //
 
 import Logging
-import SwiftUIX
+import SwiftUI
 
 extension SettingsView {
   @ViewBuilder
   var debugSection: some View {
     Section("Tools") {
       NavigationLink {
-        ShellView().eraseToAnyView()
+        ShellView()
       } label: {
         Label("View Logs", systemImage: "apple.terminal")
       }

@@ -17,9 +17,6 @@ public struct TextEnvironmentValues: Hashable, Sendable {
   /// Properties that control how Textual renders emoji.
   public var emojiProperties: EmojiProperties
 
-  /// Properties that control how Textual renders math expressions.
-  public var mathProperties: MathProperties
-
   /// The current color scheme in the environment.
   public var colorScheme: ColorScheme
 
@@ -43,7 +40,6 @@ public struct TextEnvironmentValues: Hashable, Sendable {
     dynamicTypeSize: DynamicTypeSize = .large,
     legibilityWeight: LegibilityWeight? = nil,
     emojiProperties: EmojiProperties = .init(),
-    mathProperties: MathProperties = .init(),
     colorScheme: ColorScheme = .light,
     colorSchemeContrast: ColorSchemeContrast = .standard,
     roundedBackgroundStyle: RoundedBackgroundStyle? = nil
@@ -52,7 +48,6 @@ public struct TextEnvironmentValues: Hashable, Sendable {
     self.dynamicTypeSize = dynamicTypeSize
     self.legibilityWeight = legibilityWeight
     self.emojiProperties = emojiProperties
-    self.mathProperties = mathProperties
     self.colorScheme = colorScheme
     self.colorSchemeContrast = colorSchemeContrast
     self.roundedBackgroundStyle = roundedBackgroundStyle
@@ -66,7 +61,6 @@ extension EnvironmentValues {
       dynamicTypeSize: dynamicTypeSize,
       legibilityWeight: legibilityWeight,
       emojiProperties: emojiProperties,
-      mathProperties: mathProperties,
       colorScheme: colorScheme,
       colorSchemeContrast: colorSchemeContrast,
       roundedBackgroundStyle: roundedBackgroundStyle
