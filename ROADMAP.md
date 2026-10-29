@@ -112,3 +112,17 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
    - [x] Lista zmian względem oryginalnego kodu (podsumowanie Etapów 1–5).
    - [x] Usunięcie linków do pobrania oryginalnej aplikacji.
    - [x] Przebudowa README od nowa w nowoczesnej formie.
+
+---
+
+### 🔜 Etap 7: Własne biblioteki zamiast forków (`PaicordLib`, `Textual`)
+`PaicordLib` (przerobiony DiscordBM) i `Textual` zostają lokalnymi paczkami SPM — osobne moduły dają szybszą kompilację przyrostową, testy przez `swift test` i miejsce na target makr. Traktujemy je jednak jako własny kod, bez synchronizacji z upstreamem.
+1. **Odchudzenie `DiscordModels` (~6,9 MB z ~18,5 MB kodu arm64):**
+   - [ ] Usunięcie modeli i endpointów tylko dla botów: interakcje, komendy aplikacji, logi audytu, automoderacja, webhooki.
+   - [ ] Usunięcie infrastruktury shardowania botów (`ShardCoordinator` i powiązane).
+   - [ ] Ograniczenie kodu kopiowania generowanego dla dużych struktur z wieloma polami opcjonalnymi (`Guild`, `Gateway.Ready` itd., ~2,9 MB).
+2. **Uproszczenie modułów `PaicordLib`:**
+   - [ ] Scalenie prawie pustych bibliotek (`DiscordCore`, `DiscordAuth`, `DiscordUtilities`) w 2–3 sensowne moduły.
+   - [ ] Zmiana nazwy na własną (np. `AicordKit`) i usunięcie pozostałości DiscordBM (komentarze, przestarzałe API dla botów).
+3. **`Textual`:**
+   - [ ] Usunięcie elementów, których aplikacja nie renderuje.

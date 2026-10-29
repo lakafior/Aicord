@@ -27,7 +27,8 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 
 |                         | Paicord                         | Aicord                                   |
 | ----------------------- | ------------------------------- | ---------------------------------------- |
-| App size (macOS, universal) | 193.5 MB                    | **80.8 MB** (−58%)                       |
+| App size (macOS, arm64)  | 61.8 MB                        | **20.8 MB** (−66%)                       |
+| Download (zipped)       | 24.0 MB                         | **9.2 MB** (−62%)                        |
 | Swift packages          | 58 resolved (31 direct)         | **4**                                    |
 | Language mode           | Swift 5                         | **Swift 6**, strict concurrency, no warnings |
 | Minimum OS              | iOS 17 · macOS 14               | **iOS 26 · macOS 26**                    |
@@ -56,7 +57,7 @@ git clone https://github.com/lakafior/Paicord.git
 open Paicord/Paicord.xcworkspace
 ```
 
-Pick the **Paicord** scheme, choose a Mac or an iOS 26 device or simulator, and run. There are no prebuilt releases of Aicord yet.
+Pick the **Paicord** scheme, choose a Mac or an iOS 26 device or simulator, and run. The macOS app is built for Apple silicon only. There are no prebuilt releases of Aicord yet.
 
 ## A word of caution
 
