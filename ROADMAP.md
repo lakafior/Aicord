@@ -99,3 +99,16 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
    - [x] Usunięcie zewnętrznych odznak sponsorów/telemetrii w `ExternalBadgeStore.swift`.
    - [x] Zmiana identyfikatora Bundle ID (`net.smigi.aicord`).
    - [ ] Zmiana nazw targetów/schematów (`Paicord` → `Aicord`) oraz odniesień do oryginalnego repozytorium.
+
+---
+
+### 🔜 Etap 6: Tożsamość Aicord, poprawki i dokumentacja
+1. **Ikona aplikacji:**
+   - [ ] Nowa ikona `.icon` zaprojektowana w Icon Composer (Liquid Glass, warianty jasny/ciemny/tinted) i podpięta do targetu zamiast obecnego zestawu ikon.
+2. **Poprawki błędów:**
+   - [x] fix: wejście na kanał i przeczytanie nowych wiadomości nie oznacza ich jako przeczytane. `ChatView` wysyła ack przy wejściu na kanał, po przewinięciu na dół i po powrocie do aplikacji; pozycja `nil` (widok na dolnej kotwicy) liczy się jako „na dole”.
+3. **README:**
+   - [ ] Powód forka: blokada PR-ów tworzonych ze wsparciem AI w głównym repozytorium.
+   - [ ] Lista zmian względem oryginalnego kodu (podsumowanie Etapów 1–5).
+   - [ ] Usunięcie linków do pobrania oryginalnej aplikacji.
+   - [ ] Przebudowa README od nowa w nowoczesnej formie.

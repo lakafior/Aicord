@@ -16,6 +16,7 @@ struct ChatView: View {
   @Environment(\.accessibilityReduceMotion) var accessibilityReduceMotion
   @Environment(\.userInterfaceIdiom) var idiom
   @Environment(\.theme) var theme
+  @Environment(\.scenePhase) var scenePhase
 
   @State private var currentScrollPosition: MessageSnowflake?
   @State private var isScrolling: Bool = false
@@ -170,14 +171,6 @@ struct ChatView: View {
       guard let request else { return }
       switch request.kind {
       case .bottom(let immediate, let pending):
-        let isNearBottom =
-          (orderedMessages.suffix(10).map(\.id)
-          + pendingMessages.values.compactMap(\.nonce).map({
-            MessageSnowflake($0.asString)
-          }))
-          .contains {
-            $0 == self.currentScrollPosition
-          }
         guard isNearBottom || immediate else {
           return
         }
@@ -185,13 +178,26 @@ struct ChatView: View {
         withAnimation(immediate ? .default : nil) {
           self.currentScrollPosition = resolvedId ?? self.currentScrollPosition
         }
-        if let resolvedId {
-          acknowledge(messageId: resolvedId)
-        }
+        acknowledgeLatestIfVisible()
       case .message(let messageId):
         self.currentScrollPosition = messageId
       }
     }
+    // opening a channel whose messages are already loaded doesn't produce a scroll request
+    .onAppear { acknowledgeLatestIfVisible() }
+    .onChange(of: currentScrollPosition) { acknowledgeLatestIfVisible() }
+    .onChange(of: scenePhase) { acknowledgeLatestIfVisible() }
+  }
+
+  /// Whether the chat is scrolled to (or near) the newest messages. A `nil` scroll position
+  /// means the user hasn't scrolled yet, so the view is still resting on its bottom anchor.
+  private var isNearBottom: Bool {
+    guard let currentScrollPosition else { return true }
+    let pendingIds = drain.pendingMessages[vm.channelId, default: [:]].values
+      .compactMap(\.nonce)
+      .map { MessageSnowflake($0.asString) }
+    return (vm.messages.values.suffix(10).map(\.id) + pendingIds)
+      .contains(currentScrollPosition)
   }
 
   func messageAllowed(_ msg: DiscordChannel.Message) -> Bool {
@@ -224,22 +230,29 @@ struct ChatView: View {
   //    DispatchQueue.main.asyncAfter(deadline: .now(), execute: workItem)
   //  }
 
-  @State var ackTask: Task<Void, Error>? = nil
-  private func acknowledge(messageId: MessageSnowflake) {
-    guard gw.readStates.isUnread(channelId: vm.channelId, lastMessageId: messageId) else {
-      return
-    }
+  @State var ackTask: Task<Void, Never>? = nil
+  /// Marks the channel as read up to its newest message, if the user can actually see it:
+  /// the app is active, the newest messages are loaded, and the chat is scrolled to the bottom.
+  private func acknowledgeLatestIfVisible() {
+    guard scenePhase == .active, vm.hasLatestMessages, isNearBottom,
+      let messageId = vm.messages.values.last?.id,
+      gw.readStates.isUnread(channelId: vm.channelId, lastMessageId: messageId)
+    else { return }
     let channelId = vm.channelId
     ackTask?.cancel()
     ackTask = Task {
       try? await Task.sleep(for: .seconds(1.5))
       guard !Task.isCancelled else { return }
-      _ = try await gw.client.acknowledgeMessage(
-        channelId: channelId,
-        messageId: messageId,
-        payload: Payloads.AcknowledgeMessage()
-      )
-      gw.readStates.applyAck(channelId: channelId, messageId: messageId)
+      do {
+        try await gw.client.acknowledgeMessage(
+          channelId: channelId,
+          messageId: messageId,
+          payload: Payloads.AcknowledgeMessage()
+        ).guardSuccess()
+        gw.readStates.applyAck(channelId: channelId, messageId: messageId)
+      } catch {
+        print("[ChatView] Failed to acknowledge message \(messageId.rawValue):", error)
+      }
     }
   }
 }
