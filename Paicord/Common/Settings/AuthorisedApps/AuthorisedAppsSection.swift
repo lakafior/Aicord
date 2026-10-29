@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var authorisedAppsSection: some SettingsContent {
-    SettingsGroup("Authorised Apps", systemImage: "app") {
+  @ViewBuilder
+  var authorisedAppsSection: some View {
+    Section("Authorised Apps") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

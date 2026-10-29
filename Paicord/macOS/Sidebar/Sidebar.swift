@@ -6,7 +6,6 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-@_spi(Advanced) import SwiftUIIntrospect
 import SwiftUIX
 
 struct SidebarView: View {

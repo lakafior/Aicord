@@ -1,16 +1,19 @@
 //
-//  FamilyCentre.swift
+//  FamilyCentreSection.swift
 //  Paicord
 //
 //  Created by Lakhan Lothiyi on 02/12/2025.
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var familyCentreSection: some SettingsContent {
-    SettingsGroup("Family Centre", systemImage: "house") {
+  @ViewBuilder
+  var familyCentreSection: some View {
+    Section("Family Centre") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

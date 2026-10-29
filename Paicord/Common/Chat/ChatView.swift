@@ -8,7 +8,6 @@
 
 import Collections
 import PaicordLib
-@_spi(Advanced) import SwiftUIIntrospect
 import SwiftUIX
 
 struct ChatView: View {
@@ -31,9 +30,6 @@ struct ChatView: View {
 
   #if os(macOS)
     @FocusState private var isChatFocused: Bool
-
-    @ViewStorage private var scrollStopWorkItem: DispatchWorkItem?
-    @ViewStorage private var scrollObserver: NSObjectProtocol?
   #endif
 
   var body: some View {
@@ -123,34 +119,10 @@ struct ChatView: View {
           InputBar.inputVMs[vm.channelId]?.uploadItems = []
           return .handled
         }
-        .introspect(.scrollView, on: .macOS(.v14...)) { scrollView in
-
-          let clipView = scrollView.contentView
-
-          guard scrollObserver == nil else { return }
-          clipView.postsBoundsChangedNotifications = true
-
-          scrollObserver = NotificationCenter.default.addObserver(
-            forName: NSView.boundsDidChangeNotification,
-            object: clipView,
-            queue: .main
-          ) { _ in
-            DispatchQueue.main.async {
-              isScrolling = true
-            }
-
-            scrollStopWorkItem?.cancel()
-            let work = DispatchWorkItem {
-              isScrolling = false
-            }
-            scrollStopWorkItem = work
-            DispatchQueue.main.asyncAfter(
-              deadline: .now() + 0.12,
-              execute: work
-            )
-          }
-        }
       #endif
+      .onScrollPhaseChange { _, newPhase in
+        isScrolling = newPhase.isScrolling
+      }
       .scrollPosition(id: $currentScrollPosition, anchor: .bottom)  // causes issues with input bar height changes:
       // currently, the input bar changing size can cause the scrollview position to jump unexpectedly.
       // not sure how to fix.
@@ -168,25 +140,13 @@ struct ChatView: View {
               object: ["channelId": vm.channelId, "immediate": true]
             )
           }) {
-            #if os(macOS)
-              Image(systemName: "arrow.down")
-                .imageScale(.large)
-                .padding(8)
-            #else
-              Image(systemName: "arrow.down")
-                .tint(.primary)
-                .imageScale(.large)
-                .padding(8)
-                .background(.ultraThinMaterial, in: .circle)
-            #endif
+            Image(systemName: "arrow.down")
+              .tint(.primary)
+              .imageScale(.large)
+              .padding(10)
+              .glassEffect(.regular.interactive(), in: .circle)
           }
-          #if os(macOS)
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.circle)
-            .controlSize(.large)
-          #else
-            .buttonStyle(.borderless)
-          #endif
+          .buttonStyle(.plain)
           .padding()
           .transition(.blurReplace.animation(.default))
         }
@@ -207,17 +167,6 @@ struct ChatView: View {
     .scrollDismissesKeyboard(.interactively)
     .background(theme.common.secondaryBackground)
     .ignoresSafeArea(.keyboard, edges: .all)
-    #if os(macOS)
-      .onDisappear {
-        if let observer = scrollObserver {
-          NotificationCenter.default.removeObserver(observer)
-          scrollObserver = nil
-        }
-
-        scrollStopWorkItem?.cancel()
-        scrollStopWorkItem = nil
-      }
-    #endif
 
     .toolbar {
       ToolbarItem(placement: .navigation) {

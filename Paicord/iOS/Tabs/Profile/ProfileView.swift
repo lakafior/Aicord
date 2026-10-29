@@ -21,6 +21,7 @@ struct ProfileView: View {
   }
 
   @State var settingsSheetPresented = false
+  @State var statusSheetPresented = false
 
   @State var profile: DiscordUser.Profile? = nil
   var body: some View {
@@ -29,18 +30,34 @@ struct ProfileView: View {
         LazyVStack(alignment: .leading) {
           bannerView
             .overlay(alignment: .topTrailing) {
-              HStack {
-                Button {
-                  settingsSheetPresented = true
-                } label: {
-                  Image(systemName: "gearshape.fill")
-                    .padding(8)
-                    .background(.ultraThinMaterial, in: Circle())
-                }
-                .buttonStyle(.borderless)
-                .tint(.primary)
-                .sheet(isPresented: $settingsSheetPresented) {
-                  SettingsView()
+              GlassEffectContainer(spacing: 10) {
+                HStack(spacing: 8) {
+                  Button {
+                    statusSheetPresented = true
+                  } label: {
+                    Image(systemName: "person.badge.key.fill")
+                      .padding(8)
+                      .glassEffect(.regular.interactive(), in: .circle)
+                  }
+                  .buttonStyle(.borderless)
+                  .tint(.primary)
+                  .sheet(isPresented: $statusSheetPresented) {
+                    ProfileBar.ProfileButtonPopout()
+                      .presentationDetents([.medium])
+                  }
+
+                  Button {
+                    settingsSheetPresented = true
+                  } label: {
+                    Image(systemName: "gearshape.fill")
+                      .padding(8)
+                      .glassEffect(.regular.interactive(), in: .circle)
+                  }
+                  .buttonStyle(.borderless)
+                  .tint(.primary)
+                  .sheet(isPresented: $settingsSheetPresented) {
+                    SettingsView()
+                  }
                 }
               }
               .padding(8)

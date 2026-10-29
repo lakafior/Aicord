@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var keybindsSection: some SettingsContent {
-    SettingsGroup("Keybinds", systemImage: "keyboard") {
+  @ViewBuilder
+  var keybindsSection: some View {
+    Section("Keybinds") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

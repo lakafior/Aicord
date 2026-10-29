@@ -17,7 +17,6 @@
 		57A4E7152E6B44C900470131 /* CGSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A4E7142E6B44C200470131 /* CGSize.swift */; };
 		57A55C572E7560CF005C8226 /* MarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A55C562E7560CC005C8226 /* MarkdownText.swift */; };
 		57AA8A032E7875D100B4CA9C /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57AA8A022E7875CD00B4CA9C /* Sidebar.swift */; };
-		57CDD87F2E71CB6000022203 /* HCaptcha in Frameworks */ = {isa = PBXBuildFile; productRef = 57CDD87E2E71CB6000022203 /* HCaptcha */; };
 		57CDD8812E71FF7600022203 /* CaptchaSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57CDD8802E71FF7600022203 /* CaptchaSheet.swift */; };
 		57DA042A2E79894500DB4C7C /* ConnectionStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DA04292E79894500DB4C7C /* ConnectionStateView.swift */; };
 		57DA042C2E79B26200DB4C7C /* AsyncButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DA042B2E79B25F00DB4C7C /* AsyncButton.swift */; };
@@ -55,13 +54,11 @@
 		AA10971B2E64C181005BC3D2 /* PaicordApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097122E64C181005BC3D2 /* PaicordApp.swift */; };
 		AA10971D2E64C18C005BC3D2 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10971C2E64C189005BC3D2 /* ChatView.swift */; };
 		AA1378062E967A4A00100969 /* ProcessInfo+previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1378042E96798000100969 /* ProcessInfo+previews.swift */; };
-		AA1378092E969A9000100969 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = AA1378082E969A9000100969 /* Lottie */; };
 		AA13A1E32EA83766005A3613 /* TypingIndicatorBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA13A1E22EA83766005A3613 /* TypingIndicatorBar.swift */; };
 		AA1579362F3220D50097C0FA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA1579352F3220D50097C0FA /* Localizable.xcstrings */; };
 		AA1878F32E81A30C009C7E40 /* GuildView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1878F22E81A305009C7E40 /* GuildView.swift */; };
 		AA21D27E2EA8ED4400C75093 /* ProfileFullSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21D27D2EA8ED3E00C75093 /* ProfileFullSheetView.swift */; };
 		AA21D2802EAA220300C75093 /* MaskEdgesModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21D27F2EAA220300C75093 /* MaskEdgesModifier.swift */; };
-		AA21D2832EAA557C00C75093 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; platformFilters = (macos, ); productRef = AA21D2822EAA557C00C75093 /* Sparkle */; };
 		AA21D2872EAB090200C75093 /* MemberSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21D2862EAB08FE00C75093 /* MemberSidebarView.swift */; };
 		AA2278C52EA44828002C335F /* ProfilePopoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2278C42EA4481F002C335F /* ProfilePopoutView.swift */; };
 		AA2278C72EA448C7002C335F /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2278C62EA448BD002C335F /* Profile.swift */; };
@@ -111,7 +108,6 @@
 		AA8ABACC2F2A794E00557278 /* SwiftEmojiIndex in Frameworks */ = {isa = PBXBuildFile; productRef = AA8ABACB2F2A794E00557278 /* SwiftEmojiIndex */; };
 		AA9C81832E6660BE0086B1DA /* GuildButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C81822E6660BE0086B1DA /* GuildButton.swift */; };
 		AA9C81862E66670E0086B1DA /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C81852E66670E0086B1DA /* CornerRadius.swift */; };
-		AA9C818C2E6702930086B1DA /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = AA9C818B2E6702930086B1DA /* SwiftUIIntrospect */; };
 		AA9D26B12EC95EE4006071FE /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9D26B02EC95EE3006071FE /* FlowLayout.swift */; };
 		AA9D26B32EC97721006071FE /* ViewUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9D26B22EC97714006071FE /* ViewUtils.swift */; };
 		AA9F7A532EF9630F008BB452 /* AttachmentBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9F7A522EF96308008BB452 /* AttachmentBar.swift */; };
@@ -141,7 +137,6 @@
 		AACADCBA2F3372060007F705 /* TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACADCB92F3372060007F705 /* TextView.swift */; };
 		AAD4469D2ECFBC1A006CB07C /* UserGuildSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD4469C2ECFB915006CB07C /* UserGuildSettingsStore.swift */; };
 		AAD4469F2ECFD6D6006CB07C /* ReadStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD4469E2ECFD6D2006CB07C /* ReadStateStore.swift */; };
-		AAD446A22ED07916006CB07C /* SettingsKit in Frameworks */ = {isa = PBXBuildFile; productRef = AAD446A12ED07916006CB07C /* SettingsKit */; };
 		AAD446A42ED0B631006CB07C /* ShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD446A32ED0B631006CB07C /* ShellView.swift */; };
 		AAD73EB62E93E29E00470158 /* DMsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD73EB52E93E29E00470158 /* DMsView.swift */; };
 		AADD58652E82A95B00CBC8B6 /* GuildScrollBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADD58642E82A95100CBC8B6 /* GuildScrollBar.swift */; };
@@ -322,12 +317,7 @@
 				AAFACE0500000000000000A5 /* NukeUI in Frameworks */,
 				AA8ABACC2F2A794E00557278 /* SwiftEmojiIndex in Frameworks */,
 				AA8ABACA2F2A794E00557278 /* SwiftEmoji in Frameworks */,
-				AAD446A22ED07916006CB07C /* SettingsKit in Frameworks */,
 				579DF34B2E6D9B9800BD8B97 /* SwiftUIX in Frameworks */,
-				AA21D2832EAA557C00C75093 /* Sparkle in Frameworks */,
-				AA9C818C2E6702930086B1DA /* SwiftUIIntrospect in Frameworks */,
-				57CDD87F2E71CB6000022203 /* HCaptcha in Frameworks */,
-				AA1378092E969A9000100969 /* Lottie in Frameworks */,
 				93F6E65657BE21186C1C19E6 /* PaicordLib in Frameworks */,
 				608EDA4BB4D7C45A5BC93CFA /* Textual in Frameworks */,
 			);
@@ -1033,14 +1023,9 @@
 			);
 			name = Paicord;
 			packageProductDependencies = (
-				AA9C818B2E6702930086B1DA /* SwiftUIIntrospect */,
 				579DF34A2E6D9B9800BD8B97 /* SwiftUIX */,
-				57CDD87E2E71CB6000022203 /* HCaptcha */,
-				AA1378082E969A9000100969 /* Lottie */,
 				AAFACE0200000000000000A2 /* Nuke */,
 				AAFACE0300000000000000A3 /* NukeUI */,
-				AA21D2822EAA557C00C75093 /* Sparkle */,
-				AAD446A12ED07916006CB07C /* SettingsKit */,
 				AA8ABAC92F2A794E00557278 /* SwiftEmoji */,
 				AA8ABACB2F2A794E00557278 /* SwiftEmojiIndex */,
 				9E27420250444A05FCADE929 /* PaicordLib */,
@@ -1076,13 +1061,8 @@
 			mainGroup = AA1096D22E63BE84005BC3D2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AA9C818A2E6702930086B1DA /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
 				579DF3492E6D9B9800BD8B97 /* XCRemoteSwiftPackageReference "SwiftUIX" */,
-				57CDD87D2E71CB6000022203 /* XCRemoteSwiftPackageReference "hcaptcha" */,
-				AA1378072E969A9000100969 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				AAFACE0100000000000000A1 /* XCRemoteSwiftPackageReference "Nuke" */,
-				AA21D2812EAA557C00C75093 /* XCRemoteSwiftPackageReference "Sparkle" */,
-				AAD446A02ED07916006CB07C /* XCRemoteSwiftPackageReference "SettingsKit" */,
 				AA8ABAC82F2A794E00557278 /* XCRemoteSwiftPackageReference "SwiftEmoji" */,
 				A7A8FDAA28C8D8576D77D9DF /* XCLocalSwiftPackageReference "PaicordLib" */,
 				96E1E9909CA7AFE9B89478C2 /* XCLocalSwiftPackageReference "Textual" */,
@@ -1555,52 +1535,12 @@
 				revision = 5596922e2a2daef2e084b4a62713de1615e664d5;
 			};
 		};
-		57CDD87D2E71CB6000022203 /* XCRemoteSwiftPackageReference "hcaptcha" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/llsc12/hcaptcha";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
-		AA1378072E969A9000100969 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/airbnb/lottie-spm";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.5.2;
-			};
-		};
-		AA21D2812EAA557C00C75093 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.8.0;
-			};
-		};
 		AA8ABAC82F2A794E00557278 /* XCRemoteSwiftPackageReference "SwiftEmoji" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Aeastr/SwiftEmoji";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.1.0;
-			};
-		};
-		AA9C818A2E6702930086B1DA /* XCRemoteSwiftPackageReference "swiftui-introspect" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/siteline/swiftui-introspect";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 26.0.0;
-			};
-		};
-		AAD446A02ED07916006CB07C /* XCRemoteSwiftPackageReference "SettingsKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Aeastr/SettingsKit";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.1;
 			};
 		};
 		AAFACE0100000000000000A1 /* XCRemoteSwiftPackageReference "Nuke" */ = {
@@ -1619,11 +1559,6 @@
 			package = 579DF3492E6D9B9800BD8B97 /* XCRemoteSwiftPackageReference "SwiftUIX" */;
 			productName = SwiftUIX;
 		};
-		57CDD87E2E71CB6000022203 /* HCaptcha */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 57CDD87D2E71CB6000022203 /* XCRemoteSwiftPackageReference "hcaptcha" */;
-			productName = HCaptcha;
-		};
 		6EFB9068924331EC09343396 /* Textual */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Textual;
@@ -1631,16 +1566,6 @@
 		9E27420250444A05FCADE929 /* PaicordLib */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PaicordLib;
-		};
-		AA1378082E969A9000100969 /* Lottie */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA1378072E969A9000100969 /* XCRemoteSwiftPackageReference "lottie-spm" */;
-			productName = Lottie;
-		};
-		AA21D2822EAA557C00C75093 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA21D2812EAA557C00C75093 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
 		};
 		AA8ABAC92F2A794E00557278 /* SwiftEmoji */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1651,16 +1576,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AA8ABAC82F2A794E00557278 /* XCRemoteSwiftPackageReference "SwiftEmoji" */;
 			productName = SwiftEmojiIndex;
-		};
-		AA9C818B2E6702930086B1DA /* SwiftUIIntrospect */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA9C818A2E6702930086B1DA /* XCRemoteSwiftPackageReference "swiftui-introspect" */;
-			productName = SwiftUIIntrospect;
-		};
-		AAD446A12ED07916006CB07C /* SettingsKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAD446A02ED07916006CB07C /* XCRemoteSwiftPackageReference "SettingsKit" */;
-			productName = SettingsKit;
 		};
 		AAFACE0200000000000000A2 /* Nuke */ = {
 			isa = XCSwiftPackageProductDependency;

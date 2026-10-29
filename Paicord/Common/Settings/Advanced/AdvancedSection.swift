@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var advancedSection: some SettingsContent {
-    SettingsGroup("Advanced", systemImage: "gear") {
+  @ViewBuilder
+  var advancedSection: some View {
+    Section("Advanced") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

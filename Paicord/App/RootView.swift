@@ -6,7 +6,6 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-@_spi(Advanced) import SwiftUIIntrospect
 import SwiftUIX
 
 // Handles using phone suitable layout or desktop suitable layout
@@ -17,10 +16,6 @@ struct RootView: View {
   @Environment(\.challenges) var challenges
   @Environment(\.userInterfaceIdiom) var idiom
   @Environment(\.horizontalSizeClass) var hSizeClass
-
-  #if os(macOS)
-    @Weak var window: NSWindow?
-  #endif
 
   #if os(iOS)
     @ViewStorage var hasLaunchedAlready: Bool = false
@@ -82,22 +77,10 @@ struct RootView: View {
     )
     .onAppear { setupGatewayCallbacks() }
     #if os(macOS)
-      .introspect(.window, on: .macOS(.v14...)) { window in
-        self.window = window
-        DispatchQueue.main.async {
-          updateWindow(window)
-        }
-      }
-      .onAppear {
-        DispatchQueue.main.async {
-          updateWindow(window)
-        }
-      }
-      .onChange(of: gatewayStore.accounts.currentAccountID) {
-        DispatchQueue.main.async {
-          updateWindow(window)
-        }
-      }
+      .toolbarBackgroundVisibility(
+        gatewayStore.accounts.currentAccountID == nil ? .hidden : .automatic,
+        for: .windowToolbar
+      )
     #else
       .onChange(of: gatewayStore.accounts.currentAccountID) {
         if gatewayStore.accounts.currentAccountID == nil {
@@ -117,19 +100,4 @@ struct RootView: View {
       await challenges?.presentMFA(mfaData)
     }
   }
-
-  // MARK: - Helpers
-  #if os(macOS)
-    func updateWindow(_ window: NSWindow?) {
-      guard let window else { return }
-      // copy swiftui's windowStyle hidden title bar style if we are logging in (currentAccountID is nil)
-      if gatewayStore.accounts.currentAccountID == nil {
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
-      } else {
-        window.titleVisibility = .visible
-        window.titlebarAppearsTransparent = false
-      }
-    }
-  #endif
 }

@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var connectionsSection: some SettingsContent {
-    SettingsGroup("Connections", systemImage: "link") {
+  @ViewBuilder
+  var connectionsSection: some View {
+    Section("Connections") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

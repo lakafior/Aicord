@@ -53,21 +53,21 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
 
 ---
 
-### ⏳ Etap 3: Oczyszczenie UI, komponentów pomocniczych i wprowadzenie Liquid Glass
+### ✅ Etap 3: Oczyszczenie UI, komponentów pomocniczych i wprowadzenie Liquid Glass (ZAKOŃCZONY)
 1. **`VariableBlurView.swift` (Prywatne API `CABackdropLayer` / `CAFilter` w base64) -> Natywne materiały / Liquid Glass:**
-   - [ ] Zastąpienie hacków opartych na prywatnych klasach QuartzCore natywnymi efektami rozmycia i **Liquid Glass** z iOS/macOS 26 (`.glassEffect()`, natywne materiały SwiftUI).
+   - [x] Zastąpienie hacków opartych na prywatnych klasach QuartzCore natywnymi efektami rozmycia i **Liquid Glass** z iOS/macOS 26 (`.glassEffect()`, `GlassEffectContainer`, natywne materiały SwiftUI).
 2. **`Sparkle` (Auto-updater macOS):**
-   - [ ] Usunięcie paczki `https://github.com/sparkle-project/Sparkle` i powiązanego kodu w `PaicordApp.swift`.
+   - [x] Usunięcie paczki `https://github.com/sparkle-project/Sparkle` i powiązanego kodu w `PaicordApp.swift`.
 3. **`SwiftUIIntrospect` (`swiftui-introspect`):**
-   - [ ] Usunięcie paczki `https://github.com/siteline/swiftui-introspect`.
-   - [ ] Zastąpienie 6 miejsc użycia natywnymi modyfikatorami z macOS/iOS 26 (np. `.windowRestorationBehavior(.disabled)`, `. onScrollPhaseChange` z nowego SwiftUI!).
+   - [x] Usunięcie paczki `https://github.com/siteline/swiftui-introspect`.
+   - [x] Zastąpienie 6 miejsc użycia natywnymi modyfikatorami z macOS/iOS 26 (`.restorationBehavior(.disabled)`, `.toolbarBackgroundVisibility(..., for: .windowToolbar)`, `.onScrollPhaseChange`, natywne przełączanie kart).
 4. **`SettingsKit`:**
-   - [ ] Usunięcie paczki `https://github.com/Aeastr/SettingsKit`.
-   - [ ] Zastąpienie prostym, natywnym układem `NavigationSplitView` / `Form` w czystym SwiftUI.
+   - [x] Usunięcie paczki `https://github.com/Aeastr/SettingsKit`.
+   - [x] Zastąpienie prostym, natywnym układem `NavigationSplitView` / `Form` (`.formStyle(.grouped)`) w czystym SwiftUI.
 5. **`HCaptcha`:**
-   - [ ] Usunięcie zewnętrznej paczki `https://github.com/llsc12/hcaptcha` i zastąpienie jej czystym `WKWebView` bezpośrednio w `CaptchaSheet.swift`.
+   - [x] Usunięcie zewnętrznej paczki `https://github.com/llsc12/hcaptcha` i zastąpienie jej czystym `WKWebView` bezpośrednio w `CaptchaSheet.swift`.
 6. **`Lottie`:**
-   - [ ] Usunięcie `lottie-spm` (używanego tylko w `StickersView.swift`) lub zastąpienie lekkim natywnym rozwiązaniem.
+   - [x] Usunięcie `lottie-spm` (używanego tylko w `StickersView.swift`) i zastąpienie lekkim natywnym parserem/rendererem wektorowym (`Canvas` + `TimelineView`, wzorowanym na podejściu `rasterlottie` z Serein).
 
 ---
 

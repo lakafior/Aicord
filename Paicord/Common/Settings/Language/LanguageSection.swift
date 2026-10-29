@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var languageSection: some SettingsContent {
-    SettingsGroup("Language", systemImage: "globe") {
+  @ViewBuilder
+  var languageSection: some View {
+    Section("Language") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

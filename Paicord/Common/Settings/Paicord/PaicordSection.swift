@@ -6,12 +6,12 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
 import SwiftUIX
 
 extension SettingsView {
-  var paicordSection: some SettingsContent {
-    CustomSettingsGroup("Paicord", systemImage: "leaf") {
+  @ViewBuilder
+  var paicordSection: some View {
+    Section {
       VStack(alignment: .leading) {
         HStack {
           VStack(alignment: .leading) {

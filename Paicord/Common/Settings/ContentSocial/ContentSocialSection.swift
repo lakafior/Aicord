@@ -6,12 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var contentSocialSection: some SettingsContent {
-    SettingsGroup("Content & Social", systemImage: "bubble.left.and.bubble.right") {
-
+  @ViewBuilder
+  var contentSocialSection: some View {
+    Section("Content & Social") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

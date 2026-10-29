@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var accessibilitySection: some SettingsContent {
-    SettingsGroup("Accessibility", systemImage: "accessibility.fill") {
+  @ViewBuilder
+  var accessibilitySection: some View {
+    Section("Accessibility") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

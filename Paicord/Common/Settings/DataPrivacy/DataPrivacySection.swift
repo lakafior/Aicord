@@ -6,12 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var dataPrivacySection: some SettingsContent {
-    SettingsGroup("Data & Privacy", systemImage: "hand.raised.fill") {
-
+  @ViewBuilder
+  var dataPrivacySection: some View {
+    Section("Data & Privacy") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

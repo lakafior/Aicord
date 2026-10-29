@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var chatSection: some SettingsContent {
-    SettingsGroup("Chat", systemImage: "message") {
+  @ViewBuilder
+  var chatSection: some View {
+    Section("Chat") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

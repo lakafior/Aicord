@@ -6,12 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var devicesSection: some SettingsContent {
-    SettingsGroup("Devices", systemImage: "pc") {
-
+  @ViewBuilder
+  var devicesSection: some View {
+    Section("Devices") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

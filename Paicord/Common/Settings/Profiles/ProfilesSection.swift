@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var profilesSection: some SettingsContent {
-    SettingsGroup("Profiles", systemImage: "person.3.fill") {
+  @ViewBuilder
+  var profilesSection: some View {
+    Section("Profiles") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

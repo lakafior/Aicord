@@ -6,206 +6,226 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import Collections
-import SettingsKit
 import SwiftUIX
 
-struct SettingsView: SettingsContainer {
+struct SettingsView: View {
   @Environment(\.gateway) var gw
-
   @Environment(\.openURL) var openURL
+  @Environment(\.dismiss) var dismiss
 
-  @AppStorage("Paicord.Appearance.ChatMessagesAnimated") var chatMessagesAnimated: Bool = false
+  @AppStorage("Paicord.Appearance.ChatMessagesAnimated")
+  var chatMessagesAnimated: Bool = false
 
-  var settingsBody: some SettingsContent {
-    SettingsGroup("Paicord", .inline) {
+  @State private var selectedTab: SettingsTab? = .paicord
+  @State private var searchText: String = ""
+
+  enum SettingsGroupCategory: String, CaseIterable {
+    case paicord = "Paicord"
+    case user = "User Settings"
+    case app = "App Settings"
+    case debug = "Debug"
+  }
+
+  enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
+    case paicord
+    case account
+    case profiles
+    case contentSocial
+    case dataPrivacy
+    case familyCentre
+    case authorisedApps
+    case devices
+    case connections
+    case clips
+    #if os(iOS)
+      case scanQR
+    #endif
+    case theming
+    case appearance
+    case accessibility
+    case voiceVideo
+    case chat
+    case notifications
+    case keybinds
+    case language
+    case advanced
+    case debug
+
+    var id: String { rawValue }
+
+    var title: String {
+      switch self {
+      case .paicord: "Paicord"
+      case .account: "My Account"
+      case .profiles: "Profiles"
+      case .contentSocial: "Content & Social"
+      case .dataPrivacy: "Data & Privacy"
+      case .familyCentre: "Family Centre"
+      case .authorisedApps: "Authorised Apps"
+      case .devices: "Devices"
+      case .connections: "Connections"
+      case .clips: "Clips"
+      #if os(iOS)
+        case .scanQR: "Scan QR Code"
+      #endif
+      case .theming: "Theming"
+      case .appearance: "Appearance"
+      case .accessibility: "Accessibility"
+      case .voiceVideo: "Voice & Video"
+      case .chat: "Chat"
+      case .notifications: "Notifications"
+      case .keybinds: "Keybinds"
+      case .language: "Language"
+      case .advanced: "Advanced"
+      case .debug: "Debug"
+      }
+    }
+
+    var systemImage: String {
+      switch self {
+      case .paicord: "leaf"
+      case .account: "person.crop.circle"
+      case .profiles: "person.3.fill"
+      case .contentSocial: "bubble.left.and.bubble.right"
+      case .dataPrivacy: "hand.raised.fill"
+      case .familyCentre: "house"
+      case .authorisedApps: "app"
+      case .devices: "pc"
+      case .connections: "link"
+      case .clips: "scissors"
+      #if os(iOS)
+        case .scanQR: "qrcode"
+      #endif
+      case .theming: "paintbrush"
+      case .appearance: "display"
+      case .accessibility: "accessibility.fill"
+      case .voiceVideo: "mic.fill"
+      case .chat: "message"
+      case .notifications: "bell.fill"
+      case .keybinds: "keyboard"
+      case .language: "globe"
+      case .advanced: "gear"
+      case .debug: "ladybug"
+      }
+    }
+
+    var category: SettingsGroupCategory {
+      switch self {
+      case .paicord:
+        .paicord
+      case .account, .profiles, .contentSocial, .dataPrivacy, .familyCentre,
+        .authorisedApps, .devices, .connections, .clips:
+        .user
+      #if os(iOS)
+        case .scanQR:
+          .user
+      #endif
+      case .theming, .appearance, .accessibility, .voiceVideo, .chat,
+        .notifications, .keybinds, .language, .advanced:
+        .app
+      case .debug:
+        .debug
+      }
+    }
+  }
+
+  private func tabs(for category: SettingsGroupCategory) -> [SettingsTab] {
+    SettingsTab.allCases.filter { tab in
+      tab.category == category
+        && (searchText.isEmpty
+          || tab.title.localizedCaseInsensitiveContains(searchText))
+    }
+  }
+
+  var body: some View {
+    NavigationSplitView {
+      List(selection: $selectedTab) {
+        ForEach(SettingsGroupCategory.allCases, id: \.self) { category in
+          let items = tabs(for: category)
+          if !items.isEmpty {
+            Section(category.rawValue) {
+              ForEach(items) { tab in
+                NavigationLink(value: tab) {
+                  Label(tab.title, systemImage: tab.systemImage)
+                }
+              }
+            }
+          }
+        }
+      }
+      .navigationTitle("Settings")
+      .searchable(text: $searchText, prompt: "Search")
+      #if os(iOS)
+        .toolbar {
+          ToolbarItem(placement: .topBarTrailing) {
+            Button("Done") {
+              dismiss()
+            }
+          }
+        }
+      #endif
+    } detail: {
+      NavigationStack {
+        if let selectedTab {
+          Form {
+            detailContent(for: selectedTab)
+          }
+          .formStyle(.grouped)
+          .navigationTitle(selectedTab.title)
+        } else {
+          ContentUnavailableView("Select a Category", systemImage: "gear")
+        }
+      }
+    }
+  }
+
+  @ViewBuilder
+  private func detailContent(for tab: SettingsTab) -> some View {
+    switch tab {
+    case .paicord:
       paicordSection
-    }
-
-    SettingsGroup("User Settings", .inline) {
+    case .account:
       accountSection
+    case .profiles:
       profilesSection
+    case .contentSocial:
       contentSocialSection
+    case .dataPrivacy:
       dataPrivacySection
+    case .familyCentre:
       familyCentreSection
+    case .authorisedApps:
       authorisedAppsSection
+    case .devices:
       devicesSection
+    case .connections:
       connectionsSection
+    case .clips:
       clipsSection
-      scanQRSection
-    }
-
-    SettingsGroup("App Settings", .inline) {
+    #if os(iOS)
+      case .scanQR:
+        scanQRSection
+    #endif
+    case .theming:
+      themingSection
+    case .appearance:
       appearanceSection
+    case .accessibility:
       accessibilitySection
+    case .voiceVideo:
       voiceVideoSection
+    case .chat:
       chatSection
+    case .notifications:
       notificationsSection
+    case .keybinds:
       keybindsSection
+    case .language:
       languageSection
+    case .advanced:
       advancedSection
+    case .debug:
+      debugSection
     }
-
-    debugSection
   }
 }
-
-//enum SettingsPages {
-//  static let settingsPages: [SettingsPage] =
-//    AccountSection + PaicordSection + DebugSection
-//}
-//
-//struct SettingsView: View {
-//  @Environment(\.gateway) var gw
-//  @Environment(\.appState) var appState
-//  @Environment(\.userInterfaceIdiom) var idiom
-//
-//  @State private var selectedPage: SettingsPage?  // <-- Add this state variable
-//
-//  var body: some View {
-//    switch idiom {
-//    case .mac, .pad:
-//      settingsSidebarStyle
-//    default:
-//      settingsListStyle
-//    }
-//  }
-//
-//  @ViewBuilder
-//  var settingsSidebarStyle: some View {
-//    NavigationSplitView(columnVisibility: .constant(.all)) {
-//      List(selection: $selectedPage) {  // <-- Bind selection here
-//        let sections: OrderedDictionary<String, [SettingsPage]> = SettingsPages.settingsPages
-//          .reduce(
-//            into: [:]) { dict, page in
-//              dict[page.section, default: []].append(page)
-//            }
-//
-//        ForEach(sections.keys, id: \.self) { section in
-//          Section(header: Text(section)) {
-//            ForEach(sections[section] ?? [], id: \.title) { page in
-//              if let action = page.action {
-//                Button {
-//                  action()
-//                } label: {
-//                  switch page.icon {
-//                  case .system(let name):
-//                    Label(page.title, systemImage: name)
-//                  case .custom(let name):
-//                    Label(page.title, image: name)
-//                  }
-//                }
-//              } else {
-//                NavigationLink(value: page) {
-//                  switch page.icon {
-//                  case .system(let name):
-//                    Label(page.title, systemImage: name)
-//                  case .custom(let name):
-//                    Label(page.title, image: name)
-//                  }
-//                }
-//              }
-//            }
-//          }
-//        }
-//      }
-//      .navigationTitle("Paicord Settings")
-//      .toolbar(removing: .sidebarToggle)
-//
-//    } detail: {
-//      if let selectedPage = selectedPage {
-//        selectedPage.view
-//          .navigationTitle(selectedPage.title)
-//          .toolbar(removing: .sidebarToggle)
-//      } else {
-//        Text("Paicord")
-//          .font(.title2)
-//          .fontWeight(.semibold)
-//          .foregroundStyle(.secondary)
-//          .toolbar(removing: .sidebarToggle)
-//      }
-//    }
-//    .toolbar(removing: .sidebarToggle)
-//  }
-//
-//  @ViewBuilder
-//  var settingsListStyle: some View {
-//    List {
-//      let sections: OrderedDictionary<String, [SettingsPage]> = SettingsPages.settingsPages
-//        .reduce(
-//          into: [:]) { dict, page in
-//            dict[page.section, default: []].append(page)
-//          }
-//
-//      ForEach(sections.keys, id: \.self) { section in
-//        Section(header: Text(section)) {
-//          ForEach(sections[section] ?? [], id: \.title) { page in
-//            if let action = page.action {
-//              Button {
-//                action()
-//              } label: {
-//                switch page.icon {
-//                case .system(let name):
-//                  Label(page.title, systemImage: name)
-//                case .custom(let name):
-//                  Label(page.title, image: name)
-//                }
-//              }
-//            } else {
-//              NavigationLink(destination: page.view) {
-//                switch page.icon {
-//                case .system(let name):
-//                  Label(page.title, systemImage: name)
-//                case .custom(let name):
-//                  Label(page.title, image: name)
-//                }
-//              }
-//            }
-//          }
-//        }
-//      }
-//    }
-//    .navigationTitle("Settings")
-//  }
-//
-//}
-//
-//struct SettingsPage: Hashable {
-//  var title: String
-//  var icon: Icon
-//  var section: String
-//
-//  init(title: String, icon: Icon, section: String, view: () -> any View) {
-//    self.title = title
-//    self.icon = icon
-//    self.section = section
-//    self.view = view().eraseToAnyView()
-//  }
-//
-//  init(title: String, icon: Icon, section: String, action: @escaping @Sendable () -> Void)
-//  {
-//    self.title = title
-//    self.icon = icon
-//    self.section = section
-//    self.view = EmptyView().eraseToAnyView()
-//    self.action = action
-//  }
-//
-//  enum Icon: Hashable {
-//    case system(String)
-//    case custom(String)
-//  }
-//
-//  func hash(into hasher: inout Hasher) {
-//    hasher.combine(title)
-//    hasher.combine(icon)
-//    hasher.combine(section)
-//  }
-//
-//  static func == (lhs: SettingsPage, rhs: SettingsPage) -> Bool {
-//    return lhs.hashValue == rhs.hashValue
-//  }
-//
-//  var view: AnyView
-//  var action:  (@Sendable () -> Void)? = nil
-//}

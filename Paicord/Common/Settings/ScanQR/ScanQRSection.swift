@@ -6,7 +6,6 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import SettingsKit
 import SwiftUIX
 
 #if os(iOS)
@@ -16,10 +15,10 @@ import SwiftUIX
 #endif
 
 extension SettingsView {
-  @SettingsContentBuilder
-  var scanQRSection: some SettingsContent {
+  @ViewBuilder
+  var scanQRSection: some View {
     #if os(iOS)
-      CustomSettingsGroup("Scan QR Code", systemImage: "qrcode") {
+      Section("Scan QR Code") {
         QRCodeScanView()
           .listRowInsets(.zero)
           .listRowBackground(Color.clear)

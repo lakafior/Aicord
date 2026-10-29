@@ -8,12 +8,7 @@
 
 import Logging
 import PaicordLib
-@_spi(Advanced) import SwiftUIIntrospect
 import SwiftUIX
-
-#if canImport(Sparkle) && !DEBUG
-  import Sparkle
-#endif
 
 @main
 struct PaicordApp: App {
@@ -48,25 +43,7 @@ struct PaicordApp: App {
   init() {
     console.startIntercepting()
     PaicordImagePipeline.configure()
-    //    #if DEBUG
-    //      DiscordGlobalConfiguration.makeLogger = { loggerLabel in
-    //        var logger = Logger(label: loggerLabel)
-    //        logger.logLevel = .trace
-    //        return logger
-    //      }
-    //    #endif
-    #if canImport(Sparkle) && !DEBUG
-      updaterController = SPUStandardUpdaterController(
-        startingUpdater: true,
-        updaterDelegate: nil,
-        userDriverDelegate: nil
-      )
-    #endif
   }
-
-  #if canImport(Sparkle) && !DEBUG
-    private let updaterController: SPUStandardUpdaterController
-  #endif
 
   @Environment(\.theme) var theme
 
@@ -76,22 +53,12 @@ struct PaicordApp: App {
         gatewayStore: gatewayStore
       )
       .preferredColorScheme(theme.common.colorScheme)
-      #if os(macOS)
-        .introspect(.window, on: .macOS(.v14...)) { window in
-          window.isRestorable = false
-        }
-      #endif
     }
-    // if macos or ipados
+    #if os(macOS)
+      .restorationBehavior(.disabled)
+      .windowToolbarStyle(.unified)
+    #endif
     #if os(macOS) || os(iOS)
-      #if canImport(Sparkle) && !DEBUG
-        .windowToolbarStyle(.unified)
-        .commands {
-          CommandGroup(after: .appInfo) {
-            CheckForUpdatesView(updater: updaterController.updater)
-          }
-        }
-      #endif
       .commands {
         PaicordCommands()
       }
@@ -102,43 +69,8 @@ struct PaicordApp: App {
       // use a normal window instead of Settings
       Window("Settings", id: "settings") {
         SettingsView()
-          .introspect(.window, on: .macOS(.v14...)) { window in
-            window.isRestorable = false
-          }
       }
+      .restorationBehavior(.disabled)
     #endif
   }
 }
-
-// https://sparkle-project.org/documentation/programmatic-setup/
-
-#if canImport(Sparkle) && !DEBUG
-  final class CheckForUpdatesViewModel: ObservableObject {
-    @Published var canCheckForUpdates = false
-
-    init(updater: SPUUpdater) {
-      updater.publisher(for: \.canCheckForUpdates)
-        .assign(to: &$canCheckForUpdates)
-    }
-  }
-
-  // This is the view for the Check for Updates menu item
-  // Note this intermediate view is necessary for the disabled state on the menu item to work properly before Monterey.
-  // See https://stackoverflow.com/questions/68553092/menu-not-updating-swiftui-bug for more info
-  struct CheckForUpdatesView: View {
-    @ObservedObject private var checkForUpdatesViewModel: CheckForUpdatesViewModel
-    private let updater: SPUUpdater
-
-    init(updater: SPUUpdater) {
-      self.updater = updater
-
-      // Create our view model for our CheckForUpdatesView
-      self.checkForUpdatesViewModel = CheckForUpdatesViewModel(updater: updater)
-    }
-
-    var body: some View {
-      Button("Check for Updates…", action: updater.checkForUpdates)
-        .disabled(!checkForUpdatesViewModel.canCheckForUpdates)
-    }
-  }
-#endif

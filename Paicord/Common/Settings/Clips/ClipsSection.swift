@@ -6,12 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var clipsSection: some SettingsContent {
-    SettingsGroup("Clips", systemImage: "scissors") {
-
+  @ViewBuilder
+  var clipsSection: some View {
+    Section("Clips") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

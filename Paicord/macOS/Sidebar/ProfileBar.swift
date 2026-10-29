@@ -91,8 +91,7 @@ struct ProfileBar: View {
         Image(systemName: "gearshape.fill")
           .font(.title2)
           .padding(5)
-          .background(.ultraThinMaterial)
-          .clipShape(.circle)
+          .glassEffect(.regular.interactive(), in: .circle)
       }
       .buttonStyle(.borderless)
     }

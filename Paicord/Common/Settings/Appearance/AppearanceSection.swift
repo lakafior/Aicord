@@ -6,21 +6,19 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
 import SwiftUIX
 
 extension SettingsView {
-  @SettingsContentBuilder
-  var appearanceSection: some SettingsContent {
-    CustomSettingsGroup("Theming", systemImage: "paintbrush") {
-      ThemingSection()
-    }
+  @ViewBuilder
+  var themingSection: some View {
+    ThemingSection()
+  }
 
-    SettingsGroup("Appearance", systemImage: "display") {
-      SettingsItem("Animate Chat Messages", icon: "circle.grid.2x1.right.filled") {
-        Toggle(isOn: $chatMessagesAnimated) {
-          Text(verbatim: "")
-        }
+  @ViewBuilder
+  var appearanceSection: some View {
+    Section("Appearance") {
+      Toggle(isOn: $chatMessagesAnimated) {
+        Label("Animate Chat Messages", systemImage: "circle.grid.2x1.right.filled")
       }
     }
   }

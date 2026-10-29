@@ -317,7 +317,7 @@ private struct AttachmentViewer: View {
           .font(.title2.weight(.semibold))
           .foregroundStyle(.white)
           .padding(14)
-          .background(.ultraThinMaterial, in: Circle())
+          .glassEffect(.regular.interactive(), in: .circle)
       }
       .buttonStyle(.plain)
       .padding()
@@ -330,39 +330,41 @@ private struct AttachmentViewer: View {
   }
 
   private var controlBar: some View {
-    HStack(spacing: 8) {
-      HStack(spacing: 12) {
-        Button {
-          copyAttachmentURL()
-        } label: {
-          Image(systemName: "doc.on.doc")
-            .frame(width: 20, height: 20)
+    GlassEffectContainer(spacing: 12) {
+      HStack(spacing: 8) {
+        HStack(spacing: 12) {
+          Button {
+            copyAttachmentURL()
+          } label: {
+            Image(systemName: "doc.on.doc")
+              .frame(width: 20, height: 20)
+          }
+          .help("Copy URL")
+          .disabled(currentAttachment == nil)
+
+          Button {
+            downloadCurrentAttachment()
+          } label: {
+            Image(systemName: "arrow.down.circle")
+              .frame(width: 20, height: 20)
+          }
+          .help("Download")
+          .disabled(currentAttachment == nil)
         }
-        .help("Copy URL")
-        .disabled(currentAttachment == nil)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .glassEffect(.regular.interactive(), in: .capsule)
 
         Button {
-          downloadCurrentAttachment()
+          isPresented = false
         } label: {
-          Image(systemName: "arrow.down.circle")
+          Image(systemName: "xmark")
             .frame(width: 20, height: 20)
         }
-        .help("Download")
-        .disabled(currentAttachment == nil)
+        .help("Close")
+        .padding(8)
+        .glassEffect(.regular.interactive(), in: .circle)
       }
-      .padding(.horizontal, 12)
-      .padding(.vertical, 8)
-      .background(.ultraThinMaterial, in: .capsule)
-
-      Button {
-        isPresented = false
-      } label: {
-        Image(systemName: "xmark")
-          .frame(width: 20, height: 20)
-      }
-      .help("Close")
-      .padding(8)
-      .background(.ultraThinMaterial, in: .circle)
     }
     .buttonStyle(.plain)
     .font(.title3)

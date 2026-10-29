@@ -8,7 +8,6 @@
 
 import PaicordLib
 import SwiftEmojiIndex
-@_spi(Advanced) import SwiftUIIntrospect
 import SwiftUIX
 
 #if os(macOS)
@@ -906,26 +905,23 @@ struct EmojiPicker: View {
               onEmojiPicked?(emoji)
             }
           } else {
-            TabView(selection: $chosenPicker) {
-              SheetEmojiGridView(detent: $detent, variant: variant) { emoji in
-                onEmojiPicked?(emoji)
+            Group {
+              switch chosenPicker {
+              case .emoji:
+                SheetEmojiGridView(detent: $detent, variant: variant) { emoji in
+                  onEmojiPicked?(emoji)
+                }
+              case .gif:
+                SheetGifGridView(detent: $detent) { gifURL in
+                  onGIFPicked?(gifURL)
+                }
+              case .sticker:
+                SheetStickerGridView(detent: $detent) { sticker in
+                  onStickerPicked?(sticker)
+                }
               }
-              .tag(ChosenPicker.emoji)
-              SheetGifGridView(detent: $detent) { gifURL in
-                onGIFPicked?(gifURL)
-              }
-              .tag(ChosenPicker.gif)
-              SheetStickerGridView(detent: $detent) { sticker in
-                onStickerPicked?(sticker)
-              }
-              .tag(ChosenPicker.sticker)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.default, value: chosenPicker)
-            // disable switching tabs via swipe, only allow via picker
-            .introspect(.tabView(style: .page), on: .iOS(.v17...)) { tabView in
-              tabView.isScrollEnabled = false
-            }
           }
         }
         .maxHeight(.infinity)

@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var notificationsSection: some SettingsContent {
-    SettingsGroup("Notifications", systemImage: "bell.fill") {
+  @ViewBuilder
+  var notificationsSection: some View {
+    Section("Notifications") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }

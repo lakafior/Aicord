@@ -6,20 +6,19 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUIX
 
 extension SettingsView {
-  var accountSection: some SettingsContent {
-    SettingsGroup("My Account", systemImage: "person.crop.circle") {
-      SettingsItem("Log Out") {
-        AsyncButton("") {
-          guard let currentAccount = gw.accounts.currentAccount else { return }
-          gw.accounts.removeAccount(currentAccount)
-          await gw.logOut()
-        } catch: { _ in
-        }
-
+  @ViewBuilder
+  var accountSection: some View {
+    Section("My Account") {
+      AsyncButton("Log Out") {
+        guard let currentAccount = gw.accounts.currentAccount else { return }
+        gw.accounts.removeAccount(currentAccount)
+        await gw.logOut()
+      } catch: { _ in
       }
+      .foregroundStyle(.red)
     }
   }
 }

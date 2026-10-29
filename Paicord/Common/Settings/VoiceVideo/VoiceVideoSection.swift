@@ -6,11 +6,14 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import SettingsKit
+import SwiftUI
 
 extension SettingsView {
-  var voiceVideoSection: some SettingsContent {
-    SettingsGroup("Voice & Video", systemImage: "mic.fill") {
+  @ViewBuilder
+  var voiceVideoSection: some View {
+    Section("Voice & Video") {
+      Text("Coming Soon")
+        .foregroundStyle(.secondary)
     }
   }
 }
