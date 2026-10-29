@@ -104,7 +104,7 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
 
 ### 🔜 Etap 6: Tożsamość Aicord, poprawki i dokumentacja
 1. **Ikona aplikacji:**
-   - [ ] Nowa ikona `.icon` zaprojektowana w Icon Composer (Liquid Glass, warianty jasny/ciemny/tinted) i podpięta do targetu zamiast obecnego zestawu ikon.
+   - [x] Nowa ikona `Paicord/Resources/AppIcon.icon` z Icon Composer: uproszczone płaskie dymki w pomarańczu w stylu Claude, każdy element jako osobna warstwa Liquid Glass, kremowe tło w trybie jasnym i grafitowe w ciemnym. Zastępuje `AppIcon.appiconset`; `AppIcon.imageset` (ekran łączenia) dostał render nowej ikony.
 2. **Poprawki błędów:**
    - [x] fix: wejście na kanał i przeczytanie nowych wiadomości nie oznacza ich jako przeczytane. `ChatView` wysyła ack przy wejściu na kanał, po przewinięciu na dół i po powrocie do aplikacji; pozycja `nil` (widok na dolnej kotwicy) liczy się jako „na dole”.
 3. **README:**

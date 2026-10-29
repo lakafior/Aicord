@@ -1,8 +1,9 @@
 {
   "images" : [
     {
-      "filename" : "Icon_256x256@2x.png",
-      "idiom" : "universal"
+      "filename" : "AppIcon@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
     }
   ],
   "info" : {

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9E08D02F0DF3EA41E426DA50 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E84D65FC5165C77155CF85BB /* AppIcon.icon */; };
 		571AE5B12FFD7726006D609C /* ObservableBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571AE5B02FFD7726006D609C /* ObservableBox.swift */; };
 		5724CD6F2E733D0E00931FEF /* MFASheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5724CD6E2E733D0900931FEF /* MFASheet.swift */; };
 		575DA6A030006C3D00CBA394 /* MentionCountBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575DA69F30006C3D00CBA394 /* MentionCountBadge.swift */; };
@@ -155,6 +156,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E84D65FC5165C77155CF85BB /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		571AE5B02FFD7726006D609C /* ObservableBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableBox.swift; sourceTree = "<group>"; };
 		5724CD6E2E733D0900931FEF /* MFASheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFASheet.swift; sourceTree = "<group>"; };
 		575DA69F30006C3D00CBA394 /* MentionCountBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MentionCountBadge.swift; sourceTree = "<group>"; };
@@ -591,6 +593,7 @@
 		AA1579332F3220B20097C0FA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				E84D65FC5165C77155CF85BB /* AppIcon.icon */,
 				AA1097102E64C181005BC3D2 /* Assets.xcassets */,
 				AA1579352F3220D50097C0FA /* Localizable.xcstrings */,
 				CD0FCDF43CEB925D98D9DEB7 /* DiscordEmojiNames.json */,
@@ -1065,6 +1068,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA1579362F3220D50097C0FA /* Localizable.xcstrings in Resources */,
+				9E08D02F0DF3EA41E426DA50 /* AppIcon.icon in Resources */,
 				AA1097142E64C181005BC3D2 /* Assets.xcassets in Resources */,
 				808EAC80F2D12DA38A52AB16 /* DiscordEmojiNames.json in Resources */,
 			);

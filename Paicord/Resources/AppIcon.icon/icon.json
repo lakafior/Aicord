@@ -1,0 +1,96 @@
+{
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "dots.svg",
+          "name": "dots",
+          "opacity": 1,
+          "blend-mode": "normal",
+          "glass": true,
+          "position": {
+            "scale": 0.92,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "name": "Dots",
+      "specular": true,
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.3
+      },
+      "blur-material": null
+    },
+    {
+      "layers": [
+        {
+          "image-name": "front.svg",
+          "name": "front",
+          "opacity": 1,
+          "blend-mode": "normal",
+          "glass": true,
+          "position": {
+            "scale": 0.92,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "name": "Front bubble",
+      "specular": true,
+      "shadow": {
+        "kind": "layer-color",
+        "opacity": 0.4
+      },
+      "blur-material": null
+    },
+    {
+      "layers": [
+        {
+          "image-name": "back.svg",
+          "name": "back",
+          "glass": true,
+          "position": {
+            "scale": 0.92,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "name": "Back bubble",
+      "specular": true,
+      "shadow": {
+        "kind": "layer-color",
+        "opacity": 0.4
+      },
+      "blur-material": null
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared",
+    "circles": [
+      "watchOS"
+    ]
+  },
+  "fill-specializations": [
+    {
+      "value": {
+        "solid": "srgb:0.96078,0.94118,0.90980,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "solid": "srgb:0.10980,0.09804,0.09020,1.00000"
+      }
+    }
+  ]
+}
