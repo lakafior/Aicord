@@ -26,6 +26,10 @@ enum SummaryRange: Hashable, Identifiable {
     case .last(let count): "Last \(count) Messages"
     }
   }
+
+  var sheetTitle: LocalizedStringKey {
+    self == .unread ? "Catch Up" : "Summary"
+  }
 }
 
 /// The Intelligence menu in the channel's toolbar.
@@ -40,7 +44,7 @@ struct ChannelIntelligenceMenu: View {
         Button {
           summary = .unread
         } label: {
-          Label("Unread Messages", systemImage: "envelope.badge")
+          Label("Catch Up on Unread", systemImage: "envelope.badge")
         }
         .disabled(!hasUnread)
         ForEach([100, 500, 1_000], id: \.self) { count in
@@ -108,7 +112,7 @@ struct ChannelSummarySheet: View {
           }
         }
       }
-      .navigationTitle("Summary")
+      .navigationTitle(range.sheetTitle)
       #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
       #endif

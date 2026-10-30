@@ -119,7 +119,7 @@ struct ChannelContextMenu: ViewModifier {
             && gw.readStates.mentionCount(channelId: channel.id) == 0
         )
 
-        Button("Summarize Unread", systemImage: "sparkles") {
+        Button("Catch Up", systemImage: "sparkles") {
           summary = .unread
         }
         .disabled(!gw.readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id))
