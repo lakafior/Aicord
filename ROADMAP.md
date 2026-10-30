@@ -145,16 +145,19 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [ ] Konta: lista z przełączaniem, „Dodaj konto”, „Wyloguj”.
    - [ ] „Edytuj profil” jako link do ustawień profilu w przeglądarce zamiast wyłączonego przycisku.
 4. **Ustawienia:**
-   - [ ] Sekcja „Paicord” → „O Aicord”: wersja, build, licencja GPL-3, link do repozytorium; bez „Made with ❤️ by llsc12”, naklejki z CDN Discorda i przycisku Donate.
+   - [x] Sekcja „Paicord” → „O Aicord”: wersja, build, licencja GPL-3, link do repozytorium; bez „Made with ❤️ by llsc12”, naklejki z CDN Discorda i przycisku Donate. Na dole dopisek, że to fork Paicorda od llsc12.
    - [ ] Moje konto: dane konta, przełączanie kont, wylogowanie (Scan QR na iOS zostaje).
    - [ ] Skróty klawiszowe (macOS): lista istniejących skrótów (⌘, ⌘K, ⇧⌘R).
-   - [ ] Debug: bez przycisku podglądu okna sponsora.
+   - [x] Debug: bez przycisku podglądu okna sponsora.
    - [ ] Puste sekcje („Coming Soon”) zostają jako miejsca na przyszłe ustawienia.
 5. **Pozostałości po Paicordzie poza Ustawieniami:**
-   - [ ] Usunięcie `SponsorSheet` (samo wyskakuje po 2 dniach z linkiem do sponsorowania llsc12).
-   - [ ] Usunięcie `UpdateCheck` i `SUFeedURL` (czyta kanał wydań llsc12, więc proponowałby pobranie oryginalnego Paicorda).
-   - [ ] „Aicord” zamiast „Paicord” na ekranie łączenia (bez „SwiftUI ftw”), w tekście przy kodzie QR logowania, w tytule okna logów i jako autor wbudowanych motywów.
-   - [ ] Nazwa wyświetlana aplikacji „Aicord” (Dock, menu, ekran główny). Klucze `UserDefaults` i wewnętrzne linki `paicord://` zostają.
+   - [x] Usunięcie `SponsorSheet` (samo wyskakuje po 2 dniach z linkiem do sponsorowania llsc12).
+   - [x] Usunięcie `UpdateCheck` i `SUFeedURL` (czyta kanał wydań llsc12, więc proponowałby pobranie oryginalnego Paicorda); razem z resztą kluczy Sparkle w `Info.plist`.
+   - [x] „Aicord” zamiast „Paicord” na ekranie łączenia (bez „SwiftUI ftw”), w tekście przy kodzie QR logowania, w tytule okna logów i jako autor wbudowanych motywów.
+   - [x] Nazwa wyświetlana aplikacji „Aicord” (`CFBundleDisplayName`: ekran główny iOS). Menu i Dock na macOS biorą nazwę z `PRODUCT_NAME`, więc zmienią się dopiero razem z targetem (Etap 5.4). Klucze `UserDefaults` i wewnętrzne linki `paicord://` zostają.
+   - [x] Opisy uprawnień (aparat, mikrofon, ruch, rozpoznawanie mowy) zamiast żartobliwych tekstów.
+   - [x] Usunięcie `.github/FUNDING.yml` (przycisk Sponsor prowadził do llsc12) oraz workflowów `build.yml` i `release_pr.yml` (podpisywanie, Sparkle i webhooki Discorda na sekretach llsc12). `build_pr.yml` zostaje jako budowanie PR-ów bez podpisu.
+   - [x] Usunięcie z `Localizable.xcstrings` tekstów po usuniętych ekranach.
    - [x] Usługa w pęku kluczy `net.smigi.aicord.Accounts` (zamiast `com.llsc12.Paicord.Accounts`) i katalog cache obrazków `net.smigi.aicord.imagecache`. Wymaga ponownego zalogowania; stary wpis `com.llsc12.Paicord.Accounts` można usunąć w Pęku kluczy.
 6. **Weryfikacja:**
    - [ ] Build macOS (arm64) i iOS bez nowych ostrzeżeń, zrzuty ekranu z obu platform.

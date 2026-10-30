@@ -217,7 +217,7 @@ struct LoginForm: View {
                 .font(.title.weight(.semibold))
 
               Text(
-                "Scan this with the Paicord or Discord mobile app to log in instantly."
+                "Scan this with the Aicord or Discord mobile app to log in instantly."
               )
               .multilineTextAlignment(.center)
             }

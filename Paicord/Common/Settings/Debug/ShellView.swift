@@ -55,7 +55,7 @@ struct ShellView: View {
           }
         }
         .coordinateSpace(name: "logScroll")
-        .navigationTitle("Paicord Logs")
+        .navigationTitle("Aicord Logs")
         .font(.system(size: fontSize, weight: .regular, design: .monospaced))
         .multilineTextAlignment(.leading)
         .toolbarTitleDisplayMode(.inline)

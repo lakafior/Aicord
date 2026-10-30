@@ -187,7 +187,7 @@ extension Theming {
       id: "Paicord.Auto",
       metadata: .init(
         name: "Auto",
-        author: "Paicord",
+        author: "Aicord",
         description: "Reflects system color scheme.",
         version: "1.0"
       ),
@@ -251,7 +251,7 @@ extension Theming {
       id: "Paicord.Light",
       metadata: .init(
         name: "Light",
-        author: "Paicord",
+        author: "Aicord",
         description: "Fixed light theme.",
         version: "1.0"
       ),
@@ -281,7 +281,7 @@ extension Theming {
       id: "Paicord.Dark",
       metadata: .init(
         name: "Dark",
-        author: "Paicord",
+        author: "Aicord",
         description: "Fixed dark theme.",
         version: "1.0"
       ),

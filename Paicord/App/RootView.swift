@@ -51,8 +51,6 @@ struct RootView: View {
           }
         }
         .quickSwitcher()
-        .sponsorSheet()
-        .updateSheet()
         .attachmentViewer()
         .reactionPicker()
         .settingsSheet()

@@ -29,7 +29,7 @@ struct ConnectionStateView: View {
             .frame(maxWidth: 80)
             .frame(maxHeight: 80)
         #endif
-        Text("Paicord")
+        Text("Aicord")
           .font(.title2)
           .fontWeight(.bold)
 
@@ -92,9 +92,7 @@ struct ConnectionStateView: View {
     "glorp gleep glop <alien>",
     "@grok is this true",
     "@grok is this loading",
-    "SwiftUI ftw",
     "meow",
-    "Cords included, Pais sold separately",
     ":3",
     "wheres the <blobcatcozy>",
     "cat noises",

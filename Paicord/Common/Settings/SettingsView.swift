@@ -16,18 +16,18 @@ struct SettingsView: View {
   @AppStorage("Paicord.Appearance.ChatMessagesAnimated")
   var chatMessagesAnimated: Bool = false
 
-  @State private var selectedTab: SettingsTab? = .paicord
+  @State private var selectedTab: SettingsTab? = .about
   @State private var searchText: String = ""
 
   enum SettingsGroupCategory: String, CaseIterable {
-    case paicord = "Paicord"
+    case about = "Aicord"
     case user = "User Settings"
     case app = "App Settings"
     case debug = "Debug"
   }
 
   enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
-    case paicord
+    case about
     case account
     case profiles
     case contentSocial
@@ -55,7 +55,7 @@ struct SettingsView: View {
 
     var title: String {
       switch self {
-      case .paicord: "Paicord"
+      case .about: "About Aicord"
       case .account: "My Account"
       case .profiles: "Profiles"
       case .contentSocial: "Content & Social"
@@ -83,7 +83,7 @@ struct SettingsView: View {
 
     var systemImage: String {
       switch self {
-      case .paicord: "leaf"
+      case .about: "info.circle"
       case .account: "person.crop.circle"
       case .profiles: "person.3.fill"
       case .contentSocial: "bubble.left.and.bubble.right"
@@ -111,8 +111,8 @@ struct SettingsView: View {
 
     var category: SettingsGroupCategory {
       switch self {
-      case .paicord:
-        .paicord
+      case .about:
+        .about
       case .account, .profiles, .contentSocial, .dataPrivacy, .familyCentre,
         .authorisedApps, .devices, .connections, .clips:
         .user
@@ -182,8 +182,8 @@ struct SettingsView: View {
   @ViewBuilder
   private func detailContent(for tab: SettingsTab) -> some View {
     switch tab {
-    case .paicord:
-      paicordSection
+    case .about:
+      aboutSection
     case .account:
       accountSection
     case .profiles:

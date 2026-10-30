@@ -20,15 +20,6 @@ extension SettingsView {
       }
     }
 
-    Section("Playgrounds") {
-      Button("PresentSponsorSheet") {
-        NotificationCenter.default.post(
-          name: .presentSponsorSheet,
-          object: nil
-        )
-      }
-    }
-
     Section("Sketchy shit") {
       AsyncButton("Force fallback account switcher") {
         gw.accounts.currentAccountID = nil
