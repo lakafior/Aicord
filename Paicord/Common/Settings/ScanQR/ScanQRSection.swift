@@ -20,11 +20,7 @@ extension SettingsView {
   @ViewBuilder
   var scanQRSection: some View {
     #if os(iOS)
-      Section("Scan QR Code") {
-        QRCodeScanView()
-          .listRowInsets(EdgeInsets())
-          .listRowBackground(Color.clear)
-      }
+      QRCodeScanView()
     #endif
   }
 }
@@ -34,77 +30,140 @@ extension SettingsView {
     @Environment(\.gateway) var gw
     @Environment(\.appState) var appState
     @Environment(\.dismiss) var dismiss
+    @Environment(\.openURL) var openURL
     @State var scannedData: String? = nil
     @State var handshake_token: String? = nil
+    /// Changing it starts a fresh scanner, e.g. after an unrelated code.
+    @State var scanAttempt = UUID()
+    @State var cameraAccess = AVCaptureDevice.authorizationStatus(for: .video)
 
     var body: some View {
       if scannedData == nil {
-        NativeQRScannerView { response in
-          switch response {
-          case .success(let string):
-            do {
-              try self.handleScannedString(string)
-            } catch {
-              appState.error = error
-            }
-          case .failure(let error):
-            appState.error = error
-          }
-        }
-        .frame(maxWidth: 300, maxHeight: 300)
-        .clipShape(.rect(cornerRadius: 16))
+        scanner
       } else {
-        VStack(spacing: 16) {
-          if let token = handshake_token {
-            Text("Remote Authentication")
-              .font(.title2)
-              .frame(maxWidth: .infinity, alignment: .center)
+        confirmation
+      }
+    }
 
-            AsyncButton("Log In") {
-              try await gw.client.finishRemoteAuthSession(
-                payload: .init(handshake_token: token)
-              )
-              .guardSuccess()
-              dismiss()
-            } catch: { error in
+    @ViewBuilder
+    private var scanner: some View {
+      switch cameraAccess {
+      case .authorized:
+        ZStack {
+          NativeQRScannerView { response in
+            switch response {
+            case .success(let string):
+              do {
+                try self.handleScannedString(string)
+              } catch {
+                appState.error = error
+                scanAttempt = UUID()
+              }
+            case .failure(let error):
               appState.error = error
             }
-            .buttonStyle(.borderedProminent)
+          }
+          .id(scanAttempt)
+          .ignoresSafeArea()
 
-            AsyncButton("Cancel") {
-              try await gw.client.cancelRemoteAuthSession(
-                payload: .init(handshake_token: token)
-              )
-              .guardSuccess()
-              self.scannedData = nil
-              self.handshake_token = nil
-            } catch: { error in
-              appState.error = error
-            }
-            .buttonStyle(.bordered)
+          RoundedRectangle(cornerRadius: 28, style: .continuous)
+            .strokeBorder(.white.opacity(0.9), lineWidth: 3)
+            .frame(width: 260, height: 260)
+            .shadow(radius: 8)
+            .accessibilityHidden(true)
 
-            Text(
-              "You are giving access to your Discord account to another device."
-            )
-            .foregroundStyle(.red)
-          } else {
-            ProgressView()
+          VStack {
+            Spacer()
+            Text("Scan the QR code on the login screen of Discord on another device.")
+              .font(.callout)
+              .multilineTextAlignment(.center)
+              .padding(.horizontal, 20)
+              .padding(.vertical, 12)
+              .glassEffect(.regular, in: .rect(cornerRadius: 20))
+              .padding(.horizontal, 24)
+              .padding(.bottom, 24)
           }
         }
-        .task {
-          do {
-            let req = try await gw.client.createRemoteAuthSession(
-              payload: .init(fingerprint: self.scannedData!)
-            )
-            try req.guardSuccess()
-            let data = try req.decode()
-            self.handshake_token = data.handshake_token
-          } catch {
-            appState.error = error
-            scannedData = nil
+        .background(.black)
+        .environment(\.colorScheme, .dark)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+      case .notDetermined:
+        Color.black
+          .ignoresSafeArea()
+          .task {
+            _ = await AVCaptureDevice.requestAccess(for: .video)
+            cameraAccess = AVCaptureDevice.authorizationStatus(for: .video)
           }
+      default:
+        ContentUnavailableView {
+          Label("Camera Access Needed", systemImage: "camera")
+        } description: {
+          Text("Allow camera access for Aicord in Settings to scan QR codes.")
+        } actions: {
+          Button("Open Settings") {
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+              openURL(url)
+            }
+          }
+          .buttonStyle(.borderedProminent)
         }
       }
+    }
+
+    private var confirmation: some View {
+      VStack(spacing: 16) {
+        if let token = handshake_token {
+          Text("Remote Authentication")
+            .font(.title2)
+            .frame(maxWidth: .infinity, alignment: .center)
+
+          AsyncButton("Log In") {
+            try await gw.client.finishRemoteAuthSession(
+              payload: .init(handshake_token: token)
+            )
+            .guardSuccess()
+            dismiss()
+          } catch: { error in
+            appState.error = error
+          }
+          .buttonStyle(.borderedProminent)
+
+          AsyncButton("Cancel") {
+            try await gw.client.cancelRemoteAuthSession(
+              payload: .init(handshake_token: token)
+            )
+            .guardSuccess()
+            self.scannedData = nil
+            self.handshake_token = nil
+          } catch: { error in
+            appState.error = error
+          }
+          .buttonStyle(.bordered)
+
+          Text(
+            "You are giving access to your Discord account to another device."
+          )
+          .foregroundStyle(.red)
+        } else {
+          ProgressView()
+        }
+      }
+      .task {
+        do {
+          let req = try await gw.client.createRemoteAuthSession(
+            payload: .init(fingerprint: self.scannedData!)
+          )
+          try req.guardSuccess()
+          let data = try req.decode()
+          self.handshake_token = data.handshake_token
+        } catch {
+          appState.error = error
+          scannedData = nil
+        }
+      }
+      .padding()
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     enum QRCodeScanError: Error {

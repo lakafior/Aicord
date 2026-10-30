@@ -186,11 +186,26 @@ struct SettingsView: View {
     } detail: {
       NavigationStack {
         if let selectedTab {
-          Form {
-            detailContent(for: selectedTab)
-          }
-          .formStyle(.grouped)
-          .navigationTitle(selectedTab.title)
+          #if os(iOS)
+            if selectedTab == .scanQR {
+              // the camera fills the screen instead of sitting in a form row
+              scanQRSection
+                .navigationTitle(selectedTab.title)
+                .navigationBarTitleDisplayMode(.inline)
+            } else {
+              Form {
+                detailContent(for: selectedTab)
+              }
+              .formStyle(.grouped)
+              .navigationTitle(selectedTab.title)
+            }
+          #else
+            Form {
+              detailContent(for: selectedTab)
+            }
+            .formStyle(.grouped)
+            .navigationTitle(selectedTab.title)
+          #endif
         } else {
           ContentUnavailableView("Select a Category", systemImage: "gear")
         }
