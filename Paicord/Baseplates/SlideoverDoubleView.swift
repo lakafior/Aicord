@@ -175,11 +175,23 @@ extension View {
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
-      guard let view else { return }
-      let v = velocity(in: view).x
-      onEnded?(translation(in: view).x, v)
+      // a tap never moved the panel, so it must not decide where it lands:
+      // on a device its tiny flick can pass the velocity threshold and undo
+      // a button's own change, like the chat's back arrow
+      if activated, let view {
+        onEnded?(translation(in: view).x, velocity(in: view).x)
+      }
       activated = false
       super.touchesEnded(touches, with: event)
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+      // settle a drag the system interrupted instead of leaving it halfway
+      if activated, let view {
+        onEnded?(translation(in: view).x, 0)
+      }
+      activated = false
+      super.touchesCancelled(touches, with: event)
     }
 
     override func reset() {
