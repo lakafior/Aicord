@@ -1,0 +1,146 @@
+//
+//  LargeBaseplate.swift
+//  Aicord
+//
+// Created by Lakhan Lothiyi on 31/08/2025.
+// Copyright © 2025 Lakhan Lothiyi.
+//
+
+import DiscordModels
+import SwiftUI
+
+// makes a fallback to .automatic on iOS because topBarLeading is not available on macOS
+@available(iOS, unavailable)
+extension ToolbarItemPlacement {
+  @_disfavoredOverload
+  static var topBarLeading: Self { .automatic }
+}
+
+// if on macos or ipad
+struct LargeBaseplate: View {
+  @Environment(\.gateway) var gw
+  @Environment(\.appState) var appState
+  @AppStorage("Paicord.ShowingMembersSidebar") var showingInspector = true
+  @Environment(\.theme) var theme
+
+  @State var currentGuildStore: GuildStore? = nil
+  @State var currentChannelStore: ChannelStore? = nil
+
+  @State private var columnVisibility: NavigationSplitViewVisibility =
+    .doubleColumn
+
+  var body: some View {
+    NavigationSplitView(columnVisibility: $columnVisibility) {
+      SidebarView(currentGuildStore: $currentGuildStore)
+        .environment(\.guildStore, currentGuildStore)
+        .environment(\.channelStore, currentChannelStore)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+          VStack(spacing: 0) {
+            VoiceCallBar()
+            ProfileBar()
+          }
+        }
+        .toolbar(removing: .sidebarToggle)
+        .toolbar {
+          ToolbarItem(placement: .topBarLeading) {
+            Group {
+              if columnVisibility != .detailOnly {
+                if let currentGuildStore {
+                  Text(currentGuildStore.guild?.name ?? "Direct Messages")
+                    .font(.title2)
+                    .bold()
+                } else {
+                  Text("Direct Messages")
+                    .font(.title2)
+                    .bold()
+                }
+              }
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .truncationMode(.tail)
+          }
+          .sharedBackgroundVisibility(.hidden)
+        }
+        .navigationSplitViewColumnWidth(min: 280, ideal: 310, max: 360)
+
+    } detail: {
+      Group {
+        if let currentChannelStore {
+          ChatView(vm: currentChannelStore)
+            // a fixed minimum keeps the chat and member list columns from resizing each other
+            // in a loop (AppKit throws once it runs out of layout passes)
+            .frame(minWidth: 0, maxWidth: .infinity)
+            .inspector(isPresented: $showingInspector) {
+              MemberSidebarView(
+                guildStore: currentGuildStore,
+                channelStore: currentChannelStore
+              )
+              .frame(minWidth: 0, maxWidth: .infinity)
+              .inspectorColumnWidth(min: 250, ideal: 250, max: 360)
+            }
+            .id(currentChannelStore.channelId)  // force view update
+            .environment(\.guildStore, currentGuildStore)
+            .environment(\.channelStore, currentChannelStore)
+        } else {
+          // placeholder
+          VStack {
+            Text(":3")
+              .font(.largeTitle)
+              .foregroundStyle(.secondary)
+
+            Text("Select a channel to start chatting")
+              .foregroundStyle(.secondary)
+              .font(.title2)
+          }
+        }
+      }
+      .toolbar {
+        ToolbarItem(placement: .navigation) {
+          Button {
+            withAnimation {
+              columnVisibility =
+                (columnVisibility != .detailOnly) ? .detailOnly : .doubleColumn
+            }
+          } label: {
+            Label("Toggle Sidebar", systemImage: "sidebar.left")
+          }
+          .tint(theme.common.tertiaryButton)
+        }
+      }
+    }
+    .toolbar {
+      Button {
+        showingInspector.toggle()
+      } label: {
+        Label("Toggle Member List", systemImage: "sidebar.right")
+      }
+    }
+    #if os(macOS)
+      .frame(minWidth: 960, minHeight: 540)
+    #endif
+    .task(id: appState.selectedGuild) {
+      if let selected = appState.selectedGuild {
+        self.currentGuildStore = gw.getGuildStore(for: selected)
+      } else {
+        self.currentGuildStore = nil
+      }
+    }
+    .task(id: appState.selectedChannel) {
+      if let selected = appState.selectedChannel {
+        // there is a likelihood that currentGuildStore is wrong when this runs
+        // but i dont think it will be a problem maybe.
+        self.currentChannelStore = gw.getChannelStore(
+          for: selected,
+          from: self.currentGuildStore
+        )
+      } else {
+        self.currentChannelStore = nil
+      }
+    }
+  }
+}
+
+#Preview {
+  LargeBaseplate()
+}

@@ -1,0 +1,292 @@
+//
+//  CurrentUserStore.swift
+//  Aicord
+//
+//  Created by Lakhan Lothiyi on 20/09/2025.
+//  Copyright © 2025 Lakhan Lothiyi.
+//
+
+import Foundation
+import AicordKit
+
+typealias PresenceBox = ObservableBox<Gateway.PresenceUpdate>
+
+@MainActor
+@Observable
+class CurrentUserStore: DiscordDataStore {
+  // MARK: - Protocol Properties
+  var gateway: GatewayStore?
+  var eventTask: Task<Void, Never>?
+
+  // MARK: - State Properties
+  var currentUser: DiscordUser?
+  var guilds: [GuildSnowflake: Guild] = [:]
+  var privateChannels: OrderedDictionary<ChannelSnowflake, DiscordChannel> = [:]
+  var relationships: [UserSnowflake: DiscordRelationship] = [:]
+  private var presenceBoxes: [UserSnowflake: PresenceBox] = [:]
+  var users: [UserSnowflake: PartialUser] = [:]
+  var sessions: [Gateway.Session] = []
+  /// Hash of the auth session this client is logged in with, to mark it in Devices.
+  var authSessionIdHash: String?
+  var emojis: [GuildSnowflake: [EmojiSnowflake: Emoji]] = [:]
+  var stickers: [GuildSnowflake: [StickerSnowflake: Sticker]] = [:]
+  var premiumKind: DiscordUser.PremiumKind = .none
+
+  // MARK: - Presence boxed helpers
+
+  /// Get a box for this presence data. Store the box and read the underlying value.
+  func presenceBox(for id: UserSnowflake) -> PresenceBox? {
+    presenceBoxes[id]
+  }
+
+  /// Get presence data directly, non-updating.
+  func presence(_ id: UserSnowflake) -> Gateway.PresenceUpdate? {
+    presenceBoxes[id]?.value
+  }
+
+  /// Set the presence data of a box.
+  @discardableResult
+  func setPresence(_ presence: Gateway.PresenceUpdate, for id: UserSnowflake) -> PresenceBox {
+    if let box = presenceBoxes[id] {
+      box.value = presence
+      return box
+    } else {
+      let box = PresenceBox(presence)
+      presenceBoxes[id] = box
+      return box
+    }
+  }
+
+  // MARK: - Protocol Methods
+
+  func setupEventHandling() {
+    guard let gateway = gateway?.gateway else { return }
+
+    let events = gateway.events
+    eventTask = Task {
+      for await event in events {
+        switch event.data {
+        case .ready(let readyData):
+          handleReady(readyData)
+
+        case .userUpdate(let user):
+          handleUserUpdate(user)
+
+        case .guildCreate(let guildData):
+          handleGuildCreate(guildData)
+
+        case .guildDelete(let unavailableGuild):
+          handleGuildDelete(unavailableGuild)
+
+        case .relationshipAdd(let relationship):
+          handleRelationshipAdd(relationship)
+
+        case .relationshipUpdate(let partialRelationship):
+          handleRelationshipUpdate(partialRelationship)
+
+        case .relationshipRemove(let partialRelationship):
+          handleRelationshipRemove(partialRelationship)
+
+        case .channelCreate(let channel):
+          if channel.type == .dm || channel.type == .groupDm {
+            handlePrivateChannelCreate(channel)
+          }
+
+        // accepting a message request or moving one out of spam arrives here
+        case .channelUpdate(let channel):
+          if channel.type == .dm || channel.type == .groupDm,
+            privateChannels[channel.id] != nil
+          {
+            handlePrivateChannelUpdate(channel)
+          }
+
+        case .channelDelete(let channel):
+          if channel.type == .dm || channel.type == .groupDm {
+            handlePrivateChannelDelete(channel)
+          }
+
+        case .messageCreate(let message):
+          if privateChannels[message.channel_id] != nil {
+            handleMessageCreate(message)
+          }
+
+        case .presenceUpdate(let presence):
+          handlePresenceUpdate(presence)
+
+        case .sessionsReplace(let sessionsReplace):
+          self.sessions = sessionsReplace
+
+        case .authSessionChange(let change):
+          authSessionIdHash = change.auth_session_id_hash
+
+        case .guildEmojisUpdate(let emojisUpdate):
+          handleGuildEmojisUpdate(emojisUpdate)
+
+        case .guildStickersUpdate(let stickersUpdate):
+          handleGuildStickersUpdate(stickersUpdate)
+
+        default:
+          break
+        }
+      }
+    }
+  }
+
+  // MARK: - Event Handlers
+  private func handleReady(_ readyData: Gateway.Ready) {
+    sessions = readyData.sessions
+    authSessionIdHash = readyData.auth_session_id_hash
+    currentUser = readyData.user
+
+    premiumKind = readyData.user.premium_type ?? .none
+
+    guilds = readyData.guilds.reduce(into: [:]) { $0[$1.id] = $1 }
+
+    privateChannels = readyData.private_channels
+      .sorted(by: {
+        let lhsDate =
+          $0.last_message_id ?? MessageSnowflake($0.id)
+        let rhsDate =
+          $1.last_message_id ?? MessageSnowflake($1.id)
+
+        return lhsDate > rhsDate
+      })
+      .reduce(into: [:]) { $0[$1.id] = $1 }
+
+    relationships = readyData.relationships.reduce(into: [:]) { $0[$1.id] = $1 }
+    users = readyData.relationships.reduce(into: [:]) { $0[$1.id] = $1.user }
+
+    for presence in readyData.presences {
+      setPresence(presence, for: presence.user.id)
+    }
+
+    users[readyData.user.id] = readyData.user.toPartialUser()
+    users = readyData.presences.reduce(into: users) { $0[$1.user.id] = $1.user }
+
+    var emojis = [GuildSnowflake: [EmojiSnowflake: Emoji]]()
+    var stickers = [GuildSnowflake: [StickerSnowflake: Sticker]]()
+    for guild in readyData.guilds {
+      emojis = guild.emojis
+        .compactMap { $0.id != nil ? $0 : nil }
+        .reduce(into: emojis) { $0[guild.id, default: [:]][$1.id!] = $1 }
+
+      // stickers
+      stickers =
+        guild.stickers?
+        .reduce(into: stickers) { $0[guild.id, default: [:]][$1.id] = $1 }
+        ?? stickers
+    }
+
+    self.emojis = emojis
+    self.stickers = stickers
+  }
+
+  private func handleUserUpdate(_ user: DiscordUser) {
+    guard user.id == currentUser?.id else { return }
+    currentUser = user
+  }
+
+  private func handleGuildCreate(_ guild: Gateway.GuildCreate) {
+    guilds[guild.id] = guild.toGuild()
+  }
+
+  private func handleGuildUpdate(_ guild: Guild) {
+    guilds[guild.id]?.update(with: guild)
+  }
+
+  private func handleGuildDelete(_ unavailableGuild: UnavailableGuild) {
+    guilds.removeValue(forKey: unavailableGuild.id)
+  }
+
+  private func handleRelationshipAdd(_ relationship: DiscordRelationship) {
+    relationships[relationship.id] = relationship
+    users[relationship.id, default: relationship.user].update(with: relationship.user)
+  }
+
+  private func handleRelationshipUpdate(
+    _ partialRelationship: Gateway.PartialRelationship
+  ) {
+    if var existingRelationship = relationships[partialRelationship.id] {
+      existingRelationship.update(with: partialRelationship)
+      relationships[existingRelationship.id] = existingRelationship
+    }
+  }
+
+  private func handleRelationshipRemove(
+    _ partialRelationship: Gateway.PartialRelationship
+  ) {
+    relationships.removeValue(forKey: partialRelationship.id)
+  }
+
+  private func handlePrivateChannelCreate(_ channel: DiscordChannel) {
+    privateChannels[channel.id] = channel
+  }
+
+  private func handlePrivateChannelUpdate(_ channel: DiscordChannel) {
+    var updated = channel
+    // Channel Update isn't sent for new messages, so keep the newest we know of
+    updated.last_message_id = updated.last_message_id ?? privateChannels[channel.id]?.last_message_id
+    privateChannels[channel.id] = updated
+  }
+
+  private func handlePrivateChannelDelete(_ channel: DiscordChannel) {
+    privateChannels.removeValue(forKey: channel.id)
+  }
+
+  private func handleMessageCreate(_ message: Gateway.MessageCreate) {
+    guard var channel = privateChannels[message.channel_id] else { return }
+    channel.last_message_id = message.id
+    privateChannels.updateValueAndMoveToFront(channel, forKey: channel.id)
+  }
+
+  private func handlePresenceUpdate(_ presence: Gateway.PresenceUpdate) {
+    guard presence.guild_id == nil else { return }
+    setPresence(presence, for: presence.user.id)
+    users[presence.user.id] = presence.user
+  }
+
+  private func handleGuildEmojisUpdate(
+    _ emojisUpdate: Gateway.GuildEmojisUpdate
+  ) {
+    let guildId = emojisUpdate.guild_id
+    let emojis = emojisUpdate.emojis
+    var emojisDict = [EmojiSnowflake: Emoji]()
+    for emoji in emojis {
+      if emoji.id == nil { continue }
+      emojisDict[emoji.id!] = emoji
+    }
+    self.emojis[guildId] = emojisDict
+  }
+
+  private func handleGuildStickersUpdate(
+    _ stickersUpdate: Gateway.GuildStickersUpdate
+  ) {
+    let guildId = stickersUpdate.guild_id
+    let stickers = stickersUpdate.stickers
+    var stickersDict = [StickerSnowflake: Sticker]()
+    for sticker in stickers {
+      stickersDict[sticker.id] = sticker
+    }
+    self.stickers[guildId] = stickersDict
+  }
+
+  //	/// Sends a friend request
+  //	func sendFriendRequest(to username: String, discriminator: String) async throws {
+  //		fatalError("Not implemented")
+  //	}
+  //
+  //	/// Accepts a friend request
+  //	func acceptFriendRequest(_ relationshipId: UserSnowflake) async throws {
+  //		fatalError("Not implemented")
+  //	}
+  //
+  //	/// Removes a friend or blocks a user
+  //	func removeRelationship(_ relationshipId: UserSnowflake) async throws {
+  //		fatalError("Not implemented")
+  //	}
+  //
+  //	/// Creates a new DM channel
+  //	func createDMChannel(with userId: UserSnowflake) async throws -> DiscordChannel {
+  //		fatalError("Not implemented")
+  //	}
+}
