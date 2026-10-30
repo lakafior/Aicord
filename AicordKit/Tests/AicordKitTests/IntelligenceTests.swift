@@ -346,3 +346,31 @@ class ContextRankerTests: XCTestCase {
     XCTAssertEqual(bare.refs, [1])
   }
 }
+
+class SearchIntentTests: XCTestCase {
+  func testParsesFencedJSON() {
+    let reply = """
+      Sure:
+      ```json
+      {"keywords": "shipping agent", "author": "@Ola", "daysBack": "7", "has": "link", "channel": "#wts", "server": ""}
+      ```
+      """
+    XCTAssertEqual(
+      SearchIntent.parse(reply),
+      SearchIntent(
+        keywords: "shipping agent", author: "Ola", channel: "wts", daysBack: 7, has: ["link"]))
+  }
+
+  func testParsesListsAndDropsNonsense() {
+    let intent = SearchIntent.parse(#"{"has": ["Image", "file"], "daysBack": 0, "after": "2026-10-01"}"#)
+    XCTAssertEqual(intent?.has, ["image", "file"])
+    XCTAssertNil(intent?.daysBack)
+    XCTAssertEqual(intent?.after, "2026-10-01")
+    XCTAssertNil(SearchIntent.parse("no json here"))
+  }
+
+  func testInstructionsCarryToday() {
+    let date = ISO8601DateFormatter().date(from: "2026-10-30T12:00:00Z")!
+    XCTAssertTrue(SearchIntent.instructions(today: date).contains("2026-10-30"))
+  }
+}

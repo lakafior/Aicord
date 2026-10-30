@@ -26,6 +26,8 @@ struct SearchView: View {
   @State var searchTask: Task<Void, Never>? = nil
   @State var filters = MessageFilters()
   @State var showingFilters = false
+  @State var interpreting = false
+  @State var sentenceTask: Task<Void, Never>? = nil
 
   var serverID: GuildSnowflake? {
     for token in tokens {
@@ -85,6 +87,13 @@ struct SearchView: View {
         ToolbarItem(placement: .primaryAction) {
           Menu {
             Button {
+              searchWithSentence()
+            } label: {
+              Label("Search with a Sentence", systemImage: "sparkles")
+            }
+            .disabled(!looksLikeSentence || interpreting)
+            Divider()
+            Button {
             showingFilters = true
           } label: {
             Label("Dates and Regex…", systemImage: "calendar.badge.clock")
@@ -99,9 +108,13 @@ struct SearchView: View {
               }
             }
           } label: {
+            if interpreting {
+              ProgressView()
+            } else {
             Label("Filters", systemImage: has.isEmpty && !filters.isActive
               ? "line.3.horizontal.decrease.circle"
               : "line.3.horizontal.decrease.circle.fill")
+            }
           }
         }
       }
@@ -127,6 +140,9 @@ struct SearchView: View {
       Label("Type part of a server name, like “kao”.", systemImage: "square.stack.3d.up")
       Label("Tap a server, channel or person to search inside it.", systemImage: "line.3.horizontal.decrease")
       Label("Messages need a server, channel or person to search in.", systemImage: "text.bubble")
+      Label(
+        "Or write what you're looking for, like “who recommended a shipping agent last week”, and choose Search with a Sentence in Filters.",
+        systemImage: "sparkles")
     } header: {
       Text("How Search Works")
     }
