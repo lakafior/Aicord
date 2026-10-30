@@ -574,6 +574,7 @@ struct ServerIcon: View {
 }
 
 struct MessageResultRow: View {
+  @Environment(\.gateway) var gw
   var message: DiscordChannel.Message
   var channelName: String?
 
@@ -599,7 +600,9 @@ struct MessageResultRow: View {
             .font(.caption)
             .foregroundStyle(.secondary)
         }
-        if !message.content.isEmpty {
+        if WordFilter.hides(message.content, origin: gw.origin(of: message)) {
+          HiddenContentNote(text: "Hidden by your word filter")
+        } else if !message.content.isEmpty {
           Text(message.content)
             .font(.subheadline)
             .lineLimit(4)

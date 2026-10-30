@@ -525,9 +525,13 @@ struct MentionRow: View {
             .foregroundStyle(.secondary)
             .lineLimit(1)
         }
-        Text(message.content.isEmpty ? String(localized: "Attachment") : message.content)
-          .font(.subheadline)
-          .lineLimit(3)
+        if WordFilter.hides(message.content, origin: gw.origin(of: message)) {
+          HiddenContentNote(text: "Hidden by your word filter")
+        } else {
+          Text(message.content.isEmpty ? String(localized: "Attachment") : message.content)
+            .font(.subheadline)
+            .lineLimit(3)
+        }
       }
     }
     .contentShape(.rect)

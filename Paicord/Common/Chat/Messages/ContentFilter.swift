@@ -17,16 +17,38 @@ enum MessageOrigin {
   case server
 }
 
-extension ChannelStore {
+extension GatewayStore {
   /// `nil` for your own messages, which are never filtered.
-  func origin(of message: DiscordChannel.PartialMessage) -> MessageOrigin? {
-    let authorId = message.author?.id
-    if let authorId, authorId == gateway?.user.currentUser?.id { return nil }
-    if channel?.guild_id != nil || guildStore != nil { return .server }
-    if let authorId, gateway?.user.relationships[authorId]?.type == .friend {
+  func origin(authorId: UserSnowflake?, inServer: Bool) -> MessageOrigin? {
+    if let authorId, authorId == user.currentUser?.id { return nil }
+    if inServer { return .server }
+    if let authorId, user.relationships[authorId]?.type == .friend {
       return .friendDM
     }
     return .otherDM
+  }
+
+  /// For previews outside the chat (mentions, search results), where only the
+  /// message is at hand: DM channels are the ones listed as private channels.
+  func origin(of message: DiscordChannel.Message) -> MessageOrigin? {
+    origin(
+      authorId: message.author?.id,
+      inServer: message.guild_id != nil
+        || user.privateChannels[message.channel_id] == nil
+    )
+  }
+}
+
+extension ChannelStore {
+  /// `nil` for your own messages, which are never filtered.
+  func origin(of message: DiscordChannel.PartialMessage) -> MessageOrigin? {
+    origin(authorId: message.author?.id)
+  }
+
+  func origin(authorId: UserSnowflake?) -> MessageOrigin? {
+    let inServer = channel?.guild_id != nil || guildStore != nil
+    guard let gateway else { return inServer ? .server : .otherDM }
+    return gateway.origin(authorId: authorId, inServer: inServer)
   }
 }
 
@@ -199,6 +221,21 @@ final class WordFilter {
     let current = Locale.current.language.languageCode?.identifier ?? "en"
     return Set([current, "en"]).intersection(availableLanguages).sorted()
       .joined(separator: ",")
+  }
+
+  /// Whether the word filter, as set in Settings, hides text from a message of
+  /// this origin. For reply quotes and previews; the chat itself observes the
+  /// settings so it updates as they change.
+  static func hides(_ text: String, origin: MessageOrigin?) -> Bool {
+    let defaults = UserDefaults.standard
+    guard defaults.bool(forKey: Key.enabled), let origin else { return false }
+    let scope = defaults.string(forKey: Key.scope).flatMap(Scope.init) ?? .nonFriendDMs
+    guard scope == .everywhere || origin == .otherDM else { return false }
+    return shared.matches(
+      text,
+      languages: defaults.string(forKey: Key.languages) ?? defaultLanguages,
+      customWords: defaults.string(forKey: Key.customWords) ?? ""
+    )
   }
 
   private var signature = ""

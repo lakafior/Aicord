@@ -40,7 +40,10 @@ extension MessageCell {
       let name =
         ref.member?.nick ?? ref.author?.global_name ?? ref.author?.username
         ?? "Unknown"
-      let content = ref.content.components(separatedBy: "\n").first ?? ref.content
+      var content = ref.content.components(separatedBy: "\n").first ?? ref.content
+      if WordFilter.hides(ref.content, origin: channelStore.origin(authorId: ref.author?.id)) {
+        content = "*\(String(localized: "Hidden by your word filter"))*"
+      }
       return (name: "\(mention)\(name)", content: content)
     }
 
