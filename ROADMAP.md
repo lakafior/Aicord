@@ -112,6 +112,11 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
    - [x] Lista zmian względem oryginalnego kodu (podsumowanie Etapów 1–5).
    - [x] Usunięcie linków do pobrania oryginalnej aplikacji.
    - [x] Przebudowa README od nowa w nowoczesnej formie.
+4. **Porządek w dokumentacji** (po scaleniu sesji, które teraz zmieniają ROADMAP i README, żeby nie było konfliktów):
+   - [ ] `ROADMAP.md`: tylko to, co jeszcze do zrobienia. Odhaczone punkty wychodzą z niego do `SHIPPED.md`.
+   - [ ] `SHIPPED.md`: obecna lista „New & fixed” z README, po wersji lub dacie, razem z historią zrobionych etapów przeniesioną z ROADMAP.
+   - [ ] `README.md`: tylko najciekawsze rzeczy jako krótkie zajawki, zrzuty ekranu z iPhone'a i Maca, link do pełnej listy w `SHIPPED.md`. Sekcje Building, Contributing i Credits zostają.
+   - [ ] Notatki z sesji (`VOICE_NOTES.md`, `MESSAGES_NOTES.md`) do katalogu `docs/`, a otwarte testy z nich jako punkty w ROADMAP.
 
 ---
 
