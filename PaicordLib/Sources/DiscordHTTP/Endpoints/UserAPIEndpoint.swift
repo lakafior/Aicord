@@ -140,6 +140,10 @@ public enum UserAPIEndpoint: Endpoint {
   case modifyUserSettingsProto(
     type: Gateway.UserSettingsProto.Kind
   )
+  case getUserConsents
+  case modifyUserConsents
+  case getUserHarvest
+  case createUserHarvest
 
   // MARK: - Remote Authentication
   case createRemoteAuthSession
@@ -315,6 +319,10 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/settings-proto/\(type.rawValue.description)"
     case .modifyUserSettingsProto(let type):
       suffix = "users/@me/settings-proto/\(type.rawValue.description)"
+    case .getUserConsents, .modifyUserConsents:
+      suffix = "users/@me/consent"
+    case .getUserHarvest, .createUserHarvest:
+      suffix = "users/@me/harvest"
 
     // MARK: - Remote Authentication
     case .createRemoteAuthSession:
@@ -474,6 +482,10 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/settings-proto/\(type.rawValue.description)"
     case .modifyUserSettingsProto(let type):
       suffix = "users/@me/settings-proto/\(type.rawValue.description)"
+    case .getUserConsents, .modifyUserConsents:
+      suffix = "users/@me/consent"
+    case .getUserHarvest, .createUserHarvest:
+      suffix = "users/@me/harvest"
     case .createRemoteAuthSession:
       suffix = "users/@me/remote-auth"
     case .finishRemoteAuthSession:
@@ -546,6 +558,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserProfile: return .GET
     case .getUserSettingsProto: return .GET
     case .modifyUserSettingsProto: return .PATCH
+    case .getUserConsents: return .GET
+    case .modifyUserConsents: return .POST
+    case .getUserHarvest: return .GET
+    case .createUserHarvest: return .POST
     case .createRemoteAuthSession: return .POST
     case .finishRemoteAuthSession: return .POST
     case .cancelRemoteAuthSession: return .POST
@@ -612,6 +628,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserProfile: return true
     case .getUserSettingsProto: return true
     case .modifyUserSettingsProto: return true
+    case .getUserConsents, .modifyUserConsents: return true
+    case .getUserHarvest, .createUserHarvest: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -678,6 +696,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserProfile: return true
     case .getUserSettingsProto: return true
     case .modifyUserSettingsProto: return true
+    case .getUserConsents, .modifyUserConsents: return true
+    case .getUserHarvest, .createUserHarvest: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -772,6 +792,8 @@ public enum UserAPIEndpoint: Endpoint {
       return [type.rawValue.description]
     case .modifyUserSettingsProto(let type):
       return [type.rawValue.description]
+    case .getUserConsents, .modifyUserConsents: return []
+    case .getUserHarvest, .createUserHarvest: return []
     case .createRemoteAuthSession: return []
     case .finishRemoteAuthSession: return []
     case .cancelRemoteAuthSession: return []
@@ -845,6 +867,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .searchGuildMessages: return 126
     case .searchChannelMessages: return 127
     case .getRecentMentions: return 128
+    case .getUserConsents: return 129
+    case .modifyUserConsents: return 130
+    case .getUserHarvest: return 131
+    case .createUserHarvest: return 132
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -960,6 +986,10 @@ public enum UserAPIEndpoint: Endpoint {
       return "getUserSettingsProto(type: \(type.rawValue.description))"
     case .modifyUserSettingsProto(let type):
       return "modifyUserSettingsProto(type: \(type.rawValue.description))"
+    case .getUserConsents: return "getUserConsents"
+    case .modifyUserConsents: return "modifyUserConsents"
+    case .getUserHarvest: return "getUserHarvest"
+    case .createUserHarvest: return "createUserHarvest"
     case .createRemoteAuthSession: return "createRemoteAuthSession"
     case .finishRemoteAuthSession: return "finishRemoteAuthSession"
     case .cancelRemoteAuthSession: return "cancelRemoteAuthSession"

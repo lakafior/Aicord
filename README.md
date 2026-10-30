@@ -54,6 +54,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **New** · iPhone tabs are Home, Messages, Search and Settings; Messages holds direct messages, group chats, mentions and friends, and your status and activity sit behind a profile card at the top of Settings
 - **New** · Custom rich presence ("Playing …", "Listening to …") with images, timers, party size and buttons, a live preview, and a "Share my activity" switch; your Discord application ID lives in Settings → My Account and is checked before saving
 - **New** · Settings → Content & Social: sensitive and graphic media (show, blur or block), keyword filters, DM spam filter, message requests and who can send you friend requests, saved to your Discord account
+- **New** · Settings → Data & Privacy: activity privacy (share your activity, in new servers, who can join without asking, recent games), how Discord may use your data, and requesting a copy of your data
 - **New** · Media Discord flags as sensitive is blurred or blocked in chats according to those settings, and an optional word filter hides matching messages behind a tap, using the community LDNOOBW lists (CC BY 4.0) plus your own words
 - **New** · About Aicord in Settings with version, licence and a link to this repository
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory

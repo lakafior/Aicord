@@ -693,6 +693,42 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint), payload: payload)
   }
 
+  /// Which data uses the user agreed to.
+  /// https://docs.discord.food/resources/user-settings#get-user-consents
+  @inlinable
+  public func getUserConsents() async throws -> DiscordClientResponse<DiscordUserConsents> {
+    let endpoint = UserAPIEndpoint.getUserConsents
+    return try await self.send(request: .init(to: endpoint))
+  }
+
+  /// Grants or revokes consents; returns the new state.
+  /// https://docs.discord.food/resources/user-settings#modify-user-consents
+  @inlinable
+  public func modifyUserConsents(
+    payload: Payloads.ModifyUserConsents
+  ) async throws -> DiscordClientResponse<DiscordUserConsents> {
+    let endpoint = UserAPIEndpoint.modifyUserConsents
+    return try await self.send(request: .init(to: endpoint), payload: payload)
+  }
+
+  /// The latest data request, or a 204 with no body if there is none.
+  /// https://docs.discord.food/resources/user#get-user-harvest
+  @inlinable
+  public func getUserHarvest() async throws -> DiscordHTTPResponse {
+    let endpoint = UserAPIEndpoint.getUserHarvest
+    return try await self.send(request: .init(to: endpoint))
+  }
+
+  /// Asks Discord to email the user a copy of their data.
+  /// https://docs.discord.food/resources/user#create-user-harvest
+  @inlinable
+  public func createUserHarvest(
+    payload: Payloads.CreateUserHarvest = .init()
+  ) async throws -> DiscordClientResponse<DiscordUserHarvest> {
+    let endpoint = UserAPIEndpoint.createUserHarvest
+    return try await self.send(request: .init(to: endpoint), payload: payload)
+  }
+
   /// Proxies external image URLs through Discord's media proxy so they can be used as rich presence assets.
   /// Each result's `external_asset_path` is used as `mp:<path>` in the activity assets.
   /// https://docs.discord.food/resources/application#create-application-external-assets
