@@ -129,7 +129,38 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
 
 ---
 
-### 🔜 Etap 8: Voice — kanały głosowe i rozmowy w DM
+### ⏳ Etap 8: Odświeżenie UI
+Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
+1. **Poprawki (zrobione):**
+   - [x] fix: aplikacja na macOS padała kilka sekund po załadowaniu. Kolumna czatu i lista członków (`.inspector` w kolumnie detali `NavigationSplitView`) przepychały się minimalnymi szerokościami w pętli, aż AppKit rzucał wyjątek o wyczerpaniu przebiegów Update Constraints. Czat i lista członków mają stałą minimalną szerokość, okno startuje w rozmiarze 1280×800 i ma minimum 960×540. Przeniesienie `.inspector` na sam split view też usuwa crash, ale wtedy `LazyVStack` listy członków się nie rysuje.
+   - [x] fix: lista członków startowała z pozycją przewinięcia 0 przy kotwicy `.bottom`, więc mogła uciec poza widok.
+   - [x] Nagłówek kanału bez szklanej pigułki: na iOS strzałka wstecz zostaje sama, a ikona i nazwa kanału są tytułem na środku paska (skracane wielokropkiem, gdy brakuje miejsca). Na macOS nazwa serwera i kanału to zwykłe tytuły paska okna. Do sprawdzenia zrzutem na iOS.
+2. **Nawigacja na iPhonie:**
+   - [ ] Usunięcie zakładki Powiadomienia (pokazuje tylko napis zastępczy, nie pobiera danych).
+   - [ ] Ustawienia jako zakładka skrajnie po prawej (bez przycisku „Done”); zębatka znika z Profilu.
+3. **Profil:**
+   - [ ] Działający wybór statusu (online, zaraz wracam, nie przeszkadzać, niewidoczny) przez `setPresence` i `modifyUserSettingsProto`; dziś przyciski w `ProfileButtonPopout` są puste. Ten sam wybór w popoverze `ProfileBar` na macOS.
+   - [ ] Podgląd i edycja custom statusu (emoji i tekst).
+   - [ ] „Konto od” (data z identyfikatora użytkownika).
+   - [ ] Konta: lista z przełączaniem, „Dodaj konto”, „Wyloguj”.
+   - [ ] „Edytuj profil” jako link do ustawień profilu w przeglądarce zamiast wyłączonego przycisku.
+4. **Ustawienia:**
+   - [ ] Sekcja „Paicord” → „O Aicord”: wersja, build, licencja GPL-3, link do repozytorium; bez „Made with ❤️ by llsc12”, naklejki z CDN Discorda i przycisku Donate.
+   - [ ] Moje konto: dane konta, przełączanie kont, wylogowanie (Scan QR na iOS zostaje).
+   - [ ] Skróty klawiszowe (macOS): lista istniejących skrótów (⌘, ⌘K, ⇧⌘R).
+   - [ ] Debug: bez przycisku podglądu okna sponsora.
+   - [ ] Puste sekcje („Coming Soon”) zostają jako miejsca na przyszłe ustawienia.
+5. **Pozostałości po Paicordzie poza Ustawieniami:**
+   - [ ] Usunięcie `SponsorSheet` (samo wyskakuje po 2 dniach z linkiem do sponsorowania llsc12).
+   - [ ] Usunięcie `UpdateCheck` i `SUFeedURL` (czyta kanał wydań llsc12, więc proponowałby pobranie oryginalnego Paicorda).
+   - [ ] „Aicord” zamiast „Paicord” na ekranie łączenia (bez „SwiftUI ftw”), w tekście przy kodzie QR logowania, w tytule okna logów i jako autor wbudowanych motywów.
+   - [ ] Nazwa wyświetlana aplikacji „Aicord” (Dock, menu, ekran główny). Wewnętrzne klucze (pęk kluczy, `UserDefaults`, schemat `paicord://`) zostają, żeby nikogo nie wylogowało.
+6. **Weryfikacja:**
+   - [ ] Build macOS (arm64) i iOS bez nowych ostrzeżeń, zrzuty ekranu z obu platform.
+
+---
+
+### 🔜 Etap 9: Voice — kanały głosowe i rozmowy w DM
 Startujemy po odświeżeniu UI. To port, nie merge. Bazą kodu jest gałąź [`upstream/voice`](https://github.com/llsc12/Paicord/tree/voice): działający szkic w Swifcie (dźwięk w obie strony, DAVE przez DaveKit, rozmowy w DM z dzwonieniem), ale odstaje o 126 commitów od upstream `main` i stoi na usuniętym w Etapie 5 stosie NIO. Wzorcem zachowania jest [Serein](https://github.com/ViceVerse-cz/Serein) (Rust, MIT/Apache, więc wolno adaptować do GPL-3): `crates/discord-voice/README.md`, `docs/voice.md`, `transport.rs` i `crypto.rs`. Jego DAVE (`davey`/OpenMLS) i audio (CPAL, Sonora, RNNoise) nie nadają się dla Swifta, więc bierzemy z niego zachowanie, nie kod.
 1. **Modele (`DiscordModels`):**
    - [ ] Przeniesienie z gałęzi voice `VoiceGateway.swift`, `VoiceGateway+Payloads.swift` i `RTP/` (RTP, RTCP, RTPType) oraz zmian voice-state w `Gateway.swift`, `Guild.swift` i `Voice.swift`. `ByteBuffer` → `Data`.
