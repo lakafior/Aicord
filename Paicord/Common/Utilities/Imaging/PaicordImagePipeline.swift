@@ -50,23 +50,46 @@ actor ImagePipeline {
   )
 
   private let session: URLSession
+  /// Downloaded images on disk; Settings → Advanced shows its size and clears it.
+  nonisolated let diskCache: URLCache
+  private static let cacheDirectory = URL.cachesDirectory.appending(
+    path: "net.smigi.aicord.imagecache")
   private var ongoingTasks: [URL: Task<ImageContainer, Error>] = [:]
 
   init() {
     let config = URLSessionConfiguration.default
-    let cacheDir = URL.cachesDirectory.appending(path: "net.smigi.aicord.imagecache")
+    let cacheDir = Self.cacheDirectory
     let urlCache = URLCache(
       memoryCapacity: 64 * 1024 * 1024,
       diskCapacity: 250 * 1024 * 1024,
       directory: cacheDir
     )
     config.urlCache = urlCache
+    self.diskCache = urlCache
     config.requestCachePolicy = .returnCacheDataElseLoad
     self.session = URLSession(configuration: config)
   }
 
   nonisolated func cachedContainer(for url: URL) -> ImageContainer? {
     memoryCache.withLockUnchecked { $0.object(forKey: url as NSURL) }
+  }
+
+  /// Bytes on disk. Read from the files, since `URLCache.currentDiskUsage`
+  /// keeps reporting the old size for a while after clearing.
+  nonisolated func diskUsage() -> Int {
+    let files = FileManager.default.enumerator(
+      at: Self.cacheDirectory, includingPropertiesForKeys: [.totalFileAllocatedSizeKey])
+    var total = 0
+    while let url = files?.nextObject() as? URL {
+      total += (try? url.resourceValues(forKeys: [.totalFileAllocatedSizeKey]))?
+        .totalFileAllocatedSize ?? 0
+    }
+    return total
+  }
+
+  nonisolated func clearCache() {
+    diskCache.removeAllCachedResponses()
+    memoryCache.withLockUnchecked { $0.removeAllObjects() }
   }
 
   func container(for url: URL) async throws -> ImageContainer {

@@ -28,7 +28,6 @@ struct SettingsView: View {
     case you = ""
     case user = "Discord Settings"
     case app = "Aicord Settings"
-    case debug = "Debug"
   }
 
   enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
@@ -51,7 +50,6 @@ struct SettingsView: View {
     case language
     case advanced
     case about
-    case debug
 
     var id: String { rawValue }
 
@@ -76,7 +74,6 @@ struct SettingsView: View {
       case .keybinds: "Keybinds"
       case .language: "Language"
       case .advanced: "Advanced"
-      case .debug: "Debug"
       }
     }
 
@@ -101,7 +98,6 @@ struct SettingsView: View {
       case .keybinds: "keyboard"
       case .language: "globe"
       case .advanced: "gear"
-      case .debug: "ladybug"
       }
     }
 
@@ -119,8 +115,6 @@ struct SettingsView: View {
       case .appearance, .voiceVideo, .chat,
         .notifications, .keybinds, .language, .advanced, .about:
         .app
-      case .debug:
-        .debug
       }
     }
   }
@@ -240,8 +234,6 @@ struct SettingsView: View {
       languageSection
     case .advanced:
       advancedSection
-    case .debug:
-      debugSection
     }
   }
 }

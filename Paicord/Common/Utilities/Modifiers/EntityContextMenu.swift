@@ -283,10 +283,12 @@ struct EntityContextMenu<Entity>: ViewModifier {
 
   @ViewBuilder
   func userContextMenu(user: PartialUser) -> some View {
-    Button {
-      copyText(user.id.rawValue)
-    } label: {
-      Label("Copy User ID", systemImage: "circle.grid.2x1.right.filled")
+    if isDeveloperModeEnabled() {
+      Button {
+        copyText(user.id.rawValue)
+      } label: {
+        Label("Copy User ID", systemImage: "circle.grid.2x1.right.filled")
+      }
     }
   }
 

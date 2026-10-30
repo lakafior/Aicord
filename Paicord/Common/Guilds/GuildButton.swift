@@ -366,8 +366,8 @@ struct GuildButton: View {
     .help(guild == nil ? "Direct Messages" : guild!.name)
     .buttonStyle(.borderless)
     .contextMenu {
-      if let id = guild?.id {
-        Button("Copy ID") {
+      if let id = guild?.id, gw.settings.userSettings.appearance.developerMode {
+        Button("Copy Server ID") {
           #if os(macOS)
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
