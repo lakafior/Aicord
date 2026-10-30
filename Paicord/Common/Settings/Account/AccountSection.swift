@@ -12,17 +12,98 @@ import SwiftUI
 extension SettingsView {
   @ViewBuilder
   var accountSection: some View {
-    Section("My Account") {
-      AsyncButton("Log Out") {
-        guard let currentAccount = gw.accounts.currentAccount else { return }
-        gw.accounts.removeAccount(currentAccount)
-        await gw.logOut()
-      } catch: { _ in
-      }
-      .foregroundStyle(.red)
-    }
-
+    AccountDetails()
+    ProfileBar.AccountsSection()
     DiscordApplicationSettings()
+  }
+}
+
+/// Read-only details of the signed-in account.
+struct AccountDetails: View {
+  @Environment(\.gateway) var gw
+  @State var revealsEmail = false
+
+  var body: some View {
+    if let user = gw.user.currentUser {
+      Section {
+        HStack(spacing: 12) {
+          Profile.AvatarWithPresence(member: nil, user: user)
+            .frame(width: 48, height: 48)
+            .profileAnimated(false)
+            .profileShowsAvatarDecoration()
+          VStack(alignment: .leading) {
+            Text(user.global_name ?? user.username)
+              .font(.headline)
+            Text(verbatim: "@\(user.username)")
+              .foregroundStyle(.secondary)
+          }
+        }
+        .padding(.vertical, 4)
+      }
+
+      Section("Account") {
+        if let email = user.email {
+          LabeledContent("Email") {
+            Button {
+              revealsEmail.toggle()
+            } label: {
+              Text(verbatim: revealsEmail ? email : Self.masked(email))
+                .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+          }
+          .accessibilityHint(Text("Shows or hides the email address"))
+        }
+        LabeledContent("Two-Factor Authentication") {
+          Text(user.mfa_enabled == true ? "On" : "Off")
+        }
+        LabeledContent("Nitro") {
+          Text(Self.nitroName(user.premium_type))
+        }
+        if let created = user.id.parse()?.date {
+          LabeledContent("Member Since") {
+            Text(created, format: .dateTime.day().month(.wide).year())
+          }
+        }
+        LabeledContent("User ID") {
+          Button {
+            Self.copy(user.id.rawValue)
+          } label: {
+            Label(user.id.rawValue, systemImage: "doc.on.doc")
+              .labelStyle(.titleAndIcon)
+              .foregroundStyle(.secondary)
+              .monospacedDigit()
+          }
+          .buttonStyle(.borderless)
+        }
+        .accessibilityHint(Text("Copies the user ID"))
+      }
+    }
+  }
+
+  /// "jo•••@example.com", like Discord shows it before you tap Reveal.
+  static func masked(_ email: String) -> String {
+    guard let at = email.firstIndex(of: "@") else { return email }
+    let name = email[..<at]
+    return name.prefix(2) + String(repeating: "•", count: max(name.count - 2, 3)) + email[at...]
+  }
+
+  static func nitroName(_ kind: DiscordUser.PremiumKind?) -> LocalizedStringKey {
+    switch kind {
+    case .nitro: "Nitro"
+    case .nitroClassic: "Nitro Classic"
+    case .nitroBasic: "Nitro Basic"
+    default: "None"
+    }
+  }
+
+  static func copy(_ string: String) {
+    #if os(iOS)
+      UIPasteboard.general.string = string
+    #else
+      NSPasteboard.general.clearContents()
+      NSPasteboard.general.setString(string, forType: .string)
+    #endif
   }
 }
 

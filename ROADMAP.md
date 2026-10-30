@@ -157,10 +157,10 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [ ] Profile per serwer (pseudonim, awatar serwera) — później, po edycji profilu.
 4. **Ustawienia:**
    - [x] Sekcja „Paicord” → „O Aicord”: wersja, build, licencja GPL-3, link do repozytorium; bez „Made with ❤️ by llsc12”, naklejki z CDN Discorda i przycisku Donate. Na dole dopisek, że to fork Paicorda od llsc12.
-   - [ ] Moje konto: dane konta, przełączanie kont, wylogowanie (Scan QR na iOS zostaje).
-   - [ ] Skróty klawiszowe (macOS): lista istniejących skrótów (⌘, ⌘K, ⇧⌘R).
+   - [x] Moje konto: nagłówek z awatarem, e-mail (zamaskowany, odkrywany stuknięciem), 2FA, Nitro, „Konto od”, ID użytkownika do skopiowania; ta sama sekcja kont co w Profilu i sekcja aplikacji Discorda (Scan QR na iOS zostaje). Przełączanie kont resetuje też stan okien, jak w menu „Account”.
+   - [x] Skróty klawiszowe: lista istniejących skrótów w stylu klawiszy (aplikacja, czat, przeglądarka multimediów); na macOS dodatkowo ⇧↩ i esc w czacie.
    - [x] Debug: bez przycisku podglądu okna sponsora.
-   - [ ] Puste sekcje („Coming Soon”) zostają jako miejsca na przyszłe ustawienia.
+   - [x] Puste sekcje („Coming Soon”) zostają jako miejsca na przyszłe ustawienia.
 5. **Pozostałości po Paicordzie poza Ustawieniami:**
    - [x] Usunięcie `SponsorSheet` (samo wyskakuje po 2 dniach z linkiem do sponsorowania llsc12).
    - [x] Usunięcie `UpdateCheck` i `SUFeedURL` (czyta kanał wydań llsc12, więc proponowałby pobranie oryginalnego Paicorda); razem z resztą kluczy Sparkle w `Info.plist`.

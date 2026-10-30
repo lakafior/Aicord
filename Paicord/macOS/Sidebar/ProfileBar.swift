@@ -355,6 +355,7 @@ struct ProfileBar: View {
             gw.accounts.currentAccountID = nil
             await gw.disconnectIfNeeded()
             gw.resetStores()
+            PaicordAppState.instances.values.forEach { $0.resetStore() }
             gw.accounts.currentAccountID = account.id
           } catch: { error in
             appState.error = error
