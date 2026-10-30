@@ -30,8 +30,15 @@ struct HomeView: View {
           DMsView()
         }
       }
-      .background(theme.common.secondaryBackground)
-      .roundedCorners(radius: 25, corners: .topLeft)
+      // the shape runs past the bottom safe area so the list scrolls under the tab bar
+      .background(
+        theme.common.secondaryBackground,
+        in: UnevenRoundedRectangle(topLeadingRadius: 25, style: .continuous)
+      )
+      .mask {
+        UnevenRoundedRectangle(topLeadingRadius: 25, style: .continuous)
+          .ignoresSafeArea(edges: .bottom)
+      }
     }
     .padding(.top, 4)
   }
