@@ -154,7 +154,8 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [ ] Usunięcie `SponsorSheet` (samo wyskakuje po 2 dniach z linkiem do sponsorowania llsc12).
    - [ ] Usunięcie `UpdateCheck` i `SUFeedURL` (czyta kanał wydań llsc12, więc proponowałby pobranie oryginalnego Paicorda).
    - [ ] „Aicord” zamiast „Paicord” na ekranie łączenia (bez „SwiftUI ftw”), w tekście przy kodzie QR logowania, w tytule okna logów i jako autor wbudowanych motywów.
-   - [ ] Nazwa wyświetlana aplikacji „Aicord” (Dock, menu, ekran główny). Wewnętrzne klucze (pęk kluczy, `UserDefaults`, schemat `paicord://`) zostają, żeby nikogo nie wylogowało.
+   - [ ] Nazwa wyświetlana aplikacji „Aicord” (Dock, menu, ekran główny). Klucze `UserDefaults` i wewnętrzne linki `paicord://` zostają.
+   - [x] Usługa w pęku kluczy `net.smigi.aicord.Accounts` (zamiast `com.llsc12.Paicord.Accounts`) i katalog cache obrazków `net.smigi.aicord.imagecache`. Wymaga ponownego zalogowania; stary wpis `com.llsc12.Paicord.Accounts` można usunąć w Pęku kluczy.
 6. **Weryfikacja:**
    - [ ] Build macOS (arm64) i iOS bez nowych ostrzeżeń, zrzuty ekranu z obu platform.
 

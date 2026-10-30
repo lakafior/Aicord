@@ -13,7 +13,7 @@ import Security
 @MainActor
 @Observable
 final class TokenStore {
-  private static let keychainService = "com.llsc12.Paicord.Accounts"
+  private static let keychainService = "net.smigi.aicord.Accounts"
   private static let currentAccountIDKey = "TokenStore.CurrentAccountID"
   private static let accountDataKey = "AccountData"
 

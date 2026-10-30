@@ -54,7 +54,7 @@ actor ImagePipeline {
 
   init() {
     let config = URLSessionConfiguration.default
-    let cacheDir = URL.cachesDirectory.appending(path: "com.llsc12.paicord.imagecache")
+    let cacheDir = URL.cachesDirectory.appending(path: "net.smigi.aicord.imagecache")
     let urlCache = URLCache(
       memoryCapacity: 64 * 1024 * 1024,
       diskCapacity: 250 * 1024 * 1024,
