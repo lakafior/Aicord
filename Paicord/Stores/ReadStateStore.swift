@@ -61,6 +61,7 @@ class ReadStateStore: DiscordDataStore {
   /// ourselves, and when a `MESSAGE_ACK` event arrives from another client.
   func applyAck(channelId: ChannelSnowflake, messageId: MessageSnowflake, mentionCount: Int = 0) {
     let key = AnySnowflake(channelId)
+    if mentionCount == 0 { gateway?.notifications.clearDelivered(channelId: channelId) }
     if readStates[key] != nil {
       readStates[key]?.last_message_id = messageId
       readStates[key]?.mention_count = mentionCount
@@ -94,9 +95,15 @@ class ReadStateStore: DiscordDataStore {
   }
 
   private func handleMessageCreate(_ messageData: Gateway.MessageCreate) {
-    guard let guildId = messageData.guild_id else { return }
     guard let currentUserId = gateway?.user.currentUser?.id else { return }
     guard messageData.author?.id != currentUserId else { return }
+    // every DM message counts, like Discord's own read states
+    guard let guildId = messageData.guild_id else {
+      if gateway?.user.privateChannels[messageData.channel_id] != nil {
+        incrementMentionCount(channelId: messageData.channel_id)
+      }
+      return
+    }
     let guildStore = gateway?.existingGuildStore(for: guildId)
     guard isMentioned(in: messageData, currentUserId: currentUserId, guildStore: guildStore)
     else { return }

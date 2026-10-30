@@ -9,6 +9,7 @@
 import Logging
 import PaicordLib
 import SwiftUI
+import UserNotifications
 
 @main
 struct PaicordApp: App {
@@ -40,9 +41,13 @@ struct PaicordApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
   #endif
 
+  @Environment(\.scenePhase) private var scenePhase
+
   init() {
     console.startIntercepting()
     PaicordImagePipeline.configure()
+    UNUserNotificationCenter.current().delegate = NotificationCenterDelegate.shared
+    NotificationStore.registerCategories()
   }
 
   var body: some Scene {
@@ -51,6 +56,15 @@ struct PaicordApp: App {
         gatewayStore: gatewayStore
       )
       .appAppearance()
+      #if os(iOS)
+        .onChange(of: scenePhase) { _, phase in
+          switch phase {
+          case .background: gatewayStore.notifications.enterBackground()
+          case .active: gatewayStore.notifications.endBackground()
+          default: break
+          }
+        }
+      #endif
     }
     #if os(macOS)
       .defaultSize(width: 1280, height: 800)

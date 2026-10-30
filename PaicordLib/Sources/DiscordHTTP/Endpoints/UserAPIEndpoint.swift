@@ -41,6 +41,10 @@ public enum UserAPIEndpoint: Endpoint {
   case modifyOwnConnection(type: DiscordUser.Connection.Service, id: String)
   case deleteOwnConnection(type: DiscordUser.Connection.Service, id: String)
 
+  // MARK: - User Guild Settings
+  /// `nil` is the settings for direct messages (`@me`).
+  case modifyUserGuildSettings(guildId: GuildSnowflake?)
+
   // MARK: - Directory Entries
 
   // MARK: - Discovery
@@ -336,6 +340,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyOwnConnection(let type, let id),
       .deleteOwnConnection(let type, let id):
       suffix = "users/@me/connections/\(type.rawValue)/\(id)"
+    case .modifyUserGuildSettings(let guildId):
+      suffix = "users/@me/guilds/\(guildId?.rawValue ?? "@me")/settings"
 
     // MARK: - Remote Authentication
     case .createRemoteAuthSession:
@@ -506,6 +512,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyOwnConnection(let type, let id),
       .deleteOwnConnection(let type, let id):
       suffix = "users/@me/connections/\(type.rawValue)/\(id)"
+    case .modifyUserGuildSettings(let guildId):
+      suffix = "users/@me/guilds/\(guildId?.rawValue ?? "@me")/settings"
     case .createRemoteAuthSession:
       suffix = "users/@me/remote-auth"
     case .finishRemoteAuthSession:
@@ -586,6 +594,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .revokeOAuth2Token: return .DELETE
     case .modifyOwnConnection: return .PATCH
     case .deleteOwnConnection: return .DELETE
+    case .modifyUserGuildSettings: return .PATCH
     case .createRemoteAuthSession: return .POST
     case .finishRemoteAuthSession: return .POST
     case .cancelRemoteAuthSession: return .POST
@@ -656,6 +665,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserHarvest, .createUserHarvest: return true
     case .listOAuth2Tokens, .revokeOAuth2Token: return true
     case .modifyOwnConnection, .deleteOwnConnection: return true
+    case .modifyUserGuildSettings: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -726,6 +736,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserHarvest, .createUserHarvest: return true
     case .listOAuth2Tokens, .revokeOAuth2Token: return true
     case .modifyOwnConnection, .deleteOwnConnection: return true
+    case .modifyUserGuildSettings: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -827,6 +838,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyOwnConnection(let type, let id),
       .deleteOwnConnection(let type, let id):
       return [type.rawValue, id]
+    case .modifyUserGuildSettings(let guildId): return [guildId?.rawValue ?? "@me"]
     case .createRemoteAuthSession: return []
     case .finishRemoteAuthSession: return []
     case .cancelRemoteAuthSession: return []
@@ -908,6 +920,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .revokeOAuth2Token: return 134
     case .modifyOwnConnection: return 135
     case .deleteOwnConnection: return 136
+    case .modifyUserGuildSettings: return 137
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -1034,6 +1047,8 @@ public enum UserAPIEndpoint: Endpoint {
       return "modifyOwnConnection(type: \(type), id: \(id))"
     case .deleteOwnConnection(let type, let id):
       return "deleteOwnConnection(type: \(type), id: \(id))"
+    case .modifyUserGuildSettings(let guildId):
+      return "modifyUserGuildSettings(guildId: \(String(describing: guildId)))"
     case .createRemoteAuthSession: return "createRemoteAuthSession"
     case .finishRemoteAuthSession: return "finishRemoteAuthSession"
     case .cancelRemoteAuthSession: return "cancelRemoteAuthSession"

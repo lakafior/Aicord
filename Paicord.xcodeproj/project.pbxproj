@@ -135,6 +135,7 @@
 		AACADCBA2F3372060007F705 /* TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACADCB92F3372060007F705 /* TextView.swift */; };
 		AAD4469D2ECFBC1A006CB07C /* UserGuildSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD4469C2ECFB915006CB07C /* UserGuildSettingsStore.swift */; };
 		AAD4469F2ECFD6D6006CB07C /* ReadStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD4469E2ECFD6D2006CB07C /* ReadStateStore.swift */; };
+		AE51A0022F00000100A1C0DE /* NotificationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE51A0012F00000100A1C0DE /* NotificationStore.swift */; };
 		AAD446A42ED0B631006CB07C /* ShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD446A32ED0B631006CB07C /* ShellView.swift */; };
 		AAD73EB62E93E29E00470158 /* DMsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD73EB52E93E29E00470158 /* DMsView.swift */; };
 		AADD58652E82A95B00CBC8B6 /* GuildScrollBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADD58642E82A95100CBC8B6 /* GuildScrollBar.swift */; };
@@ -286,6 +287,7 @@
 		AACADCB92F3372060007F705 /* TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextView.swift; sourceTree = "<group>"; };
 		AAD4469C2ECFB915006CB07C /* UserGuildSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGuildSettingsStore.swift; sourceTree = "<group>"; };
 		AAD4469E2ECFD6D2006CB07C /* ReadStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadStateStore.swift; sourceTree = "<group>"; };
+		AE51A0012F00000100A1C0DE /* NotificationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationStore.swift; sourceTree = "<group>"; };
 		AAD446A32ED0B631006CB07C /* ShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellView.swift; sourceTree = "<group>"; };
 		AAD73EB52E93E29E00470158 /* DMsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DMsView.swift; sourceTree = "<group>"; };
 		AADD58642E82A95100CBC8B6 /* GuildScrollBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuildScrollBar.swift; sourceTree = "<group>"; };
@@ -937,6 +939,7 @@
 				AABED59F2E7F48F9005BDD63 /* CurrentUserStore.swift */,
 				AAD4469C2ECFB915006CB07C /* UserGuildSettingsStore.swift */,
 				AAD4469E2ECFD6D2006CB07C /* ReadStateStore.swift */,
+				AE51A0012F00000100A1C0DE /* NotificationStore.swift */,
 				AABED5A32E7F4DAE005BDD63 /* GuildStore.swift */,
 				AABED59D2E7F4637005BDD63 /* ChannelStore.swift */,
 				AA7B38F32EB50EFD00CA4A3C /* MessageDrainStore.swift */,
@@ -1129,6 +1132,7 @@
 				A2C21A1E2FA8150200B0F069 /* SettingsSheet.swift in Sources */,
 				AA21D27E2EA8ED4400C75093 /* ProfileFullSheetView.swift in Sources */,
 				AAD4469F2ECFD6D6006CB07C /* ReadStateStore.swift in Sources */,
+				AE51A0022F00000100A1C0DE /* NotificationStore.swift in Sources */,
 				AA5CA6542E9BD37D00C7C82A /* ComponentsV2.swift in Sources */,
 				AABED5A92E7FF982005BDD63 /* Merging.swift in Sources */,
 				578E1CE12E67781700C6DEA3 /* GradientText.swift in Sources */,

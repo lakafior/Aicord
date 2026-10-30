@@ -768,6 +768,18 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint))
   }
 
+  /// Changes how a server (or, with `guildId: nil`, direct messages) notifies
+  /// you. Only the fields that are set change; channel overrides merge by channel.
+  /// https://docs.discord.food/resources/user-settings#modify-user-guild-settings
+  @inlinable
+  public func modifyUserGuildSettings(
+    guildId: GuildSnowflake?,
+    payload: Payloads.ModifyUserGuildSettings
+  ) async throws -> DiscordClientResponse<Guild.UserGuildSettings> {
+    let endpoint = UserAPIEndpoint.modifyUserGuildSettings(guildId: guildId)
+    return try await self.send(request: .init(to: endpoint), payload: payload)
+  }
+
   /// Proxies external image URLs through Discord's media proxy so they can be used as rich presence assets.
   /// Each result's `external_asset_path` is used as `mp:<path>` in the activity assets.
   /// https://docs.discord.food/resources/application#create-application-external-assets

@@ -3068,6 +3068,43 @@ public enum Payloads {
     public func validate() -> [ValidationFailure] {}
   }
 
+  /// Only the fields that are set are sent. Channel overrides are keyed by
+  /// channel ID and merge with the ones already saved.
+  /// https://docs.discord.food/resources/user-settings#modify-user-guild-settings
+  public struct ModifyUserGuildSettings: Sendable, Encodable, ValidatablePayload {
+    public var message_notifications: Int?
+    public var muted: Bool?
+    public var suppress_everyone: Bool?
+    public var suppress_roles: Bool?
+    public var channel_overrides: [String: ChannelOverride]?
+
+    public struct ChannelOverride: Sendable, Encodable {
+      public var message_notifications: Int?
+      public var muted: Bool?
+
+      public init(message_notifications: Int? = nil, muted: Bool? = nil) {
+        self.message_notifications = message_notifications
+        self.muted = muted
+      }
+    }
+
+    public init(
+      message_notifications: Int? = nil,
+      muted: Bool? = nil,
+      suppress_everyone: Bool? = nil,
+      suppress_roles: Bool? = nil,
+      channel_overrides: [String: ChannelOverride]? = nil
+    ) {
+      self.message_notifications = message_notifications
+      self.muted = muted
+      self.suppress_everyone = suppress_everyone
+      self.suppress_roles = suppress_roles
+      self.channel_overrides = channel_overrides
+    }
+
+    public func validate() -> [ValidationFailure] {}
+  }
+
   /// https://docs.discord.food/resources/relationships#modify-relationship
   public struct ModifyRelationship: Sendable, Encodable, ValidatablePayload {
     public var nickname: String?

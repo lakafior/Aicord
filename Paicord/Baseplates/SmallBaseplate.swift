@@ -83,6 +83,12 @@ struct SmallBaseplate: View {
     }
     .slideoverDisabled(disableSlideover)
     .onChange(of: currentTab) { _, _ in showServerOnHome() }
+    .onChange(of: appState.openedFromNotification) {
+      // the chat can't slide over Settings
+      if currentTab == .settings {
+        currentTab = appState.selectedGuild == nil ? .messages : .home
+      }
+    }
     .onAppear { showServerOnHome() }
     .task(id: appState.selectedGuild) {
       if let selected = appState.selectedGuild { lastHomeGuild = selected }

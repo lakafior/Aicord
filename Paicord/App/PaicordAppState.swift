@@ -42,6 +42,9 @@ final class PaicordAppState {
   /// iPhone opens on Home; the chat slides over once a channel is picked.
   var chatOpen: Bool = false
 
+  /// Bumped when a notification opens a channel, so the iPhone tabs leave Settings.
+  var openedFromNotification = 0
+
   // MARK: - General
   var showingQuickSwitcher: Bool = false
 
