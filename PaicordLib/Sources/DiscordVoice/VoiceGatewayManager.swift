@@ -244,7 +244,9 @@ public actor VoiceGatewayManager {
   public func sendAudio(_ samples: [Float]) {
     guard state == .connected || state == .resuming,
       samples.count == VoiceAudioFormat.frameSamples,
-      let encoder
+      let encoder,
+      // Nothing to say (and no Speaking to announce) before the DAVE group.
+      dave.isMediaReady
     else { return }
     let frame: Data
     do {

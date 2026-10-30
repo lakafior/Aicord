@@ -24,6 +24,15 @@ stan, to, czego nie sprawdzono, oraz instrukcję testu z drugą osobą.
 
   W UI: pasek „Voice Connected” z przekreślonym mikrofonem, ja na liście pod kanałem `dev`
   z ikoną wyciszenia, po rozłączeniu znikam.
+- Drugi test na Twoim serwerze **NAScin** (kanał głosowy „Ogólne”, już istniał — niczego nie
+  tworzyłem ani nie usuwałem), bez trybu listen-only: aplikacja poprosiła o mikrofon w symulatorze
+  (zezwoliłem), silnik audio wystartował z wejściem, a miernik w Settings → Voice & Video pokazywał
+  sygnał z mikrofonu. Połączenie 78 s, ten sam przebieg co wyżej (DAVE v1, key package 417 B,
+  external sender), czyste wyjście. Ścieżka przechwytywania działa do momentu szyfrowania; dalej
+  ramki są celowo odrzucane, bo bez drugiej osoby grupa DAVE nie powstaje. Dwa urządzenia na tym
+  samym koncie nie pomogą (Discord trzyma jeden stan głosowy na użytkownika), więc pełny tor audio
+  wymaga drugiej osoby — najlepiej właśnie na NAScin.
+- Poprawka z tego testu: przed powstaniem grupy DAVE aplikacja nie wysyła już op 5 „speaking”.
 - Pełny log z obu prób: `side-session-notes/…/voice-test-log.txt` (bez tokenów i kluczy).
 
 ## Architektura
@@ -133,7 +142,7 @@ utrudni ocenę), Aicord z tej gałęzi na Macu albo iPhonie. Logi: na Macu uruch
 konsolę Xcode; wpisy `info` pokazują każdy krok.
 
 1. **Kanał serwera, dwie osoby.**
-   - Druga osoba wchodzi pierwsza na pusty kanał głosowy wspólnego serwera.
+   - Najprościej na NAScin: zaproś drugą osobę, niech wejdzie pierwsza na kanał „Ogólne”.
    - W Aicord kliknij ten kanał. W logu powinno być: `Session description received (dave=1)`,
      `Participants joined count=1`, `DAVE key package sent`, `DAVE external sender received`, potem
      `DAVE proposals received` albo `DAVE welcome received`, `DAVE ready for transition`,
