@@ -168,6 +168,13 @@ class IntelligenceTests: XCTestCase {
     XCTAssertEqual(url("https://api.mistral.ai/v1"), "https://api.mistral.ai/v1")
     XCTAssertEqual(url("api.openai.com"), "https://api.openai.com/v1")
     XCTAssertEqual(url("http://localhost:11434/"), "http://localhost:11434/v1")
+    // local servers default to http
+    XCTAssertEqual(url("localhost:11434"), "http://localhost:11434/v1")
+    XCTAssertEqual(url("192.168.1.20:1234"), "http://192.168.1.20:1234/v1")
+    XCTAssertEqual(url("macbook.local:11434/v1"), "http://macbook.local:11434/v1")
+    XCTAssertEqual(url("api.example.com"), "https://api.example.com/v1")
+    XCTAssertTrue(OpenAICompatibleClient.isLocalHost("172.20.0.5"))
+    XCTAssertFalse(OpenAICompatibleClient.isLocalHost("8.8.8.8"))
     XCTAssertEqual(url("https://openrouter.ai/api/v1/"), "https://openrouter.ai/api/v1")
     XCTAssertEqual(
       url("https://api.mistral.ai/v1/chat/completions"), "https://api.mistral.ai/v1")

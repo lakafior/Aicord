@@ -180,8 +180,12 @@ struct IntelligenceSettings: View {
     } footer: {
       if apiBase.isEmpty {
         Text(
-          "Any server with the OpenAI chat completions API: OpenAI, Mistral, OpenRouter, or Ollama and LM Studio on your network (those need no key)."
+          "Any server with the OpenAI chat completions API: OpenAI, Mistral, OpenRouter, or Ollama and LM Studio on your network (those need no key). Ollama is at localhost:11434 and LM Studio at localhost:1234 on the same computer; from an iPhone, use the computer's name, like my-mac.local:11434."
         )
+      } else if let url = OpenAICompatibleClient.normalizedBaseURL(apiBase),
+        OpenAICompatibleClient.isLocalHost(url.host() ?? "")
+      {
+        Text("Requests go to \(url.absoluteString) on your network, over plain HTTP. The first time, iOS asks to allow Aicord on the local network.")
       } else if let url = OpenAICompatibleClient.normalizedBaseURL(apiBase) {
         Text("Requests go to \(url.absoluteString). The key stays in this device's keychain.")
       } else {

@@ -123,6 +123,16 @@ Pomiar jak w `docs/SLIM_NOTES.md`: Release, `generic/platform=iOS`, mapa linkera
 - Ustawienia: Settings → Intelligence → Accessibility.
 - **Do sprawdzenia rano na iPhonie z VoiceOverem:** NAScin #ogólny, plakat „Twój plakat…” — po chwili VoiceOver powinien czytać tekst z plakatu; obraz ze spoilerem — „Hidden image”.
 
+### 3c. Lokalne serwery (Ollama, LM Studio)
+
+**Stan: zrobione.** Commit: `feat: local model servers over HTTP`.
+
+- `Info.plist`: `NSAppTransportSecurity` → `NSAllowsLocalNetworking` (HTTP do `localhost`, nazw bez kropek, `.local` i adresów IP) oraz `NSLocalNetworkUsageDescription` (iOS pyta o sieć lokalną przy adresie z LAN-u; bez opisu połączenie po cichu nie działa). macOS miał już `ENABLE_OUTGOING_NETWORK_CONNECTIONS`.
+- `OpenAICompatibleClient.normalizedBaseURL`: bez schematu `http://` dla adresów lokalnych (`isLocalHost`: localhost, `::1`, `.local`, nazwy bez kropek, 127/8, 10/8, 172.16/12, 192.168/16, 169.254/16), `https://` dla reszty. Wcześniej „localhost:11434” zamieniało się w `https://localhost:11434` i nie działało. 7 nowych asercji w `IntelligenceTests`.
+- Stopka ustawień: porty Ollamy (11434) i LM Studio (1234), adres Maca z iPhone'a (`nazwa.local`), a przy adresie lokalnym informacja o HTTP i pytaniu iOS o sieć lokalną.
+- **Ollama:** `curl localhost:11434` nie odpowiada (nie jest zainstalowana albo nie działa). **Sprawdzone zamiast tego:** prosty serwer zgodny z OpenAI w Pythonie na `localhost:8099` (skrypt w scratchpadzie sesji); w symulatorze Settings → Intelligence → API → adres `localhost:8099` → „Requests go to http://localhost:8099/v1 …” → Load Models from Server → `fake-local-model` (serwer odnotował `GET /v1/models`). Ustawienia przywrócone na koniec nocy.
+- **Do sprawdzenia rano:** z iPhone'a na prawdziwą Ollamę na Macu (`nazwa-maca.local:11434`) — pytanie o sieć lokalną i odpowiedź modelu.
+
 ---
 
 ## Do sprawdzenia rano
