@@ -55,6 +55,7 @@ struct PaicordApp: App {
       .preferredColorScheme(theme.common.colorScheme)
     }
     #if os(macOS)
+      .defaultSize(width: 1280, height: 800)
       .restorationBehavior(.disabled)
       .windowToolbarStyle(.unified)
     #endif

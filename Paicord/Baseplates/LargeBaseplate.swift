@@ -53,8 +53,11 @@ struct LargeBaseplate: View {
                 }
               }
             }
-            .minimumScaleFactor(0.5)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .truncationMode(.tail)
           }
+          .sharedBackgroundVisibility(.hidden)
         }
         .navigationSplitViewColumnWidth(min: 280, ideal: 310, max: 360)
 
@@ -62,11 +65,15 @@ struct LargeBaseplate: View {
       Group {
         if let currentChannelStore {
           ChatView(vm: currentChannelStore)
+            // a fixed minimum keeps the chat and member list columns from resizing each other
+            // in a loop (AppKit throws once it runs out of layout passes)
+            .frame(minWidth: 0, maxWidth: .infinity)
             .inspector(isPresented: $showingInspector) {
               MemberSidebarView(
                 guildStore: currentGuildStore,
                 channelStore: currentChannelStore
               )
+              .frame(minWidth: 0, maxWidth: .infinity)
               .inspectorColumnWidth(min: 250, ideal: 250, max: 360)
             }
             .id(currentChannelStore.channelId)  // force view update
@@ -106,6 +113,9 @@ struct LargeBaseplate: View {
         Label("Toggle Member List", systemImage: "sidebar.right")
       }
     }
+    #if os(macOS)
+      .frame(minWidth: 960, minHeight: 540)
+    #endif
     .task(id: appState.selectedGuild) {
       if let selected = appState.selectedGuild {
         self.currentGuildStore = gw.getGuildStore(for: selected)

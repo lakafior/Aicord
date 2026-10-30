@@ -163,9 +163,19 @@ struct ChatView: View {
     .ignoresSafeArea(.keyboard, edges: .all)
 
     .toolbar {
-      ToolbarItem(placement: .navigation) {
-        ChannelHeader(vm: vm)
-      }
+      // a plain title rather than a glass pill: the leading pill on iOS is too narrow for
+      // most channel names, and the centre slot truncates gracefully when space runs out
+      #if os(iOS)
+        ToolbarItem(placement: .principal) {
+          ChannelHeader(vm: vm)
+        }
+        .sharedBackgroundVisibility(.hidden)
+      #else
+        ToolbarItem(placement: .navigation) {
+          ChannelHeader(vm: vm)
+        }
+        .sharedBackgroundVisibility(.hidden)
+      #endif
     }
     .onChange(of: vm.scrollRequest) { _, request in
       guard let request else { return }

@@ -15,7 +15,9 @@ extension MemberSidebarView {
     var channelStore: ChannelStore
     var accumulator: ChannelStore.MemberListAccumulator
 
-    @State var upperBound: Int? = 0
+    // starts unset: with the bottom anchor, row 0 would be scrolled to the bottom edge and
+    // the whole list would sit above the visible area
+    @State var upperBound: Int? = nil
 
     var scrollPairs: [IntPair] {
       var pairs: [(Int, Int)] = [(0, 99)]

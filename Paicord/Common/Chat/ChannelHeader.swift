@@ -84,6 +84,8 @@ extension ChatView {
           )
           .font(idiom == .phone ? .headline : .title3)
           .fontWeight(.semibold)
+          .lineLimit(1)
+          .truncationMode(.tail)
         }
       default:
         HStack(spacing: 4) {
@@ -94,6 +96,8 @@ extension ChatView {
           Text(name)
             .font(idiom == .phone ? .headline : .title3)
             .fontWeight(.semibold)
+            .lineLimit(1)
+            .truncationMode(.tail)
         }
       }
     }
