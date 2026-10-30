@@ -35,7 +35,10 @@ struct LargeBaseplate: View {
         .environment(\.guildStore, currentGuildStore)
         .environment(\.channelStore, currentChannelStore)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-          ProfileBar()
+          VStack(spacing: 0) {
+            VoiceCallBar()
+            ProfileBar()
+          }
         }
         .toolbar(removing: .sidebarToggle)
         .toolbar {

@@ -140,6 +140,14 @@ class GuildStore: DiscordDataStore {
       setRole(role)
     }
 
+    // who is in which voice channel
+    if let states = guild.voice_states {
+      voiceStates = Dictionary(
+        states.filter { $0.channel_id != nil }.map { ($0.user_id, $0) },
+        uniquingKeysWith: { _, new in new }
+      )
+    }
+
     // members (usually the connected user only)
     guild.members?.forEach { member in
       if let user = member.user {

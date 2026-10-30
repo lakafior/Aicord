@@ -178,6 +178,11 @@ struct ChatView: View {
         }
         .sharedBackgroundVisibility(.hidden)
       #endif
+      if vm.channel?.type == .dm || vm.channel?.type == .groupDm {
+        ToolbarItem(placement: .primaryAction) {
+          DMCallButton(channelID: vm.channelId)
+        }
+      }
     }
     .onChange(of: vm.scrollRequest) { _, request in
       guard let request else { return }

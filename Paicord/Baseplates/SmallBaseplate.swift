@@ -52,6 +52,7 @@ struct SmallBaseplate: View {
         }
       }
       .tint(theme.common.tertiaryButton)
+      .modifier(VoiceCallAccessoryModifier(isInCall: gw.voice.call != nil))
       .environment(\.guildStore, currentGuildStore)
       .environment(\.channelStore, currentChannelStore)
     } secondary: {

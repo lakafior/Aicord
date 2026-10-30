@@ -220,18 +220,7 @@ struct ChannelButton: View {
       }
       .tint(.primary)
     case .guildVoice:
-      textChannelButton { _ in
-        HStack {
-          Image(systemName: "speaker.wave.2.fill")
-            .imageScale(.medium)
-          Text(channel.name ?? "unknown")
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 35)
-        .padding(.horizontal, 12)
-      }
-      .tint(.primary)
-      .disabled(true)
+      VoiceChannelButton(channel: channel)
     default:
       textChannelButton { _ in
         HStack {

@@ -34,6 +34,10 @@ public enum UserAPIEndpoint: Endpoint {
   // MARK: - Billing
 
   // MARK: - Channels
+  case getCallEligibility(channelId: ChannelSnowflake)
+  case modifyCall(channelId: ChannelSnowflake)
+  case ringChannelRecipients(channelId: ChannelSnowflake)
+  case stopRingingChannelRecipients(channelId: ChannelSnowflake)
 
   // MARK: - Components
 
@@ -224,6 +228,16 @@ public enum UserAPIEndpoint: Endpoint {
     case .executeAutoModAlertAction(let guildId):
       suffix = "guilds/\(guildId.rawValue)/auto-moderation/alert-action"
 
+    // MARK: - Channels
+    case .getCallEligibility(let channelId):
+      suffix = "channels/\(channelId.rawValue)/call"
+    case .modifyCall(let channelId):
+      suffix = "channels/\(channelId.rawValue)/call"
+    case .ringChannelRecipients(let channelId):
+      suffix = "channels/\(channelId.rawValue)/call/ring"
+    case .stopRingingChannelRecipients(let channelId):
+      suffix = "channels/\(channelId.rawValue)/call/stop-ringing"
+
     // MARK: - Emojis
     case .getGuildTopEmojis(let guildId):
       suffix = "guilds/\(guildId.rawValue)/top-emojis"
@@ -413,6 +427,14 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "guilds/\(guildId.rawValue)/auto-moderation/rules/validate"
     case .executeAutoModAlertAction(let guildId):
       suffix = "guilds/\(guildId.rawValue)/auto-moderation/alert-action"
+    case .getCallEligibility(let channelId):
+      suffix = "channels/\(channelId.rawValue)/call"
+    case .modifyCall(let channelId):
+      suffix = "channels/\(channelId.rawValue)/call"
+    case .ringChannelRecipients(let channelId):
+      suffix = "channels/\(channelId.rawValue)/call/ring"
+    case .stopRingingChannelRecipients(let channelId):
+      suffix = "channels/\(channelId.rawValue)/call/stop-ringing"
     case .getGuildTopEmojis(let guildId):
       suffix = "/guilds/\(guildId.rawValue)/top-emojis"
     case .getEmojiSource(let emojiId):
@@ -557,6 +579,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return .GET
     case .validateAutoModRule: return .POST
     case .executeAutoModAlertAction: return .POST
+    case .getCallEligibility: return .GET
+    case .modifyCall: return .PATCH
+    case .ringChannelRecipients: return .POST
+    case .stopRingingChannelRecipients: return .POST
     case .getGuildTopEmojis: return .GET
     case .getEmojiSource: return .GET
     case .acceptInvite: return .POST
@@ -633,6 +659,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return true
     case .validateAutoModRule: return true
     case .executeAutoModAlertAction: return true
+    case .getCallEligibility: return true
+    case .modifyCall: return true
+    case .ringChannelRecipients: return true
+    case .stopRingingChannelRecipients: return true
     case .getGuildTopEmojis: return true
     case .getEmojiSource: return true
     case .acceptInvite: return true
@@ -705,6 +735,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return true
     case .validateAutoModRule: return true
     case .executeAutoModAlertAction: return true
+    case .getCallEligibility: return true
+    case .modifyCall: return true
+    case .ringChannelRecipients: return true
+    case .stopRingingChannelRecipients: return true
     case .getGuildTopEmojis: return true
     case .getEmojiSource: return true
     case .acceptInvite: return true
@@ -779,6 +813,11 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return []
     case .validateAutoModRule(let guildId): return [guildId.rawValue]
     case .executeAutoModAlertAction(let guildId): return [guildId.rawValue]
+    case .getCallEligibility(let channelId): return [channelId.rawValue]
+    case .modifyCall(let channelId): return [channelId.rawValue]
+    case .ringChannelRecipients(let channelId): return [channelId.rawValue]
+    case .stopRingingChannelRecipients(let channelId):
+      return [channelId.rawValue]
     case .getGuildTopEmojis(let guildId): return [guildId.rawValue]
     case .getEmojiSource(let emojiId): return [emojiId.rawValue]
     case .acceptInvite(let code): return [code]
@@ -877,6 +916,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return 14
     case .validateAutoModRule: return 15
     case .executeAutoModAlertAction: return 16
+    case .getCallEligibility: return 21
+    case .modifyCall: return 22
+    case .ringChannelRecipients: return 23
+    case .stopRingingChannelRecipients: return 24
     // ... space for ignored endpoints i didn't implement
     case .getGuildTopEmojis: return 41
     case .getEmojiSource: return 42
@@ -968,6 +1011,14 @@ public enum UserAPIEndpoint: Endpoint {
       return "validateAutoModRule(guildId: \(guildId.rawValue), ...)"
     case .executeAutoModAlertAction(let guildId):
       return "executeAutoModAlertAction(guildId: \(guildId.rawValue), ..."
+    case .getCallEligibility(let channelId):
+      return "getCallEligibility(channelId: \(channelId.rawValue))"
+    case .modifyCall(let channelId):
+      return "modifyCall(channelId: \(channelId.rawValue), ...)"
+    case .ringChannelRecipients(let channelId):
+      return "ringChannelRecipients(channelId: \(channelId.rawValue))"
+    case .stopRingingChannelRecipients(let channelId):
+      return "stopRingingChannelRecipients(channelId: \(channelId.rawValue))"
     case .getGuildTopEmojis(let guildId):
       return "getGuildTopEmojis(guildId: \(guildId.rawValue))"
     case .getEmojiSource(let emojiId):
