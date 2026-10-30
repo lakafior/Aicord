@@ -6,12 +6,6 @@ public protocol DiscordClient: Sendable {
   var mfaCallback: MFAVerificationHandler? { get set }
   var authentication: AuthenticationHeader { get }
 
-  /// Your app's id.
-  /// If you don't provide it here, DiscordBM will try to extract it from your token.
-  /// If there is no `appId` you will need to provide it at all call-sites of
-  /// `DiscordClient` functions that accept an `appId`.
-  var appId: ApplicationSnowflake? { get }
-
   /// Send a request to Discord with no body.
   func send(request: DiscordHTTPRequest) async throws -> DiscordHTTPResponse
 

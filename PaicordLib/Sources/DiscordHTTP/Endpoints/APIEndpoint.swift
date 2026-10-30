@@ -117,9 +117,6 @@ public enum APIEndpoint: Endpoint {
 
   case getGuildMember(guildId: GuildSnowflake, userId: UserSnowflake)
   case getOwnGuildMember(guildId: GuildSnowflake)
-  case listGuildMembers(guildId: GuildSnowflake)
-  case searchGuildMembers(guildId: GuildSnowflake)
-  case addGuildMember(guildId: GuildSnowflake, userId: UserSnowflake)
   case updateGuildMember(guildId: GuildSnowflake, userId: UserSnowflake)
   case updateOwnGuildMember(guildId: GuildSnowflake)
   case deleteGuildMember(guildId: GuildSnowflake, userId: UserSnowflake)
@@ -234,7 +231,6 @@ public enum APIEndpoint: Endpoint {
   /// https://discord.com/developers/docs/resources/channel
 
   case getThreadMember(channelId: ChannelSnowflake, userId: UserSnowflake)
-  case listActiveGuildThreads(guildId: GuildSnowflake)
   case listOwnPrivateArchivedThreads(channelId: ChannelSnowflake)
   case listPrivateArchivedThreads(channelId: ChannelSnowflake)
   case listPublicArchivedThreads(channelId: ChannelSnowflake)
@@ -478,16 +474,6 @@ public enum APIEndpoint: Endpoint {
     case .getOwnGuildMember(let guildId):
       let guildId = guildId.rawValue
       suffix = "users/@me/guilds/\(guildId)/member"
-    case .listGuildMembers(let guildId):
-      let guildId = guildId.rawValue
-      suffix = "guilds/\(guildId)/members"
-    case .searchGuildMembers(let guildId):
-      let guildId = guildId.rawValue
-      suffix = "guilds/\(guildId)/members/search"
-    case .addGuildMember(let guildId, let userId):
-      let guildId = guildId.rawValue
-      let userId = userId.rawValue
-      suffix = "guilds/\(guildId)/members/\(userId)"
     case .updateGuildMember(let guildId, let userId):
       let guildId = guildId.rawValue
       let userId = userId.rawValue
@@ -673,9 +659,6 @@ public enum APIEndpoint: Endpoint {
       let channelId = channelId.rawValue
       let userId = userId.rawValue
       suffix = "channels/\(channelId)/thread-members/\(userId)"
-    case .listActiveGuildThreads(let guildId):
-      let guildId = guildId.rawValue
-      suffix = "guilds/\(guildId)/threads/active"
     case .listOwnPrivateArchivedThreads(let channelId):
       let channelId = channelId.rawValue
       suffix = "channels/\(channelId)/users/@me/threads/archived/private"
@@ -950,16 +933,6 @@ public enum APIEndpoint: Endpoint {
     case .getOwnGuildMember(let guildId):
       let guildId = guildId.rawValue
       suffix = "users/@me/guilds/\(guildId)/member"
-    case .listGuildMembers(let guildId):
-      let guildId = guildId.rawValue
-      suffix = "guilds/\(guildId)/members"
-    case .searchGuildMembers(let guildId):
-      let guildId = guildId.rawValue
-      suffix = "guilds/\(guildId)/members/search"
-    case .addGuildMember(let guildId, let userId):
-      let guildId = guildId.rawValue
-      let userId = userId.rawValue
-      suffix = "guilds/\(guildId)/members/\(userId)"
     case .updateGuildMember(let guildId, let userId):
       let guildId = guildId.rawValue
       let userId = userId.rawValue
@@ -1144,9 +1117,6 @@ public enum APIEndpoint: Endpoint {
       let channelId = channelId.rawValue
       let userId = userId.rawValue
       suffix = "channels/\(channelId)/thread-members/\(userId)"
-    case .listActiveGuildThreads(let guildId):
-      let guildId = guildId.rawValue
-      suffix = "guilds/\(guildId)/threads/active"
     case .listOwnPrivateArchivedThreads(let channelId):
       let channelId = channelId.rawValue
       suffix = "channels/\(channelId)/users/@me/threads/archived/private"
@@ -1283,9 +1253,6 @@ public enum APIEndpoint: Endpoint {
     case .revokeInvite: return .DELETE
     case .getGuildMember: return .GET
     case .getOwnGuildMember: return .GET
-    case .listGuildMembers: return .GET
-    case .searchGuildMembers: return .GET
-    case .addGuildMember: return .PUT
     case .updateGuildMember: return .PATCH
     case .updateOwnGuildMember: return .PATCH
     case .deleteGuildMember: return .DELETE
@@ -1327,7 +1294,6 @@ public enum APIEndpoint: Endpoint {
     case .updateGuildSticker: return .PATCH
     case .deleteGuildSticker: return .DELETE
     case .getThreadMember: return .GET
-    case .listActiveGuildThreads: return .GET
     case .listOwnPrivateArchivedThreads: return .GET
     case .listPrivateArchivedThreads: return .GET
     case .listPublicArchivedThreads: return .GET
@@ -1422,9 +1388,6 @@ public enum APIEndpoint: Endpoint {
     case .revokeInvite: return true
     case .getGuildMember: return true
     case .getOwnGuildMember: return true
-    case .listGuildMembers: return true
-    case .searchGuildMembers: return true
-    case .addGuildMember: return true
     case .updateGuildMember: return true
     case .updateOwnGuildMember: return true
     case .deleteGuildMember: return true
@@ -1466,7 +1429,6 @@ public enum APIEndpoint: Endpoint {
     case .updateGuildSticker: return true
     case .deleteGuildSticker: return true
     case .getThreadMember: return true
-    case .listActiveGuildThreads: return true
     case .listOwnPrivateArchivedThreads: return true
     case .listPrivateArchivedThreads: return true
     case .listPublicArchivedThreads: return true
@@ -1561,9 +1523,6 @@ public enum APIEndpoint: Endpoint {
     case .revokeInvite: return true
     case .getGuildMember: return true
     case .getOwnGuildMember: return true
-    case .listGuildMembers: return true
-    case .searchGuildMembers: return true
-    case .addGuildMember: return true
     case .updateGuildMember: return true
     case .updateOwnGuildMember: return true
     case .deleteGuildMember: return true
@@ -1605,7 +1564,6 @@ public enum APIEndpoint: Endpoint {
     case .updateGuildSticker: return true
     case .deleteGuildSticker: return true
     case .getThreadMember: return true
-    case .listActiveGuildThreads: return true
     case .listOwnPrivateArchivedThreads: return true
     case .listPrivateArchivedThreads: return true
     case .listPublicArchivedThreads: return true
@@ -1765,12 +1723,6 @@ public enum APIEndpoint: Endpoint {
       return [guildId.rawValue, userId.rawValue]
     case .getOwnGuildMember(let guildId):
       return [guildId.rawValue]
-    case .listGuildMembers(let guildId):
-      return [guildId.rawValue]
-    case .searchGuildMembers(let guildId):
-      return [guildId.rawValue]
-    case .addGuildMember(let guildId, let userId):
-      return [guildId.rawValue, userId.rawValue]
     case .updateGuildMember(let guildId, let userId):
       return [guildId.rawValue, userId.rawValue]
     case .updateOwnGuildMember(let guildId):
@@ -1884,8 +1836,6 @@ public enum APIEndpoint: Endpoint {
       return [guildId.rawValue, stickerId.rawValue]
     case .getThreadMember(let channelId, let userId):
       return [channelId.rawValue, userId.rawValue]
-    case .listActiveGuildThreads(let guildId):
-      return [guildId.rawValue]
     case .listOwnPrivateArchivedThreads(let channelId):
       return [channelId.rawValue]
     case .listPrivateArchivedThreads(let channelId):
@@ -2000,9 +1950,6 @@ public enum APIEndpoint: Endpoint {
     case .revokeInvite: return 97
     case .getGuildMember: return 98
     case .getOwnGuildMember: return 99
-    case .listGuildMembers: return 100
-    case .searchGuildMembers: return 101
-    case .addGuildMember: return 102
     case .updateGuildMember: return 103
     case .updateOwnGuildMember: return 104
     case .deleteGuildMember: return 105
@@ -2044,7 +1991,6 @@ public enum APIEndpoint: Endpoint {
     case .updateGuildSticker: return 147
     case .deleteGuildSticker: return 148
     case .getThreadMember: return 149
-    case .listActiveGuildThreads: return 150
     case .listOwnPrivateArchivedThreads: return 151
     case .listPrivateArchivedThreads: return 152
     case .listPublicArchivedThreads: return 153
@@ -2225,13 +2171,6 @@ public enum APIEndpoint: Endpoint {
         "getGuildMember(guildId.rawValue: \(guildId.rawValue), userId.rawValue: \(userId.rawValue))"
     case .getOwnGuildMember(let guildId):
       return "getOwnGuildMember(guildId.rawValue: \(guildId.rawValue))"
-    case .listGuildMembers(let guildId):
-      return "listGuildMembers(guildId.rawValue: \(guildId.rawValue))"
-    case .searchGuildMembers(let guildId):
-      return "searchGuildMembers(guildId.rawValue: \(guildId.rawValue))"
-    case .addGuildMember(let guildId, let userId):
-      return
-        "addGuildMember(guildId.rawValue: \(guildId.rawValue), userId.rawValue: \(userId.rawValue))"
     case .updateGuildMember(let guildId, let userId):
       return
         "updateGuildMember(guildId.rawValue: \(guildId.rawValue), userId.rawValue: \(userId.rawValue))"
@@ -2362,8 +2301,6 @@ public enum APIEndpoint: Endpoint {
     case .getThreadMember(let channelId, let userId):
       return
         "getThreadMember(channelId.rawValue: \(channelId.rawValue), userId.rawValue: \(userId.rawValue))"
-    case .listActiveGuildThreads(let guildId):
-      return "listActiveGuildThreads(guildId.rawValue: \(guildId.rawValue))"
     case .listOwnPrivateArchivedThreads(let channelId):
       return
         "listOwnPrivateArchivedThreads(channelId.rawValue: \(channelId.rawValue))"
@@ -2483,8 +2420,6 @@ public enum CacheableAPIEndpointIdentity: Int, Sendable, Hashable,
 
   case getGuildMember
   case getOwnGuildMember
-  case listGuildMembers
-  case searchGuildMembers
 
   // MARK: Messages
   /// https://discord.com/developers/docs/resources/channel
@@ -2521,7 +2456,6 @@ public enum CacheableAPIEndpointIdentity: Int, Sendable, Hashable,
   /// https://discord.com/developers/docs/resources/channel
 
   case getThreadMember
-  case listActiveGuildThreads
   case listOwnPrivateArchivedThreads
   case listPrivateArchivedThreads
   case listPublicArchivedThreads
@@ -2573,8 +2507,6 @@ public enum CacheableAPIEndpointIdentity: Int, Sendable, Hashable,
     case .resolveInvite: return "resolveInvite"
     case .getGuildMember: return "getGuildMember"
     case .getOwnGuildMember: return "getOwnGuildMember"
-    case .listGuildMembers: return "listGuildMembers"
-    case .searchGuildMembers: return "searchGuildMembers"
     case .getMessage: return "getMessage"
     case .listMessageReactionsByEmoji: return "listMessageReactionsByEmoji"
     case .listMessages: return "listMessages"
@@ -2587,7 +2519,6 @@ public enum CacheableAPIEndpointIdentity: Int, Sendable, Hashable,
     case .getSticker: return "getSticker"
     case .listGuildStickers: return "listGuildStickers"
     case .getThreadMember: return "getThreadMember"
-    case .listActiveGuildThreads: return "listActiveGuildThreads"
     case .listOwnPrivateArchivedThreads: return "listOwnPrivateArchivedThreads"
     case .listPrivateArchivedThreads: return "listPrivateArchivedThreads"
     case .listPublicArchivedThreads: return "listPublicArchivedThreads"
@@ -2634,8 +2565,6 @@ public enum CacheableAPIEndpointIdentity: Int, Sendable, Hashable,
     case .resolveInvite: self = .resolveInvite
     case .getGuildMember: self = .getGuildMember
     case .getOwnGuildMember: self = .getOwnGuildMember
-    case .listGuildMembers: self = .listGuildMembers
-    case .searchGuildMembers: self = .searchGuildMembers
     case .getMessage: self = .getMessage
     case .listMessageReactionsByEmoji: self = .listMessageReactionsByEmoji
     case .listMessages: self = .listMessages
@@ -2648,7 +2577,6 @@ public enum CacheableAPIEndpointIdentity: Int, Sendable, Hashable,
     case .getSticker: self = .getSticker
     case .listGuildStickers: self = .listGuildStickers
     case .getThreadMember: self = .getThreadMember
-    case .listActiveGuildThreads: self = .listActiveGuildThreads
     case .listOwnPrivateArchivedThreads: self = .listOwnPrivateArchivedThreads
     case .listPrivateArchivedThreads: self = .listPrivateArchivedThreads
     case .listPublicArchivedThreads: self = .listPublicArchivedThreads

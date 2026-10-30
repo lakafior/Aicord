@@ -250,45 +250,8 @@ extension Gateway {
     /// "Transport Compression" is enabled by default with no options to disable it.
     var compress: Bool?
     public var large_threshold: Int?
-    public var shard: IntPair?
     public var presence: Presence?
-    /// Bots require intents, users do not.
-    public var intents: IntBitField<Intent>?
     public var capabilities: IntBitField<Capability>?
-
-    // Bot identify initializers
-
-    public init(
-      token: Secret,
-      properties: ConnectionProperties = ConnectionProperties(),
-      large_threshold: Int? = nil,
-      shard: IntPair? = nil,
-      presence: Presence? = nil,
-      intents: [Intent]
-    ) {
-      self.token = token
-      self.properties = properties
-      self.large_threshold = large_threshold
-      self.shard = shard
-      self.presence = presence
-      self.intents = .init(intents)
-    }
-
-    public init(
-      token: String,
-      properties: ConnectionProperties = ConnectionProperties(),
-      large_threshold: Int? = nil,
-      shard: IntPair? = nil,
-      presence: Presence? = nil,
-      intents: [Intent]
-    ) {
-      self.token = Secret(token)
-      self.properties = properties
-      self.large_threshold = large_threshold
-      self.shard = shard
-      self.presence = presence
-      self.intents = .init(intents)
-    }
 
     // User identify initializers
     public init(
@@ -318,42 +281,6 @@ extension Gateway {
       self.presence = presence
       self.capabilities = .init(capabilities)
     }
-  }
-
-  /// https://discord.com/developers/docs/topics/gateway#gateway-intents
-  #if Non64BitSystemsCompatibility
-    @UnstableEnum<UInt64>
-  #else
-    @UnstableEnum<UInt>
-  #endif
-  public enum Intent: Sendable, Codable, CaseIterable {
-    case guilds  // 0
-    case guildMembers  // 1
-    case guildModeration  // 2
-    case guildEmojisAndStickers  // 3
-    case guildIntegrations  // 4
-    case guildWebhooks  // 5
-    case guildInvites  // 6
-    case guildVoiceStates  // 7
-    case guildPresences  // 8
-    case guildMessages  // 9
-    case guildMessageReactions  // 10
-    case guildMessageTyping  // 11
-    case directMessages  // 12
-    case directMessageReactions  // 13
-    case directMessageTyping  // 14
-    case messageContent  // 15
-    case guildScheduledEvents  // 16
-    case autoModerationConfiguration  // 20
-    case autoModerationExecution  // 21
-    case guildMessagePolls  // 24
-    case directMessagePolls  // 25
-
-    #if Non64BitSystemsCompatibility
-      case __undocumented(UInt64)
-    #else
-      case __undocumented(UInt)
-    #endif
   }
 
   /// https://docs.discord.food/topics/gateway#list-of-capabilities
@@ -441,8 +368,7 @@ extension Gateway {
     // bot only
     //		public var application: PartialApplication?
     //		public var guilds: [UnavailableGuild]
-    //    public var shard: IntPair?
-
+    //
     // user only
     public var sessions: [Session]
     public var user_settings_proto: DiscordProtos_DiscordUsers_V1_PreloadedUserSettings?
@@ -1534,22 +1460,6 @@ extension Gateway {
   /// https://discord.com/developers/docs/topics/gateway#get-gateway
   public struct URL: Sendable, Codable {
     public var url: String
-  }
-
-  /// https://discord.com/developers/docs/topics/gateway#get-gateway-bot-json-response
-  public struct BotConnectionInfo: Sendable, Codable {
-
-    /// https://discord.com/developers/docs/topics/gateway#session-start-limit-object-session-start-limit-structure
-    public struct SessionStartLimit: Sendable, Codable {
-      public var total: Int
-      public var remaining: Int
-      public var reset_after: Int
-      public var max_concurrency: Int
-    }
-
-    public var url: String
-    public var shards: Int
-    public var session_start_limit: SessionStartLimit
   }
 
   /// https://docs.discord.food/topics/gateway-events#channel-statuses

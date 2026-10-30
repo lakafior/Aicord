@@ -40,10 +40,6 @@ let package = Package(
       name: "DiscordUtilities",
       targets: ["DiscordUtilities"]
     ),
-    .library(
-      name: "DiscordAuth",
-      targets: ["DiscordAuth"]
-    ),
   ],
   traits: [
     "Non64BitSystemsCompatibility"
@@ -75,7 +71,6 @@ let package = Package(
     .target(
       name: "PaicordLib",
       dependencies: [
-        .target(name: "DiscordAuth"),
         .target(name: "DiscordHTTP"),
         .target(name: "DiscordCore"),
         .target(name: "DiscordGateway"),
@@ -138,13 +133,6 @@ let package = Package(
     ),
     .target(
       name: "DiscordUtilities",
-      dependencies: [
-        .target(name: "DiscordModels")
-      ],
-      swiftSettings: swiftSettings
-    ),
-    .target(
-      name: "DiscordAuth",
       dependencies: [
         .target(name: "DiscordModels")
       ],

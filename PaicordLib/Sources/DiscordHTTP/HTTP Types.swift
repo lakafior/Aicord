@@ -428,17 +428,11 @@ public enum DiscordHTTPError: Error, CustomStringConvertible {
   /// Could not decode to type '\(typeName)'. Make sure your Codable types match the response that Discord sends.
   case decodingError(
     typeName: String, response: DiscordHTTPResponse, error: any Error)
-  /// The 'appId' parameter is required. Either pass it in the initializer of DefaultDiscordClient/BotGatewayManager or use the 'appId' function parameter
-  case appIdParameterRequired
   /// Discord only accepts one of these query parameters at a time.
   case queryParametersMutuallyExclusive(queries: [(String, String)])
   /// The query parameter '\(name)' with a value of '\(value ?? "nil")' is out of the Discord-acceptable bounds of \(lowerBound)...\(upperBound).
   case queryParameterOutOfBounds(
     name: String, value: String?, lowerBound: Int, upperBound: Int)
-  /// You are trying to use a bot-only endpoint '\(endpoint)' with user authentication.
-  case assertionFailureBotOnlyEndpoint(endpoint: any Endpoint)
-  /// You are trying to use a user-only endpoint '\(endpoint)' with bot authentication.
-  case assertionFailureUserOnlyEndpoint(endpoint: any Endpoint)
 
   public var description: String {
     switch self {
@@ -459,20 +453,12 @@ public enum DiscordHTTPError: Error, CustomStringConvertible {
     case .decodingError(let typeName, let response, let error):
       return
         "DiscordHTTPError.decodingError(typeName: \(typeName), response: \(response), error: \(error))"
-    case .appIdParameterRequired:
-      return "DiscordHTTPError.appIdParameterRequired"
     case .queryParametersMutuallyExclusive(let queries):
       return
         "DiscordHTTPError.queryParametersMutuallyExclusive(queries: \(queries))"
     case .queryParameterOutOfBounds(let name, let value, let lowerBound, let upperBound):
       return
         "DiscordHTTPError.queryParameterOutOfBounds(name: \(name), value: \(value ?? "nil"), lowerBound: \(lowerBound), upperBound: \(upperBound))"
-    case .assertionFailureBotOnlyEndpoint(let endpoint):
-      return
-        "DiscordHTTPError.assertionFailureBotOnlyEndpoint(endpoint: \(endpoint))"
-    case .assertionFailureUserOnlyEndpoint(let endpoint):
-      return
-        "DiscordHTTPError.assertionFailureUserOnlyEndpoint(endpoint: \(endpoint))"
     }
   }
 }

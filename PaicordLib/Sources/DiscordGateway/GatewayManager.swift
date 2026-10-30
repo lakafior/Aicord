@@ -23,12 +23,6 @@ public protocol GatewayManager: AnyObject, Sendable {
   func updatePresence(payload: Gateway.Identify.Presence) async
   /// https://discord.com/developers/docs/topics/gateway-events#update-voice-state
   func updateVoiceState(payload: VoiceStateUpdate) async
-  /// An stream of Gateway events.
-  @available(*, deprecated, renamed: "events")
-  func makeEventsStream() async -> AsyncStream<Gateway.Event>
-  /// Makes an stream of Gateway event parse failures.
-  @available(*, deprecated, renamed: "eventFailures")
-  func makeEventsParseFailureStream() async -> AsyncStream<(any Error, Data)>
   /// Disconnects from Discord.
   func disconnect() async
 }

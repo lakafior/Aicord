@@ -6,7 +6,6 @@ import Synchronization
 public struct DefaultDiscordClient: DiscordClient {
   public let session: URLSession
   public let authentication: AuthenticationHeader
-  public let appId: ApplicationSnowflake?
   public let configuration: ClientConfiguration
   public let logger = DiscordGlobalConfiguration.makeLogger(
     "DefaultDiscordClient"
@@ -16,11 +15,7 @@ public struct DefaultDiscordClient: DiscordClient {
   public var mfaCallback: MFAVerificationHandler? = nil
 
   public var userAgent: String {
-    if self.authentication.userMode {
-      return SuperProperties.useragent(ws: false)!
-    } else {
-      return "DiscordBM (https://github.com/discordbm/discordbm, 1.0.0)"
-    }
+    SuperProperties.useragent(ws: false)!
   }
 
   /// Use `getCache()` to get the appropriate cache.
@@ -48,42 +43,7 @@ public struct DefaultDiscordClient: DiscordClient {
 
   public init(
     session: URLSession = .shared,
-    token: Secret,
-    appId: ApplicationSnowflake? = nil,
-    configuration: ClientConfiguration = .init(),
-    captchaCallback: CaptchaChallengeHandler? = nil,
-    mfaCallback: MFAVerificationHandler? = nil
-  ) async {
-    self.captchaCallback = captchaCallback
-    self.mfaCallback = mfaCallback
-    self.session = session
-    self.authentication = .botToken(token)
-    self.appId = appId ?? self.authentication.extractAppIdIfAvailable()
-    self.configuration = configuration
-    self._authCache = await ClientCacheStorage.shared.cache(
-      for: self.authentication
-    )
-  }
-
-  public init(
-    session: URLSession = .shared,
-    token: String,
-    appId: ApplicationSnowflake? = nil,
-    configuration: ClientConfiguration = .init()
-  ) async {
-    self.session = session
-    self.authentication = .botToken(Secret(token))
-    self.appId = appId ?? self.authentication.extractAppIdIfAvailable()
-    self.configuration = configuration
-    self._authCache = await ClientCacheStorage.shared.cache(
-      for: self.authentication
-    )
-  }
-
-  public init(
-    session: URLSession = .shared,
     header: AuthenticationHeader,
-    appId: ApplicationSnowflake? = nil,
     configuration: ClientConfiguration = .init(),
     captchaCallback: CaptchaChallengeHandler? = nil,
     mfaCallback: MFAVerificationHandler? = nil
@@ -92,37 +52,6 @@ public struct DefaultDiscordClient: DiscordClient {
     self.mfaCallback = mfaCallback
     self.session = session
     self.authentication = header
-    self.appId = appId ?? self.authentication.extractAppIdIfAvailable()
-    self.configuration = configuration
-    self._authCache = await ClientCacheStorage.shared.cache(
-      for: self.authentication
-    )
-  }
-
-  public init(
-    session: URLSession = .shared,
-    oAuthToken: Secret,
-    appId: ApplicationSnowflake? = nil,
-    configuration: ClientConfiguration = .init()
-  ) async {
-    self.session = session
-    self.authentication = .oAuthToken(oAuthToken)
-    self.appId = appId
-    self.configuration = configuration
-    self._authCache = await ClientCacheStorage.shared.cache(
-      for: self.authentication
-    )
-  }
-
-  public init(
-    session: URLSession = .shared,
-    oAuthToken: String,
-    appId: ApplicationSnowflake? = nil,
-    configuration: ClientConfiguration = .init()
-  ) async {
-    self.session = session
-    self.authentication = .oAuthToken(Secret(oAuthToken))
-    self.appId = appId
     self.configuration = configuration
     self._authCache = await ClientCacheStorage.shared.cache(
       for: self.authentication
@@ -132,12 +61,10 @@ public struct DefaultDiscordClient: DiscordClient {
   public init(
     session: URLSession = .shared,
     authentication: AuthenticationHeader,
-    appId: ApplicationSnowflake? = nil,
     configuration: ClientConfiguration = .init()
   ) async {
     self.session = session
     self.authentication = authentication
-    self.appId = appId ?? self.authentication.extractAppIdIfAvailable()
     self.configuration = configuration
     self._authCache = await ClientCacheStorage.shared.cache(
       for: self.authentication
@@ -156,7 +83,6 @@ public struct DefaultDiscordClient: DiscordClient {
     self.authentication = captchaCallback == nil ? .none : .userNone
     self.configuration = configuration
     self._authCache = .global
-    self.appId = nil
   }
 
   @inlinable

@@ -316,20 +316,6 @@ public actor RemoteAuthGatewayManager {
 
   // MARK: End of Gateway actions -
 
-  /// Makes an stream of Gateway events.
-  @available(*, deprecated, renamed: "events")
-  public func makeEventsStream() -> AsyncStream<RemoteAuthPayload> {
-    self.events.base
-  }
-
-  /// Makes an stream of Gateway event parse failures.
-  @available(*, deprecated, renamed: "eventFailures")
-  public func makeEventsParseFailureStream() -> AsyncStream<
-    (any Error, Data)
-  > {
-    self.eventFailures.base
-  }
-
   /// Disconnects from Discord.
   /// Doesn't end the event streams.
   public func disconnect() async {

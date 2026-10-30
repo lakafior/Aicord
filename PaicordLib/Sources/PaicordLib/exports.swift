@@ -1,4 +1,3 @@
-@_exported import DiscordAuth
 @_exported import DiscordCore
 @_exported import DiscordGateway
 @_exported import DiscordHTTP

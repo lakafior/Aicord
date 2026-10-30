@@ -646,20 +646,6 @@ extension DiscordClient {
 
   /// https://discord.com/developers/docs/resources/channel#get-thread-member
   @inlinable
-  public func getThreadMember(
-    threadId: ChannelSnowflake,
-    userId: UserSnowflake
-  ) async throws -> DiscordClientResponse<ThreadMember> {
-    let endpoint = APIEndpoint.getThreadMember(
-      channelId: threadId,
-      userId: userId
-    )
-    try assertBotOnly(endpoint: endpoint)
-    return try await self.send(request: .init(to: endpoint))
-  }
-
-  /// https://discord.com/developers/docs/resources/channel#get-thread-member
-  @inlinable
   public func getThreadMemberWithMember(
     threadId: ChannelSnowflake,
     userId: UserSnowflake
@@ -674,16 +660,6 @@ extension DiscordClient {
         queries: [("with_member", "true")]
       )
     )
-  }
-
-  /// https://discord.com/developers/docs/resources/channel#list-thread-members
-  @inlinable
-  public func listThreadMembers(
-    threadId: ChannelSnowflake
-  ) async throws -> DiscordClientResponse<[ThreadMember]> {
-    let endpoint = APIEndpoint.listThreadMembers(channelId: threadId)
-    try assertBotOnly(endpoint: endpoint)
-    return try await self.send(request: .init(to: endpoint))
   }
 
   /// https://discord.com/developers/docs/resources/channel#list-thread-members
@@ -974,16 +950,6 @@ extension DiscordClient {
     )
   }
 
-  /// https://discord.com/developers/docs/resources/guild#list-active-guild-threads
-  @inlinable
-  public func listActiveGuildThreads(
-    guildId: GuildSnowflake
-  ) async throws -> DiscordClientResponse<Responses.ListActiveGuildThreads> {
-    let endpoint = APIEndpoint.listActiveGuildThreads(guildId: guildId)
-    try assertBotOnly(endpoint: endpoint)
-    return try await self.send(request: .init(to: endpoint))
-  }
-
   /// https://discord.com/developers/docs/resources/guild#get-guild-member
   @inlinable
   public func getGuildMember(
@@ -992,69 +958,6 @@ extension DiscordClient {
   ) async throws -> DiscordClientResponse<Guild.Member> {
     let endpoint = APIEndpoint.getGuildMember(guildId: guildId, userId: userId)
     return try await self.send(request: .init(to: endpoint))
-  }
-
-  /// https://discord.com/developers/docs/resources/guild#list-guild-members
-  @inlinable
-  public func listGuildMembers(
-    guildId: GuildSnowflake,
-    limit: Int? = nil,
-    after: UserSnowflake? = nil
-  ) async throws -> DiscordClientResponse<[Guild.Member]> {
-    let endpoint = APIEndpoint.listGuildMembers(guildId: guildId)
-    try assertBotOnly(endpoint: endpoint)
-    try checkInBounds(
-      name: "limit",
-      value: limit,
-      lowerBound: 1,
-      upperBound: 1_000
-    )
-    return try await self.send(
-      request: .init(
-        to: endpoint,
-        queries: [
-          ("limit", limit?.description),
-          ("after", after.map { $0.rawValue }),
-        ]
-      )
-    )
-  }
-
-  /// NOTE: `limit`, if provided, must be between `1` and `1_000`.
-  /// https://discord.com/developers/docs/resources/guild#search-guild-members
-  @inlinable
-  public func searchGuildMembers(
-    guildId: GuildSnowflake,
-    query: String,
-    limit: Int? = nil
-  ) async throws -> DiscordClientResponse<[Guild.Member]> {
-    let endpoint = APIEndpoint.searchGuildMembers(guildId: guildId)
-    try assertBotOnly(endpoint: endpoint)
-    return try await self.send(
-      request: .init(
-        to: endpoint,
-        queries: [
-          ("query", query),
-          ("limit", limit?.description),
-        ]
-      )
-    )
-  }
-
-  /// NOTE: Sometimes doesn't return a guild member object. Read the docs.
-  /// https://discord.com/developers/docs/resources/guild#add-guild-member
-  @inlinable
-  public func addGuildMember(
-    guildId: GuildSnowflake,
-    userId: UserSnowflake,
-    payload: Payloads.AddGuildMember
-  ) async throws -> DiscordClientResponse<Guild.Member> {
-    let endpoint = APIEndpoint.addGuildMember(guildId: guildId, userId: userId)
-    try assertBotOnly(endpoint: endpoint)
-    return try await self.send(
-      request: .init(to: endpoint),
-      payload: payload
-    )
   }
 
   /// https://discord.com/developers/docs/resources/guild#modify-guild-member
@@ -2161,32 +2064,12 @@ extension DiscordClient {
 //MARK: - Internal +DiscordClient
 extension DiscordClient {
 
-  @usableFromInline
-  func requireAppId(
-    _ providedAppId: ApplicationSnowflake?
-  ) throws -> ApplicationSnowflake {
-    if let appId = providedAppId ?? self.appId {
-      return appId
-    } else {
-      /// You have not passed your app-id in the init of `DiscordClient`/`GatewayManager`.
-      /// And the `DiscordClient` was also not able to find your app id using your token.
-      /// You need to pass it in the function parameters at least.
-      throw DiscordHTTPError.appIdParameterRequired
-    }
-  }
-
   /// For compiler warnings
   @available(
     *,
     deprecated,
     message: "App id must be optional otherwise there is no point"
   )
-  @usableFromInline
-  func requireAppId(_ appId: ApplicationSnowflake) throws
-    -> ApplicationSnowflake
-  {
-    appId
-  }
 
   @usableFromInline
   func checkMutuallyExclusive(queries: [(String, String?)]) throws {
@@ -2216,23 +2099,4 @@ extension DiscordClient {
     }
   }
 
-  @usableFromInline
-  func assertBotOnly(
-    endpoint: any Endpoint
-  ) throws {
-    guard self.authentication.userMode == false else {
-      throw DiscordHTTPError.assertionFailureBotOnlyEndpoint(endpoint: endpoint)
-    }
-  }
-
-  @usableFromInline
-  func assertUserOnly(
-    endpoint: any Endpoint
-  ) throws {
-    guard self.authentication.userMode == false else {
-      throw DiscordHTTPError.assertionFailureUserOnlyEndpoint(
-        endpoint: endpoint
-      )
-    }
-  }
 }

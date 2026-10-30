@@ -110,7 +110,6 @@ public actor UserGatewayManager: GatewayManager {
     clientConfiguration: ClientConfiguration = .init(),
     maxFrameSize: Int = 1 << 28,
     token: Secret,
-    appId: ApplicationSnowflake? = nil,
     largeThreshold: Int? = nil,
     presence: Gateway.Identify.Presence? = nil,
     capabilities: [Gateway.Capability] = [
@@ -129,7 +128,6 @@ public actor UserGatewayManager: GatewayManager {
     self.client = await DefaultDiscordClient(
       session: session,
       header: .userToken(token),
-      appId: appId,
       configuration: clientConfiguration,
       captchaCallback: captchaCallback,
       mfaCallback: mfaCallback
@@ -343,20 +341,6 @@ public actor UserGatewayManager: GatewayManager {
   }
 
   // MARK: End of Gateway actions -
-
-  /// Makes an stream of Gateway events.
-  @available(*, deprecated, renamed: "events")
-  public func makeEventsStream() -> AsyncStream<Gateway.Event> {
-    self.events.base
-  }
-
-  /// Makes an stream of Gateway event parse failures.
-  @available(*, deprecated, renamed: "eventFailures")
-  public func makeEventsParseFailureStream() -> AsyncStream<
-    (any Error, Data)
-  > {
-    self.eventFailures.base
-  }
 
   /// Disconnects from Discord.
   /// Doesn't end the event streams.
