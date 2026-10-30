@@ -36,12 +36,24 @@ extension SearchView {
         guard let intent = SearchIntent.parse(reply) else {
           throw IntelligenceError("The model didn't return filters. Try rewording the request.")
         }
-        apply(intent)
+        apply(intent, sentence: sentence)
       } catch is CancellationError {
       } catch {
         appState.error = error
       }
     }
+  }
+
+  /// The longest server name the sentence mentions as a whole word.
+  static func guildNamed(in sentence: String, gw: GatewayStore) -> String? {
+    let words = Set(
+      sentence.lowercased().split(whereSeparator: { !$0.isLetter && !$0.isNumber }).map(String.init))
+    return gw.user.guilds.values.map(\.name)
+      .filter { name in
+        let parts = name.lowercased().split(whereSeparator: { !$0.isLetter && !$0.isNumber })
+        return name.count >= 3 && !parts.isEmpty && parts.allSatisfy { words.contains(String($0)) }
+      }
+      .max { $0.count < $1.count }
   }
 
   /// A text channel you can read, the exact name first.
@@ -57,9 +69,14 @@ extension SearchView {
   }
 
   /// Sets tokens, has-filters and dates from what the model understood.
-  func apply(_ intent: SearchIntent) {
+  func apply(_ intent: SearchIntent, sentence: String) {
     var newTokens = tokens
     var guild = serverID
+    var intent = intent
+    if intent.server == nil, guild == nil, let named = Self.guildNamed(in: sentence, gw: gw) {
+      // small models often leave the server out even when the sentence names it
+      intent.server = named
+    }
     if let name = intent.server,
       let match = gw.user.guilds.values.first(where: {
         $0.name.caseInsensitiveCompare(name) == .orderedSame
@@ -100,6 +117,9 @@ extension SearchView {
       keywords = keywords.replacingOccurrences(of: name, with: "", options: .caseInsensitive)
     }
     text = keywords.split(separator: " ").joined(separator: " ")
+    rankingSentence = sentence
+    rankedText = text
+    sortByRelevance = true
     runMessageSearch(debounce: false)
   }
 }

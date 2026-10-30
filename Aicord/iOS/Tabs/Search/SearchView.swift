@@ -28,6 +28,11 @@ struct SearchView: View {
   @State var showingFilters = false
   @State var interpreting = false
   @State var sentenceTask: Task<Void, Never>? = nil
+  /// The sentence results are ranked against, while the keywords it gave stay.
+  @State var rankingSentence: String? = nil
+  @State var rankedText: String? = nil
+  @State var relevanceOrder: [MessageSnowflake]? = nil
+  @State var sortByRelevance = true
 
   var serverID: GuildSnowflake? {
     for token in tokens {
@@ -83,6 +88,9 @@ struct SearchView: View {
       .searchable(text: $text, tokens: $tokens, placement: Self.fieldPlacement, prompt: prompt) {
         token in
         Label(token.title(gw), systemImage: token.symbol)
+      }
+      .task(id: RankingKey(sentence: ranking ? rankingSentence : nil, ids: messages.items.map(\.id))) {
+        await rankResults()
       }
       .onSubmit(of: .search) { runMessageSearch(debounce: false) }
       .onChange(of: text) { _, _ in runMessageSearch(debounce: true); requestMembers() }
@@ -312,6 +320,9 @@ struct SearchView: View {
     var loading = false
     var indexing = false
     var failed = false
+    /// No message had all the keywords, so these are the scope's recent
+    /// messages, ranked by the sentence instead.
+    var broadened = false
   }
 
   /// Where messages can be searched with the current tokens, if anywhere.
@@ -395,11 +406,19 @@ struct SearchView: View {
     }
   }
 
-  /// Results after the app-side regex.
+  /// Results after the app-side regex, most relevant first when ranked.
   var visibleMessages: [DiscordChannel.Message] {
-    guard !filters.pattern.isEmpty else { return messages.items }
-    guard let regex = filters.regex else { return [] }
-    return messages.items.filter { $0.content.contains(regex) }
+    var items = messages.items
+    if !filters.pattern.isEmpty {
+      guard let regex = filters.regex else { return [] }
+      items = items.filter { $0.content.contains(regex) }
+    }
+    if ranking, sortByRelevance, let relevanceOrder {
+      let position = Dictionary(
+        relevanceOrder.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
+      items.sort { (position[$0.id] ?? .max) < (position[$1.id] ?? .max) }
+    }
+    return items
   }
 
   @ViewBuilder
@@ -429,6 +448,9 @@ struct SearchView: View {
           if visibleMessages.isEmpty {
             Text("No matches in the \(messages.items.count) messages loaded so far.")
               .foregroundStyle(.secondary)
+          }
+          if ranking {
+            rankingControls
           }
           ForEach(visibleMessages, id: \.id) { message in
             Button {
@@ -462,9 +484,9 @@ struct SearchView: View {
     return channel.name
   }
 
-  func makeQuery(offset: Int) -> MessageSearchQuery {
+  func makeQuery(offset: Int, broad: Bool = false) -> MessageSearchQuery {
     MessageSearchQuery(
-      content: query.isEmpty ? nil : query,
+      content: query.isEmpty || broad ? nil : query,
       channelIDs: channelID.map { [$0] } ?? [],
       authorIDs: userID.map { [$0] } ?? [],
       has: has.map(\.rawValue).sorted(),
@@ -486,7 +508,16 @@ struct SearchView: View {
         guard !Task.isCancelled else { return }
       }
       messages = MessageResults(loading: true)
-      messages = await fetchMessages(scope: scope, offset: 0, into: MessageResults())
+      var first = await fetchMessages(scope: scope, offset: 0, into: MessageResults())
+      // a sentence's keywords can be too many for Discord's all-words search:
+      // rank the recent messages in the same place by the sentence instead
+      if ranking, !query.isEmpty, !first.failed, !first.indexing, first.total == 0,
+        !Task.isCancelled
+      {
+        first = await fetchMessages(
+          scope: scope, offset: 0, into: MessageResults(broadened: true), broad: true)
+      }
+      messages = first
     }
   }
 
@@ -495,17 +526,18 @@ struct SearchView: View {
     let current = messages
     searchTask = Task {
       messages.loading = true
-      messages = await fetchMessages(scope: scope, offset: current.items.count, into: current)
+      messages = await fetchMessages(
+        scope: scope, offset: current.items.count, into: current, broad: current.broadened)
     }
   }
 
-  func fetchMessages(scope: MessageScope, offset: Int, into current: MessageResults) async
-    -> MessageResults
-  {
+  func fetchMessages(
+    scope: MessageScope, offset: Int, into current: MessageResults, broad: Bool = false
+  ) async -> MessageResults {
     var result = current
     result.loading = false
     do {
-      let query = makeQuery(offset: offset)
+      let query = makeQuery(offset: offset, broad: broad)
       let res: DiscordClientResponse<MessageSearchResults>
       switch scope {
       case .guild(let id): res = try await gw.client.searchGuildMessages(guildID: id, query: query)
@@ -870,12 +902,57 @@ struct MessageResultRow: View {
           .font(.subheadline)
           .foregroundStyle(.secondary)
         } else if !message.attachments.isEmpty {
-          Label("\(message.attachments.count) attachment(s)", systemImage: "paperclip")
+          Label("^[\(message.attachments.count) attachment](inflect: true)", systemImage: "paperclip")
             .font(.subheadline)
             .foregroundStyle(.secondary)
         }
       }
     }
     .contentShape(.rect)
+  }
+}
+
+// MARK: - Ranking
+
+extension SearchView {
+  /// Ranking applies while the keywords the sentence gave are unchanged.
+  var ranking: Bool { rankingSentence != nil && rankedText == text }
+
+  struct RankingKey: Equatable {
+    var sentence: String?
+    var ids: [MessageSnowflake]
+  }
+
+  @ViewBuilder
+  var rankingControls: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Picker("Order", selection: $sortByRelevance) {
+        Text("Most Relevant").tag(true)
+        Text("Newest").tag(false)
+      }
+      .pickerStyle(.segmented)
+      .labelsHidden()
+      Text(
+        messages.broadened
+          ? "No message had all of “\(query)”, so these are the latest messages here, ranked by how well they match your sentence on this device."
+          : "Ranked on this device by how well each message matches your sentence."
+      )
+      .font(.footnote)
+      .foregroundStyle(.secondary)
+    }
+  }
+
+  /// Orders the loaded results by meaning (on-device sentence vectors when
+  /// the model is there) and shared words.
+  func rankResults() async {
+    guard ranking, let sentence = rankingSentence, !messages.items.isEmpty else {
+      relevanceOrder = nil
+      return
+    }
+    let items = messages.items
+    let documents = items.map(SemanticRanker.document(for:))
+    let order = await SemanticRanker.rank(query: sentence, documents: documents)
+    guard !Task.isCancelled else { return }
+    relevanceOrder = order.map { items[$0].id }
   }
 }

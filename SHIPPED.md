@@ -16,7 +16,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Catch Up in a server's or channel's menu: a few points per unread channel
 - **New** · Explain Context: what a message in a busy channel answers, from its replies and the messages around it, with Show Conversation
 - **New** · Ask About This Channel, Explain Slang and Terms, thread and reply summaries; the model can search Discord, read around a message and follow replies, within a fixed number of lookups
-- **New** · Search with a Sentence turns a request into Search's server, channel, person, date and has filters
+- **New** · Search with a Sentence turns a request into Search's server, channel, person, date and has filters, then lists the results most relevant first, ranked on the device by meaning and shared words (also file names); when no message has all the keywords it ranks the latest messages there instead
+- **New** · When the model searches Discord to answer, it gets the results closest to the question rather than just the newest, and Ask About This Channel on the device reads the messages that fit the question best
 - **New** · Important messages from muted channels, judged by the on-device model; scam warnings in DMs from strangers; text and descriptions of images
 - **New** · Filtered words, blocked people, spoilers and hidden sensitive media never reach a language model
 
@@ -380,4 +381,8 @@ Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tyl
    - [x] Ostrzeżenie przed oszustwem w DM od nieznajomych (na urządzeniu).
    - [x] Describe Images: tekst z obrazka przez Vision na urządzeniu, opis przez model API.
    - [x] Filtr słów, zablokowani, spoilery i ukryte media wrażliwe nigdy nie trafiają do modelu.
+7. **Dokończenia (noc 30/31.10, `docs/OVERNIGHT.md`):**
+   - [x] `SemanticRanker` w AicordKit: wektory zdań z `NLContextualEmbedding` (model dla pisma łacińskiego, 512 wymiarów, m.in. PL i EN, na urządzeniu) i wspólne słowa (bez diakrytyków, z odciętymi końcówkami, prefiksy liczone częściowo). Bez modelu wektorów działa samo dopasowanie słów. 6 testów.
+   - [x] Search with a Sentence: wyniki od najtrafniejszych względem całego zdania (przełącznik Most Relevant / Newest), w tym nazwy plików i tytuły embedów; gdy żadna wiadomość nie ma wszystkich słów kluczowych, ostatnie wiadomości z zakresu uszeregowane według zdania. Serwer nazwany w zdaniu jest rozpoznawany także wtedy, gdy model go pominie.
+   - [x] Rerankowanie bez indeksu: narzędzie `search` modelu z 25 wyników Discorda oddaje te najbliższe pytaniu (6 na urządzeniu, 15 przez API), a Ask na urządzeniu bierze 5 najnowszych i 15 najlepiej pasujących z ostatnich 50 wiadomości.
 

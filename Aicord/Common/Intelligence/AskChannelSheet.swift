@@ -148,6 +148,7 @@ struct AskChannelSheet: View {
     let toolbox = MessageToolbox(
       gw: gw, guildId: guildId, channelId: channelId, onDevice: model.isOnDevice)
     toolbox.onChange = { [weak toolbox] in searches = toolbox?.searches ?? [] }
+    toolbox.question = question
     self.toolbox = toolbox
     do {
       // pins first: rules and answers tend to be pinned
@@ -157,8 +158,12 @@ struct AskChannelSheet: View {
       {
         pinned = (try? res.decode()) ?? []
       }
-      let recent = try await IntelligenceSource.fetchMessages(
-        channelId: channelId, limit: model.isOnDevice ? 20 : 100, gw: gw)
+      var recent = try await IntelligenceSource.fetchMessages(
+        channelId: channelId, limit: model.isOnDevice ? 50 : 100, gw: gw)
+      if model.isOnDevice {
+        // the on-device window is small: the newest few, plus the ones closest to the question
+        recent = await Self.fitting(recent, question: question)
+      }
       let pinnedLines = toolbox.add(Array(pinned.prefix(model.isOnDevice ? 5 : 25)))
       let recentLines = toolbox.add(recent)
       phase = .thinking
@@ -184,6 +189,20 @@ struct AskChannelSheet: View {
       if Task.isCancelled { return }
       phase = .failed(error.localizedDescription)
     }
+  }
+
+  /// The 5 newest and the 15 others that match the question best, in order.
+  static func fitting(_ messages: [DiscordChannel.Message], question: String) async
+    -> [DiscordChannel.Message]
+  {
+    guard messages.count > 20 else { return messages }
+    let byAge = messages.sorted { $0.id < $1.id }
+    let newest = Array(byAge.suffix(5))
+    let rest = Array(byAge.dropLast(5))
+    let order = await SemanticRanker.rank(
+      query: question, documents: rest.map(SemanticRanker.document(for:)))
+    let picked = order.prefix(15).map { rest[$0] }
+    return (picked + newest).sorted { $0.id < $1.id }
   }
 
   static func instructions(language: String) -> String {

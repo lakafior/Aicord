@@ -8,7 +8,7 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 |---|---|---|
 | 1 | Etap 8: Leave Server, Invites, instrukcja Safari, link na Macu | zrobione (Mac do sprawdzenia rano) |
 | 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | zrobione: −0,67 MB, 187 testów Textual (i naprawione przepełnienie stosu) |
-| 3 | Etap 10: dokończenia i wyszukiwanie po sensie | czeka |
+| 3 | Etap 10: dokończenia i wyszukiwanie po sensie | ranking i rerankowanie zrobione, reszta w toku |
 | 4 | Etap 12: przygotowanie wydań | czeka |
 | 5 | Etap 11: interfejs Maca, serwer MCP | czeka |
 | 6 | Language | czeka |
@@ -94,6 +94,24 @@ Pomiar jak w `docs/SLIM_NOTES.md`: Release, `generic/platform=iOS`, mapa linkera
 - **Znaleziony błąd:** `renderingManyAttributedRunsDoesNotOverflowStack` padał na SIGSEGV. `TextBuilder` sklejał `Text` przez `reduce`, co daje łańcuch zagnieżdżenia o głębokości liczby fragmentów; przy ~2500 fragmentach przepełniał stos. Na iOS główny wątek ma 1 MB stosu, więc bardzo długa, mocno sformatowana wiadomość mogła wywrócić aplikację. Teraz sklejanie zrównoważone (głębokość log₂n).
 - Oczekiwania dopasowane do obecnego kodu: tokenizer kodu jest natywny (zastąpił Prism.js w Etapie 2), `=` zostaje zwykłym tekstem, a nieznane języki dostają ogólne reguły; adres emoji to `.webp?size=44&animated=false`.
 - Testy Textual nie są w CI (`build_pr.yml` tylko buduje). Do rozważenia w Etapie 12.
+
+## 3. Etap 10
+
+### 3a. Ranking i rerankowanie (Search with a Sentence, narzędzie `search`, Ask)
+
+**Stan: zrobione.** Commit: `feat: rank search results by meaning on the device`.
+
+- `AicordKit/Sources/AicordKit/Intelligence/SemanticRanker.swift`:
+  - `SentenceEmbedder` (aktor): `NLContextualEmbedding(script: .latin)`, wektor zdania = średnia wektorów tokenów (512 wymiarów), pamięć podręczna do 2000 tekstów. Gdy modelu nie ma na urządzeniu, jednorazowo `requestAssets` (systemowe pobranie jak słownik klawiatury); gdy się nie da, zwraca `nil` i ranking idzie po słowach.
+  - Wynik = 0,65 × podobieństwo wektorów + 0,35 × wspólne słowa. **Kalibracja:** na Macu zmierzyłem kosinusy średnich wektorów: „who posted the ipa file” ↔ „Kite.ipa uploaded here” 0,89, ↔ „kto wrzucił plik ipa” 0,81, ↔ „Siemanko” 0,75, ↔ „good morning everyone” 0,71. Dlatego skala 0,65–0,95 → 0–1.
+  - Słowa: małe litery, bez diakrytyków (z ręcznym ł → l), min. 3 znaki, bez krótkiej listy słów pustych EN/PL, odcięte częste końcówki; prefiks liczy się za 0,6 („jelly” ↔ „jellyfin”, „serwer” ↔ „serwerze”).
+  - `document(for:)`: treść + tytuły i opisy embedów + nazwy plików (kropki jako spacje), żeby „ipa” znalazło „Kite.ipa”.
+- **Search with a Sentence:** po zinterpretowaniu zdania wyniki są domyślnie „Most Relevant” (segment z „Newest”), z notką, że ranking jest na urządzeniu. Ranking obowiązuje, dopóki słowa kluczowe w polu są tymi od modelu; ręczna zmiana wraca do zwykłej kolejności. **Poszerzenie:** gdy Discord nie znalazł nic ze wszystkimi słowami (AND), drugi zapytanie bez treści w tym samym zakresie (serwer, kanał, osoba, daty) i ranking ostatnich wiadomości według zdania, z wyjaśnieniem nad wynikami.
+- **Serwer ze zdania:** model na urządzeniu w teście pominął „NAScin”, więc gdy model nie poda serwera, a nazwa serwera pada w zdaniu jako całe słowa, staje się tokenem.
+- **Narzędzie `search`:** z (do) 25 wyników strony bierze `resultLimit` najlepiej pasujących do pytania i słów wyszukiwania, chronologicznie. Ask na urządzeniu: 50 ostatnich wiadomości → 5 najnowszych + 15 najlepiej pasujących (okno 4 tys. tokenów).
+- Przy okazji: „N attachment(s)” w wynikach wyszukiwania → poprawna odmiana.
+- **Sprawdzone w symulatorze** (model na urządzeniu, bez kluczy API): „who posted the ipa file in NAScin” → token NAScin, słowo „ipa”, poszerzenie i ranking (2 wiadomości z Kite.ipa). Testy: 6 nowych, razem 149.
+- **Incydent bez skutków:** po jednym uruchomieniu aplikacja wystartowała w otwartym czacie FashionReps #lobby, a moje stuknięcia i wpisany tekst poszły „w ciemno”. Sprawdziłem drzewo dostępności: ten kanał nie ma pola wiadomości (tylko odczyt), więc nic nie zostało wpisane ani wysłane. Od tamtej pory po każdym starcie najpierw zrzut ekranu.
 
 ---
 
