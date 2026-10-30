@@ -29,6 +29,8 @@ struct IntelligenceSettings: View {
   @AppStorage(Key.allowsDMs) private var allowsDMs = false
   @AppStorage(Key.summaryLanguage) private var summaryLanguage = ""
   @AppStorage(Key.scamWarnings) private var scamWarnings = true
+  @AppStorage(Key.importantMuted) private var importantMuted = false
+  @AppStorage(Key.importantTopics) private var importantTopics = ""
 
   @State private var keyDraft = ""
   @State private var hasKey = IntelligenceKeychain.hasAPIKey
@@ -76,6 +78,21 @@ struct IntelligenceSettings: View {
     } footer: {
       Text(
         "Off: summaries and catch-up skip direct messages and group chats. Messages hidden by your word filter, from blocked people, under spoilers or blocked by your sensitive media settings are never given to the model."
+      )
+    }
+
+    Section {
+      Toggle("Important Messages from Muted Channels", isOn: $importantMuted)
+        .disabled(IntelligenceModel.onDeviceUnavailability != nil)
+      if importantMuted {
+        TextField("Your Topics", text: $importantTopics, prompt: Text("e.g. shipping, Kraków, jackets"))
+          .autocorrectionDisabled()
+      }
+    } header: {
+      Text("Notifications")
+    } footer: {
+      Text(
+        "Muted channels stay quiet, except for messages Apple Intelligence on this device thinks are for you: questions to you, your name, or your topics (comma separated). Only on-device, never through an API, at most 20 checks an hour. Uses the notification settings for everything else."
       )
     }
 
