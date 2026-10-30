@@ -210,7 +210,7 @@ class ChannelStore: DiscordDataStore {
     }
 
     // check if latest messages are loaded, if so we append to the end else dont add
-    let message = messageData.toMessage()
+    let message = DiscordChannel.Message(messageData)
     if hasLatestMessages {
       // Insert the new message at the end of the ordered dictionary
       messages.updateValue(
