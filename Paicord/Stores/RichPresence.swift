@@ -31,7 +31,6 @@ struct RichPresence: Codable, Equatable {
   }
 
   var kind: Kind = .playing
-  var applicationID = ""
   var name = ""
   var details = ""
   var state = ""
@@ -78,8 +77,8 @@ struct RichPresence: Codable, Equatable {
   var problem: LocalizedStringResource? {
     let trimmedName = name.trimmingCharacters(in: .whitespaces)
     if trimmedName.isEmpty { return "Give the activity a name." }
-    if applicationID.isEmpty || UInt64(applicationID) == nil {
-      return "Enter the numeric ID of a Discord application."
+    if UInt64(DiscordApplication.id) == nil {
+      return "Add your Discord application in Settings → My Account."
     }
     if kind == .streaming, URL(string: streamURL)?.host == nil {
       return "Streaming needs a Twitch or YouTube link."
@@ -91,7 +90,7 @@ struct RichPresence: Codable, Equatable {
 
   /// Builds the gateway activity. Image links are swapped for Discord media proxy paths.
   func activity(using client: any DiscordClient) async throws -> Gateway.Activity {
-    let appID = ApplicationSnowflake(applicationID)
+    let appID = ApplicationSnowflake(DiscordApplication.id)
     var activity = Gateway.Activity(
       name: name.trimmingCharacters(in: .whitespaces),
       type: kind.activityKind,

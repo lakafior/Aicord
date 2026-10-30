@@ -49,16 +49,11 @@ struct RichPresenceEditor: View {
         }
 
         Section {
-          TextField("Application ID", text: $fields.applicationID)
-            #if os(iOS)
-              .keyboardType(.numberPad)
-            #endif
-        } header: {
-          Text("Application")
+          LabeledContent("Application") {
+            Text(DiscordApplication.name.isEmpty ? String(localized: "Not Set") : DiscordApplication.name)
+          }
         } footer: {
-          Text(
-            "Discord only shows images and buttons for an application. Create one in the [Developer Portal](https://discord.com/developers/applications) and paste its ID; its name isn't shown."
-          )
+          Text("Images and buttons come from your Discord application, set in Settings → My Account.")
         }
 
         Section {
@@ -245,10 +240,9 @@ struct RichPresenceCard: View {
 
   func imageURL(_ value: String) -> URL? {
     if RichPresence.isLink(value) { return URL(string: value) }
-    guard !value.isEmpty, UInt64(fields.applicationID) != nil, UInt64(value) != nil else {
-      return nil
-    }
-    return URL(string: "https://cdn.discordapp.com/app-assets/\(fields.applicationID)/\(value).png")
+    let appID = DiscordApplication.id
+    guard !value.isEmpty, UInt64(appID) != nil, UInt64(value) != nil else { return nil }
+    return URL(string: "https://cdn.discordapp.com/app-assets/\(appID)/\(value).png")
   }
 }
 

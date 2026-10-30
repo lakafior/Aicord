@@ -222,6 +222,17 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint))
   }
 
+  /// Returns the public RPC details of an application (name, icon). Needs no authorization,
+  /// so it doubles as a check that an application ID exists.
+  /// https://docs.discord.food/resources/application#get-application-rpc
+  @inlinable
+  public func getApplicationRPC(
+    applicationID: ApplicationSnowflake
+  ) async throws -> DiscordClientResponse<PartialApplication> {
+    let endpoint = UserAPIEndpoint.getApplicationRPC(id: applicationID)
+    return try await self.send(request: .init(to: endpoint))
+  }
+
   // /// Returns a list of detectable application objects representing games that can be detected by Discord for rich presence.
   // /// https://docs.discord.food/resources/application#get-detectable-applications
   //  @inlinable

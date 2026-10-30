@@ -19,6 +19,7 @@ public enum UserAPIEndpoint: Endpoint {
   case getEmbeddedActivities(guildId: GuildSnowflake?)
   case getPartialApplications(ids: [ApplicationSnowflake])
   case getPartialApplication(id: ApplicationSnowflake, withGuild: Bool)
+  case getApplicationRPC(id: ApplicationSnowflake)
   case getDetectableApplications
 
   // MARK: Audit Log
@@ -187,7 +188,9 @@ public enum UserAPIEndpoint: Endpoint {
       let idsString = ids.map(\.rawValue).joined(separator: ",")
       suffix = "applications/public?application_ids=\(idsString)"
     case .getPartialApplication(let id, let withGuild):
-      suffix = "applications/public/\(id.rawValue)?with_guild=\(withGuild)"
+      suffix = "applications/\(id.rawValue)/public?with_guild=\(withGuild)"
+    case .getApplicationRPC(let id):
+      suffix = "applications/\(id.rawValue)/rpc"
     case .getDetectableApplications:
       suffix = "applications/detectable"
 
@@ -344,7 +347,9 @@ public enum UserAPIEndpoint: Endpoint {
     case .getApplications(let withTeamApplications):
       suffix = "applications?with_team_applications=\(withTeamApplications)"
     case .getPartialApplication(let id, let withGuild):
-      suffix = "applications/public/\(id.rawValue)?with_guild=\(withGuild)"
+      suffix = "applications/\(id.rawValue)/public?with_guild=\(withGuild)"
+    case .getApplicationRPC(let id):
+      suffix = "applications/\(id.rawValue)/rpc"
     case .getApplicationsWithAssets(let withTeamApplications):
       suffix =
         "applications-with-assets?with_team_applications=\(withTeamApplications)"
@@ -486,6 +491,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getEmbeddedActivities: return .GET
     case .getPartialApplications: return .GET
     case .getPartialApplication: return .GET
+    case .getApplicationRPC: return .GET
     case .getDetectableApplications: return .GET
     case .validateAutoModRule: return .POST
     case .executeAutoModAlertAction: return .POST
@@ -548,6 +554,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getApplicationsWithAssets: return true
     case .getEmbeddedActivities: return true
     case .getPartialApplications: return true
+    case .getApplicationRPC: return true
     case .getPartialApplication: return true
     case .getDetectableApplications: return true
     case .validateAutoModRule: return true
@@ -611,6 +618,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getApplicationsWithAssets: return true
     case .getEmbeddedActivities: return true
     case .getPartialApplications: return true
+    case .getApplicationRPC: return false
     case .getPartialApplication: return true
     case .getDetectableApplications: return true
     case .validateAutoModRule: return true
@@ -676,6 +684,7 @@ public enum UserAPIEndpoint: Endpoint {
       return [guildId?.rawValue].compactMap { $0 }
     case .getPartialApplications(let ids): return ids.map { $0.rawValue }
     case .getPartialApplication(let id, _): return [id.rawValue]
+    case .getApplicationRPC(let id): return [id.rawValue]
     case .getDetectableApplications: return []
     case .validateAutoModRule(let guildId): return [guildId.rawValue]
     case .executeAutoModAlertAction(let guildId): return [guildId.rawValue]
@@ -808,6 +817,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .cancelRemoteAuthSession: return 122
     case .exchangeRemoteAuthTicket: return 123
     case .createApplicationExternalAssets: return 124
+    case .getApplicationRPC: return 125
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -858,6 +868,8 @@ public enum UserAPIEndpoint: Endpoint {
       return "createAttachments(channelId: \(channelId.rawValue))"
     case .createApplicationExternalAssets(let applicationId):
       return "createApplicationExternalAssets(applicationId: \(applicationId.rawValue))"
+    case .getApplicationRPC(let id):
+      return "getApplicationRPC(id: \(id.rawValue))"
     case .deleteAttachment(let filename):
       return "deleteAttachment(filename: \(filename))"
     case .getRelationships: return "getRelationships"
