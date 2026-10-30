@@ -442,6 +442,7 @@ public actor VoiceGatewayManager {
           }
         }
       case .clientsConnect(let connect):
+        logger.info("Participants joined", metadata: ["count": "\(connect.user_ids.count)"])
         try dave.addParticipants(connect.user_ids)
         for id in connect.user_ids where id != data.userID {
           eventContinuation.yield(.participantJoined(id))
@@ -511,19 +512,19 @@ public actor VoiceGatewayManager {
     do {
       switch VoiceGateway.Opcode(rawValue: bytes[2]) {
       case .mlsExternalSender:
-        logger.debug("← op mlsExternalSender")
+        logger.info("DAVE external sender received")
         dave.setExternalSender(payload)
       case .mlsProposals:
-        logger.debug("← op mlsProposals")
+        logger.info("DAVE proposals received", metadata: ["bytes": "\(payload.count)"])
         try sendDave(dave.processProposals(payload))
       case .mlsAnnounceCommitTransition:
         guard let (id, commit) = transition() else { return }
-        logger.debug("← op mlsAnnounceCommitTransition", metadata: ["transition": "\(id)"])
+        logger.info("DAVE commit received", metadata: ["transition": "\(id)"])
         try sendDave(dave.processCommit(transitionID: id, commit: Data(commit)))
         updateEncryptionState()
       case .mlsWelcome:
         guard let (id, welcome) = transition() else { return }
-        logger.debug("← op mlsWelcome", metadata: ["transition": "\(id)"])
+        logger.info("DAVE welcome received", metadata: ["transition": "\(id)"])
         try sendDave(dave.processWelcome(transitionID: id, welcome: Data(welcome)))
         updateEncryptionState()
       default:
@@ -541,10 +542,13 @@ public actor VoiceGatewayManager {
     for message in outbound {
       switch message {
       case .keyPackage(let package):
+        logger.info("DAVE key package sent", metadata: ["bytes": "\(package.count)"])
         sendBinary(.mlsKeyPackage, package)
       case .commitWelcome(let commitWelcome):
+        logger.info("DAVE commit sent", metadata: ["bytes": "\(commitWelcome.count)"])
         sendBinary(.mlsCommitWelcome, commitWelcome)
       case .transitionReady(let id):
+        logger.info("DAVE ready for transition", metadata: ["transition": "\(id)"])
         send(.init(opcode: .daveTransitionReady, data: .daveTransitionReady(.init(transition_id: id))))
       case .invalidCommitWelcome(let id):
         send(

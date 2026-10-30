@@ -57,6 +57,8 @@ final class VoiceConnectionStore: DiscordDataStore {
   /// Push-to-talk key or button currently held.
   private(set) var isPushToTalkHeld = false
   private(set) var speaking: Set<UserSnowflake> = []
+  /// Everyone else the voice server says is in the call.
+  private(set) var participants: Set<UserSnowflake> = []
   /// 0 when the call is not end-to-end encrypted.
   private(set) var daveProtocolVersion: UInt16 = 0
   private(set) var microphoneDenied = false
@@ -71,6 +73,7 @@ final class VoiceConnectionStore: DiscordDataStore {
   @ObservationIgnored private var pendingSessionID: String?
   @ObservationIgnored private var pendingServer: Gateway.VoiceServerUpdate?
   @ObservationIgnored private var ringsWhenConnected = false
+  @ObservationIgnored private var managerState: VoiceGatewayManager.State = .idle
   @ObservationIgnored private let logger = Logger(subsystem: "Paicord", category: "Voice")
 
   init() {
@@ -171,6 +174,8 @@ final class VoiceConnectionStore: DiscordDataStore {
     call = nil
     phase = reason
     speaking = []
+    participants = []
+    managerState = .idle
     daveProtocolVersion = 0
     pendingSessionID = nil
     pendingServer = nil
@@ -282,24 +287,8 @@ final class VoiceConnectionStore: DiscordDataStore {
     guard source === manager else { return }
     switch event {
     case .stateChanged(let state):
+      managerState = state
       switch state {
-      case .idle, .connecting, .discovering:
-        phase = .connecting
-      case .negotiatingEncryption:
-        phase = .encrypting
-      case .connected:
-        phase = .connected
-        if ringsWhenConnected, let call {
-          ringsWhenConnected = false
-          Task { [gateway] in
-            _ = try? await gateway?.client.ringChannelRecipients(
-              channelID: call.channelID,
-              payload: .init()
-            )
-          }
-        }
-      case .resuming:
-        phase = .reconnecting
       case .disconnected(let reason):
         switch reason {
         case .requested:
@@ -310,13 +299,47 @@ final class VoiceConnectionStore: DiscordDataStore {
           logger.error("Voice connection ended: \(why, privacy: .public)")
           leave(reason: .failed(String(localized: "Voice connection lost.")))
         }
+      default:
+        updatePhase()
       }
     case .speaking(let user, let isSpeaking):
       if isSpeaking { speaking.insert(user) } else { speaking.remove(user) }
-    case .participantJoined, .participantLeft(_):
-      if case .participantLeft(let user) = event { speaking.remove(user) }
+    case .participantJoined(let user):
+      participants.insert(user)
+      updatePhase()
+    case .participantLeft(let user):
+      participants.remove(user)
+      speaking.remove(user)
+      updatePhase()
     case .encryption(let version, _):
       daveProtocolVersion = version
+    }
+  }
+
+  /// Alone in the channel the encrypted group cannot form yet, but to the
+  /// user the call is up; a DM call rings at that point.
+  private func updatePhase() {
+    switch managerState {
+    case .idle, .connecting, .discovering:
+      phase = .connecting
+    case .negotiatingEncryption:
+      phase = participants.isEmpty ? .connected : .encrypting
+    case .connected:
+      phase = .connected
+    case .resuming:
+      phase = .reconnecting
+    case .disconnected:
+      return
+    }
+    if phase == .connected, ringsWhenConnected, let call {
+      ringsWhenConnected = false
+      logger.info("Ringing the DM recipients")
+      Task { [gateway] in
+        _ = try? await gateway?.client.ringChannelRecipients(
+          channelID: call.channelID,
+          payload: .init()
+        )
+      }
     }
   }
 
