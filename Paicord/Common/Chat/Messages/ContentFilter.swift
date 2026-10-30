@@ -133,6 +133,8 @@ struct MediaFilter {
 
 /// Blurs media until tapped.
 struct SensitiveMediaCover<Content: View>: View {
+  var title: LocalizedStringKey = "Sensitive Content"
+  var systemImage = "eye.slash"
   @ViewBuilder var content: Content
   @State private var revealed = false
 
@@ -146,9 +148,9 @@ struct SensitiveMediaCover<Content: View>: View {
         .allowsHitTesting(false)
         .overlay {
           VStack(spacing: 6) {
-            Image(systemName: "eye.slash")
+            Image(systemName: systemImage)
               .font(.title2)
-            Text("Sensitive Content")
+            Text(title)
               .font(.subheadline.weight(.semibold))
             Button("Show") {
               revealed = true

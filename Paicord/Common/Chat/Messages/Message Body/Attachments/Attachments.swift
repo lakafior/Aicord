@@ -19,6 +19,7 @@ import Synchronization
 extension MessageCell {
   struct AttachmentsView: View {
     @Environment(\.appState) var appState
+    @Environment(\.gateway) var gw
 
     var message: DiscordChannel.PartialMessage
     var previewableAttachments: [DiscordChannel.Message.Attachment] = []
@@ -63,8 +64,14 @@ extension MessageCell {
 
     var body: some View {
       VStack(alignment: .leading) {
-        // previewable
-        if showMosaic {
+        // previewable, as file rows when Discord's inline media setting is off
+        if !gw.settings.inlinesAttachmentMedia {
+          ForEach(previewableAttachments) { attachment in
+            FileAttachmentView(attachment: attachment) {
+              openViewer(on: attachment)
+            }
+          }
+        } else if showMosaic {
           VStack(alignment: .leading, spacing: 0) {
             mosaic
           }
@@ -461,6 +468,8 @@ extension MessageCell {
     struct AttachmentAudioPlayer: View {
       @Environment(\.theme) var theme
       var attachment: DiscordChannel.Message.Attachment
+      /// Opens the attachment in the viewer, for images and videos shown as a row.
+      var open: (() -> Void)? = nil
       var player: AVPlayer
 
       init(attachment: DiscordChannel.Message.Attachment) {
@@ -855,6 +864,8 @@ extension MessageCell {
 
       @Environment(\.theme) var theme
       var attachment: DiscordChannel.Message.Attachment
+      /// Opens the attachment in the viewer, for images and videos shown as a row.
+      var open: (() -> Void)? = nil
 
       #if os(iOS)
         @State var localURL: URL? = nil
@@ -862,7 +873,7 @@ extension MessageCell {
       #endif
       var body: some View {
         HStack {
-          Image(systemName: "document.fill")
+          Image(systemName: icon)
             .imageScale(.large)
 
           VStack(alignment: .leading) {
@@ -1026,7 +1037,17 @@ extension MessageCell {
         )
         .background(theme.common.primaryButtonBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .onTapGesture { open?() }
         .frame(maxWidth: 400, alignment: .leading)
+      }
+
+      private var icon: String {
+        switch attachment.mediaKind {
+        case .image: "photo.fill"
+        case .video: "film.fill"
+        default: "document.fill"
+        }
       }
 
       #if os(iOS)

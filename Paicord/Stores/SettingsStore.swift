@@ -27,6 +27,11 @@ class SettingsStore: DiscordDataStore {
   private var frecencySettingsTimer: Timer?
   private var hasPendingUserSettings = false
   private var hasPendingFrecencySettings = false
+  /// Settings patches sent and not yet answered, and the newest one's number.
+  /// Answers and gateway echoes of older patches arrive late and must not
+  /// undo a newer change.
+  private var patchesInFlight = 0
+  private var latestPatch = 0
 
   // MARK: - Update Types for Timing
   enum UpdateType {
@@ -98,8 +103,10 @@ class SettingsStore: DiscordDataStore {
       if update.partial {
         // Merge with existing settings
         mergeUserSettings(with: proto)
-      } else {
-        // Replace entire settings
+      } else if patchesInFlight == 0,
+        proto.versions.dataVersion >= userSettings.versions.dataVersion
+      {
+        // Replace entire settings, unless it's an echo older than ours
         userSettings = proto
       }
 
@@ -162,12 +169,16 @@ class SettingsStore: DiscordDataStore {
     }
     guard payload != .init() else { return }
     userSettings = updated
+    latestPatch += 1
+    let patch = latestPatch
+    patchesInFlight += 1
+    defer { patchesInFlight -= 1 }
     let res = try await gateway.client.modifyUserSettingsProto(
       type: .preloaded,
       payload: .init(settings: .preloaded(payload))
     )
     try res.guardSuccess()
-    if case .preloaded(let proto) = try res.decode().settings {
+    if patch == latestPatch, case .preloaded(let proto) = try res.decode().settings {
       userSettings = proto
     }
   }
@@ -376,5 +387,46 @@ extension SettingsStore {
 
   var showsImageDescriptions: Bool {
     textAndImages.viewImageDescriptions.value
+  }
+
+  /// Discord's spoiler setting, a string; unset means on click.
+  enum SpoilerReveal: String {
+    case onClick = "ON_CLICK"
+    case ifModerator = "IF_MODERATOR"
+    case always = "ALWAYS"
+  }
+
+  var rendersReactions: Bool {
+    textAndImages.hasRenderReactions ? textAndImages.renderReactions.value : true
+  }
+
+  var rendersEmbeds: Bool {
+    textAndImages.hasRenderEmbeds ? textAndImages.renderEmbeds.value : true
+  }
+
+  var inlinesAttachmentMedia: Bool {
+    textAndImages.hasInlineAttachmentMedia ? textAndImages.inlineAttachmentMedia.value : true
+  }
+
+  var inlinesEmbedMedia: Bool {
+    textAndImages.hasInlineEmbedMedia ? textAndImages.inlineEmbedMedia.value : true
+  }
+
+  var spoilerReveal: SpoilerReveal {
+    SpoilerReveal(rawValue: textAndImages.renderSpoilers.value) ?? .onClick
+  }
+
+  /// Whether spoilers in this channel show without a tap.
+  func revealsSpoilers(in channelStore: ChannelStore?) -> Bool {
+    switch spoilerReveal {
+    case .always: true
+    case .onClick: false
+    case .ifModerator:
+      channelStore?.guildStore != nil && channelStore?.hasPermission(.manageMessages) == true
+    }
+  }
+
+  var convertsEmoticons: Bool {
+    textAndImages.hasConvertEmoticons ? textAndImages.convertEmoticons.value : true
   }
 }

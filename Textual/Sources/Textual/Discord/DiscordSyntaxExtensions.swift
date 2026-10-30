@@ -159,8 +159,9 @@ extension AttributedStringMarkdownParser.SyntaxExtension {
   /// occurrences) — a consumer keeps a `Set` of revealed keys and re-applies this extension when
   /// it changes. Tapping a spoiler (revealed or not) surfaces as a link tap to
   /// `textual-discord://spoiler/{text}?index={n}` via ``TextualNamespace/onEntityTap(_:)``; build
-  /// the reveal key from that URL with ``spoilerRevealKey(index:text:)``.
-  public static func discordSpoilers(revealed: Set<String>) -> Self {
+  /// the reveal key from that URL with ``spoilerRevealKey(index:text:)``. `revealsAll` shows
+  /// every spoiler as revealed, for a reader who chose not to hide them.
+  public static func discordSpoilers(revealed: Set<String>, revealsAll: Bool = false) -> Self {
     var occurrenceCounts: [String: Int] = [:]
 
     return .init(patterns: [.discordSpoiler]) { token, attributes in
@@ -182,7 +183,7 @@ extension AttributedStringMarkdownParser.SyntaxExtension {
 
       attributes.textual.preStyledLink = true
 
-      guard revealed.contains(spoilerRevealKey(index: index, text: content)) else {
+      guard revealsAll || revealed.contains(spoilerRevealKey(index: index, text: content)) else {
         attributes.backgroundColor = .gray
         attributes.foregroundColor = .gray
         return AttributedString(content, attributes: attributes)

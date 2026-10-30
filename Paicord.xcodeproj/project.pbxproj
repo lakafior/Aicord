@@ -93,6 +93,7 @@
 		AA63EB722EA711D000A5F21D /* EmbedsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA63EB712EA711CD00A5F21D /* EmbedsView.swift */; };
 		AA63EB762EA712D900A5F21D /* ReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA63EB752EA712D500A5F21D /* ReactionsView.swift */; };
 		AA67FD132EF4A792004676A1 /* InputVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA67FD122EF4A792004676A1 /* InputVM.swift */; };
+		AC4A7E0000000000000000C2 /* Emoticons.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC4A7E0000000000000000C1 /* Emoticons.swift */; };
 		AA67FD152EF4A7F4004676A1 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */; };
 		AA6C77472F1A6B9E006BF281 /* AttachmentViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6C77462F1A6B95006BF281 /* AttachmentViewer.swift */; };
 		AA70EFB12EA1B3BD00344D98 /* InputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA70EFB02EA1B3BA00344D98 /* InputBar.swift */; };
@@ -243,6 +244,7 @@
 		AA63EB712EA711CD00A5F21D /* EmbedsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbedsView.swift; sourceTree = "<group>"; };
 		AA63EB752EA712D500A5F21D /* ReactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionsView.swift; sourceTree = "<group>"; };
 		AA67FD122EF4A792004676A1 /* InputVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputVM.swift; sourceTree = "<group>"; };
+		AC4A7E0000000000000000C1 /* Emoticons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Emoticons.swift; sourceTree = "<group>"; };
 		AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		AA6C77462F1A6B95006BF281 /* AttachmentViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentViewer.swift; sourceTree = "<group>"; };
 		AA70EFB02EA1B3BA00344D98 /* InputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputBar.swift; sourceTree = "<group>"; };
@@ -624,6 +626,7 @@
 				AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */,
 				AA9F7A522EF96308008BB452 /* AttachmentBar.swift */,
 				AA67FD122EF4A792004676A1 /* InputVM.swift */,
+				AC4A7E0000000000000000C1 /* Emoticons.swift */,
 			);
 			path = Input;
 			sourceTree = "<group>";
@@ -1145,6 +1148,7 @@
 				AA9D26B12EC95EE4006071FE /* FlowLayout.swift in Sources */,
 				AA47AF212EDEF070008A50C9 /* DevicesSection.swift in Sources */,
 				AA67FD132EF4A792004676A1 /* InputVM.swift in Sources */,
+				AC4A7E0000000000000000C2 /* Emoticons.swift in Sources */,
 				AA1878F32E81A30C009C7E40 /* GuildView.swift in Sources */,
 				AA63EB762EA712D900A5F21D /* ReactionsView.swift in Sources */,
 				AABED5A22E7F4950005BDD63 /* DiscordDataStoreProtocol.swift in Sources */,

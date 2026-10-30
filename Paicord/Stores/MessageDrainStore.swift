@@ -115,10 +115,15 @@ class MessageDrainStore: DiscordDataStore {
     }
   }
 
+  /// Text as sent, with emoticons turned into emoji when Discord's setting is on.
+  private func outgoing(_ content: String) -> String {
+    gateway?.settings.convertsEmoticons == true ? Emoticons.convert(content) : content
+  }
+
   private func _editMessage(_ vm: ChatView.InputBar.InputVM, in channel: ChannelSnowflake) {
     guard let gateway = gateway?.gateway else { return }
     guard case .edit(let origMessage) = vm.messageAction else { return }
-    let message = Payloads.EditMessage.init(content: vm.content)
+    let message = Payloads.EditMessage.init(content: outgoing(vm.content))
 
     Task {
       do {
@@ -143,7 +148,7 @@ class MessageDrainStore: DiscordDataStore {
     // set our message up
     let nonce: MessageSnowflake = try! .makeFake(date: .now)
     var message = Payloads.CreateMessage(
-      content: vm.content,
+      content: outgoing(vm.content),
       nonce: .string(nonce.rawValue)
     )
     if case .reply(let replyMsg, let mention) = vm.messageAction {

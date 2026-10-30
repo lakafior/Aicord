@@ -392,6 +392,7 @@ struct MarkdownText: View {
     let channelCount: Int?
     let themeID: String
     let revealedSpoilers: Set<String>
+    let revealsAllSpoilers: Bool
   }
 
   private var revision: RevisionSignature {
@@ -401,8 +402,13 @@ struct MarkdownText: View {
       roleCount: guildStore?.roleCount,
       channelCount: guildStore?.channels.count,
       themeID: theme.id,
-      revealedSpoilers: revealedSpoilers
+      revealedSpoilers: revealedSpoilers,
+      revealsAllSpoilers: revealsAllSpoilers
     )
+  }
+
+  private var revealsAllSpoilers: Bool {
+    gw.settings.revealsSpoilers(in: channelStore)
   }
 
   private var syntaxExtensions: [AttributedStringMarkdownParser.SyntaxExtension] {
@@ -423,7 +429,7 @@ struct MarkdownText: View {
     extensions.append(.discordUnicodeEmoji)
     extensions.append(.discordTimestamps)
     extensions.append(.discordNoEmbedLinks)
-    extensions.append(.discordSpoilers(revealed: revealedSpoilers))
+    extensions.append(.discordSpoilers(revealed: revealedSpoilers, revealsAll: revealsAllSpoilers))
     extensions.append(.discordSubtext)
     return extensions
   }

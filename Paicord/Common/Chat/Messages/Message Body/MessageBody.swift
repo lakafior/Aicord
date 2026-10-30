@@ -97,7 +97,22 @@ extension MessageCell {
           by: mediaFilter.redaction(for:)
         )
         if let shown = attachments[.show] {
-          AttachmentsView(message: message, attachments: shown)
+          // Spoiler-marked ones covered unless the Chat setting reveals them
+          let isCovered = { (attachment: DiscordChannel.Message.Attachment) in
+            !revealsSpoilers
+              && (attachment.flags?.contains(.isSpoiler) == true
+                || attachment.filename.hasPrefix("SPOILER_"))
+          }
+          let spoilers = shown.filter(isCovered)
+          let plain = shown.filter { !isCovered($0) }
+          if !plain.isEmpty {
+            AttachmentsView(message: message, attachments: plain)
+          }
+          if !spoilers.isEmpty {
+            SensitiveMediaCover(title: "Spoiler", systemImage: "eye.trianglebadge.exclamationmark") {
+              AttachmentsView(message: message, attachments: spoilers)
+            }
+          }
         }
         if let blurred = attachments[.blur] {
           SensitiveMediaCover {
@@ -105,9 +120,9 @@ extension MessageCell {
           }
         }
 
-        // Embeds
+        // Embeds, left out or without link media per the Chat settings
         let embeds = Dictionary(
-          grouping: message.embeds ?? [],
+          grouping: visibleEmbeds,
           by: mediaFilter.redaction(for:)
         )
         if let shown = embeds[.show] {
@@ -131,7 +146,7 @@ extension MessageCell {
 
         // Reactions
         let reactions = channelStore.reactions[message.id, default: [:]]
-        if !reactions.isEmpty {
+        if !reactions.isEmpty, settings?.rendersReactions ?? true {
           ReactionsView(reactions: reactions)
         }
 
@@ -161,10 +176,29 @@ extension MessageCell {
       .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private var settings: SettingsStore? { channelStore.gateway?.settings }
+
+    private var revealsSpoilers: Bool {
+      settings?.revealsSpoilers(in: channelStore) ?? false
+    }
+
+    /// Embeds after Discord's "show embeds" and "show media posted as links".
+    private var visibleEmbeds: [Embed] {
+      guard settings?.rendersEmbeds ?? true else { return [] }
+      guard settings?.inlinesEmbedMedia ?? true else {
+        return (message.embeds ?? []).filter { embed in
+          embed.type.map { !Self.linkMediaKinds.contains($0) } ?? true
+        }
+      }
+      return message.embeds ?? []
+    }
+
+    private static let linkMediaKinds: [Embed.Kind] = [.image, .gifv, .video]
+
     /// Determines if the message content should be hidden based on things like if the embed is a gif.
     var messageContentHidden: Bool {
-      if message.embeds?.count == 1,  // only one embed
-        let embed = message.embeds?.first,  // get that first embed
+      if visibleEmbeds.count == 1,  // only one embed shown
+        let embed = visibleEmbeds.first,  // get that first embed
         [Embed.Kind.image, .gifv, .video].contains(embed.type),  // is of type image, gifv or video
         let url = embed.url,
         message.content?.trimmingCharacters(in: .whitespacesAndNewlines) == url  // ensure content is just the url
