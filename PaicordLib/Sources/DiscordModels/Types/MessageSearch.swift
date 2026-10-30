@@ -15,6 +15,10 @@ public struct MessageSearchQuery: Sendable {
   public var has: [String]
   public var offset: Int
   public var includeNSFW: Bool
+  /// Only messages after this ID; see ``boundary(for:)`` to search from a date.
+  public var minID: MessageSnowflake?
+  /// Only messages before this ID.
+  public var maxID: MessageSnowflake?
 
   public init(
     content: String? = nil,
@@ -22,7 +26,9 @@ public struct MessageSearchQuery: Sendable {
     authorIDs: [UserSnowflake] = [],
     has: [String] = [],
     offset: Int = 0,
-    includeNSFW: Bool = true
+    includeNSFW: Bool = true,
+    minID: MessageSnowflake? = nil,
+    maxID: MessageSnowflake? = nil
   ) {
     self.content = content
     self.channelIDs = channelIDs
@@ -30,6 +36,14 @@ public struct MessageSearchQuery: Sendable {
     self.has = has
     self.offset = offset
     self.includeNSFW = includeNSFW
+    self.minID = minID
+    self.maxID = maxID
+  }
+
+  /// The lowest snowflake Discord could have made at `date`, for `min_id` and
+  /// `max_id`: messages from that moment on compare greater or equal.
+  public static func boundary(for date: Date) -> MessageSnowflake? {
+    try? MessageSnowflake.makeFake(date: date)
   }
 
   public var queries: [(String, String?)] {
@@ -38,6 +52,8 @@ public struct MessageSearchQuery: Sendable {
     items += channelIDs.map { ("channel_id", $0.rawValue) }
     items += authorIDs.map { ("author_id", $0.rawValue) }
     items += has.map { ("has", $0) }
+    if let minID { items.append(("min_id", minID.rawValue)) }
+    if let maxID { items.append(("max_id", maxID.rawValue)) }
     if offset > 0 { items.append(("offset", String(offset))) }
     if includeNSFW { items.append(("include_nsfw", "true")) }
     return items

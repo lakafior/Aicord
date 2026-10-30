@@ -3140,6 +3140,31 @@ public enum Payloads {
     public func validate() -> [ValidationFailure] {}
   }
 
+  /// Only `accepted` is open to regular accounts.
+  /// https://docs.discord.food/resources/channel#update-message-request
+  public struct UpdateMessageRequest: Sendable, Encodable, ValidatablePayload {
+    public var consent_status: MessageRequestConsentStatus
+
+    public init(consent_status: MessageRequestConsentStatus = .accepted) {
+      self.consent_status = consent_status
+    }
+
+    public func validate() -> [ValidationFailure] {}
+  }
+
+  /// https://docs.discord.food/resources/channel#batch-reject-message-requests
+  public struct BatchRejectMessageRequests: Sendable, Encodable, ValidatablePayload {
+    public var channel_ids: [ChannelSnowflake]
+
+    public init(channel_ids: [ChannelSnowflake]) {
+      self.channel_ids = channel_ids
+    }
+
+    public func validate() -> [ValidationFailure] {
+      validateElementCountInRange(channel_ids, min: 1, max: 50, name: "channel_ids")
+    }
+  }
+
   /// https://docs.discord.food/topics/read-state#bulk-acknowledge
   public struct BulkAckReadStates: Sendable, Encodable, ValidatablePayload {
     public var read_states: [ReadState]

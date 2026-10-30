@@ -50,6 +50,12 @@ public enum UserAPIEndpoint: Endpoint {
   case modifyUserGuildSettings(guildId: GuildSnowflake?)
   case bulkAckReadStates
 
+  // MARK: - Message Requests
+  case updateMessageRequest(channelId: ChannelSnowflake)
+  case rejectMessageRequest(channelId: ChannelSnowflake)
+  case batchRejectMessageRequests
+  case getMessageRequestSupplementalData
+
   // MARK: - Directory Entries
 
   // MARK: - Discovery
@@ -359,6 +365,14 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/guilds/\(guildId?.rawValue ?? "@me")/settings"
     case .bulkAckReadStates:
       suffix = "read-states/ack-bulk"
+    case .updateMessageRequest(let channelId):
+      suffix = "channels/\(channelId.rawValue)/recipients/@me"
+    case .rejectMessageRequest(let channelId):
+      suffix = "channels/\(channelId.rawValue)/recipients/@me"
+    case .batchRejectMessageRequests:
+      suffix = "channels/recipients/@me/batch-reject"
+    case .getMessageRequestSupplementalData:
+      suffix = "users/@me/message-requests/supplemental-data"
 
     // MARK: - Remote Authentication
     case .createRemoteAuthSession:
@@ -541,6 +555,14 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/guilds/\(guildId?.rawValue ?? "@me")/settings"
     case .bulkAckReadStates:
       suffix = "read-states/ack-bulk"
+    case .updateMessageRequest(let channelId):
+      suffix = "channels/\(channelId.rawValue)/recipients/@me"
+    case .rejectMessageRequest(let channelId):
+      suffix = "channels/\(channelId.rawValue)/recipients/@me"
+    case .batchRejectMessageRequests:
+      suffix = "channels/recipients/@me/batch-reject"
+    case .getMessageRequestSupplementalData:
+      suffix = "users/@me/message-requests/supplemental-data"
     case .createRemoteAuthSession:
       suffix = "users/@me/remote-auth"
     case .finishRemoteAuthSession:
@@ -627,6 +649,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .deleteOwnConnection: return .DELETE
     case .modifyUserGuildSettings: return .PATCH
     case .bulkAckReadStates: return .POST
+    case .updateMessageRequest: return .PUT
+    case .rejectMessageRequest: return .DELETE
+    case .batchRejectMessageRequests: return .PUT
+    case .getMessageRequestSupplementalData: return .GET
     case .createRemoteAuthSession: return .POST
     case .finishRemoteAuthSession: return .POST
     case .cancelRemoteAuthSession: return .POST
@@ -703,6 +729,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyOwnConnection, .deleteOwnConnection: return true
     case .modifyUserGuildSettings: return true
     case .bulkAckReadStates: return true
+    case .updateMessageRequest: return true
+    case .rejectMessageRequest: return true
+    case .batchRejectMessageRequests: return true
+    case .getMessageRequestSupplementalData: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -779,6 +809,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyOwnConnection, .deleteOwnConnection: return true
     case .modifyUserGuildSettings: return true
     case .bulkAckReadStates: return true
+    case .updateMessageRequest: return true
+    case .rejectMessageRequest: return true
+    case .batchRejectMessageRequests: return true
+    case .getMessageRequestSupplementalData: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -887,6 +921,10 @@ public enum UserAPIEndpoint: Endpoint {
       return [type.rawValue, id]
     case .modifyUserGuildSettings(let guildId): return [guildId?.rawValue ?? "@me"]
     case .bulkAckReadStates: return []
+    case .updateMessageRequest(let channelId): return [channelId.rawValue]
+    case .rejectMessageRequest(let channelId): return [channelId.rawValue]
+    case .batchRejectMessageRequests: return []
+    case .getMessageRequestSupplementalData: return []
     case .createRemoteAuthSession: return []
     case .finishRemoteAuthSession: return []
     case .cancelRemoteAuthSession: return []
@@ -974,6 +1012,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .deleteOwnConnection: return 136
     case .modifyUserGuildSettings: return 137
     case .bulkAckReadStates: return 138
+    case .updateMessageRequest: return 139
+    case .rejectMessageRequest: return 140
+    case .batchRejectMessageRequests: return 141
+    case .getMessageRequestSupplementalData: return 142
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -1111,6 +1153,12 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyUserGuildSettings(let guildId):
       return "modifyUserGuildSettings(guildId: \(String(describing: guildId)))"
     case .bulkAckReadStates: return "bulkAckReadStates"
+    case .updateMessageRequest(let channelId):
+      return "updateMessageRequest(channelId: \(channelId.rawValue))"
+    case .rejectMessageRequest(let channelId):
+      return "rejectMessageRequest(channelId: \(channelId.rawValue))"
+    case .batchRejectMessageRequests: return "batchRejectMessageRequests"
+    case .getMessageRequestSupplementalData: return "getMessageRequestSupplementalData"
     case .createRemoteAuthSession: return "createRemoteAuthSession"
     case .finishRemoteAuthSession: return "finishRemoteAuthSession"
     case .cancelRemoteAuthSession: return "cancelRemoteAuthSession"

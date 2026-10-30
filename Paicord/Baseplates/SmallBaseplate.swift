@@ -116,9 +116,12 @@ struct SmallBaseplate: View {
   /// Unread direct messages, like Discord's own badge. Server mentions are counted
   /// per channel and can pile up into thousands, so they stay in the Mentions list.
   var messagesBadge: Int {
-    gw.user.privateChannels.values.reduce(0) { total, channel in
-      total + gw.readStates.mentionCount(channelId: channel.id)
-    }
+    // requests and spam have their own folders and don't add to the badge
+    gw.user.privateChannels.values
+      .filter { !$0.isPendingMessageRequest && !$0.isSpam }
+      .reduce(0) { total, channel in
+        total + gw.readStates.mentionCount(channelId: channel.id)
+      }
   }
 
   /// Home lists servers only; with no server chosen it falls back to the last one.

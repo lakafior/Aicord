@@ -111,6 +111,12 @@ struct MessageCell: View {
     .background(Color.almostClear)
     .padding(.horizontal, 10)
     .padding(.vertical, 2)
+    // a message opened from Search or a forward's source
+    .background(Color.accentColor.opacity(channelStore.highlightedMessageID == message.id ? 0.2 : 0))
+    .background(alignment: .leading) {
+      Color.accentColor.opacity(channelStore.highlightedMessageID == message.id ? 1 : 0)
+        .frame(maxWidth: 3)
+    }
     .background(Color(hexadecimal6: 0xcc8735).opacity(userMentioned && !isDeleted ? 0.05 : 0))
     .background(alignment: .leading) {
       Color(hexadecimal6: 0xce9c5c).opacity(userMentioned && !isDeleted ? 1 : 0)

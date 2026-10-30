@@ -32,7 +32,9 @@ struct MessagesView: View {
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
 
         switch page {
-        case .messages: conversations
+        case .messages:
+          if searchText.isEmpty { folders }
+          conversations
         case .mentions: MentionsList(searchText: searchText, open: open(guild:channel:))
         }
       }
@@ -55,6 +57,9 @@ struct MessagesView: View {
           }
         }
       }
+      .navigationDestination(for: MessageFolder.self) { folder in
+        MessageFolderView(folder: folder, open: open(channel:))
+      }
       .sheet(isPresented: $composing) {
         NewMessageSheet(open: open(user:))
       }
@@ -66,8 +71,11 @@ struct MessagesView: View {
 
   // MARK: Conversations
 
+  /// Your conversations; requests and spam have their own folders.
   var channels: [DiscordChannel] {
-    let all = gw.user.privateChannels.values.sorted {
+    let all = gw.user.privateChannels.values
+      .filter { !$0.isPendingMessageRequest && !$0.isSpam }
+      .sorted {
       ($0.last_message_id?.rawValue ?? $0.id.rawValue)
         .compare($1.last_message_id?.rawValue ?? $1.id.rawValue, options: .numeric)
         == .orderedDescending
@@ -98,15 +106,38 @@ struct MessagesView: View {
     }
   }
 
+  /// Rows for the Requests and Spam folders above the conversations.
+  var folders: some View {
+    Section {
+      ForEach(MessageFolder.allCases) { folder in
+        let count =
+          folder == .requests ? gw.user.messageRequests().count : gw.user.spamChannels.count
+        NavigationLink(value: folder) {
+          Label {
+            HStack {
+              Text(folder.title)
+              Spacer()
+              if count > 0 {
+                Text("\(count)")
+                  .foregroundStyle(.secondary)
+                  .monospacedDigit()
+              }
+            }
+          } icon: {
+            Image(systemName: folder.symbol)
+          }
+        }
+      }
+    }
+  }
+
   static func title(of channel: DiscordChannel) -> String {
     channel.name
       ?? channel.recipients?.map { $0.global_name ?? $0.username }.joined(separator: ", ")
       ?? String(localized: "Unknown Conversation")
   }
 
-  var pendingRequests: Int {
-    gw.user.relationships.values.filter { $0.type == .incomingRequest }.count
-  }
+  var pendingRequests: Int { gw.user.incomingFriendRequestCount }
 
   // MARK: Opening
 
@@ -206,10 +237,25 @@ struct ConversationRow: View {
 
 // MARK: - Friends
 
+extension CurrentUserStore {
+  /// Incoming friend requests worth a badge: not from people you ignored, not
+  /// ones Discord marked as likely spam.
+  var incomingFriendRequestCount: Int {
+    relationships.values.filter {
+      $0.type == .incomingRequest && !$0.user_ignored && $0.is_spam_request != true
+    }.count
+  }
+}
+
 struct FriendsList: View {
   @Environment(\.gateway) var gw
+  @Environment(\.appState) var appState
+  var page: FriendsPage
   var searchText: String
   var open: (UserSnowflake) -> Void
+
+  /// The request waiting for confirmation; the sheet shows the dialog.
+  @Binding var pendingRemoval: DiscordRelationship?
 
   func matches(_ relationship: DiscordRelationship) -> Bool {
     guard !searchText.isEmpty else { return true }
@@ -230,35 +276,34 @@ struct FriendsList: View {
     }
   }
 
+  /// Requests newest first, like Discord.
+  func byDate(_ list: [DiscordRelationship]) -> [DiscordRelationship] {
+    list.sorted { ($0.since?.date ?? .distantPast) > ($1.since?.date ?? .distantPast) }
+  }
+
   func name(of relationship: DiscordRelationship) -> String {
     relationship.displayName
   }
 
   var body: some View {
     let all = gw.user.relationships.values.filter(matches)
-    let friends = all.filter { $0.type == .friend }
+    switch page {
+    case .friends: friends(all.filter { $0.type == .friend })
+    case .incoming: incoming(all.filter { $0.type == .incomingRequest })
+    case .sent: sent(all.filter { $0.type == .outgoingRequest })
+    }
+  }
+
+  @ViewBuilder
+  func friends(_ friends: [DiscordRelationship]) -> some View {
     let online = sorted(friends.filter { isOnline($0.id) })
     let offline = sorted(friends.filter { !isOnline($0.id) })
-    let pending = sorted(all.filter { $0.type == .incomingRequest || $0.type == .outgoingRequest })
-
-    if friends.isEmpty && pending.isEmpty {
+    if friends.isEmpty {
       ContentUnavailableView(
         searchText.isEmpty ? "No Friends Yet" : "No Results",
         systemImage: "person.2"
       )
       .listRowBackground(Color.clear)
-    }
-    if !pending.isEmpty {
-      Section("Pending — \(pending.count)") {
-        ForEach(pending, id: \.id) { relationship in
-          FriendRow(
-            relationship: relationship,
-            subtitle: relationship.type == .incomingRequest
-              ? String(localized: "Incoming friend request")
-              : String(localized: "Outgoing friend request")
-          )
-        }
-      }
     }
     if !online.isEmpty {
       Section("Online — \(online.count)") {
@@ -282,6 +327,153 @@ struct FriendsList: View {
     }
   }
 
+  @ViewBuilder
+  func incoming(_ requests: [DiscordRelationship]) -> some View {
+    let likelySpam = byDate(requests.filter { $0.is_spam_request == true || $0.user_ignored })
+    let regular = byDate(requests.filter { $0.is_spam_request != true && !$0.user_ignored })
+    if requests.isEmpty {
+      ContentUnavailableView(
+        searchText.isEmpty ? "No Friend Requests" : "No Results",
+        systemImage: "person.badge.plus",
+        description: searchText.isEmpty ? Text("Requests people send you show up here.") : nil
+      )
+      .listRowBackground(Color.clear)
+      .listRowSeparator(.hidden)
+    }
+    if !regular.isEmpty {
+      Section("Received — \(regular.count)") {
+        ForEach(regular, id: \.id) { incomingRow($0) }
+      }
+    }
+    if !likelySpam.isEmpty {
+      Section {
+        ForEach(likelySpam, id: \.id) { incomingRow($0) }
+      } header: {
+        Text("Ignored or Likely Spam — \(likelySpam.count)")
+      } footer: {
+        Text("These don't count towards the badge.")
+      }
+    }
+  }
+
+  @ViewBuilder
+  func sent(_ requests: [DiscordRelationship]) -> some View {
+    if requests.isEmpty {
+      ContentUnavailableView(
+        searchText.isEmpty ? "No Sent Requests" : "No Results",
+        systemImage: "paperplane",
+        description: searchText.isEmpty
+          ? Text("Friend requests you send stay here until they're accepted.") : nil
+      )
+      .listRowBackground(Color.clear)
+      .listRowSeparator(.hidden)
+    } else {
+      Section("Sent — \(requests.count)") {
+        ForEach(byDate(requests), id: \.id) { relationship in
+          FriendRow(relationship: relationship, subtitle: sentLine(for: relationship)) {
+            RequestButton(title: "Cancel Request", symbol: "xmark", role: .destructive) {
+              pendingRemoval = relationship
+            }
+          }
+          .swipeActions {
+            Button("Cancel", systemImage: "xmark", role: .destructive) {
+              pendingRemoval = relationship
+            }
+          }
+        }
+      }
+    }
+  }
+
+  func incomingRow(_ relationship: DiscordRelationship) -> some View {
+    FriendRow(relationship: relationship, subtitle: receivedLine(for: relationship)) {
+      RequestButton(title: "Ignore", symbol: "xmark", role: .destructive) {
+        pendingRemoval = relationship
+      }
+      RequestButton(title: "Accept", symbol: "checkmark", role: nil) {
+        Task { await accept(relationship) }
+      }
+    }
+    .swipeActions(edge: .leading) {
+      Button("Accept", systemImage: "checkmark") {
+        Task { await accept(relationship) }
+      }
+      .tint(.green)
+    }
+    .swipeActions(edge: .trailing) {
+      Button("Ignore", systemImage: "xmark", role: .destructive) {
+        pendingRemoval = relationship
+      }
+    }
+  }
+
+  func receivedLine(for relationship: DiscordRelationship) -> String {
+    guard let since = relationship.since?.date else {
+      return String(localized: "Incoming friend request")
+    }
+    return String(localized: "Sent you a request \(since.formatted(.relative(presentation: .named)))")
+  }
+
+  func sentLine(for relationship: DiscordRelationship) -> String {
+    guard let since = relationship.since?.date else {
+      return String(localized: "Outgoing friend request")
+    }
+    return String(localized: "Sent \(since.formatted(.relative(presentation: .named)))")
+  }
+
+  /// Creating the relationship without a type accepts the pending request.
+  func accept(_ relationship: DiscordRelationship) async {
+    do {
+      try await gw.client.createRelationship(
+        userID: relationship.id,
+        payload: .init(type: nil)
+      ).guardSuccess()
+    } catch {
+      appState.error = error
+    }
+  }
+
+  /// Declines an incoming request or cancels a sent one; Relationship Remove follows.
+  static func remove(_ relationship: DiscordRelationship, gw: GatewayStore, appState: PaicordAppState) async {
+    do {
+      try await gw.client.removeRelationship(userID: relationship.id).guardSuccess()
+      gw.user.relationships.removeValue(forKey: relationship.id)
+    } catch {
+      appState.error = error
+    }
+  }
+
+  /// Confirms before a request goes, like Discord.
+  struct RemovalDialog: ViewModifier {
+    @Environment(\.gateway) var gw
+    @Environment(\.appState) var appState
+    @Binding var pending: DiscordRelationship?
+
+    func body(content: Content) -> some View {
+      content.confirmationDialog(
+        pending?.type == .outgoingRequest
+          ? "Cancel your friend request to \(pending?.displayName ?? "")?"
+          : "Ignore the friend request from \(pending?.displayName ?? "")?",
+        isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }),
+        titleVisibility: .visible,
+        presenting: pending
+      ) { relationship in
+        Button(
+          relationship.type == .outgoingRequest ? "Cancel Request" : "Ignore Request",
+          role: .destructive
+        ) {
+          Task { await FriendsList.remove(relationship, gw: gw, appState: appState) }
+        }
+      } message: { relationship in
+        Text(
+          relationship.type == .outgoingRequest
+            ? "They won't be told. You can send another request later."
+            : "They won't be told. They can send another request later."
+        )
+      }
+    }
+  }
+
   /// "Playing …" or the custom status, like Discord's "Active Now".
   func activityLine(for id: UserSnowflake) -> String? {
     guard let activities = gw.user.presence(id)?.activities else { return nil }
@@ -298,9 +490,44 @@ struct FriendsList: View {
   }
 }
 
-struct FriendRow: View {
+enum FriendsPage: Hashable, CaseIterable {
+  case friends, incoming, sent
+}
+
+/// The round accept, ignore and cancel buttons on a request row.
+private struct RequestButton: View {
+  var title: LocalizedStringKey
+  var symbol: String
+  var role: ButtonRole?
+  var action: () -> Void
+
+  var body: some View {
+    Button(role: role, action: action) {
+      Image(systemName: symbol)
+        .font(.body.weight(.semibold))
+        .frame(width: 34, height: 34)
+        .foregroundStyle(role == .destructive ? AnyShapeStyle(.red) : AnyShapeStyle(.green))
+        .background(.secondary.opacity(0.15), in: .circle)
+    }
+    .buttonStyle(.borderless)
+    .accessibilityLabel(Text(title))
+  }
+}
+
+struct FriendRow<Accessory: View>: View {
   var relationship: DiscordRelationship
   var subtitle: String?
+  @ViewBuilder var accessory: () -> Accessory
+
+  init(
+    relationship: DiscordRelationship,
+    subtitle: String?,
+    @ViewBuilder accessory: @escaping () -> Accessory
+  ) {
+    self.relationship = relationship
+    self.subtitle = subtitle
+    self.accessory = accessory
+  }
 
   var body: some View {
     HStack(spacing: 12) {
@@ -317,30 +544,63 @@ struct FriendRow: View {
           .lineLimit(1)
       }
       Spacer(minLength: 0)
+      accessory()
     }
     .contentShape(.rect)
   }
 }
 
+extension FriendRow where Accessory == EmptyView {
+  init(relationship: DiscordRelationship, subtitle: String?) {
+    self.init(relationship: relationship, subtitle: subtitle) { EmptyView() }
+  }
+}
+
 /// Friends in a sheet, opened from the toolbar.
 struct FriendsSheet: View {
+  var incoming: Int { gw.user.incomingFriendRequestCount }
+
   @Environment(\.dismiss) var dismiss
   var open: (UserSnowflake) -> Void
   @State var searchText = ""
+  @State var page: FriendsPage = .friends
+  @State var pendingRemoval: DiscordRelationship? = nil
+  @Environment(\.gateway) var gw
 
   var body: some View {
     NavigationStack {
       List {
-        FriendsList(searchText: searchText) { user in
-          dismiss()
-          open(user)
+        Picker("Show", selection: $page) {
+          Text("Friends").tag(FriendsPage.friends)
+          Text(incoming > 0 ? "Incoming (\(incoming))" : "Incoming").tag(FriendsPage.incoming)
+          Text("Sent").tag(FriendsPage.sent)
         }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+
+        FriendsList(
+          page: page,
+          searchText: searchText,
+          open: { user in
+            dismiss()
+            open(user)
+          },
+          pendingRemoval: $pendingRemoval
+        )
       }
+      .modifier(FriendsList.RemovalDialog(pending: $pendingRemoval))
+      .sheetErrorAlert()
       .navigationTitle("Friends")
       #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
       #endif
       .searchable(text: $searchText, prompt: "Find a friend")
+      .onAppear {
+        // open on the requests when there are some to answer
+        if incoming > 0 { page = .incoming }
+      }
       .toolbar {
         ToolbarItem(placement: .confirmationAction) {
           Button("Done") { dismiss() }

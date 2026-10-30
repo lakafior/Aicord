@@ -130,11 +130,15 @@ struct ChatView: View {
       .frame(maxHeight: .infinity)
       .overlay(alignment: .bottomTrailing) {
         let lastMessages = orderedMessages.suffix(10).map { $0.id }
-        if let current = currentScrollPosition,
-          !lastMessages.contains(current)
+        if !vm.hasLatestMessages
+          || currentScrollPosition.map({ !lastMessages.contains($0) }) == true
         {
           Button(action: {
-            vm.requestScrollToBottom(immediate: true)
+            if vm.hasLatestMessages {
+              vm.requestScrollToBottom(immediate: true)
+            } else {
+              vm.returnToLatest()
+            }
           }) {
             Image(systemName: "arrow.down")
               .tint(.primary)
@@ -148,7 +152,12 @@ struct ChatView: View {
         }
       }
 
-      if vm.hasPermission(.sendMessages) {
+      if let channel = gw.user.privateChannels[vm.channelId],
+        channel.isPendingMessageRequest || channel.isSpam
+      {
+        // replying would accept the request, so ask first
+        MessageRequestBar(channel: channel)
+      } else if vm.hasPermission(.sendMessages) {
         InputBar(vm: vm)
           .id(vm.channelId)
       } else {
@@ -178,7 +187,11 @@ struct ChatView: View {
         }
         .sharedBackgroundVisibility(.hidden)
       #endif
-      if vm.channel?.type == .dm || vm.channel?.type == .groupDm {
+      // no calls before a request is accepted
+      if vm.channel?.type == .dm || vm.channel?.type == .groupDm,
+        gw.user.privateChannels[vm.channelId].map({ !$0.isPendingMessageRequest && !$0.isSpam })
+          ?? true
+      {
         ToolbarItem(placement: .primaryAction) {
           DMCallButton(channelID: vm.channelId)
         }
@@ -214,6 +227,12 @@ struct ChatView: View {
       }
     }
     .onChange(of: currentScrollPosition) { acknowledgeLatestIfVisible() }
+    // a jump from Search or a forward's source, for this channel
+    .task(id: appState.pendingJump) {
+      guard let jump = appState.pendingJump, jump.channelID == vm.channelId else { return }
+      appState.pendingJump = nil
+      await vm.jump(to: jump.messageID)
+    }
     .onChange(of: scenePhase) { acknowledgeLatestIfVisible() }
   }
 

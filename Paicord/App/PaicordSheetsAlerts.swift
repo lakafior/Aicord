@@ -60,3 +60,30 @@ struct PaicordSheetsAlerts: ViewModifier {
     }
   }
 }
+
+extension View {
+  /// The app's error alert, for sheets: the one at the root can't show above them.
+  func sheetErrorAlert() -> some View {
+    modifier(SheetErrorAlert())
+  }
+}
+
+private struct SheetErrorAlert: ViewModifier {
+  @Environment(\.appState) var appState
+
+  func body(content: Content) -> some View {
+    @Bindable var appState = appState
+    content.alert(
+      "Error",
+      isPresented: $appState.showingError,
+      actions: { Button("OK", role: .cancel) { appState.error = nil } },
+      message: {
+        if let error = appState.error as? DiscordHTTPErrorResponse {
+          Text(error.description)
+        } else {
+          Text(appState.error?.localizedDescription ?? String(localized: "An unknown error occurred."))
+        }
+      }
+    )
+  }
+}

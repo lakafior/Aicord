@@ -92,6 +92,14 @@ class CurrentUserStore: DiscordDataStore {
             handlePrivateChannelCreate(channel)
           }
 
+        // accepting a message request or moving one out of spam arrives here
+        case .channelUpdate(let channel):
+          if channel.type == .dm || channel.type == .groupDm,
+            privateChannels[channel.id] != nil
+          {
+            handlePrivateChannelUpdate(channel)
+          }
+
         case .channelDelete(let channel):
           if channel.type == .dm || channel.type == .groupDm {
             handlePrivateChannelDelete(channel)
@@ -192,6 +200,7 @@ class CurrentUserStore: DiscordDataStore {
 
   private func handleRelationshipAdd(_ relationship: DiscordRelationship) {
     relationships[relationship.id] = relationship
+    users[relationship.id, default: relationship.user].update(with: relationship.user)
   }
 
   private func handleRelationshipUpdate(
@@ -211,6 +220,13 @@ class CurrentUserStore: DiscordDataStore {
 
   private func handlePrivateChannelCreate(_ channel: DiscordChannel) {
     privateChannels[channel.id] = channel
+  }
+
+  private func handlePrivateChannelUpdate(_ channel: DiscordChannel) {
+    var updated = channel
+    // Channel Update isn't sent for new messages, so keep the newest we know of
+    updated.last_message_id = updated.last_message_id ?? privateChannels[channel.id]?.last_message_id
+    privateChannels[channel.id] = updated
   }
 
   private func handlePrivateChannelDelete(_ channel: DiscordChannel) {
