@@ -2234,14 +2234,45 @@ public enum Payloads {
   }
 
   /// https://discord.com/developers/docs/resources/guild#modify-current-member-json-params
+  /// https://docs.discord.food/resources/guild#modify-current-guild-member
+  /// A field left `nil` is not sent; `.some(nil)` sends `null` and clears it.
   public struct ModifyCurrentMember: Sendable, Encodable, ValidatablePayload {
-    public var nick: String?
+    public var nick: String??
+    public var pronouns: String??
+    /// Nitro only.
+    public var bio: String??
+    /// Nitro only.
+    public var avatar: ImageData??
 
-    public init(nick: String? = nil) {
+    public init(
+      nick: String?? = nil,
+      pronouns: String?? = nil,
+      bio: String?? = nil,
+      avatar: ImageData?? = nil
+    ) {
       self.nick = nick
+      self.pronouns = pronouns
+      self.bio = bio
+      self.avatar = avatar
     }
 
-    public func validate() -> [ValidationFailure] {}
+    enum CodingKeys: String, CodingKey {
+      case nick, pronouns, bio, avatar
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encodeNullable(nick, forKey: .nick)
+      try container.encodeNullable(pronouns, forKey: .pronouns)
+      try container.encodeNullable(bio, forKey: .bio)
+      try container.encodeNullable(avatar, forKey: .avatar)
+    }
+
+    public func validate() -> [ValidationFailure] {
+      validateCharacterCountDoesNotExceed(nick ?? nil, max: 32, name: "nick")
+      validateCharacterCountDoesNotExceed(pronouns ?? nil, max: 40, name: "pronouns")
+      validateCharacterCountDoesNotExceed(bio ?? nil, max: 190, name: "bio")
+    }
   }
 
   /// https://discord.com/developers/docs/resources/guild#create-guild-ban-json-params
@@ -2707,22 +2738,52 @@ public enum Payloads {
   }
 
   /// https://discord.com/developers/docs/resources/user#modify-current-user-json-params
+  /// https://docs.discord.food/resources/user#modify-current-user
+  /// A field left `nil` is not sent; `.some(nil)` sends `null` and clears it.
   public struct ModifyCurrentUser: Sendable, Encodable, ValidatablePayload {
-    public var username: String?
-    public var avatar: ImageData?
-    public var banner: ImageData?
+    public var global_name: String??
+    public var avatar: ImageData??
+    public var pronouns: String??
+    public var bio: String??
+    public var accent_color: DiscordColor??
+    /// Nitro only.
+    public var banner: ImageData??
 
     public init(
-      username: String? = nil,
-      avatar: ImageData? = nil,
-      banner: ImageData? = nil
+      global_name: String?? = nil,
+      avatar: ImageData?? = nil,
+      pronouns: String?? = nil,
+      bio: String?? = nil,
+      accent_color: DiscordColor?? = nil,
+      banner: ImageData?? = nil
     ) {
-      self.username = username
+      self.global_name = global_name
       self.avatar = avatar
+      self.pronouns = pronouns
+      self.bio = bio
+      self.accent_color = accent_color
       self.banner = banner
     }
 
-    public func validate() -> [ValidationFailure] {}
+    enum CodingKeys: String, CodingKey {
+      case global_name, avatar, pronouns, bio, accent_color, banner
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encodeNullable(global_name, forKey: .global_name)
+      try container.encodeNullable(avatar, forKey: .avatar)
+      try container.encodeNullable(pronouns, forKey: .pronouns)
+      try container.encodeNullable(bio, forKey: .bio)
+      try container.encodeNullable(accent_color, forKey: .accent_color)
+      try container.encodeNullable(banner, forKey: .banner)
+    }
+
+    public func validate() -> [ValidationFailure] {
+      validateCharacterCountDoesNotExceed(global_name ?? nil, max: 32, name: "global_name")
+      validateCharacterCountDoesNotExceed(pronouns ?? nil, max: 40, name: "pronouns")
+      validateCharacterCountDoesNotExceed(bio ?? nil, max: 190, name: "bio")
+    }
   }
 
   /// https://discord.com/developers/docs/resources/user#create-dm-json-params
@@ -3238,5 +3299,17 @@ public enum Payloads {
     }
 
     public func validate() -> [ValidationFailure] {}
+  }
+}
+
+
+extension KeyedEncodingContainer {
+  /// Skips an absent field and writes `null` for a present-but-empty one.
+  mutating func encodeNullable<T: Encodable>(_ value: T??, forKey key: Key) throws {
+    switch value {
+    case .none: break
+    case .some(.none): try encodeNil(forKey: key)
+    case .some(.some(let value)): try encode(value, forKey: key)
+    }
   }
 }

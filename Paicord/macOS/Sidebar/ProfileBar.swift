@@ -172,9 +172,6 @@ struct ProfileBar: View {
       .invisible,
     ]
 
-    /// Discord's own profile editor, until profile editing is built in.
-    static let editProfileURL = URL(string: "https://discord.com/settings/profiles")!
-
     @ViewBuilder
     static func statusItem(_ status: Gateway.Status) -> some View {
       let color: Color = {
@@ -334,6 +331,7 @@ struct ProfileBar: View {
 
   struct AccountInfoSection: View {
     @Environment(\.gateway) var gw
+    @State var editing = false
 
     var body: some View {
       Section {
@@ -342,10 +340,43 @@ struct ProfileBar: View {
             Text(created, format: .dateTime.day().month(.wide).year())
           }
         }
-        Link(destination: ProfileButtonPopout.editProfileURL) {
+        Button {
+          editing = true
+        } label: {
           Label("Edit Profile", systemImage: "pencil")
+            .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
+        .sheet(isPresented: $editing) {
+          ProfileEditorSheet()
         }
       }
+    }
+  }
+
+  /// The Profiles settings page on its own, for "Edit Profile".
+  struct ProfileEditorSheet: View {
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+      NavigationStack {
+        Form {
+          ProfileEditor()
+        }
+        .formStyle(.grouped)
+        .navigationTitle("Edit Profile")
+        #if os(iOS)
+          .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+          ToolbarItem(placement: .confirmationAction) {
+            Button("Done") { dismiss() }
+          }
+        }
+      }
+      #if os(macOS)
+        .frame(minWidth: 480, minHeight: 600)
+      #endif
     }
   }
 

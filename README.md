@@ -49,6 +49,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **New** · Working status picker (online, idle, do not disturb, invisible) and a custom status editor with emoji and "clear after", saved to your account so other clients see it
 - **New** · "Member since" on your profile, and Log Out next to account switching
 - **New** · Settings → My Account shows your account details and accounts, and Keybinds lists the shortcuts
+- **New** · Edit your profile in the app: display name, pronouns, about me and avatar, plus a nickname and pronouns per server
 - **New** · The iPhone Profile tab is a native list: header, custom status, status, about me, activity and accounts in one place
 - **New** · Custom rich presence ("Playing …", "Listening to …") with images, timers, party size and buttons, a live preview, and a "Share my activity" switch; your Discord application ID lives in Settings → My Account and is checked before saving
 - **New** · About Aicord in Settings with version, licence and a link to this repository
@@ -59,6 +60,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **Fixed** · Channel names in the title bar show in full instead of being cut off inside a glass pill
 - **Fixed** · Opening a channel or scrolling to the bottom now marks it as read
 - **Fixed** · Forum and media channels show an icon instead of a raw type name, and the macOS Settings window no longer cuts off section names
+- **Fixed** · Requests that Discord answers with a captcha or a 2FA prompt go through once you solve it, instead of failing with 403
 - **Fixed** · Changing account settings actually reaches Discord (the request went out empty), and settings changed on another device are merged in
 - **Fixed** · Incoming messages keep their slash command info, and a message reference without a type no longer breaks decoding
 - **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file

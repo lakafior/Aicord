@@ -407,35 +407,42 @@ public struct DefaultDiscordClient: DiscordClient {
       await _cookieStore.checkIncomingHeaders(headers)
 
       var challengeSolved = false
+      // Retries resend the original request headers plus any challenge answers.
+      // `headers` holds the response headers, which only drive rate limit waits.
+      var retryHeaders: HTTPHeaders? = nil
 
       if let captchaData = extractCaptchaChallenge(from: response) {
         if let captchaHeaderData = await captchaCallback?(captchaData) {
-          headers.replaceOrAdd(
+          var answer = retryHeaders ?? req.headers
+          answer.replaceOrAdd(
             name: "X-Captcha-Key",
             value: captchaHeaderData.solutionToken
           )
           if let sessionID = captchaHeaderData.captchaSessionId {
-            headers.replaceOrAdd(
+            answer.replaceOrAdd(
               name: "X-Captcha-Session-Id",
               value: sessionID
             )
           }
           if let rqToken = captchaHeaderData.captchaRqtoken {
-            headers.replaceOrAdd(
+            answer.replaceOrAdd(
               name: "X-Captcha-Rqtoken",
               value: rqToken
             )
           }
+          retryHeaders = answer
           challengeSolved = true
         }
       }
 
       if let mfaHeader = extractMFAVerification(from: response) {
         if let mfaResponse = await mfaCallback?(mfaHeader) {
-          headers.replaceOrAdd(
+          var answer = retryHeaders ?? req.headers
+          answer.replaceOrAdd(
             name: "X-Discord-MFA-Authorization",
             value: mfaResponse.token
           )
+          retryHeaders = answer
           challengeSolved = true
         }
       }
@@ -454,7 +461,7 @@ public struct DefaultDiscordClient: DiscordClient {
           identity,
           retriesSoFar,
           requestId,
-          headers
+          retryHeaders
         )
         headers = response.headers
       }
