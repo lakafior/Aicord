@@ -222,6 +222,28 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint))
   }
 
+  /// Searches messages in a guild. A 202 response means the guild is still being indexed.
+  /// https://docs.discord.food/resources/message#search-guild-messages
+  @inlinable
+  public func searchGuildMessages(
+    guildID: GuildSnowflake,
+    query: MessageSearchQuery
+  ) async throws -> DiscordClientResponse<MessageSearchResults> {
+    let endpoint = UserAPIEndpoint.searchGuildMessages(guildId: guildID)
+    return try await self.send(request: .init(to: endpoint, queries: query.queries))
+  }
+
+  /// Searches messages in a DM, group DM or guild channel.
+  /// https://docs.discord.food/resources/message#search-channel-messages
+  @inlinable
+  public func searchChannelMessages(
+    channelID: ChannelSnowflake,
+    query: MessageSearchQuery
+  ) async throws -> DiscordClientResponse<MessageSearchResults> {
+    let endpoint = UserAPIEndpoint.searchChannelMessages(channelId: channelID)
+    return try await self.send(request: .init(to: endpoint, queries: query.queries))
+  }
+
   /// Returns the public RPC details of an application (name, icon). Needs no authorization,
   /// so it doubles as a check that an application ID exists.
   /// https://docs.discord.food/resources/application#get-application-rpc

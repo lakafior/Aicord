@@ -35,6 +35,11 @@ class GuildStore: DiscordDataStore {
     memberBoxes[id]
   }
 
+  /// Members loaded so far (member list, chunks, messages), for local search.
+  var loadedMembers: [Guild.PartialMember] {
+    memberBoxes.values.map(\.value)
+  }
+
   /// Number of stored members
   var memberCount: Int {
     memberBoxes.count

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92981EF5B411046392600481 /* RichPresence.swift */; };
+		3D58D54EDDCE8486AAB0AA73 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB88FC1D519531963FD04B31 /* SearchView.swift */; };
 		9E08D02F0DF3EA41E426DA50 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E84D65FC5165C77155CF85BB /* AppIcon.icon */; };
 		571AE5B12FFD7726006D609C /* ObservableBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571AE5B02FFD7726006D609C /* ObservableBox.swift */; };
 		5724CD6F2E733D0E00931FEF /* MFASheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5724CD6E2E733D0900931FEF /* MFASheet.swift */; };
@@ -303,6 +304,7 @@
 		AAFC9DD92EB7DAE200BB8028 /* VariableBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableBlurView.swift; sourceTree = "<group>"; };
 		AAFD41372E92FA42002BC9BE /* Array+safe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+safe.swift"; sourceTree = "<group>"; };
 		CD0FCDF43CEB925D98D9DEB7 /* DiscordEmojiNames.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DiscordEmojiNames.json; sourceTree = "<group>"; };
+		EB88FC1D519531963FD04B31 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchView.swift; path = Search/SearchView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -558,6 +560,7 @@
 			children = (
 				AA10970A2E64C181005BC3D2 /* Home */,
 				AA10970E2E64C181005BC3D2 /* Messages */,
+				EB88FC1D519531963FD04B31 /* SearchView.swift */,
 			);
 			path = Tabs;
 			sourceTree = "<group>";
@@ -1213,6 +1216,7 @@
 				0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */,
 				B41F5C64A11572B4B480A74E /* RichPresenceEditor.swift in Sources */,
 				9EA9411B5E2FD7A36E4B4ABE /* YourProfileSection.swift in Sources */,
+				3D58D54EDDCE8486AAB0AA73 /* SearchView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

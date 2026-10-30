@@ -19,11 +19,10 @@ struct SmallBaseplate: View {
   @State var currentChannelStore: ChannelStore? = nil
 
   @State private var currentTab: CurrentTab = .home
-  @State private var searchText = ""
   /// The server Home showed last, so opening a DM from Messages doesn't empty Home.
   @State private var lastHomeGuild: GuildSnowflake? = nil
   var disableSlideover: Bool {
-    self.currentTab != .home && self.currentTab != .messages
+    self.currentTab == .inbox || self.currentTab == .settings
   }
 
   var body: some View {
@@ -50,20 +49,15 @@ struct SmallBaseplate: View {
             .navigationTitle("Inbox")
           }
         }
+        Tab("Search", systemImage: "magnifyingglass", value: CurrentTab.search) {
+          SearchView {
+            withAnimation { appState.chatOpen = true }
+          }
+          .tint(nil)
+        }
         Tab("Settings", systemImage: "gearshape", value: CurrentTab.settings) {
           SettingsView(initialTab: nil, showsDoneButton: false)
             .tint(nil)
-        }
-        Tab(value: CurrentTab.search, role: .search) {
-          NavigationStack {
-            ContentUnavailableView(
-              "Search",
-              systemImage: "magnifyingglass",
-              description: Text("Search messages across servers and conversations.")
-            )
-            .navigationTitle("Search")
-          }
-          .searchable(text: $searchText, prompt: "Search messages")
         }
       }
       .tint(theme.common.tertiaryButton)
