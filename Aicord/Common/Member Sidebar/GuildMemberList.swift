@@ -70,6 +70,7 @@ extension MemberSidebarView {
               .environment(\.memberListAccumulator, accumulator)
               // rows load as they scroll in; the last one seen picks the ranges to ask for
               .onAppear { upperBound = itemIndex }
+              .channelListRow()
             }
           } header: {
             GroupHeaderCell(groupID: section.id, guildStore: guildStore)
@@ -77,7 +78,7 @@ extension MemberSidebarView {
           }
         }
       }
-      .listStyle(.sidebar)
+      .channelListStyle()
       .task(id: scrollPairs) {
         do {
           try await Task.sleep(for: .milliseconds(300))

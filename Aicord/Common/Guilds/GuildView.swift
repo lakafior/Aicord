@@ -50,13 +50,15 @@ struct GuildView: View {
                 .listRowSeparator(.hidden)
             }
           } header: {
-            Text(category.name ?? "Unknown Category")
-              .lineLimit(1)
+            CategoryHeader(
+              name: category.name ?? "Unknown Category",
+              isExpanded: isExpanded(category.id)
+            )
           }
         }
       }
     }
-    .listStyle(.sidebar)
+    .channelListStyle()
     .environment(\.guildStore, guild)
     .task(id: guild.guildId) { loadCollapsedCategories() }
   }
@@ -96,8 +98,47 @@ struct GuildView: View {
           }
         }
         .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
         .selectionDisabled()
         .modifier(OptionalGuildContextMenu(guild: guild.guild))
+      }
+    }
+  }
+
+  /// A category's name. Sidebar lists on Mac and iPad collapse the section themselves;
+  /// the plain list on iPhone doesn't, so there the header toggles it.
+  struct CategoryHeader: View {
+    @Environment(\.userInterfaceIdiom) var idiom
+    var name: String
+    @Binding var isExpanded: Bool
+
+    var body: some View {
+      if idiom == .phone {
+        Button {
+          withAnimation(.smooth(duration: 0.2)) {
+            isExpanded.toggle()
+          }
+        } label: {
+          HStack(spacing: 6) {
+            Text(name)
+              .lineLimit(1)
+            Spacer(minLength: 4)
+            Image(systemName: "chevron.right")
+              .font(.caption.weight(.semibold))
+              .foregroundStyle(.secondary)
+              .rotationEffect(.degrees(isExpanded ? 90 : 0))
+              .accessibilityHidden(true)
+          }
+          .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(.isHeader)
+        .accessibilityValue(isExpanded ? Text("Expanded") : Text("Collapsed"))
+        .accessibilityHint(isExpanded ? Text("Collapse") : Text("Expand"))
+      } else {
+        Text(name)
+          .lineLimit(1)
       }
     }
   }

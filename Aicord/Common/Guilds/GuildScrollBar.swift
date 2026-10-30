@@ -14,9 +14,15 @@ struct GuildScrollBar: View {
   @Environment(\.userInterfaceIdiom) var idiom
 
   var body: some View {
-    // the system soft edge fades the icons under the toolbar and the glass tab bar
-    ScrollView { guildList }
-      .scrollEdgeEffectStyle(.soft, for: .vertical)
+    #if os(iOS)
+      // plain scroll view so the list keeps scrolling under the glass tab bar
+      ScrollView { guildList }
+        .scrollEdgeEffectStyle(.soft, for: .vertical)
+    #else
+      // the profile bar has no background of its own; the soft scroll edge leaves the
+      // icons showing under it, so the fade stays on Mac
+      ScrollFadeMask { guildList }
+    #endif
   }
 
   private var guildList: some View {

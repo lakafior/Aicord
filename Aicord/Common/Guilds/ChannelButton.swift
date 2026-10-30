@@ -57,6 +57,12 @@ struct ChannelButton: View {
   }
 
   var body: some View {
+    rowContent
+      .channelListRow(isSelected: isSelected)
+  }
+
+  @ViewBuilder
+  var rowContent: some View {
     switch channel.type {
     case .dm, .groupDm:
       privateChannelLabel
@@ -322,5 +328,61 @@ struct HiddenChannelInfo: View {
       .frame(width: 360)
       .frame(maxHeight: 420)
     #endif
+  }
+}
+
+extension View {
+  /// Channel and member lists: a sidebar on Mac and iPad; on iPhone a plain list like
+  /// Apple Music's, with full-width rows and pinned section headers on the app's own
+  /// background, dense enough to show a lot of names.
+  func channelListStyle() -> some View {
+    modifier(ChannelListStyle())
+  }
+}
+
+extension View {
+  /// A row of a list styled with `channelListStyle()`: shorter on iOS, and on iPhone
+  /// without the plain list's opaque cell, so the app's background shows through.
+  /// That also drops the cell's selection, so a selected row passes `isSelected`.
+  func channelListRow(isSelected: Bool = false) -> some View {
+    modifier(ChannelListRow(isSelected: isSelected))
+  }
+}
+
+private struct ChannelListRow: ViewModifier {
+  @Environment(\.userInterfaceIdiom) var idiom
+  var isSelected: Bool
+
+  func body(content: Content) -> some View {
+    #if os(iOS)
+      if idiom == .phone {
+        content
+          .listRowInsets(.vertical, 6)
+          .listRowBackground(
+            Rectangle().fill(isSelected ? AnyShapeStyle(.fill.secondary) : AnyShapeStyle(.clear))
+          )
+      } else {
+        content
+          .listRowInsets(.vertical, 6)
+      }
+    #else
+      content
+    #endif
+  }
+}
+
+private struct ChannelListStyle: ViewModifier {
+  @Environment(\.userInterfaceIdiom) var idiom
+
+  func body(content: Content) -> some View {
+    if idiom == .phone {
+      content
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .environment(\.defaultMinListRowHeight, 36)
+    } else {
+      content
+        .listStyle(.sidebar)
+    }
   }
 }

@@ -17,8 +17,9 @@ extension MemberSidebarView {
     var body: some View {
       List(recipients) { recipient in
         MemberRowView(user: recipient)
+          .channelListRow()
       }
-      .listStyle(.sidebar)
+      .channelListStyle()
     }
   }
 }

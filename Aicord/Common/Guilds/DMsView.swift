@@ -56,7 +56,7 @@ struct DMsView: View {
         }
       }
     }
-    .listStyle(.sidebar)
+    .channelListStyle()
     .sheet(item: $panel) { panel in
       sheet(for: panel)
         #if os(macOS)
@@ -105,6 +105,7 @@ struct DMsView: View {
     }
     .buttonStyle(.plain)
     .selectionDisabled()
+    .channelListRow()
   }
 
   @ViewBuilder
