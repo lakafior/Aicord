@@ -149,6 +149,7 @@ struct DMsView: View {
           }
         }
       }
+      .sheetErrorAlert()
     }
   }
 

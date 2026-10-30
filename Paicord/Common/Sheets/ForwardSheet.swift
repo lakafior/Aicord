@@ -23,11 +23,8 @@ struct ForwardTarget: Identifiable, Hashable {
   static func canForward(_ message: DiscordChannel.Message) -> Bool {
     guard message.type == .default || message.type == .reply else { return false }
     guard message.poll == nil, message.call == nil else { return false }
-    switch message.components {
-    case .legacy(let rows) where !rows.isEmpty: return false
-    case .v2: return false
-    default: break
-    }
+    // `components` can't tell an empty list from v2 components after decoding, so
+    // only the flag is checked; Discord refuses other component messages itself
     if message.flags?.contains(.isComponentsV2) == true { return false }
     return true
   }
@@ -91,6 +88,11 @@ struct ForwardSheet: View {
             TextField("Add a comment (optional)", text: $comment, axis: .vertical)
               .lineLimit(1...4)
           }
+          Section {
+            ForEach(selected) { row($0) }
+          } header: {
+            Text("Sending To — \(selected.count) of \(Self.maxDestinations)")
+          }
         }
 
         if !failures.isEmpty {
@@ -102,19 +104,19 @@ struct ForwardSheet: View {
           }
         }
 
-        let direct = directMessages
+        let direct = directMessages.filter { !selected.contains($0) }
         if !direct.isEmpty {
           Section("Direct Messages") {
             ForEach(direct) { row($0) }
           }
         }
-        let channels = serverChannels
+        let channels = serverChannels.filter { !selected.contains($0) }
         if !channels.isEmpty {
           Section("Server Channels") {
             ForEach(channels) { row($0) }
           }
         }
-        if direct.isEmpty && channels.isEmpty {
+        if direct.isEmpty && channels.isEmpty && selected.isEmpty {
           ContentUnavailableView.search(text: searchText)
             .listRowBackground(Color.clear)
         }

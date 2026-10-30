@@ -305,8 +305,23 @@ struct SearchView: View {
   /// Dates and regex in use, each with a way to clear it.
   @ViewBuilder
   var activeFilters: some View {
+    if !filters.isActive, hasMessageCriteria, messageScope != nil {
+      // the toolbar menu is out of reach while typing
+      Section {
+        Button {
+          showingFilters = true
+        } label: {
+          Label("Dates and Regex…", systemImage: "calendar.badge.clock")
+        }
+      }
+    }
     if filters.isActive {
       Section {
+        Button {
+          showingFilters = true
+        } label: {
+          Label("Edit Dates and Regex…", systemImage: "slider.horizontal.3")
+        }
         if let range = filters.dateRangeDescription {
           HStack {
             Label(range, systemImage: "calendar")
@@ -614,7 +629,7 @@ struct MessageFiltersSheet: View {
         } header: {
           Text("Regex")
         } footer: {
-          Text("Matched against message text in Aicord, after Discord's search. For example, \\bv\\d+\\.\\d+ finds version numbers.")
+          Text("Matched against message text in Aicord, after Discord's search. For example, ^v\\d+ finds messages starting with a version number.")
         }
       }
       .formStyle(.grouped)
@@ -810,6 +825,15 @@ struct MessageResultRow: View {
           Text(message.content)
             .font(.subheadline)
             .lineLimit(4)
+        } else if let forwarded = message.message_snapshots?.first?.message {
+          Label {
+            Text(forwarded.content.isEmpty ? String(localized: "Forwarded message") : forwarded.content)
+              .lineLimit(4)
+          } icon: {
+            Image(systemName: "arrowshape.turn.up.right")
+          }
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
         } else if !message.attachments.isEmpty {
           Label("\(message.attachments.count) attachment(s)", systemImage: "paperclip")
             .font(.subheadline)

@@ -254,7 +254,8 @@ struct FriendsList: View {
   var searchText: String
   var open: (UserSnowflake) -> Void
 
-  @State var pendingRemoval: DiscordRelationship? = nil
+  /// The request waiting for confirmation; the sheet shows the dialog.
+  @Binding var pendingRemoval: DiscordRelationship?
 
   func matches(_ relationship: DiscordRelationship) -> Bool {
     guard !searchText.isEmpty else { return true }
@@ -337,6 +338,7 @@ struct FriendsList: View {
         description: searchText.isEmpty ? Text("Requests people send you show up here.") : nil
       )
       .listRowBackground(Color.clear)
+      .listRowSeparator(.hidden)
     }
     if !regular.isEmpty {
       Section("Received — \(regular.count)") {
@@ -352,7 +354,6 @@ struct FriendsList: View {
         Text("These don't count towards the badge.")
       }
     }
-    removalDialog
   }
 
   @ViewBuilder
@@ -365,6 +366,7 @@ struct FriendsList: View {
           ? Text("Friend requests you send stay here until they're accepted.") : nil
       )
       .listRowBackground(Color.clear)
+      .listRowSeparator(.hidden)
     } else {
       Section("Sent — \(requests.count)") {
         ForEach(byDate(requests), id: \.id) { relationship in
@@ -381,7 +383,6 @@ struct FriendsList: View {
         }
       }
     }
-    removalDialog
   }
 
   func incomingRow(_ relationship: DiscordRelationship) -> some View {
@@ -404,33 +405,6 @@ struct FriendsList: View {
         pendingRemoval = relationship
       }
     }
-  }
-
-  var removalDialog: some View {
-    Color.clear
-      .frame(height: 0)
-      .listRowBackground(Color.clear)
-      .confirmationDialog(
-        pendingRemoval?.type == .outgoingRequest
-          ? "Cancel your friend request to \(pendingRemoval?.displayName ?? "")?"
-          : "Ignore the friend request from \(pendingRemoval?.displayName ?? "")?",
-        isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { pendingRemoval = nil } }),
-        titleVisibility: .visible,
-        presenting: pendingRemoval
-      ) { relationship in
-        Button(
-          relationship.type == .outgoingRequest ? "Cancel Request" : "Ignore Request",
-          role: .destructive
-        ) {
-          Task { await remove(relationship) }
-        }
-      } message: { relationship in
-        Text(
-          relationship.type == .outgoingRequest
-            ? "They won't be told. You can send another request later."
-            : "They won't be told. They can send another request later."
-        )
-      }
   }
 
   func receivedLine(for relationship: DiscordRelationship) -> String {
@@ -460,12 +434,43 @@ struct FriendsList: View {
   }
 
   /// Declines an incoming request or cancels a sent one; Relationship Remove follows.
-  func remove(_ relationship: DiscordRelationship) async {
+  static func remove(_ relationship: DiscordRelationship, gw: GatewayStore, appState: PaicordAppState) async {
     do {
       try await gw.client.removeRelationship(userID: relationship.id).guardSuccess()
       gw.user.relationships.removeValue(forKey: relationship.id)
     } catch {
       appState.error = error
+    }
+  }
+
+  /// Confirms before a request goes, like Discord.
+  struct RemovalDialog: ViewModifier {
+    @Environment(\.gateway) var gw
+    @Environment(\.appState) var appState
+    @Binding var pending: DiscordRelationship?
+
+    func body(content: Content) -> some View {
+      content.confirmationDialog(
+        pending?.type == .outgoingRequest
+          ? "Cancel your friend request to \(pending?.displayName ?? "")?"
+          : "Ignore the friend request from \(pending?.displayName ?? "")?",
+        isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }),
+        titleVisibility: .visible,
+        presenting: pending
+      ) { relationship in
+        Button(
+          relationship.type == .outgoingRequest ? "Cancel Request" : "Ignore Request",
+          role: .destructive
+        ) {
+          Task { await FriendsList.remove(relationship, gw: gw, appState: appState) }
+        }
+      } message: { relationship in
+        Text(
+          relationship.type == .outgoingRequest
+            ? "They won't be told. You can send another request later."
+            : "They won't be told. They can send another request later."
+        )
+      }
     }
   }
 
@@ -559,6 +564,7 @@ struct FriendsSheet: View {
   var open: (UserSnowflake) -> Void
   @State var searchText = ""
   @State var page: FriendsPage = .friends
+  @State var pendingRemoval: DiscordRelationship? = nil
   @Environment(\.gateway) var gw
 
   var body: some View {
@@ -574,11 +580,18 @@ struct FriendsSheet: View {
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
 
-        FriendsList(page: page, searchText: searchText) { user in
-          dismiss()
-          open(user)
-        }
+        FriendsList(
+          page: page,
+          searchText: searchText,
+          open: { user in
+            dismiss()
+            open(user)
+          },
+          pendingRemoval: $pendingRemoval
+        )
       }
+      .modifier(FriendsList.RemovalDialog(pending: $pendingRemoval))
+      .sheetErrorAlert()
       .navigationTitle("Friends")
       #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)

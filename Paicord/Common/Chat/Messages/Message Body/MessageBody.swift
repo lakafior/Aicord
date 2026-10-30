@@ -23,13 +23,18 @@ extension MessageCell {
 
     init(
       message: DiscordChannel.PartialMessage,
-      channelStore: ChannelStore
+      channelStore: ChannelStore,
+      isSnapshot: Bool = false
     ) {
       self.message = message
       self.channelStore = channelStore
+      self.isSnapshot = isSnapshot
     }
 
     let channelStore: ChannelStore
+    /// A forwarded copy: it shares the original's ID, so the original's
+    /// reactions must not show on it.
+    var isSnapshot = false
 
     @AppStorage(WordFilter.Key.enabled) private var wordFilterEnabled = false
     @AppStorage(WordFilter.Key.languages) private var wordFilterLanguages =
@@ -145,7 +150,7 @@ extension MessageCell {
         }
 
         // Reactions
-        let reactions = channelStore.reactions[message.id, default: [:]]
+        let reactions = isSnapshot ? [:] : channelStore.reactions[message.id, default: [:]]
         if !reactions.isEmpty, settings?.rendersReactions ?? true {
           ReactionsView(reactions: reactions)
         }
@@ -160,7 +165,8 @@ extension MessageCell {
 
             MessageBody(
               message: msgSnapshot,
-              channelStore: channelStore
+              channelStore: channelStore,
+              isSnapshot: true
             )
 
             if let reference = message.message_reference {

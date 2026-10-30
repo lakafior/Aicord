@@ -187,7 +187,11 @@ struct ChatView: View {
         }
         .sharedBackgroundVisibility(.hidden)
       #endif
-      if vm.channel?.type == .dm || vm.channel?.type == .groupDm {
+      // no calls before a request is accepted
+      if vm.channel?.type == .dm || vm.channel?.type == .groupDm,
+        gw.user.privateChannels[vm.channelId].map({ !$0.isPendingMessageRequest && !$0.isSpam })
+          ?? true
+      {
         ToolbarItem(placement: .primaryAction) {
           DMCallButton(channelID: vm.channelId)
         }

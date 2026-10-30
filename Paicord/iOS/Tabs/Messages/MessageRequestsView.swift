@@ -169,6 +169,12 @@ struct MessageFolderView: View {
     folder == .requests ? gw.user.messageRequests(includingIgnored: true).filter(gw.user.isIgnored) : []
   }
 
+  #if os(macOS)
+    static let rejectAllPlacement = ToolbarItemPlacement.destructiveAction
+  #else
+    static let rejectAllPlacement = ToolbarItemPlacement.primaryAction
+  #endif
+
   var body: some View {
     List {
       if channels.isEmpty {
@@ -190,9 +196,10 @@ struct MessageFolderView: View {
         } footer: {
           Text(
             folder == .requests
-              ? "They won't know you've seen their message until you reply. Accepting moves the conversation to your messages."
-              : "Opening a spam message is safe; links and images stay as they are, so be careful with them."
+              ? "Accept a request to reply. It then moves to your messages. Rejecting or ignoring doesn't tell the sender."
+              : "Be careful with links and files in these messages. Moving one out of spam puts it with your other messages."
           )
+          .fixedSize(horizontal: false, vertical: true)
         }
       }
 
@@ -212,7 +219,8 @@ struct MessageFolderView: View {
     #endif
     .toolbar {
       if !channels.isEmpty {
-        ToolbarItem(placement: .primaryAction) {
+        // not the default button of the sheet on Mac
+        ToolbarItem(placement: Self.rejectAllPlacement) {
           Button(role: .destructive) {
             confirmingRejectAll = true
           } label: {
@@ -374,7 +382,7 @@ struct MessageRequestBar: View {
       Text(
         channel.isSpam
           ? "Discord thinks this might be spam. Move it to your messages to reply."
-          : "This is a message request. Accept it to reply; the sender isn't told until you do."
+          : "This is a message request. Accept it to reply."
       )
       .font(.footnote)
       .foregroundStyle(.secondary)

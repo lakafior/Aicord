@@ -60,11 +60,15 @@ class ChannelStore: DiscordDataStore {
       loadingMessagesTask = nil
     }
     guard messages[messageId] != nil else { return }
-    requestScrollToMessage(messageId)
     highlightedMessageID = messageId
+    // the list settles on its bottom anchor once new messages are laid out, so
+    // ask again after that pass
+    requestScrollToMessage(messageId)
+    try? await Task.sleep(for: .milliseconds(250))
+    requestScrollToMessage(messageId)
     highlightTask?.cancel()
     highlightTask = Task {
-      try? await Task.sleep(for: .seconds(2.5))
+      try? await Task.sleep(for: .seconds(4))
       guard !Task.isCancelled else { return }
       withAnimation(.easeOut(duration: 0.6)) { highlightedMessageID = nil }
     }
