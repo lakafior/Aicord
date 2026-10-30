@@ -11,6 +11,7 @@ import SwiftUI
 
 struct GuildView: View {
   var guild: GuildStore
+  @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
   @Environment(\.userInterfaceIdiom) var idiom
   @Environment(\.theme) var theme
   var body: some View {
@@ -63,6 +64,7 @@ struct GuildView: View {
 
         // hidden channels render nothing, so the separator skips the first one that shows
         let firstVisibleID = uncategorizedChannels.first { channel in
+          if showsHiddenChannels { return true }
           if channel.type == .guildCategory {
             let categoryID = AnySnowflake(channel.id)
             return guild.channels.values.contains {

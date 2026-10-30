@@ -26,6 +26,7 @@ struct ChatSettings: View {
   @Environment(\.appState) var appState
 
   @AppStorage(EmojiPicker.showsNitroEmojiKey) private var showsNitroEmoji = false
+  @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
 
   var body: some View {
     Section {
@@ -71,6 +72,19 @@ struct ChatSettings: View {
       Text("Writing")
     } footer: {
       Text("When you send, :) becomes 🙂 and <3 becomes ❤️. Code and links stay as typed.")
+    }
+
+    Section {
+      Toggle("Show Hidden Channels", isOn: $showsHiddenChannels)
+        #if os(macOS)
+          .toggleStyle(.switch)
+        #endif
+    } header: {
+      Text("Channels")
+    } footer: {
+      Text(
+        "Lists server channels you can't view, greyed out with a lock. Tapping one shows its topic and who can view it, never its messages. Only on this device."
+      )
     }
 
     if gw.user.premiumKind == .none {

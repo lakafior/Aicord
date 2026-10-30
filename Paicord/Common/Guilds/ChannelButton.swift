@@ -10,17 +10,27 @@ import PaicordLib
 import SwiftUI
 
 struct ChannelButton: View {
+  /// Chat setting: list channels you can't view, locked, like Vencord's ShowHiddenChannels.
+  static let showsHiddenChannelsKey = "Paicord.Chat.ShowsHiddenChannels"
+
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
+  @Environment(\.guildStore) var guild
   var channels: [ChannelSnowflake: DiscordChannel]
   var channel: DiscordChannel
 
+  /// A server channel you lack View Channel for.
+  var isHidden: Bool {
+    guild?.hasPermission(channel: channel, .viewChannel) == false
+  }
+
   var isUnread: Bool {
-    gw.readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id)
+    !isHidden
+      && gw.readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id)
   }
 
   var mentionCount: Int {
-    gw.readStates.mentionCount(channelId: channel.id)
+    isHidden ? 0 : gw.readStates.mentionCount(channelId: channel.id)
   }
 
   var body: some View {
@@ -248,7 +258,9 @@ struct ChannelButton: View {
   struct TextChannelButton<Content: View>: View {
     @Environment(\.appState) var appState
     @Environment(\.guildStore) var guild
+    @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
     @State private var isHovered = false
+    @State private var showsHiddenInfo = false
     var channels: [ChannelSnowflake: DiscordChannel]
     var channel: DiscordChannel
     var content: (_ hovered: Bool) -> Content
@@ -261,7 +273,31 @@ struct ChannelButton: View {
       ) == false
     }
     var body: some View {
-      if !shouldHide {
+      if shouldHide {
+        if showsHiddenChannels {
+          // locked: opens what Discord tells about it instead of the chat
+          Button {
+            showsHiddenInfo = true
+          } label: {
+            content(isHovered)
+              .opacity(0.5)
+              .overlay(alignment: .trailing) {
+                Image(systemName: "lock.fill")
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+                  .padding(.trailing, 12)
+              }
+          }
+          .onHover { isHovered = $0 }
+          .buttonStyle(.borderless)
+          .accessibilityHint(Text("You can't view this channel"))
+          .popover(isPresented: $showsHiddenInfo) {
+            HiddenChannelInfo(channel: channel, guild: guild)
+              .presentationCompactAdaptation(.sheet)
+              .presentationDetents([.medium, .large])
+          }
+        }
+      } else {
         Button {
           appState.selectedChannel = channel.id
           #if os(iOS)
@@ -328,6 +364,7 @@ struct ChannelButton: View {
   struct CategoryButton: View {
     @Environment(\.isFirstInChannelList) var isFirst
     @Environment(\.guildStore) var guild
+    @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
     var channelIDs: [ChannelSnowflake]
     var channels: [ChannelSnowflake: DiscordChannel]
     var channel: DiscordChannel
@@ -344,6 +381,7 @@ struct ChannelButton: View {
 
     /// Set by initialiser, hides the category if there are no visible channels inside it.
     var shouldHide: Bool {
+      guard !showsHiddenChannels else { return channelIDs.isEmpty }
       // reduce channels by bool
       let channels = channelIDs.compactMap { self.channels[$0] }
       let allHidden = channels.reduce(true) { partialResult, channel in
@@ -428,6 +466,89 @@ struct ChannelButton: View {
       channel: channel
     )
     .padding(.top, 4)
+  }
+}
+
+/// What can be shown about a channel you can't view: what the gateway already
+/// sends (name, topic, permission overwrites), never its messages.
+struct HiddenChannelInfo: View {
+  let channel: DiscordChannel
+  let guild: GuildStore?
+
+  /// Roles an overwrite lets view the channel, highest first.
+  private var allowedRoles: [Role] {
+    (channel.permission_overwrites ?? [])
+      .filter { $0.type == .role && $0.allow.contains(.viewChannel) }
+      .compactMap { guild?.role(RoleSnowflake($0.id)) }
+      .filter { $0.id.rawValue != guild?.guildId.rawValue }  // not @everyone
+      .sorted { $0.position > $1.position }
+  }
+
+  private var allowedMemberCount: Int {
+    (channel.permission_overwrites ?? [])
+      .filter { $0.type == .member && $0.allow.contains(.viewChannel) }
+      .count
+  }
+
+  var body: some View {
+    ScrollView {
+      VStack(alignment: .leading, spacing: 16) {
+        Label {
+          Text(channel.name ?? "unknown")
+            .font(.title2.bold())
+        } icon: {
+          Image(systemName: "lock.fill")
+            .foregroundStyle(.secondary)
+        }
+
+        Text("You don't have permission to view this channel. Aicord shows only what Discord already sends about it.")
+          .font(.callout)
+          .foregroundStyle(.secondary)
+
+        if let topic = channel.topic, !topic.isEmpty {
+          VStack(alignment: .leading, spacing: 4) {
+            Text("Topic")
+              .font(.headline)
+            MarkdownText(content: topic)
+              .handlesInteractions(false)
+          }
+        }
+
+        VStack(alignment: .leading, spacing: 6) {
+          Text("Who Can View")
+            .font(.headline)
+          if allowedRoles.isEmpty && allowedMemberCount == 0 {
+            Text("Members with special permissions, such as administrators.")
+              .foregroundStyle(.secondary)
+          } else {
+            FlowLayout(spacing: 6) {
+              ForEach(allowedRoles, id: \.id) { role in
+                Text(role.name)
+                  .font(.callout)
+                  .padding(.horizontal, 8)
+                  .padding(.vertical, 3)
+                  .foregroundStyle(role.color.value != 0 ? role.color.asColor() ?? .primary : .primary)
+                  .background(.quaternary, in: .capsule)
+              }
+            }
+            if allowedMemberCount > 0 {
+              Text(
+                allowedRoles.isEmpty
+                  ? "^[\(allowedMemberCount) member](inflect: true) added by name"
+                  : "and ^[\(allowedMemberCount) member](inflect: true) added by name"
+              )
+              .foregroundStyle(.secondary)
+            }
+          }
+        }
+      }
+      .padding()
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    #if os(macOS)
+      .frame(width: 360)
+      .frame(maxHeight: 420)
+    #endif
   }
 }
 
