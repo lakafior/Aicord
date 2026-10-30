@@ -26,14 +26,10 @@ Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`).
    - Nie robimy: powiadomień push na iOS, gdy Aicord jest zamknięty. Wymagałyby własnego serwera trzymającego token konta i połączenie z gatewayem; zostają lokalne powiadomienia z działającej aplikacji.
 8. **Poprawki interfejsu (po Ustawieniach):**
    - Nie robimy: Purge (masowe usuwanie wiadomości z czatu). API Discorda pozwala usunąć tylko własne wiadomości w DM, a cudze na serwerze tylko z Manage Messages; masowe usuwanie z konta użytkownika to automatyzacja, za którą Discord blokuje konta (ostrzega przed tym nawet Undiscord).
-   - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`.
-   - [ ] Kontener kanałów na Home w ciemnym motywie: lewy górny róg zaokrąglony (25 pt), prawy ucięty krawędzią ekranu, więc wygląda niespójnie. Oba górne rogi zaokrąglone, prawy dopasowany do zaokrąglenia ekranu (albo żaden).
-   - [ ] Widok serwerów i kanałów od nowa, bardziej natywnie: kanały jako `List` w stylu `.sidebar` z systemowo zwijanymi sekcjami (`Section(isExpanded:)`), zaznaczeniem, przesunięciami i menu, pasek serwerów jako wąska kolumna, bez własnego kontenera, tła i masek. Dynamic Type, VoiceOver, ciemny motyw i Liquid Glass bez ręcznych poprawek. W tej samej przeróbce lista członków (`Member Sidebar`, dziś `ScrollView` z `LazyVStack`) jako `List` z sekcjami ról. Czat, popouty profilu, logowanie i szybki przełącznik zostają własne. Razem z Etapem 11, bo Mac też odchodzi od wspólnego szkieletu; po tej przeróbce punkt o rogach wyżej znika sam.
-   - [ ] Karty linków YouTube (i innych embedów typu `video`): dziś zamiast podglądu jest tekst „Unsupported embed type: Optional(DiscordModels.Embed.Kind.video)”. Miniatura z przyciskiem odtwarzania, tytuł i kanał, stuknięcie otwiera film.
-   - [ ] Add Friend: wysyłanie zaproszenia do znajomych po nazwie użytkownika w Messages → Friends oraz z profilu osoby (`sendFriendRequest` już jest w AicordKit).
-   - [ ] Invite People w menu serwera: link zaproszenia z czasem ważności i limitem użyć, do skopiowania i udostępnienia (`createChannelInvite`).
-   - [ ] Join: przycisk na karcie zaproszenia w czacie i po otwarciu linku `discord.gg/…`, z podglądem serwera przed dołączeniem (`resolveInvite`, `acceptInvite`). Potrzebne też rozszerzeniu Safari poniżej.
-   - [ ] Rozszerzenie Safari: linki zaproszeń `discord.gg/…` i `discord.com/invite/…` otwierane w Aicord przez własny schemat URL (Universal Links dla discord.com należą do Discorda). Osobny target, włączany przez użytkownika w ustawieniach Safari.
+   - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`. Do tego z zaproszeń: prawdziwe Add Friend (z listy i z profilu), Join na serwerze, w którym jeszcze nie jesteś, włączenie rozszerzenia Safari na iOS i macOS. Kroki: `docs/INVITES_NOTES.md`.
+   - [ ] Natywne listy: sprawdzić na iPadzie i przewijanie dużej listy członków (`docs/LISTS_NOTES.md`).
+   - [ ] Lista i unieważnianie zaproszeń serwera (Server Settings → Invites, `revokeInvite`). Po testach zostało na NAScin zaproszenie `EdxGVcWd` (7 dni).
+   - [ ] macOS: kliknięcie linku zaproszenia w treści wiadomości nie otwiera podglądu (kliknięcia nie docierają do widoku tekstu z Textual); karta pod wiadomością działa.
 
 ---
 
