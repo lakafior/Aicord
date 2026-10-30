@@ -48,6 +48,10 @@ struct AicordApp: App {
     AicordImagePipeline.configure()
     UNUserNotificationCenter.current().delegate = NotificationCenterDelegate.shared
     NotificationStore.registerCategories()
+    #if os(macOS)
+      // the MCP bridge listens from launch when allowed; tools wait for the gateway
+      Task { @MainActor in MCPBridge.shared.update() }
+    #endif
   }
 
   var body: some Scene {

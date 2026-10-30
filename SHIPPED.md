@@ -82,6 +82,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · The Discord library is now Aicord's own `AicordKit`: bot-only endpoints, sharding and bot authentication are gone, and large message and user models are stored more compactly, so the compiled code is 42% smaller and the Mac app went from 60.9 MB to 51.5 MB
 - **New** · The Mac app is called Aicord in the menu bar and the Dock
 - **New** · The Mac gets its own window layout: the system sidebar and toggle, the channel and server as the window's title and subtitle, a toolbar with Search (⌘F) and the member list (⌥⌘M) in an inspector, a Go menu (Direct Messages ⌘0, Open Channel in New Window ⇧⌘O, Mark Channel as Read ⇧⎋), channels in windows of their own from their menu, and Settings as the system Settings window; Settings → Advanced → Classic Window Layout brings back the old one
+- **New** · A read-only MCP server for Claude and other assistants on the Mac: the `aicord-mcp` helper lists servers, channels and (if you allow it) direct messages, reads and searches messages through the open app, with Allow MCP Server, a copyable configuration and Reset Key in Settings → Advanced; it can't send or change anything
 - **New** · Release workflows (not yet run): a `v*` tag builds an unsigned iOS app for AltStore and SideStore, attaches it to a GitHub release and publishes an AltStore source on GitHub Pages; a signed and notarized Mac build waits for its secrets
 - **New** · Discord data that Aicord only receives is decode-only, so the iOS app is 0.7 MB smaller (44.9 → 44.2 MB) and the Discord models 7% smaller
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
@@ -372,6 +373,9 @@ Szczegóły i lista do sprawdzenia na Macu: `docs/OVERNIGHT.md`, punkt 5.
    - [x] Menu: `SidebarCommands`, View → Show Member List (⌥⌘M), Edit → Search… (⌘F), nowe menu Go: Direct Messages (⌘0), Open Channel in New Window (⇧⌘O), Mark Channel as Read (⇧⎋).
    - [x] Kanał w osobnym oknie (`WindowGroup(for: ChannelWindowValue.self)`) z menu kanału i z menu Go; okno ma własny `AicordAppState`, który nie zapisuje wyboru, więc główne okno otwiera się dalej na swoim kanale.
    - [x] Ustawienia jako systemowa scena `Settings` (⌘, i Aicord → Settings…) zamiast zwykłego okna.
+2. **Serwer MCP:**
+   - [x] `AicordMCP/` (pakiet SwiftPM, tylko Foundation i Network): program `aicord-mcp` mówiący MCP (JSON-RPC 2.0) przez stdio, narzędzia `list_servers`, `list_channels`, `list_direct_messages`, `read_messages`, `search_messages`, wszystkie z `readOnlyHint`.
+   - [x] Most w aplikacji (`MCPBridge`, tylko macOS): nasłuch tylko na `127.0.0.1:47823`, jedno zapytanie na połączenie, klucz porównywany w stałym czasie, najwyżej 30 wywołań na minutę, te same filtry co dla modelu, DM-y osobnym przełącznikiem. Domyślnie wyłączony (Settings → Advanced → Allow MCP Server, Copy Configuration for Claude, Reset Key).
 
 ---
 

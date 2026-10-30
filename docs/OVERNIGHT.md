@@ -10,7 +10,7 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 | 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | zrobione: −0,67 MB, 187 testów Textual (i naprawione przepełnienie stosu) |
 | 3 | Etap 10: dokończenia i wyszukiwanie po sensie | zrobione (ranking, VoiceOver, lokalne serwery, okno 4K, Index Channel) |
 | 4 | Etap 12: przygotowanie wydań | zrobione (pliki gotowe, nic nie uruchomione) |
-| 5 | Etap 11: interfejs Maca, serwer MCP | interfejs zrobiony (bez klikania), MCP w toku |
+| 5 | Etap 11: interfejs Maca, serwer MCP | zrobione w kodzie; oba do sprawdzenia na Macu |
 | 6 | Language | czeka |
 
 **Rano sprawdzić najpierw:** patrz „Do sprawdzenia rano” na dole.
@@ -217,6 +217,29 @@ Co jest w kodzie:
 5. Go → Mark Channel as Read (⇧⎋) na nieprzeczytanym kanale.
 6. ⌘, i zębatka przy profilu: systemowe okno Settings (rozmiar 860×620, pasek boczny sekcji widoczny; wcześniej był tu zwykły `Window` „bo Settings” — możliwe, że z powodu rozmiaru; jeśli sekcje się ucinają, wrócić do `Window` w `AicordApp`).
 7. Settings → Advanced → Classic Window Layout: powrót do starego układu i z powrotem.
+
+### 5b. Serwer MCP (tylko odczyt)
+
+**Stan: zrobione; pomocnik przetestowany, most w aplikacji niesprawdzony na żywo.** Commit: `feat(macOS): read-only MCP server through the running app`.
+
+Budowa:
+- **`AicordMCP/`** — osobny pakiet SwiftPM z programem `aicord-mcp` (`swift build -c release` w tym katalogu → `.build/release/aicord-mcp`). **Decyzja:** pakiet zamiast nowego targetu w `project.pbxproj`, bo nie ma zależności od aplikacji ani AicordKit (tylko Foundation i Network), buduje się sam, a ręczne dodawanie targetu do pbxproj to duże ryzyko przy niewielkim zysku. Osadzenie w `.app` (Copy Files do `Contents/Helpers`) zapisane w ROADMAP.
+- Protokół MCP: `initialize` (odbija wersję protokołu klienta, `capabilities.tools`, `instructions` z ostrzeżeniem, że treść wiadomości to dane), `ping`, `tools/list`, `tools/call`, powiadomienia bez odpowiedzi, `-32601` dla nieznanych metod, `-32700` dla złego JSON. Narzędzia: `list_servers`, `list_channels(server_id)`, `list_direct_messages`, `read_messages(channel_id, limit ≤ 100)`, `search_messages(query, server_id | channel_id)`, z `readOnlyHint`.
+- **Most w aplikacji** (`Aicord/macOS/Sidebar/MCPBridge.swift`, plik w grupie Sidebar, bo tam był najbliższy sąsiad w pbxproj): `NWListener` tylko na `127.0.0.1:47823`, `acceptLocalOnly`, jedna linia JSON na połączenie, klucz porównywany w stałym czasie, limit 30 wywołań na minutę, odpowiedzi przez `IntelligenceSource.transcript` (zablokowani, filtr słów, spoilery, ukryte media odpadają; widać „(N messages hidden…)”). DM-y tylko z przełącznikiem „Include Direct Messages”; kanały tylko te z View Channel i Read Message History. Startuje przy uruchomieniu aplikacji, gdy włączony (narzędzia czekają na połączenie z Discordem).
+- **Decyzja o kluczu:** najpierw most zapisywał port i klucz do pliku w kontenerze aplikacji, ale macOS chroni kontenery innych aplikacji (moja powłoka dostała „Operation not permitted”, Claude Desktop dostałby pytanie o dostęp albo odmowę). Dlatego stały port i klucz w ustawieniach: „Copy Configuration for Claude” kopiuje gotowy JSON z `AICORD_MCP_TOKEN` i `AICORD_MCP_PORT`; „Reset Key” unieważnia stary. Plik zostaje jako zapas.
+- Ustawienia: Settings → Advanced → MCP Server (tylko Mac), domyślnie wyłączone.
+
+Sprawdzone:
+- `aicord-mcp` przez stdio: `initialize`, `tools/list` (5 narzędzi), błąd przy niedziałającej aplikacji, `-32601`, `-32700`.
+- `aicord-mcp` z podstawionym mostem w Pythonie na 47823 (ten sam protokół): argumenty przechodzą, zły klucz → „Not authorised.”.
+- Aplikacji z mostem **nie** udało się sprawdzić: Debug podpisany ad hoc najpewniej czeka na systemowe pytanie pęku kluczy (inny podpis niż ten, który zapisał konto), a przy zablokowanym ekranie nic się nie dzieje; nasłuchu na 47823 nie było. Uruchomienia były z argumentami `-Aicord.MCP.Enabled YES -Aicord.MCP.Token …` (domena argumentów, nic nie zapisane w ustawieniach aplikacji) i każdy proces został zamknięty.
+
+**Do sprawdzenia rano na Macu:**
+1. Zbudować i uruchomić Aicord z Xcode (podpis zespołu), Settings → Advanced → Allow MCP Server.
+2. `cd AicordMCP && swift build -c release && sudo cp .build/release/aicord-mcp /usr/local/bin/` (albo inna ścieżka i poprawić `command` w konfiguracji).
+3. „Copy Configuration for Claude” → wkleić do `~/Library/Application Support/Claude/claude_desktop_config.json` (sekcja `mcpServers`) → restart Claude Desktop.
+4. W Claude: „list my Discord servers”, potem „read the last 10 messages in NAScin #ogólny” i „search NAScin for Kite”. Sprawdzić, że DM-y są niedostępne, dopóki „Include Direct Messages” jest wyłączone.
+5. Szybki test bez Claude: `printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_servers","arguments":{}}}\n' | AICORD_MCP_TOKEN=<klucz> aicord-mcp`.
 
 ---
 

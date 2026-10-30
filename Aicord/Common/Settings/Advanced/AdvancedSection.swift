@@ -24,6 +24,8 @@ struct AdvancedSettings: View {
   @State private var cacheSize: Int?
   #if os(macOS)
     @AppStorage(MacLayoutPreferences.classicKey) private var classicLayout = false
+    @AppStorage(MCPPreferences.enabledKey) private var mcpEnabled = false
+    @AppStorage(MCPPreferences.directMessagesKey) private var mcpDirectMessages = false
   #endif
 
   var body: some View {
@@ -60,6 +62,34 @@ struct AdvancedSettings: View {
           .toggleStyle(.switch)
       } footer: {
         Text("The layout shared with iPad, from before the Mac got its own sidebar, toolbar and menus.")
+      }
+
+      Section {
+        Toggle("Allow MCP Server", isOn: $mcpEnabled)
+          .toggleStyle(.switch)
+          .onChange(of: mcpEnabled) { MCPBridge.shared.update() }
+        Toggle("Include Direct Messages", isOn: $mcpDirectMessages)
+          .toggleStyle(.switch)
+          .disabled(!mcpEnabled)
+        if mcpEnabled {
+          LabeledContent("Address") {
+            Text(verbatim: "127.0.0.1:\(MCPPreferences.port)")
+              .font(.body.monospaced())
+              .textSelection(.enabled)
+          }
+          Button("Copy Configuration for Claude", systemImage: "doc.on.doc") {
+            copyToPasteboard(MCPPreferences.clientConfiguration)
+          }
+          Button("Reset Key", role: .destructive) {
+            MCPPreferences.resetToken()
+          }
+        }
+      } header: {
+        Text("MCP Server")
+      } footer: {
+        Text(
+          "Lets an assistant like Claude read your servers, channels and messages through the aicord-mcp helper while Aicord is open. Read-only: it can't send, react or change anything. Only programs on this Mac that have the key from the copied configuration can connect; Reset Key cuts off the old one. Messages your filters hide are left out."
+        )
       }
     #endif
 

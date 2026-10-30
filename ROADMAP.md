@@ -58,8 +58,9 @@ Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI,
 1. **Interfejs Maca:**
    - [ ] Przeklikać na Macu `MacBaseplate`, menu Go, kanał w osobnym oknie i okno `Settings` (zrobione w nocy 30/31.10 bez klikania; lista kroków w `docs/OVERNIGHT.md`, punkt 5). Potem: usunąć Classic Window Layout, jeśli nowy układ się sprawdzi.
 2. **Serwer MCP (połączenie Claude z Discordem):**
-   - [ ] Mały pomocniczy program (target command-line) rozmawiający przez stdio i przekazujący zapytania do działającej aplikacji Aicord; aplikacja główna zostaje jedna.
-   - [ ] Domyślnie tylko odczyt (kanały, wiadomości, wyszukiwanie, podsumowania). Wysyłanie najwyżej z potwierdzeniem każdej akcji w aplikacji: działanie przez token użytkownika to automatyzacja konta, której Discord zabrania (self-bot), więc ryzyko blokady trzeba ograniczyć.
+   - [ ] Sprawdzić na odblokowanym Macu z prawdziwą aplikacją: włączyć Allow MCP Server, wkleić skopiowaną konfigurację do Claude Desktop, `list_servers` i `read_messages` na NAScin (kroki w `docs/OVERNIGHT.md`, punkt 5b).
+   - [ ] Osadzić `aicord-mcp` w aplikacji (`Contents/Helpers`, faza Copy Files) i podawać w konfiguracji ścieżkę wewnątrz `.app`, zamiast instalować go ręcznie do `/usr/local/bin`.
+   - [ ] Podsumowania jako narzędzie MCP (z modelu wybranego w Intelligence). Wysyłanie najwyżej z potwierdzeniem każdej akcji w aplikacji: działanie przez token użytkownika to automatyzacja konta, której Discord zabrania (self-bot), więc ryzyko blokady trzeba ograniczyć.
 
 ---
 
