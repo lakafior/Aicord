@@ -29,15 +29,13 @@ struct SettingsView: View {
 
   enum SettingsGroupCategory: String, CaseIterable {
     case you = ""
-    case about = "Aicord"
-    case user = "User Settings"
-    case app = "App Settings"
+    case user = "Discord Settings"
+    case app = "Aicord Settings"
     case debug = "Debug"
   }
 
   enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
     case you
-    case about
     case account
     case profiles
     case contentSocial
@@ -57,6 +55,7 @@ struct SettingsView: View {
     case keybinds
     case language
     case advanced
+    case about
     case debug
 
     var id: String { rawValue }
@@ -119,8 +118,6 @@ struct SettingsView: View {
       switch self {
       case .you:
         .you
-      case .about:
-        .about
       case .account, .profiles, .contentSocial, .dataPrivacy,
         .authorisedApps, .devices, .connections:
         .user
@@ -129,7 +126,7 @@ struct SettingsView: View {
           .user
       #endif
       case .theming, .appearance, .accessibility, .voiceVideo, .chat,
-        .notifications, .keybinds, .language, .advanced:
+        .notifications, .keybinds, .language, .advanced, .about:
         .app
       case .debug:
         .debug
