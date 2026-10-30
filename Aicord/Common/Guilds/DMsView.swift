@@ -21,7 +21,6 @@ struct DMsView: View {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
   @Environment(\.userInterfaceIdiom) var idiom
-  @Environment(\.theme) var theme
 
   /// What the shortcuts above the list open on Mac and iPad.
   enum Panel: Identifiable {
@@ -37,41 +36,27 @@ struct DMsView: View {
   @State var panel: Panel? = nil
 
   var body: some View {
-    ScrollView {
-      if idiom == .phone {
-        VStack(spacing: 0) {
-          VStack(alignment: .leading) {
-            Text("Direct Messages")
-              .font(.title3)
-              .bold()
-              .frame(maxWidth: .infinity, alignment: .leading)
-          }
-          .padding()
-
-          Divider()
-        }
-      }
-
+    // requests and spam have their own folders
+    let channels = gw.user.privateChannels.values.filter {
+      !$0.isPendingMessageRequest && !$0.isSpam
+    }
+    List(selection: ChannelButton.selection(appState)) {
       if idiom != .phone {
         shortcuts
       }
 
-      // requests and spam have their own folders
-      let channels = gw.user.privateChannels.values.filter {
-        !$0.isPendingMessageRequest && !$0.isSpam
-      }
-      LazyVStack(spacing: 4) {
+      Section {
         ForEach(channels) { channel in
-          ChannelButton(channels: [:], channel: channel)
+          ChannelButton(channel: channel)
+            .listRowSeparator(.hidden)
+        }
+      } header: {
+        if idiom == .phone {
+          Text("Direct Messages")
         }
       }
-      .padding(.vertical, 4)
     }
-    // macos 26/27 bug workaround
-    .padding(.top, 1)
-    .frame(maxWidth: .infinity)
-    .background(theme.common.secondaryBackground.opacity(0.5))
-    .roundedCorners(radius: 10, corners: .topLeft)
+    .listStyle(.sidebar)
     .sheet(item: $panel) { panel in
       sheet(for: panel)
         #if os(macOS)
@@ -83,7 +68,7 @@ struct DMsView: View {
   /// Friends, Search, Message Requests and Spam, which live in the Messages and
   /// Search tabs on iPhone.
   var shortcuts: some View {
-    VStack(spacing: 2) {
+    Section {
       shortcut("Friends", symbol: "person.2", count: gw.user.incomingFriendRequestCount) {
         panel = .friends
       }
@@ -95,11 +80,7 @@ struct DMsView: View {
       shortcut("Spam", symbol: MessageFolder.spam.symbol, count: gw.user.spamChannels.count, quiet: true) {
         panel = .folder(.spam)
       }
-      Divider()
-        .padding(.top, 4)
     }
-    .padding(.horizontal, 6)
-    .padding(.top, 6)
   }
 
   func shortcut(
@@ -107,11 +88,8 @@ struct DMsView: View {
     action: @escaping () -> Void
   ) -> some View {
     Button(action: action) {
-      HStack(spacing: 10) {
-        Image(systemName: symbol)
-          .frame(width: 22)
-          .foregroundStyle(.secondary)
-        Text(title)
+      HStack(spacing: 4) {
+        Label(title, systemImage: symbol)
         Spacer()
         if count > 0 {
           if quiet {
@@ -123,11 +101,10 @@ struct DMsView: View {
           }
         }
       }
-      .padding(.horizontal, 8)
-      .padding(.vertical, 6)
       .contentShape(.rect)
     }
     .buttonStyle(.plain)
+    .selectionDisabled()
   }
 
   @ViewBuilder

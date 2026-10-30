@@ -13,7 +13,6 @@ struct VoiceChannelButton: View {
   @Environment(\.gateway) var gw
   @Environment(\.guildStore) var guild
   @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
-  @State private var isHovered = false
   @State private var showsHiddenInfo = false
   var channel: DiscordChannel
 
@@ -32,62 +31,67 @@ struct VoiceChannelButton: View {
       .sorted { displayName($0) .localizedCaseInsensitiveCompare(displayName($1)) == .orderedAscending }
   }
 
+  /// The channel and everyone in it, each its own list row.
   var body: some View {
     if canView {
-      VStack(alignment: .leading, spacing: 0) {
-        Button {
-          guard let guildID = guild?.guildId else { return }
-          voice.join(channelID: channel.id, guildID: guildID)
-        } label: {
-          HStack {
-            Image(systemName: "speaker.wave.2.fill")
-              .imageScale(.medium)
+      Button {
+        guard let guildID = guild?.guildId else { return }
+        voice.join(channelID: channel.id, guildID: guildID)
+      } label: {
+        HStack(spacing: 4) {
+          Label {
             Text(channel.name ?? "unknown")
-            Spacer(minLength: 4)
-            if let limit = channel.user_limit, limit > 0 {
-              Text(verbatim: "\(participants.count)/\(limit)")
-                .font(.caption2.monospacedDigit())
-                .foregroundStyle(.secondary)
-            }
+          } icon: {
+            Image(systemName: "speaker.wave.2.fill")
           }
-          .foregroundStyle(isCurrent ? .primary : .secondary)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .frame(minHeight: 35)
-          .padding(.horizontal, 12)
-          .background(
-            (isHovered ? Color.gray.opacity(0.2) : isCurrent ? Color.gray.opacity(0.13) : .clear)
-              .clipShape(.rounded)
-          )
-          .contentShape(.rect)
+          .lineLimit(1)
+          Spacer(minLength: 4)
+          if let limit = channel.user_limit, limit > 0 {
+            Text(verbatim: "\(participants.count)/\(limit)")
+              .font(.caption2.monospacedDigit())
+              .foregroundStyle(.secondary)
+          }
         }
-        .buttonStyle(.borderless)
-        .tint(.primary)
-        .onHover { isHovered = $0 }
-        .disabled(!canConnect)
-        .help(canConnect ? Text("Join Voice") : Text("You can't connect to this channel"))
-        .channelContextMenu(channel, in: guild?.guildId ?? .init("0"))
+        .fontWeight(isCurrent ? .semibold : nil)
+        .foregroundStyle(isCurrent ? .primary : .secondary)
+        .contentShape(.rect)
+      }
+      .buttonStyle(.plain)
+      .disabled(!canConnect)
+      .selectionDisabled()
+      .help(canConnect ? Text("Join Voice") : Text("You can't connect to this channel"))
+      .accessibilityHint(canConnect ? Text("Join Voice") : Text("You can't connect to this channel"))
+      .channelContextMenu(channel, in: guild?.guildId ?? .init("0"))
 
-        ForEach(participants, id: \.user_id) { state in
-          participantRow(state)
-        }
+      ForEach(participants, id: \.user_id) { state in
+        participantRow(state)
+          .selectionDisabled()
       }
     } else if showsHiddenChannels {
       Button {
         showsHiddenInfo = true
       } label: {
-        HStack {
-          Image(systemName: "speaker.wave.2.fill")
-          Text(channel.name ?? "unknown")
+        HStack(spacing: 4) {
+          Label {
+            Text(channel.name ?? "unknown")
+          } icon: {
+            Image(systemName: "speaker.wave.2.fill")
+          }
+          .lineLimit(1)
+          Spacer(minLength: 4)
+          Image(systemName: "lock.fill")
+            .font(.caption)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 35)
-        .padding(.horizontal, 12)
-        .opacity(0.5)
+        .foregroundStyle(.tertiary)
+        .contentShape(.rect)
       }
-      .buttonStyle(.borderless)
+      .buttonStyle(.plain)
+      .selectionDisabled()
+      .accessibilityHint(Text("You can't view this channel"))
       .popover(isPresented: $showsHiddenInfo) {
         HiddenChannelInfo(channel: channel, guild: guild)
           .presentationCompactAdaptation(.sheet)
+          .presentationDetents([.medium, .large])
       }
     }
   }
@@ -115,8 +119,7 @@ struct VoiceChannelButton: View {
         Image(systemName: "speaker.slash.fill").imageScale(.small).foregroundStyle(.secondary)
       }
     }
-    .padding(.leading, 34)
-    .padding(.trailing, 12)
+    .padding(.leading, 28)
     .frame(minHeight: 26)
     .accessibilityElement(children: .combine)
   }

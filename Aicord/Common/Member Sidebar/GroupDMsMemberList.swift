@@ -15,15 +15,10 @@ extension MemberSidebarView {
     var channelStore: ChannelStore
     var recipients: [DiscordUser]
     var body: some View {
-      ScrollView {
-        LazyVStack(alignment: .leading, spacing: 2) {
-          ForEach(recipients) { recipient in
-            MemberRowView(user: recipient)
-              .frame(height: 45)
-          }
-        }
-        .padding(.horizontal, 2)
+      List(recipients) { recipient in
+        MemberRowView(user: recipient)
       }
+      .listStyle(.sidebar)
     }
   }
 }

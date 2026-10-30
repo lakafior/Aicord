@@ -9,6 +9,8 @@
 import AicordKit
 import SwiftUI
 
+/// A row in a channel list (`GuildView`, `DMsView`). The list owns selection: text
+/// channels and direct messages are tagged with their id, everything else opts out.
 struct ChannelButton: View {
   /// Chat setting: list channels you can't view, locked, like Vencord's ShowHiddenChannels.
   static let showsHiddenChannelsKey = "Paicord.Chat.ShowsHiddenChannels"
@@ -16,7 +18,9 @@ struct ChannelButton: View {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
   @Environment(\.guildStore) var guild
-  var channels: [ChannelSnowflake: DiscordChannel]
+  @State private var isHovered = false
+  @State private var showsHiddenInfo = false
+  @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
   var channel: DiscordChannel
 
   /// A server channel you lack View Channel for.
@@ -33,282 +37,187 @@ struct ChannelButton: View {
     isHidden ? 0 : gw.readStates.mentionCount(channelId: channel.id)
   }
 
-  var body: some View {
-    // switch channel type
-    let selected = appState.selectedChannel == channel.id
-    switch channel.type {
-    case .dm:
-      textChannelButton { hovered in
-        HStack {
-          if let user = channel.recipients?.first {
-            Profile.AvatarWithPresence(
-              member: nil,
-              user: user
-            )
-            .profileAnimated(hovered)
-            .profileShowsAvatarDecoration()
-            .padding(2)
-          }
-          Text(
-            channel.name ?? channel.recipients?.map({
-              $0.global_name ?? $0.username
-            }).joined(separator: ", ") ?? "Unknown Channel"
-          )
-          .foregroundStyle(isUnread || selected ? .primary : .secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 38)
-        .padding(4)
-        .background {
-          if hovered || selected,
-            let nameplate = channel.recipients?.first?.collectibles?.nameplate
-          {
-            Profile.NameplateView(nameplate: nameplate)
-              .opacity(0.5)
-              .transition(.opacity.animation(.default))
-              .nameplateAnimated(hovered)
-          }
-        }
-        .clipShape(.rounded)
-        .overlay(alignment: .leading) {
-          if isUnread {
-            Circle()
-              .fill(.primary)
-              .frame(width: 8, height: 8)
-              .offset(x: -8)
-          }
-        }
-      }
-      .tint(.primary)
-      .padding(.horizontal, 4)
-    case .groupDm:
-      textChannelButton { _ in
-        HStack {
-          if let icon = channel.icon {
-            let url = DiscordImageURL.channelIcon(
-              id: channel.id,
-              icon: icon
-            )
-            NukeImage(url: url)
-              .resizable()
-              .scaledToFit()
-              .clipShape(.circle)
-              .padding(2)
-          } else {
-            VStack {
-              if let firstUser = channel.recipients?.first(where: {
-                $0.id != gw.user.currentUser?.id
-              }),
-                let lastUser = channel.recipients?.last(where: {
-                  $0.id != gw.user.currentUser?.id && $0.id != firstUser.id
-                })
-              {
-                Group {
-                  Profile.Avatar(
-                    member: nil,
-                    user: firstUser.toPartialUser()
-                  )
-                  .profileShowsAvatarDecoration()
-                  .scaleEffect(0.75, anchor: .topLeading)
-                  .overlay(
-                    Profile.Avatar(
-                      member: nil,
-                      user: lastUser.toPartialUser()
-                    )
-                    .profileShowsAvatarDecoration()
-                    .scaleEffect(0.75, anchor: .bottomTrailing)
-                  )
-                }
-                .padding(2)
-              } else if let user = channel.recipients?.first {
-                Profile.Avatar(
-                  member: nil,
-                  user: user.toPartialUser()
-                )
-                .profileShowsAvatarDecoration()
-                .padding(2)
-              } else {
-                Circle()
-                  .fill(Color.gray)
-                  .padding(2)
-              }
-            }
-            .aspectRatio(1, contentMode: .fit)
-          }
-          Text(
-            channel.name ?? channel.recipients?.map({
-              $0.global_name ?? $0.username
-            }).joined(separator: ", ") ?? "Unknown Group DM"
-          )
-          .foregroundStyle(isUnread || selected ? .primary : .secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 38)
-        .padding(4)
-        .overlay(alignment: .leading) {
-          if isUnread {
-            Circle()
-              .fill(.primary)
-              .frame(width: 8, height: 8)
-              .offset(x: -8)
-          }
-        }
-      }
-      .tint(.primary)
-      .padding(.horizontal, 4)
+  var isSelected: Bool { appState.selectedChannel == channel.id }
 
-    case .guildCategory:
-      let expectedParentID = channel.id
-      // pinned channels show at the top of the list instead
-      let pinned = guild.map { PinnedPlacesStore.shared.channels[$0.guildId] ?? [] } ?? []
-      let childChannels = channels.values
-        .filter { $0.parent_id ?? (try! .makeFake()) == expectedParentID }
-        .filter { !pinned.contains($0.id) }
-        .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
-        .map { $0.id }
-
-      category(channelIDs: childChannels)
-        .tint(.primary)
-    case .guildText:
-      textChannelButton { _ in
-        HStack {
-          Image(systemName: "number")
-            .imageScale(.medium)
-          Text(channel.name ?? "unknown")
-          if mentionCount > 0 {
-            Spacer(minLength: 4)
-            MentionCountBadge(count: mentionCount)
-          }
+  /// The selection a channel list binds to: picking a row opens its chat, and on
+  /// iPhone slides the chat over the list, also when the row was already selected.
+  @MainActor
+  static func selection(_ appState: AicordAppState) -> Binding<ChannelSnowflake?> {
+    Binding {
+      appState.selectedChannel
+    } set: { channel in
+      guard let channel else { return }
+      appState.selectedChannel = channel
+      #if os(iOS)
+        withAnimation {
+          appState.chatOpen = true
         }
-        .foregroundStyle(isUnread || selected ? .primary : .secondary)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 35)
-        .padding(.horizontal, 12)
-        .overlay(alignment: .leading) {
-          if isUnread {
-            Circle()
-              .fill(.primary)
-              .frame(width: 8, height: 8)
-              .offset(x: -8)
-          }
-        }
-      }
-      .tint(.primary)
-    case .guildAnnouncement:
-      textChannelButton { _ in
-        HStack {
-          Image(systemName: "megaphone.fill")
-            .imageScale(.medium)
-          Text(channel.name ?? "unknown")
-          if mentionCount > 0 {
-            Spacer(minLength: 4)
-            MentionCountBadge(count: mentionCount)
-          }
-        }
-        .foregroundStyle(isUnread || selected ? .primary : .secondary)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 35)
-        .padding(.horizontal, 12)
-        .overlay(alignment: .leading) {
-          if isUnread {
-            Circle()
-              .fill(.primary)
-              .frame(width: 8, height: 8)
-              .offset(x: -8)
-          }
-        }
-      }
-      .tint(.primary)
-    case .guildVoice:
-      VoiceChannelButton(channel: channel)
-    default:
-      textChannelButton { _ in
-        HStack {
-          Image(systemName: Self.symbol(for: channel.type))
-            .imageScale(.medium)
-          Text(channel.name ?? "unknown")
-        }
-        .foregroundStyle(isUnread || selected ? .primary : .secondary)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 35)
-        .padding(.horizontal, 12)
-        .overlay(alignment: .leading) {
-          if isUnread {
-            Circle()
-              .fill(.primary)
-              .frame(width: 8, height: 8)
-              .offset(x: -8)
-          }
-        }
-      }
-      .tint(.primary)
-      .disabled(true)
+      #endif
     }
   }
 
-  // Shim
-  struct TextChannelButton<Content: View>: View {
-    @Environment(\.appState) var appState
-    @Environment(\.guildStore) var guild
-    @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
-    @State private var isHovered = false
-    @State private var showsHiddenInfo = false
-    var channels: [ChannelSnowflake: DiscordChannel]
-    var channel: DiscordChannel
-    var content: (_ hovered: Bool) -> Content
-
-    var shouldHide: Bool {
-      guard let guild else { return false }
-      return guild.hasPermission(
-        channel: channel,
-        .viewChannel
-      ) == false
-    }
-    var body: some View {
-      if shouldHide {
-        if showsHiddenChannels {
-          // locked: opens what Discord tells about it instead of the chat
-          Button {
-            showsHiddenInfo = true
-          } label: {
-            content(isHovered)
-              .opacity(0.5)
-              .overlay(alignment: .trailing) {
-                Image(systemName: "lock.fill")
-                  .font(.caption)
-                  .foregroundStyle(.secondary)
-                  .padding(.trailing, 12)
-              }
-          }
-          .onHover { isHovered = $0 }
-          .buttonStyle(.borderless)
-          .accessibilityHint(Text("You can't view this channel"))
-          .popover(isPresented: $showsHiddenInfo) {
-            HiddenChannelInfo(channel: channel, guild: guild)
-              .presentationCompactAdaptation(.sheet)
-              .presentationDetents([.medium, .large])
-          }
-        }
+  var body: some View {
+    switch channel.type {
+    case .dm, .groupDm:
+      privateChannelLabel
+        .tag(channel.id)
+    case .guildVoice:
+      VoiceChannelButton(channel: channel)
+    case .guildText, .guildAnnouncement:
+      if isHidden {
+        hiddenRow
       } else {
-        Button {
-          appState.selectedChannel = channel.id
-          #if os(iOS)
-            withAnimation {
-              appState.chatOpen.toggle()
-            }
-          #endif
-        } label: {
-          content(isHovered)
-        }
-        .onHover { isHovered = $0 }
-        .buttonStyle(.borderless)
-        .modifier(OptionalChannelContextMenu(channel: channel, guildId: guild?.guildId))
+        serverChannelLabel
+          .tag(channel.id)
+          .modifier(OptionalChannelContextMenu(channel: channel, guildId: guild?.guildId))
       }
+    default:
+      // forums, media and stage channels don't open in Aicord yet
+      if isHidden {
+        hiddenRow
+      } else {
+        serverChannelLabel
+          .foregroundStyle(.tertiary)
+          .selectionDisabled()
+          .modifier(OptionalChannelContextMenu(channel: channel, guildId: guild?.guildId))
+      }
+    }
+  }
+
+  /// A server channel's icon, name and mention badge.
+  var serverChannelLabel: some View {
+    HStack(spacing: 4) {
+      Label {
+        Text(channel.name ?? "unknown")
+      } icon: {
+        Image(systemName: Self.symbol(for: channel.type))
+      }
+      .lineLimit(1)
+      Spacer(minLength: 4)
+      MentionCountBadge(count: mentionCount)
+    }
+    .fontWeight(isUnread ? .semibold : nil)
+    .foregroundStyle(isUnread || isSelected ? .primary : .secondary)
+    .overlay(alignment: .leading) { unreadDot }
+    .accessibilityElement(children: .combine)
+    .accessibilityValue(isUnread ? Text("Unread") : Text(verbatim: ""))
+  }
+
+  /// A channel you can't view: locked, opens what Discord tells about it instead of the chat.
+  @ViewBuilder
+  var hiddenRow: some View {
+    if showsHiddenChannels {
+      Button {
+        showsHiddenInfo = true
+      } label: {
+        HStack(spacing: 4) {
+          Label {
+            Text(channel.name ?? "unknown")
+          } icon: {
+            Image(systemName: Self.symbol(for: channel.type))
+          }
+          .lineLimit(1)
+          Spacer(minLength: 4)
+          Image(systemName: "lock.fill")
+            .font(.caption)
+        }
+        .foregroundStyle(.tertiary)
+        .contentShape(.rect)
+      }
+      .buttonStyle(.plain)
+      .selectionDisabled()
+      .accessibilityHint(Text("You can't view this channel"))
+      .popover(isPresented: $showsHiddenInfo) {
+        HiddenChannelInfo(channel: channel, guild: guild)
+          .presentationCompactAdaptation(.sheet)
+          .presentationDetents([.medium, .large])
+      }
+    }
+  }
+
+  /// A direct message or group: avatar, name, unread dot and mentions.
+  var privateChannelLabel: some View {
+    HStack(spacing: 10) {
+      privateChannelAvatar
+        .frame(width: 32, height: 32)
+      Text(privateChannelName)
+        .lineLimit(1)
+      Spacer(minLength: 4)
+      MentionCountBadge(count: mentionCount)
+    }
+    .fontWeight(isUnread ? .semibold : nil)
+    .foregroundStyle(isUnread || isSelected ? .primary : .secondary)
+    .background {
+      if isHovered, channel.type == .dm,
+        let nameplate = channel.recipients?.first?.collectibles?.nameplate
+      {
+        Profile.NameplateView(nameplate: nameplate)
+          .opacity(0.5)
+          .nameplateAnimated(true)
+          .transition(.opacity.animation(.default))
+          .clipShape(.rounded)
+      }
+    }
+    .overlay(alignment: .leading) { unreadDot }
+    .onHover { isHovered = $0 }
+    .accessibilityElement(children: .combine)
+    .accessibilityValue(isUnread ? Text("Unread") : Text(verbatim: ""))
+  }
+
+  var privateChannelName: String {
+    channel.name
+      ?? channel.recipients?.map { $0.global_name ?? $0.username }.joined(separator: ", ")
+      ?? (channel.type == .dm ? "Unknown Channel" : "Unknown Group DM")
+  }
+
+  @ViewBuilder
+  var privateChannelAvatar: some View {
+    if channel.type == .dm {
+      if let user = channel.recipients?.first {
+        Profile.AvatarWithPresence(member: nil, user: user)
+          .profileAnimated(isHovered)
+          .profileShowsAvatarDecoration()
+      }
+    } else if let icon = channel.icon {
+      NukeImage(url: DiscordImageURL.channelIcon(id: channel.id, icon: icon))
+        .resizable()
+        .scaledToFit()
+        .clipShape(.circle)
+    } else if let firstUser = channel.recipients?.first(where: { $0.id != gw.user.currentUser?.id }),
+      let lastUser = channel.recipients?.last(where: {
+        $0.id != gw.user.currentUser?.id && $0.id != firstUser.id
+      })
+    {
+      Profile.Avatar(member: nil, user: firstUser.toPartialUser())
+        .profileShowsAvatarDecoration()
+        .scaleEffect(0.75, anchor: .topLeading)
+        .overlay(
+          Profile.Avatar(member: nil, user: lastUser.toPartialUser())
+            .profileShowsAvatarDecoration()
+            .scaleEffect(0.75, anchor: .bottomTrailing)
+        )
+    } else if let user = channel.recipients?.first {
+      Profile.Avatar(member: nil, user: user.toPartialUser())
+        .profileShowsAvatarDecoration()
+    } else {
+      Circle().fill(Color.gray)
+    }
+  }
+
+  /// Discord's unread pip, in the row's leading margin.
+  @ViewBuilder
+  var unreadDot: some View {
+    if isUnread {
+      Circle()
+        .fill(.primary)
+        .frame(width: 6, height: 6)
+        .offset(x: -11)
+        .accessibilityHidden(true)
     }
   }
 
   /// Direct messages and groups have no channel menu.
-  private struct OptionalChannelContextMenu: ViewModifier {
+  struct OptionalChannelContextMenu: ViewModifier {
     let channel: DiscordChannel
     let guildId: GuildSnowflake?
     func body(content: Content) -> some View {
@@ -320,158 +229,16 @@ struct ChannelButton: View {
     }
   }
 
-  /// Button that switches the chat to the given channel when clicked
-  @ViewBuilder
-  func textChannelButton<Content: View>(
-    @ViewBuilder label: @escaping (_ hovered: Bool) -> Content
-  )
-    -> some View
-  {
-    TextChannelButton(
-      channels: channels,
-      channel: channel
-    ) { hovered in
-      label(hovered)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .lineLimit(1)
-        .background(
-          Group {
-            if hovered {
-              Color.gray.opacity(0.2)
-            } else {
-              Color.clear
-            }
-          }
-          .clipShape(.rounded)
-        )
-        .background(
-          Group {
-            if appState.selectedChannel == channel.id {
-              Color.gray.opacity(0.13)
-            } else {
-              Color.clear
-            }
-          }
-          .clipShape(.rounded)
-        )
-    }
-  }
-
-  /// Icon for channel types that don't have their own row style yet.
+  /// Icon for each kind of server channel.
   static func symbol(for type: DiscordChannel.Kind?) -> String {
     switch type {
+    case .guildAnnouncement: "megaphone.fill"
+    case .guildVoice: "speaker.wave.2.fill"
     case .guildForum: "bubble.left.and.text.bubble.right"
     case .guildMedia: "photo.on.rectangle"
     case .guildStageVoice: "person.wave.2"
     default: "number"
     }
-  }
-
-  struct CategoryButton: View {
-    @Environment(\.isFirstInChannelList) var isFirst
-    @Environment(\.guildStore) var guild
-    @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
-    var channelIDs: [ChannelSnowflake]
-    var channels: [ChannelSnowflake: DiscordChannel]
-    var channel: DiscordChannel
-
-    /// Categories start expanded; only the ones the user collapses are remembered.
-    @State private var isExpanded: Bool {
-      didSet {
-        UserDefaults.standard.set(
-          !isExpanded,
-          forKey: "GuildCategory.\(channel.id).Collapsed"
-        )
-      }
-    }
-
-    /// Set by initialiser, hides the category if there are no visible channels inside it.
-    var shouldHide: Bool {
-      guard !showsHiddenChannels else { return channelIDs.isEmpty }
-      // reduce channels by bool
-      let channels = channelIDs.compactMap { self.channels[$0] }
-      let allHidden = channels.reduce(true) { partialResult, channel in
-        partialResult
-          && guild?.hasPermission(channel: channel, .viewChannel)
-            == false
-      }
-      return allHidden
-    }
-
-    init(
-      channelIDs: [ChannelSnowflake],
-      channels: [ChannelSnowflake: DiscordChannel],
-      channel: DiscordChannel
-    ) {
-      self.channelIDs = channelIDs
-      self.channels = channels
-      self.channel = channel
-      self._isExpanded = .init(
-        initialValue: !UserDefaults.standard.bool(
-          forKey: "GuildCategory.\(channel.id).Collapsed"
-        )
-      )
-    }
-
-    var body: some View {
-      if !shouldHide {
-        VStack(spacing: 1) {
-          // a hairline between categories, not above the first item
-          if !isFirst {
-            Divider()
-              .padding(.horizontal, 10)
-              .padding(.bottom, 4)
-          }
-          Button {
-            withAnimation(.smooth(duration: 0.2)) {
-              isExpanded.toggle()
-            }
-          } label: {
-            HStack(spacing: 6) {
-              Text(channel.name ?? "Unknown Category")
-                .font(.footnote.weight(.semibold))
-                .textCase(.uppercase)
-                .tracking(0.4)
-                .foregroundStyle(.secondary)
-
-              Spacer(minLength: 4)
-
-              Image(systemName: "chevron.right")
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(.tertiary)
-                .rotationEffect(.degrees(isExpanded ? 90 : 0))
-            }
-            .lineLimit(1)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .contentShape(.rect)
-          }
-          .buttonStyle(.borderless)
-          .accessibilityAddTraits(.isHeader)
-          .accessibilityValue(isExpanded ? Text("Expanded") : Text("Collapsed"))
-
-          if isExpanded {
-            ForEach(channelIDs, id: \.self) { channelId in
-              if let channel = channels[channelId] {
-                ChannelButton(channels: channels, channel: channel)
-                  .frame(maxWidth: .infinity, alignment: .leading)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /// A disclosure group for a category, showing its child channels when expanded
-  @ViewBuilder
-  func category(channelIDs: [ChannelSnowflake]) -> some View {
-    CategoryButton(
-      channelIDs: channelIDs,
-      channels: channels,
-      channel: channel
-    )
-    .padding(.top, 4)
   }
 }
 
@@ -556,9 +323,4 @@ struct HiddenChannelInfo: View {
       .frame(maxHeight: 420)
     #endif
   }
-}
-
-extension EnvironmentValues {
-  /// Whether a channel list row is the first one, so it can skip its separator.
-  @Entry var isFirstInChannelList: Bool = false
 }

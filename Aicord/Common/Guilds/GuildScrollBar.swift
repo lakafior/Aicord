@@ -14,13 +14,9 @@ struct GuildScrollBar: View {
   @Environment(\.userInterfaceIdiom) var idiom
 
   var body: some View {
-    #if os(iOS)
-      // plain scroll view so the list keeps scrolling under the glass tab bar
-      ScrollView { guildList }
-        .scrollEdgeEffectStyle(.soft, for: .vertical)
-    #else
-      ScrollFadeMask { guildList }
-    #endif
+    // the system soft edge fades the icons under the toolbar and the glass tab bar
+    ScrollView { guildList }
+      .scrollEdgeEffectStyle(.soft, for: .vertical)
   }
 
   private var guildList: some View {

@@ -15,8 +15,7 @@ extension MemberSidebarView {
     var channelStore: ChannelStore
     var accumulator: ChannelStore.MemberListAccumulator
 
-    // starts unset: with the bottom anchor, row 0 would be scrolled to the bottom edge and
-    // the whole list would sit above the visible area
+    /// The member row that last scrolled into view.
     @State var upperBound: Int? = nil
 
     var scrollPairs: [IntPair] {
@@ -47,25 +46,38 @@ extension MemberSidebarView {
       return mapped.count <= 3 ? mapped : [.init(0, 99)]
     }
 
+    /// Each role group with the rows of its members; row indices count the group
+    /// headings too, as the gateway does.
+    var sections: [(id: RoleSnowflake, header: Int, members: Range<Int>)] {
+      var offset = 0
+      return accumulator.groups.map { id, group in
+        defer { offset += 1 + group.count }
+        return (id, offset, (offset + 1)..<(offset + 1 + group.count))
+      }
+    }
+
     var body: some View {
-      ScrollView {
-        LazyVStack(alignment: .leading, spacing: 2) {
-          ForEach(0...accumulator.rowCount, id: \.self) { itemIndex in
-            MemberListCell(
-              row: accumulator.row(at: itemIndex),
-              accumulator: accumulator,
-              guildStore: guildStore
-            )
-            .environment(\.memberListItemIndex, itemIndex)
-            .environment(\.memberListAccumulator, accumulator)
+      List {
+        ForEach(sections, id: \.id) { section in
+          Section {
+            ForEach(section.members, id: \.self) { itemIndex in
+              MemberListCell(
+                row: accumulator.row(at: itemIndex),
+                accumulator: accumulator,
+                guildStore: guildStore
+              )
+              .environment(\.memberListItemIndex, itemIndex)
+              .environment(\.memberListAccumulator, accumulator)
+              // rows load as they scroll in; the last one seen picks the ranges to ask for
+              .onAppear { upperBound = itemIndex }
+            }
+          } header: {
+            GroupHeaderCell(groupID: section.id, guildStore: guildStore)
+              .environment(\.memberListAccumulator, accumulator)
           }
         }
-        .scrollTargetLayout()
-        .padding(.horizontal, 2)
       }
-      // macos 26/27 bug workaround
-      .padding(.top, 1)
-      .scrollPosition(id: $upperBound, anchor: .bottom)
+      .listStyle(.sidebar)
       .task(id: scrollPairs) {
         do {
           try await Task.sleep(for: .milliseconds(300))
@@ -83,19 +95,17 @@ extension MemberSidebarView {
     let guildStore: GuildStore
 
     var body: some View {
-      HStack(alignment: .bottom) {
-        switch row?.value {
-        case .member(let member):
-          if let user = member.user {
-            MemberRowView(member: member.toPartialMember(), user: user)
-          }
-        case .group(let group):
-          GroupHeaderCell(groupID: group.id, guildStore: guildStore)
-        case nil:
-          EmptyView()
+      switch row?.value {
+      case .member(let member):
+        if let user = member.user {
+          MemberRowView(member: member.toPartialMember(), user: user)
         }
+      default:
+        // not loaded yet: an empty row of the same height, so the scroll bar stays put
+        Color.clear
+          .frame(height: 32)
+          .accessibilityHidden(true)
       }
-      .frame(height: 45)
     }
   }
 
@@ -108,24 +118,15 @@ extension MemberSidebarView {
       if let group = accumulator.groups[groupID] {
         let text: Text = {
           if let role = guildStore.role(groupID) {
-            return Text(verbatim: "\(role.name) - \(group.count)")
+            return Text(verbatim: "\(role.name) — \(group.count)")
           } else {
             let name: String = groupID.rawValue.capitalized
-            return Text(verbatim: "\(name) - \(group.count)")
+            return Text(verbatim: "\(name) — \(group.count)")
           }
         }()
 
         text
-          .font(.headline)
-          .fontWeight(.semibold)
-          .foregroundStyle(.secondary)
           .lineLimit(1)
-          .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity,
-            alignment: .bottomLeading
-          )
-          .padding([.bottom, .leading], 6)
       } else {
         // idk man
         Text(verbatim: "\(groupID.rawValue)")

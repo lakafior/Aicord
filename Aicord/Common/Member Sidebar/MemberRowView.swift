@@ -57,7 +57,7 @@ extension MemberSidebarView {
           )
           .profileShowsAvatarDecoration()
           .profileHidesOfflinePresence(true)
-          .padding(2)
+          .frame(width: 32, height: 32)
 
           Group {
             let userID = user.id
@@ -76,32 +76,22 @@ extension MemberSidebarView {
               Text(user.global_name ?? user.username)
             }
           }
-          .font(.title3)
           .fontWeight(.semibold)
           .lineLimit(1)
           .truncationMode(.tail)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(4)
         .background {
           if let nameplate = user.collectibles?.nameplate {
             Profile.NameplateView(nameplate: nameplate)
               .nameplateAnimated(isHovering)
               .opacity(isHovering ? 0.8 : 0.5)
               .transition(.opacity.animation(.default))
+              .clipShape(.rounded)
           }
         }
         .opacity(isOffline && !isHovering ? isOfflineGroupMember ? 0.3 : 1 : 1)
-        .background(
-          Group {
-            if isHovering {
-              Color.gray.opacity(0.2)
-            } else {
-              Color.almostClear
-            }
-          }
-        )
-        .clipShape(.rounded)
+        .contentShape(.rect)
       }
       .buttonStyle(.plain)
       .onHover { self.isHovering = $0 }

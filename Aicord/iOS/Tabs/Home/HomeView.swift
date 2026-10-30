@@ -13,7 +13,6 @@ import SwiftUI
 struct HomeView: View {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
-  @Environment(\.theme) var theme
 
   var guild: GuildStore?
 
@@ -29,16 +28,6 @@ struct HomeView: View {
         } else {
           DMsView()
         }
-      }
-      // the shape runs past the bottom safe area so the list scrolls under the tab bar
-      .background {
-        UnevenRoundedRectangle(topLeadingRadius: 25, style: .continuous)
-          .fill(theme.common.secondaryBackground)
-          .ignoresSafeArea(edges: .bottom)
-      }
-      .mask {
-        UnevenRoundedRectangle(topLeadingRadius: 25, style: .continuous)
-          .ignoresSafeArea(edges: .bottom)
       }
     }
     .padding(.top, 4)
