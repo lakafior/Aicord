@@ -21,7 +21,7 @@ Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`).
 
 ### ⏳ Etap 8: Odświeżenie UI
 4. **Ustawienia:**
-   - [ ] Language: na koniec, po pozostałych poprawkach. Voice & Video powstaje razem z Etapem 9 (wybór urządzeń, push-to-talk, wyciszenie).
+   - [ ] Język: zsynchronizować katalog w Xcode (build w IDE dopisze napisy dodane od Etapu 8, których nie ma w `Localizable.xcstrings`) i przetłumaczyć nowe wpisy; liczby po polsku (1 / 2–4 / 5+) przez warianty liczby mnogiej zamiast `^[…](inflect:)`; przejrzeć tłumaczenie w aplikacji. Voice & Video powstaje razem z Etapem 9 (wybór urządzeń, push-to-talk, wyciszenie).
    - Nie robimy: powiadomień push na iOS, gdy Aicord jest zamknięty. Wymagałyby własnego serwera trzymającego token konta i połączenie z gatewayem; zostają lokalne powiadomienia z działającej aplikacji.
 8. **Poprawki interfejsu (po Ustawieniach):**
    - Nie robimy: Purge (masowe usuwanie wiadomości z czatu). API Discorda pozwala usunąć tylko własne wiadomości w DM, a cudze na serwerze tylko z Manage Messages; masowe usuwanie z konta użytkownika to automatyzacja, za którą Discord blokuje konta (ostrzega przed tym nawet Undiscord).

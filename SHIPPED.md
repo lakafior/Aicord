@@ -54,6 +54,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Settings → Appearance: Light, Dark or Automatic, an accent colour that can also tint the tab bar and icons, text size and font (System, Rounded, Serif, Monospaced), Reduce Motion, and Discord's animated emoji, GIF autoplay, sticker animation and image description settings, saved to your account
 - **New** · Settings → Chat: Cozy or Compact message display (no avatars, time and name on the message's line), Discord's options for reactions, link previews, uploaded and linked media, spoilers (now also covering spoiler images) and converting emoticons like :) to emoji when sending, saved to your account
 - **New** · Notifications for messages, sent by Aicord itself while it runs (on iPhone while it's open and briefly after): they follow each server's and channel's settings from Discord, with direct messages from everyone, friends, chosen people or all but some, only selected servers or silencing servers and channels on your account, keywords, @everyone and role mentions, quiet hours and Do Not Disturb, a hidden preview, Reply and Mark as Read, and an unread badge on the app icon
+- **New** · Settings → Language: Discord's language, saved to your account, and the app's language with a link to the system's per-app setting
+- **New** · Aicord in Polish: 780 strings translated, picked by the system's language or Aicord's own language setting
 - **New** · Settings → Advanced: Developer Mode for Copy ID in menus, image cache size with Clear Cache, and viewing or sharing the app's logs; the separate Debug page is gone
 - **New** · Settings → My Account shows your account details and accounts, and Keybinds lists the shortcuts
 - **New** · Scan QR Code on iPhone uses the whole screen for the camera, starts over after a code that isn't a Discord login, and explains how to allow camera access when it's off
@@ -301,6 +303,8 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
 7. **Weryfikacja:**
    - [x] Build macOS (arm64) i iOS bez nowych ostrzeżeń, zrzuty ekranu z obu platform.
    - [x] Poprawki po przeglądzie macOS: okno Ustawień startuje w rozmiarze 860×620, a pasek boczny ma co najmniej 210 pt (nazwy sekcji nie są ucinane; `navigationSplitViewColumnWidth` musi stać za `.searchable`); popover profilu ma 340×560 pt, przełącznik „Share My Activity” jako switch, „Log Out” na czerwono.
+   - [x] Language (noc 30/31.10): „Discord Language” (`localization.locale` w ustawieniach proto, 32 języki Discorda, nazwy po swojemu i w języku czytelnika, zapis na koncie) i „App Language” z bieżącym językiem aplikacji oraz przyciskiem do ustawień systemu (iOS: strona aplikacji w Ustawieniach, macOS: Język i region → Aplikacje). Odczyt sprawdzony w symulatorze („Polski (Polish)”); zapisu na koncie nie testowałem.
+   - [x] Polskie tłumaczenie `Localizable.xcstrings`: 780 wpisów (bez tych z `^[…](inflect: true)`, bo automatyczna odmiana nie obsługuje polskiego, i bez pustych), znaczniki formatu sprawdzone skryptem; `pl` w `knownRegions`. Nazwy sekcji Ustawień przez katalog zamiast surowych `String`.
 8. **Poprawki interfejsu (po Ustawieniach):**
    - [x] iPhone startuje na Home zamiast na pustym ekranie czatu „:3 Select a channel to start chatting” (`chatOpen` domyślnie `false`); dopóki nie wybrano kanału, czatu nie da się wysunąć gestem.
    - [x] Kontener kanałów na Home: tło kończyło się nad paskiem zakładek (widać to było tylko w ciemnym motywie), teraz sięga pod pasek jak lista.

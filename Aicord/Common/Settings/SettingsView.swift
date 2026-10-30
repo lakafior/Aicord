@@ -54,7 +54,12 @@ struct SettingsView: View {
 
     var id: String { rawValue }
 
+    /// In the app's language; the cases below are the catalog's English keys.
     var title: String {
+      Bundle.main.localizedString(forKey: englishTitle, value: englishTitle, table: nil)
+    }
+
+    private var englishTitle: String {
       switch self {
       case .you: "Profile & Status"
       case .about: "About Aicord"
@@ -143,7 +148,7 @@ struct SettingsView: View {
                 }
               }
             } else {
-              Section(category.rawValue) {
+              Section(LocalizedStringKey(category.rawValue)) {
                 ForEach(items) { tab in
                   NavigationLink(value: tab) {
                     Label(tab.title, systemImage: tab.systemImage)

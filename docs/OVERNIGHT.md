@@ -11,7 +11,7 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 | 3 | Etap 10: dokończenia i wyszukiwanie po sensie | zrobione (ranking, VoiceOver, lokalne serwery, okno 4K, Index Channel) |
 | 4 | Etap 12: przygotowanie wydań | zrobione (pliki gotowe, nic nie uruchomione) |
 | 5 | Etap 11: interfejs Maca, serwer MCP | zrobione w kodzie; oba do sprawdzenia na Macu |
-| 6 | Language | czeka |
+| 6 | Language | zrobione (ustawienia i 780 polskich napisów) |
 
 **Rano sprawdzić najpierw:** patrz „Do sprawdzenia rano” na dole.
 
@@ -240,6 +240,20 @@ Sprawdzone:
 3. „Copy Configuration for Claude” → wkleić do `~/Library/Application Support/Claude/claude_desktop_config.json` (sekcja `mcpServers`) → restart Claude Desktop.
 4. W Claude: „list my Discord servers”, potem „read the last 10 messages in NAScin #ogólny” i „search NAScin for Kite”. Sprawdzić, że DM-y są niedostępne, dopóki „Include Direct Messages” jest wyłączone.
 5. Szybki test bez Claude: `printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_servers","arguments":{}}}\n' | AICORD_MCP_TOKEN=<klucz> aicord-mcp`.
+
+## 6. Language
+
+**Stan: zrobione.** Commit: `feat: Language settings and a Polish translation`.
+
+- `Aicord/Common/Settings/Language/LanguageSection.swift` (zamiast „Coming Soon”):
+  - **Discord Language**: picker z 32 kodami, które Discord trzyma w `localization.locale`; nazwa po swojemu i w języku czytelnika („Polski (Polish)”); nieznany kod z konta pokazywany jako dodatkowa pozycja. Zmiana idzie przez `patchUserSettings` (jak inne ustawienia konta). **Nie zmieniałem** wartości na koncie: tylko odczyt w symulatorze pokazał „Polski (Polish)”.
+  - **App Language**: bieżący język aplikacji (`Bundle.main.preferredLocalizations`) i „Change in System Settings…” (iOS: `openSettingsURLString`, gdzie przy dwóch lokalizacjach pojawia się „Język”; macOS: Język i region).
+- **Tłumaczenie PL:** 780 z 792 wpisów `Localizable.xcstrings`. Tłumaczenie zrobił tańszy model (Mistral Medium, przez narzędzie `delegate`, cztery paczki po ~200), ze sprawdzeniem skryptem: te same klucze, te same `%@`/`%lld`, brak `^[`. Przejrzałem próbkę 45 wpisów i poprawiłem: „Rich Presence” zostaje po angielsku (jak w Discordzie), „explicit” = „treści dla dorosłych”, „(edited)” = „(edytowano)”. Plik zapisany w formacie Xcode (ta sama kolejność, puste obiekty), więc diff to tylko dopisane `pl`.
+  - Pominięte: 12 pustych/symbolicznych i wpisy z `^[…](inflect: true)` (automatyczna odmiana nie działa po polsku; trzeba wariantów liczby mnogiej).
+  - Nazwy sekcji Ustawień były surowymi `String`, więc się nie tłumaczyły; teraz przez katalog. Dodane ręcznie (`extractionState: manual`): „Profile & Status”, „About Aicord”, „Discord Settings”, „Aicord Settings”, „Intelligence”.
+  - `pl` dopisane do `knownRegions`.
+- **Sprawdzone:** symulator uruchomiony z `-AppleLanguages (pl)` (argument startowy, nic nie zmienione w systemie): Ustawienia, karty, nazwy sekcji po polsku.
+- **Znane braki:** napisy dodane w ostatnich etapach (m.in. z tej nocy) nie są jeszcze w katalogu, bo synchronizuje go dopiero build w Xcode IDE; zostaną po angielsku do czasu synchronizacji i dotłumaczenia (ROADMAP). Formy liczbowe („%lld członków”) są w jednej formie.
 
 ---
 
