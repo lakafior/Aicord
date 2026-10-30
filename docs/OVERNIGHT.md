@@ -2,10 +2,28 @@
 
 Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26E42…`) zalogowany na prawdziwe konto. Zapisy na koncie tylko na NAScin. Nic nie wypchnięte ani scalone.
 
-## Podsumowanie (aktualizowane na bieżąco)
+## Podsumowanie
+
+Noc zakończona ok. 00:55: **cała lista zrobiona**, 12 commitów na `claude/overnight-3dc9d9` (od `929b10f` do `17a4c6e`), każdy z buildem iOS i macOS i testami. Na ostatnim commicie: build iOS (symulator) i macOS przechodzą, `swift test` w `AicordKit` **149** testów (było 143, +6 rankera), w `Textual` **187** (nowy target), `AicordMCP` się buduje. Nic nie scalone, nie wypchnięte, bez tagów. Commity tylko z Twoim nazwiskiem, bez Co-Authored-By.
 
 | # | Punkt | Stan |
 |---|---|---|
+| 1 | Etap 8: Leave Server, Invites, instrukcja Safari, link na Macu | zrobione; poprawka kliknięć na Macu do sprawdzenia |
+| 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | zrobione (−0,67 MB binarki; 187 testów Textual, znaleziony i naprawiony crash) |
+| 3 | Etap 10: ranking, VoiceOver, lokalne serwery, okno 4K, rerankowanie, Index Channel | zrobione |
+| 4 | Etap 12: workflowy wydań, AltStore, szkic Maca, wybór aktualizacji | zrobione (tylko pliki, nic nie uruchomione) |
+| 5 | Etap 11: `MacBaseplate`, menu, okna kanałów, `Settings`, serwer MCP | zrobione w kodzie; na Macu nic nie było klikane |
+| 6 | Language: ustawienia i polskie tłumaczenie | zrobione (780 napisów) |
+
+Pominięte zgodnie z zadaniem: natywne listy na iPadzie, testy z drugą osobą, wideo, zrzuty do README.
+
+**Na koncie (NAScin):** unieważnione stare zaproszenie `EdxGVcWd`. Poza tym nic nie było zapisywane ani wysyłane; na innych serwerach tylko odczyt (Leave Server tylko do alertu i Cancel na Sciwand). Lokalne ustawienia aplikacji w symulatorze przywrócone (provider Intelligence, adres testowego serwera, flaga instrukcji Safari), indeks kanału usunięty.
+
+**Uwaga o środowisku:** `request_keep_awake` odrzucił klasyfikator trybu auto; praca mimo to przeszła do końca bez przerw.
+
+**Najważniejsze ryzyka:** (1) zmiany interfejsu Maca (`MacBaseplate`, scena `Settings`, ⌘F, poprawka kliknięć) nie były klikane; jest wyłącznik Classic Window Layout. (2) Most MCP w aplikacji nie był sprawdzony na żywo (Debug podpisany ad hoc nie dostał się do pęku kluczy przy zablokowanym ekranie). (3) Zmiana `Codable` → `Decodable` w modelach jest szeroka; aplikacja i testy działają, ale warto przeklikać wysyłanie wiadomości z załącznikiem, ankietę i zmianę statusu (payloady zostały `Codable`, lecz to najbardziej dotknięty obszar).
+
+---|---|---|
 | 1 | Etap 8: Leave Server, Invites, instrukcja Safari, link na Macu | zrobione (Mac do sprawdzenia rano) |
 | 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | zrobione: −0,67 MB, 187 testów Textual (i naprawione przepełnienie stosu) |
 | 3 | Etap 10: dokończenia i wyszukiwanie po sensie | zrobione (ranking, VoiceOver, lokalne serwery, okno 4K, Index Channel) |
@@ -257,6 +275,16 @@ Sprawdzone:
 
 ---
 
-## Do sprawdzenia rano
-1. **Mac:** kliknięcia linków w wiadomościach i Esc (punkt 1 wyżej).
-2. **Mac:** Settings → Advanced → Safari Extension: stan i przycisk do ustawień Safari.
+## Do sprawdzenia rano (w tej kolejności)
+
+1. **Przejrzeć gałąź** (`git log main..claude/overnight-3dc9d9`), zwłaszcza `d247693` (modele) i `4f121b4` (Mac).
+2. **iPhone, szybko:** wysłać wiadomość z obrazkiem na NAScin, edytować ją, dodać reakcję, zmienić status — sprawdzenie, że kodowanie payloadów po zmianie modeli działa (punkt 2a).
+3. **Mac — interfejs** (punkt 5a, kroki 1–7): pasek boczny i tytuł okna, inspektor członków ⌥⌘M, Search ⌘F, menu Go, kanał w nowym oknie, okno Settings, Classic Window Layout.
+4. **Mac — linki w wiadomościach** (punkt 1): kliknięcie zwykłego linku, linku zaproszenia, wzmianki; zaznaczanie tekstu; Esc po przewinięciu.
+5. **Mac — MCP** (punkt 5b, kroki 1–5) z Claude Desktop.
+6. **Mac:** Settings → Advanced → Safari Extension (stan rozszerzenia i przycisk).
+7. **iPhone z VoiceOverem:** plakat w NAScin #ogólny czytany tekstem z obrazka (punkt 3b).
+8. **iPhone:** Index Channel na prawdziwym urządzeniu (czy są wektory, czy wyszukiwanie po sensie działa lepiej niż po słowach) i Ask z indeksem (punkt 3e).
+9. **Ollama** na Macu i połączenie z iPhone'a przez `nazwa.local:11434` (punkt 3c).
+10. **Język:** otworzyć projekt w Xcode i zbudować (synchronizacja katalogu), przejrzeć polski interfejs; ustawić Aicord na polski w Ustawieniach iOS (punkt 6).
+11. **Wydanie:** gdy będzie gotowe — Pages ze źródła Actions i pierwszy tag (punkt 4).
