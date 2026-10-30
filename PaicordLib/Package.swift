@@ -29,6 +29,10 @@ let package = Package(
       targets: ["DiscordGateway"]
     ),
     .library(
+      name: "DiscordVoice",
+      targets: ["DiscordVoice"]
+    ),
+    .library(
       name: "DiscordModels",
       targets: ["DiscordModels"]
     ),
@@ -55,6 +59,17 @@ let package = Package(
       url: "https://github.com/apple/swift-protobuf.git",
       from: "1.27.0"
     ),
+    /// DAVE (E2EE) through the official libdave. Pinned to a commit because
+    /// the repository has no tags and `main` moves.
+    .package(
+      url: "https://github.com/llsc12/DaveKit.git",
+      revision: "a4c4e182400f4661259064940b534ea53d8c3e1b"
+    ),
+    /// libopus built from source. Only the C target (`Copus`) is used.
+    .package(
+      url: "https://github.com/alta/swift-opus.git",
+      revision: "6f3cb6bd3ffed1fe5f06d00a962d5c191a50daf8"
+    ),
   ],
   targets: [
     .target(
@@ -66,8 +81,9 @@ let package = Package(
         .target(name: "DiscordGateway"),
         .target(name: "DiscordModels"),
         .target(name: "DiscordUtilities"),
+        .target(name: "DiscordVoice"),
       ],
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings + importsDiscordVoice
     ),
     .target(
       name: "DiscordCore",
@@ -90,6 +106,26 @@ let package = Package(
         .target(name: "DiscordHTTP"),
       ],
       swiftSettings: swiftSettings
+    ),
+    .target(
+      name: "DiscordVoice",
+      dependencies: [
+        .target(name: "DiscordModels"),
+        .product(name: "DaveKit", package: "DaveKit"),
+        .target(name: "COpusShim"),
+      ],
+      /// DaveKit is a Swift wrapper built with C++ interop, so importing it
+      /// requires the same mode. It stays confined to this target.
+      swiftSettings: swiftSettings + [
+        .interoperabilityMode(.Cxx),
+        .enableExperimentalFeature("CheckImplementationOnly"),
+      ]
+    ),
+    .target(
+      name: "COpusShim",
+      dependencies: [
+        .product(name: "Copus", package: "swift-opus")
+      ]
     ),
     .target(
       name: "DiscordModels",
@@ -119,7 +155,7 @@ let package = Package(
       dependencies: [
         .target(name: "PaicordLib")
       ],
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings + importsDiscordVoice
     ),
     .macro(
       name: "UnstableEnumMacro",
@@ -135,7 +171,7 @@ let package = Package(
       dependencies: [
         .target(name: "PaicordLib")
       ],
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings + importsDiscordVoice
     ),
     .testTarget(
       name: "MacroTests",
@@ -159,4 +195,12 @@ var featureFlags: [SwiftSetting] {
 
 var swiftSettings: [SwiftSetting] {
   featureFlags
+}
+
+/// `DiscordVoice` is built with C++ interop (for DaveKit) but exposes no C++
+/// in its interface; DaveKit is imported `@_implementationOnly`. Modules that
+/// import it would otherwise have to enable C++ interop too.
+/// The app target passes the same flag in OTHER_SWIFT_FLAGS.
+var importsDiscordVoice: [SwiftSetting] {
+  [.unsafeFlags(["-Xfrontend", "-disable-cxx-interop-requirement-at-import"])]
 }

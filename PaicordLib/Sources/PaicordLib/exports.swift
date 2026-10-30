@@ -4,3 +4,4 @@
 @_exported import DiscordHTTP
 @_exported import DiscordModels
 @_exported import DiscordUtilities
+@_exported import DiscordVoice
