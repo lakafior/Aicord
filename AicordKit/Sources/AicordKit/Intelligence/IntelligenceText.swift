@@ -158,10 +158,15 @@ public enum SummaryParser {
 
   /// Removes `- `, `* `, `• ` or `1. ` from the front; says whether there was one.
   private static func stripBullet(_ line: inout String) -> Bool {
-    for bullet in ["- ", "* ", "• ", "– "] where line.hasPrefix(bullet) {
-      line.removeFirst(bullet.count)
-      return true
+    // models sometimes nest bullets ("- - point") or follow them with a tab
+    var stripped = false
+    while let first = line.first, "-*•–".contains(first),
+      line.dropFirst().first?.isWhitespace == true
+    {
+      line = line.dropFirst().trimmingCharacters(in: .whitespaces)
+      stripped = true
     }
+    if stripped { return true }
     if let dot = line.firstIndex(where: { $0 == "." || $0 == ")" }),
       line[..<dot].allSatisfy(\.isNumber), !line[..<dot].isEmpty,
       line.index(after: dot) < line.endIndex, line[line.index(after: dot)] == " "

@@ -71,6 +71,12 @@ class IntelligenceTests: XCTestCase {
     XCTAssertEqual(points, [SummaryPoint(text: "Talked about pizza", refs: [1, 2])])
   }
 
+  func testNestedBulletsAndTabs() {
+    let points = SummaryParser.points(from: "- - Ola left [2]\n-\tBob stayed [3]\n  •   Done [1]")
+    XCTAssertEqual(points.map(\.text), ["Ola left", "Bob stayed", "Done"])
+    XCTAssertEqual(points.map(\.refs), [[2], [3], [1]])
+  }
+
   func testPointLineRoundTrips() {
     let point = SummaryPoint(text: "Plans for Friday", refs: [2, 9])
     XCTAssertEqual(SummaryParser.points(from: point.line), [point])

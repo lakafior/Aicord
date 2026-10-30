@@ -2,51 +2,22 @@
 //  CatchUpSheet.swift
 //  Aicord
 //
-//  "Catch Up": every unread channel at once, server → channel → a few points.
-//  Opened from the top of the server list.
+//  "Catch Up" in a server's menu: its unread channels at once, channel → a
+//  few points each.
 //
 
 import AicordKit
 import SwiftUI
-
-/// The button above the servers that opens Catch Up.
-struct CatchUpButton: View {
-  @Environment(\.theme) var theme
-  @Environment(\.colorScheme) var colorScheme
-  @State private var showing = false
-
-  var body: some View {
-    Button {
-      showing = true
-    } label: {
-      Rectangle()
-        .fill(.clear)
-        .aspectRatio(1, contentMode: .fit)
-        .overlay {
-          Image(systemName: "sparkles")
-            .font(.title2)
-            .foregroundStyle(colorScheme == .dark ? .white : .black)
-        }
-        .background(theme.common.primaryButtonBackground.opacity(0.5))
-        .clipShape(.rect(cornerRadius: 32, style: .continuous))
-    }
-    .buttonStyle(.borderless)
-    .help("Catch Up")
-    .accessibilityLabel("Catch Up")
-    .accessibilityHint("Summarizes your unread channels")
-    .sheet(isPresented: $showing) {
-      CatchUpSheet()
-    }
-  }
-}
 
 struct CatchUpSheet: View {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
   @Environment(\.dismiss) var dismiss
 
+  let guildId: GuildSnowflake
+
   /// At most this many channels, the most recently active first.
-  static let channelLimit = 12
+  static let channelLimit = 15
 
   struct Item: Identifiable {
     let id: ChannelSnowflake
@@ -68,6 +39,8 @@ struct CatchUpSheet: View {
   @State private var failure: String?
   @State private var finished = false
   @State private var skipped = 0
+  @State private var unreadable = 0
+  @State private var total = 0
 
   var body: some View {
     NavigationStack {
@@ -85,11 +58,9 @@ struct CatchUpSheet: View {
               progress
             }
           }
-          ForEach(places, id: \.self) { place in
-            Section(place) {
-              ForEach(items.filter { $0.place == place }) { item in
-                row(item)
-              }
+          ForEach(items) { item in
+            Section {
+              row(item)
             }
           }
         }
@@ -98,17 +69,21 @@ struct CatchUpSheet: View {
           } footer: {
             VStack(alignment: .leading, spacing: 4) {
               Text(
-                "Up to \(Self.channelLimit) unread channels you've opened before, newest first, 100 messages each. Muted servers and channels are skipped\(IntelligencePreferences.allowsDMs ? "" : ", and so are direct messages")."
+                "Up to \(Self.channelLimit) unread channels, newest first, the last 100 unread messages of each. Muted channels are skipped."
               )
+              .fixedSize(horizontal: false, vertical: true)
               if skipped > 0 {
                 Text("\(skipped) more unread channels weren't included.")
+              }
+              if unreadable > 0 {
+                Text("\(unreadable) channels couldn't be read and were left out.")
               }
               IntelligenceDestinationNote(model: model)
             }
           }
         }
       }
-      .navigationTitle("Catch Up")
+      .navigationTitle(gw.user.guilds[guildId]?.name ?? String(localized: "Catch Up"))
       #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
       #endif
@@ -124,12 +99,6 @@ struct CatchUpSheet: View {
     #endif
   }
 
-  private var places: [String] {
-    var seen: [String] = []
-    for item in items where !seen.contains(item.place) { seen.append(item.place) }
-    return seen
-  }
-
   private var progress: some View {
     let done = items.filter {
       if case .done = $0.state { return true }
@@ -137,8 +106,8 @@ struct CatchUpSheet: View {
       return false
     }.count
     return VStack(alignment: .leading, spacing: 6) {
-      ProgressView(value: Double(done), total: Double(max(items.count, 1)))
-      Text(items.isEmpty ? "Finding unread channels…" : "Summarized \(done) of \(items.count) channels")
+      ProgressView(value: Double(min(done, total)), total: Double(max(total, 1)))
+      Text(total == 0 ? "Finding unread channels…" : "Summarized \(done) of \(total) channels")
         .font(.caption)
         .foregroundStyle(.secondary)
     }
@@ -152,7 +121,7 @@ struct CatchUpSheet: View {
       appState.chatOpen = true
       dismiss()
     } label: {
-      Label(item.channelName, systemImage: item.guildId == nil ? "bubble.left" : "number")
+      Label(item.channelName, systemImage: "number")
         .font(.headline)
     }
     .tint(.primary)
@@ -182,45 +151,26 @@ struct CatchUpSheet: View {
 
   // MARK: Work
 
-  struct Candidate {
-    let channel: DiscordChannel
-    let guild: Guild?
-  }
-
-  /// Unread channels you've opened before (so a newly joined server's backlog
-  /// doesn't count), not muted, newest activity first.
-  private func candidates() -> [Candidate] {
+  /// The server's unread text channels you can view, except muted ones,
+  /// newest activity first.
+  private func candidates() -> [DiscordChannel] {
+    guard let guild = gw.user.guilds[guildId] else { return [] }
     let readStates = gw.readStates
     let guildSettings = gw.userGuildSettings
-    var found: [Candidate] = []
-    for guild in gw.user.guilds.values where !guildSettings.isMuted(guildId: guild.id) {
-      for channel in guild.channels ?? []
-      where channel.type == .guildText || channel.type == .guildAnnouncement {
-        guard readStates.readStates[AnySnowflake(channel.id)] != nil,
-          readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id),
-          !guildSettings.isMuted(guildId: guild.id, channelId: channel.id),
-          !(channel.parent_id.map { guildSettings.isMuted(guildId: guild.id, channelId: ChannelSnowflake($0.rawValue)) }
-            ?? false)
-        else { continue }
-        found.append(Candidate(channel: channel, guild: guild))
-      }
-    }
-    if IntelligencePreferences.allowsDMs {
-      for channel in gw.user.privateChannels.values
-      where !channel.isPendingMessageRequest && !channel.isSpam
+    let store = gw.existingGuildStore(for: guildId)
+    return (guild.channels ?? []).filter { channel in
+      (channel.type == .guildText || channel.type == .guildAnnouncement)
+        && store?.hasPermission(channel: channel, .viewChannel) != false
         && readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id)
-        && !guildSettings.isMuted(guildId: nil, channelId: channel.id)
-      {
-        found.append(Candidate(channel: channel, guild: nil))
-      }
+        && !guildSettings.isMuted(guildId: guildId, channelId: channel.id)
+        && !(channel.parent_id.map {
+          guildSettings.isMuted(guildId: guildId, channelId: ChannelSnowflake($0.rawValue))
+        } ?? false)
     }
-    return found.sorted {
-      ($0.channel.last_message_id ?? .init("0")) > ($1.channel.last_message_id ?? .init("0"))
-    }
+    .sorted { ($0.last_message_id ?? .init("0")) > ($1.last_message_id ?? .init("0")) }
   }
 
   private func catchUp() async {
-    // DMs are checked per channel below; the switch only decides whether they're listed
     switch IntelligenceModel.current() {
     case .success(let current): model = current
     case .failure(let reason):
@@ -230,39 +180,39 @@ struct CatchUpSheet: View {
     guard let model else { return }
 
     let all = candidates()
-    skipped = max(0, all.count - Self.channelLimit)
-    items = all.prefix(Self.channelLimit).map { candidate in
-      let channel = candidate.channel
-      let name =
-        candidate.guild == nil
-        ? MessagesView.title(of: channel) : "#" + (channel.name ?? "channel")
-      return Item(
-        id: channel.id,
-        guildId: candidate.guild?.id,
-        place: candidate.guild?.name ?? String(localized: "Direct Messages"),
-        channelName: name
-      )
-    }
-
-    for index in items.indices {
+    total = min(all.count, Self.channelLimit)
+    let place = gw.user.guilds[guildId]?.name ?? ""
+    // channels the app can't check permissions for yet may refuse to load;
+    // those are left out and the next ones tried, up to a limit of requests
+    var tried = 0
+    for channel in all {
       if Task.isCancelled { return }
-      items[index].state = .working
-      let item = items[index]
+      guard items.count < Self.channelLimit, tried < Self.channelLimit * 2 else { break }
+      tried += 1
+      let name = channel.name ?? "channel"
+      let messages: [DiscordChannel.Message]
       do {
-        let acked = gw.readStates.readStates[AnySnowflake(item.id)]?.last_message_id
-        let messages = try await IntelligenceSource.fetchMessages(
-          channelId: item.id, limit: 100, after: acked, gw: gw)
-        let transcript = IntelligenceSource.transcript(
-          of: messages, guildId: item.guildId, gw: gw)
-        items[index].transcript = transcript
-        guard !transcript.isEmpty else {
-          items[index].state = .done([])
-          continue
-        }
-        let where_ = item.guildId == nil ? item.channelName : "\(item.channelName) on \(item.place)"
+        let acked = gw.readStates.readStates[AnySnowflake(channel.id)]?.last_message_id
+        messages = try await IntelligenceSource.fetchMessages(
+          channelId: channel.id, limit: 100, after: acked, gw: gw)
+      } catch is CancellationError {
+        return
+      } catch {
+        if Task.isCancelled { return }
+        unreadable += 1
+        continue
+      }
+      let transcript = IntelligenceSource.transcript(of: messages, guildId: guildId, gw: gw)
+      guard !transcript.isEmpty else { continue }
+      items.append(
+        Item(
+          id: channel.id, guildId: guildId, place: place, channelName: name, state: .working,
+          transcript: transcript))
+      let index = items.count - 1
+      do {
         let points = try await model.summarizer().summarize(
           lines: transcript.lines,
-          context: "New messages in \(where_):",
+          context: "New messages in #\(name) on \(place):",
           maxPoints: 3
         )
         items[index].state = .done(points)
@@ -273,6 +223,7 @@ struct CatchUpSheet: View {
         items[index].state = .failed(error.localizedDescription)
       }
     }
+    skipped = max(0, all.count - tried)
     finished = true
   }
 }
