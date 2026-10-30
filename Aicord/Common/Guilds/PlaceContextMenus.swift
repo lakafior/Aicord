@@ -28,6 +28,7 @@ struct GuildContextMenu: ViewModifier {
   let guild: Guild
   @State private var showsSettings = false
   @State private var showsInvite = false
+  @State private var showsCatchUp = false
   @State private var error: String?
 
   func body(content: Content) -> some View {
@@ -35,6 +36,12 @@ struct GuildContextMenu: ViewModifier {
       .contextMenu {
         Button("Mark as Read", systemImage: "envelope.open") {
           saveInBackground($error) { try await gw.readStates.markRead(readableChannels) }
+        }
+        .disabled(!GuildButton.hasUnreadChannels(guild, readStates: gw.readStates))
+
+        // read-only summaries of the unread channels
+        Button("Catch Up", systemImage: "sparkles") {
+          showsCatchUp = true
         }
         .disabled(!GuildButton.hasUnreadChannels(guild, readStates: gw.readStates))
 
@@ -70,6 +77,9 @@ struct GuildContextMenu: ViewModifier {
       .sheet(isPresented: $showsSettings) {
         ServerSettingsSheet(guildId: guild.id)
       }
+      .sheet(isPresented: $showsCatchUp) {
+        CatchUpSheet(guildId: guild.id)
+      }
       .sheet(isPresented: $showsInvite) {
         InvitePeopleSheet(
           guildId: guild.id,
@@ -96,6 +106,7 @@ struct ChannelContextMenu: ViewModifier {
   let channel: DiscordChannel
   let guildId: GuildSnowflake
   @State private var error: String?
+  @State private var summary: SummaryRange?
 
   func body(content: Content) -> some View {
     content
@@ -107,6 +118,11 @@ struct ChannelContextMenu: ViewModifier {
           !gw.readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id)
             && gw.readStates.mentionCount(channelId: channel.id) == 0
         )
+
+        Button("Catch Up", systemImage: "sparkles") {
+          summary = .unread
+        }
+        .disabled(!gw.readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id))
 
         let pinned = PinnedPlacesStore.shared.isPinned(channel.id, in: guildId)
         Button(
@@ -128,6 +144,11 @@ struct ChannelContextMenu: ViewModifier {
             copyToPasteboard(channel.id.rawValue)
           }
         }
+      }
+      .sheet(item: $summary) { range in
+        ChannelSummarySheet(
+          channelId: channel.id, guildId: guildId, channelName: "#" + (channel.name ?? "channel"),
+          range: range)
       }
       .saveErrorAlert($error)
   }

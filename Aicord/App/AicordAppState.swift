@@ -60,6 +60,10 @@ final class AicordAppState {
   /// The message the forward sheet is open for, if any.
   var forwardTarget: ForwardTarget? = nil
 
+  // MARK: - Intelligence
+  /// A message an Intelligence sheet is open for (Explain Context, Explain, replies).
+  var messageIntelligenceTarget: MessageIntelligenceTarget? = nil
+
   // MARK: - Jump to Message
   /// A message the chat should scroll to and highlight once its channel is open,
   /// from Search or a forwarded message's source.

@@ -45,6 +45,7 @@ struct SettingsView: View {
     case appearance
     case voiceVideo
     case chat
+    case intelligence
     case notifications
     case keybinds
     case language
@@ -70,6 +71,7 @@ struct SettingsView: View {
       case .appearance: "Appearance"
       case .voiceVideo: "Voice & Video"
       case .chat: "Chat"
+      case .intelligence: "Intelligence"
       case .notifications: "Notifications"
       case .keybinds: "Keybinds"
       case .language: "Language"
@@ -94,6 +96,7 @@ struct SettingsView: View {
       case .appearance: "paintbrush"
       case .voiceVideo: "mic.fill"
       case .chat: "message"
+      case .intelligence: "sparkles"
       case .notifications: "bell.fill"
       case .keybinds: "keyboard"
       case .language: "globe"
@@ -112,7 +115,7 @@ struct SettingsView: View {
         case .scanQR:
           .user
       #endif
-      case .appearance, .voiceVideo, .chat,
+      case .appearance, .voiceVideo, .chat, .intelligence,
         .notifications, .keybinds, .language, .advanced, .about:
         .app
       }
@@ -226,6 +229,8 @@ struct SettingsView: View {
       voiceVideoSection
     case .chat:
       chatSection
+    case .intelligence:
+      intelligenceSection
     case .notifications:
       notificationsSection
     case .keybinds:

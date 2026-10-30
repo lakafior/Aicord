@@ -114,6 +114,9 @@ struct EntityContextMenu<Entity>: ViewModifier {
         } label: {
           Label("Copy Text", systemImage: "doc.on.doc")
         }
+        #if !os(visionOS)
+          translateButton(message)
+        #endif
       }
       Button {
         let guildID = appState.selectedGuild?.rawValue ?? "@me"
@@ -140,6 +143,8 @@ struct EntityContextMenu<Entity>: ViewModifier {
         }
       }
     }
+
+    intelligenceSection(message)
 
     Section {
       Button {
@@ -176,6 +181,71 @@ struct EntityContextMenu<Entity>: ViewModifier {
       }
     }
   }
+
+  /// Read-only language model help for this message; in DMs only when allowed.
+  @ViewBuilder
+  func intelligenceSection(_ message: DiscordChannel.Message) -> some View {
+    let isDM = guild == nil
+    if !isDM || IntelligencePreferences.allowsDMs {
+      let open = { (kind: MessageIntelligenceTarget.Kind) in
+        appState.messageIntelligenceTarget = MessageIntelligenceTarget(
+          kind: kind, message: message, guildID: guild?.guildId)
+      }
+      Menu {
+        Button {
+          open(.context)
+        } label: {
+          Label("Explain Context", systemImage: "point.3.connected.trianglepath.dotted")
+        }
+        if !message.content.isEmpty {
+          Button {
+            open(.explain)
+          } label: {
+            Label("Explain Slang and Terms", systemImage: "character.book.closed")
+          }
+        }
+        if message.attachments.contains(where: { $0.content_type?.hasPrefix("image") == true }) {
+          Button {
+            open(.images)
+          } label: {
+            Label("Describe Images", systemImage: "photo.badge.magnifyingglass")
+          }
+        }
+        if message.thread != nil || message.message_reference?.message_id != nil {
+          Button {
+            open(.replies)
+          } label: {
+            Label(
+              message.thread != nil ? "Summarize Thread" : "Summarize Replies",
+              systemImage: "text.line.first.and.arrowtriangle.forward")
+          }
+        }
+      } label: {
+        Label("Intelligence", systemImage: "sparkles")
+      }
+    }
+  }
+
+  #if !os(visionOS)
+    /// On-device translation, shown under the message; again to take it away.
+    @ViewBuilder
+    func translateButton(_ message: DiscordChannel.Message) -> some View {
+      let translator = MessageTranslator.shared
+      if translator.isShowing(message.id) {
+        Button {
+          translator.hide(message.id)
+        } label: {
+          Label("Show Original", systemImage: "translate")
+        }
+      } else {
+        Button {
+          translator.translate(message.toPartialMessage())
+        } label: {
+          Label("Translate", systemImage: "translate")
+        }
+      }
+    }
+  #endif
 
   func deleteMessageButton(_ message: DiscordChannel.Message) -> some View {
     Button(role: .destructive) {

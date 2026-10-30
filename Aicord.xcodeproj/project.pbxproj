@@ -176,6 +176,17 @@
 		C0FFEE012F00000000000004 /* ServerSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */; };
 		C0FFEE012F00000000000006 /* PinnedPlacesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012F00000000000005 /* PinnedPlacesStore.swift */; };
 		FFF120AE8D0339D38072C91F /* MessageRequestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4FFA92C2DFA47F205C9009 /* MessageRequestsView.swift */; };
+		AECCD97B23DC774FA9952B81 /* Intelligence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED92A80890A6328BD415CDD /* Intelligence.swift */; };
+		AEA47A64CEC949E1BCFFB1EC /* IntelligenceSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE06616E3A64D492BD0B59AA /* IntelligenceSource.swift */; };
+		AE8793C87C1C923030693DD2 /* MessageTranslation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB938C308AE9F2BC13D2598 /* MessageTranslation.swift */; };
+		AE631BFE6FB4E0651689C95A /* ChannelSummarySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6C4BDABF659803E2DC6E50 /* ChannelSummarySheet.swift */; };
+		AEC984EA59058671A6BA298E /* IntelligenceSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2197ABABD1CA24257CB695 /* IntelligenceSection.swift */; };
+		AE20AC89771EEC582C914D08 /* CatchUpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE47218BB51CFFA380642130 /* CatchUpSheet.swift */; };
+		AE604E11DEAF72F688E76E16 /* IntelligenceTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */; };
+		AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */; };
+		AEDA0F2608CBD5DF030505A5 /* MessageIntelligenceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */; };
+		AE5EA7C4000000000000F002 /* SearchSentence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5EA7C4000000000000F001 /* SearchSentence.swift */; };
+		AEA0F807B973625EA9F2D537 /* ScamWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -386,6 +397,17 @@
 		CD4FFA92C2DFA47F205C9009 /* MessageRequestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRequestsView.swift; sourceTree = "<group>"; };
 		E84D65FC5165C77155CF85BB /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		EB88FC1D519531963FD04B31 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchView.swift; path = Search/SearchView.swift; sourceTree = "<group>"; };
+		AED92A80890A6328BD415CDD /* Intelligence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Intelligence.swift; sourceTree = "<group>"; };
+		AE06616E3A64D492BD0B59AA /* IntelligenceSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceSource.swift; sourceTree = "<group>"; };
+		AEB938C308AE9F2BC13D2598 /* MessageTranslation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTranslation.swift; sourceTree = "<group>"; };
+		AE6C4BDABF659803E2DC6E50 /* ChannelSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSummarySheet.swift; sourceTree = "<group>"; };
+		AE2197ABABD1CA24257CB695 /* IntelligenceSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceSection.swift; sourceTree = "<group>"; };
+		AE47218BB51CFFA380642130 /* CatchUpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatchUpSheet.swift; sourceTree = "<group>"; };
+		AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceTools.swift; sourceTree = "<group>"; };
+		AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskChannelSheet.swift; sourceTree = "<group>"; };
+		AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageIntelligenceSheet.swift; sourceTree = "<group>"; };
+		AE5EA7C4000000000000F001 /* SearchSentence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchSentence.swift; path = Search/SearchSentence.swift; sourceTree = "<group>"; };
+		AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScamWarning.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -535,6 +557,7 @@
 		57DA042D2E79DC4400DB4C7C /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				AEBC07E14CE65C688FAA6177 /* Intelligence */,
 				57DA042E2E79DC4900DB4C7C /* SettingsView.swift */,
 				AA078FC82EC821FE00EDFFA8 /* About */,
 				AA078FBF2EC808F900EDFFA8 /* Account */,
@@ -675,6 +698,7 @@
 				AA10970A2E64C181005BC3D2 /* Home */,
 				AA10970E2E64C181005BC3D2 /* Messages */,
 				EB88FC1D519531963FD04B31 /* SearchView.swift */,
+				AE5EA7C4000000000000F001 /* SearchSentence.swift */,
 			);
 			path = Tabs;
 			sourceTree = "<group>";
@@ -954,6 +978,7 @@
 		AA9C81802E665E190086B1DA /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				AE00CD4D95B942E89273CB85 /* Intelligence */,
 				AC09DCE335D5D346D644EE0D /* Voice */,
 				57A4E7092E6B315700470131 /* Login */,
 				57DA04282E79893B00DB4C7C /* Launch */,
@@ -1113,6 +1138,30 @@
 			path = Voice;
 			sourceTree = "<group>";
 		};
+		AE00CD4D95B942E89273CB85 /* Intelligence */ = {
+			isa = PBXGroup;
+			children = (
+				AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */,
+				AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */,
+				AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */,
+				AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */,
+				AE47218BB51CFFA380642130 /* CatchUpSheet.swift */,
+				AE6C4BDABF659803E2DC6E50 /* ChannelSummarySheet.swift */,
+				AEB938C308AE9F2BC13D2598 /* MessageTranslation.swift */,
+				AE06616E3A64D492BD0B59AA /* IntelligenceSource.swift */,
+				AED92A80890A6328BD415CDD /* Intelligence.swift */,
+			);
+			path = Intelligence;
+			sourceTree = "<group>";
+		};
+		AEBC07E14CE65C688FAA6177 /* Intelligence */ = {
+			isa = PBXGroup;
+			children = (
+				AE2197ABABD1CA24257CB695 /* IntelligenceSection.swift */,
+			);
+			path = Intelligence;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1238,6 +1287,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AEA0F807B973625EA9F2D537 /* ScamWarning.swift in Sources */,
+				AE5EA7C4000000000000F002 /* SearchSentence.swift in Sources */,
+				AEDA0F2608CBD5DF030505A5 /* MessageIntelligenceSheet.swift in Sources */,
+				AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */,
+				AE604E11DEAF72F688E76E16 /* IntelligenceTools.swift in Sources */,
+				AE20AC89771EEC582C914D08 /* CatchUpSheet.swift in Sources */,
+				AEC984EA59058671A6BA298E /* IntelligenceSection.swift in Sources */,
+				AE631BFE6FB4E0651689C95A /* ChannelSummarySheet.swift in Sources */,
+				AE8793C87C1C923030693DD2 /* MessageTranslation.swift in Sources */,
+				AEA47A64CEC949E1BCFFB1EC /* IntelligenceSource.swift in Sources */,
+				AECCD97B23DC774FA9952B81 /* Intelligence.swift in Sources */,
 				AA1378062E967A4A00100969 /* ProcessInfo+previews.swift in Sources */,
 				AC0EF8DCE4F59941702225FE /* VoicePreferences.swift in Sources */,
 				AC0533BB00B763D598E21E8A /* AudioDevices.swift in Sources */,
