@@ -52,6 +52,10 @@ final class AicordAppState {
   /// The message an emoji picker is currently open for, if any.
   var reactionPickerTarget: ReactionPickerTarget? = nil
 
+  // MARK: - Invites
+  /// An invite whose preview sheet is open: a tapped link, or one from Safari.
+  var invitePreviewCode: String? = nil
+
   // MARK: - Forward
   /// The message the forward sheet is open for, if any.
   var forwardTarget: ForwardTarget? = nil

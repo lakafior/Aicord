@@ -16,6 +16,8 @@ extension MessageCell {
   struct EmbedsView: View {
     var embeds: [Embed]
     var message: DiscordChannel.PartialMessage? = nil
+    /// "Show Media from Links": off leaves video cards without their thumbnail.
+    var showsLinkMedia: Bool = true
 
     private let maxWidth: CGFloat = 500
     private let maxHeight: CGFloat = 300
@@ -23,7 +25,7 @@ extension MessageCell {
     var body: some View {
       LazyVStack(alignment: .leading, spacing: 8) {
         ForEach(embeds.combineEmbedRuns(), id: \.embed) { embed in
-          EmbedRow(embedData: embed, message: message)
+          EmbedRow(embedData: embed, message: message, showsLinkMedia: showsLinkMedia)
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -33,6 +35,7 @@ extension MessageCell {
       @Environment(\.appState) var appState
       let embedData: (embed: Embed, items: [Embed.Media])
       var message: DiscordChannel.PartialMessage? = nil
+      var showsLinkMedia: Bool = true
       var embed: Embed {
         embedData.embed
       }
@@ -64,8 +67,17 @@ extension MessageCell {
             }
           case .link:
             LinkEmbedView(embed: embed, items: embedData.items, message: message)
+          case .video:
+            VideoEmbedView(embed: embed, message: message, showsMedia: showsLinkMedia)
+          case .pollResult:
+            PollResultEmbedView(embed: embed)
+          case .autoModerationMessage:
+            AutoModerationEmbedView(embed: embed)
           default:
-            Text("Unsupported embed type: \(embed.type.debugDescription)")
+            // types Discord adds later: show what a rich embed would, or nothing
+            if embed.title != nil || embed.description != nil || embed.fields?.isEmpty == false {
+              EmbedView(embed: embed, items: embedData.items, message: message)
+            }
           }
         }
       }

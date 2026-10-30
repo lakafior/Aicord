@@ -565,6 +565,7 @@ struct FriendsSheet: View {
   @State var searchText = ""
   @State var page: FriendsPage = .friends
   @State var pendingRemoval: DiscordRelationship? = nil
+  @State var addingFriend = false
   @Environment(\.gateway) var gw
 
   var body: some View {
@@ -579,6 +580,10 @@ struct FriendsSheet: View {
         .labelsHidden()
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+
+        Section {
+          Button("Add Friend", systemImage: "person.badge.plus") { addingFriend = true }
+        }
 
         FriendsList(
           page: page,
@@ -605,6 +610,9 @@ struct FriendsSheet: View {
         ToolbarItem(placement: .confirmationAction) {
           Button("Done") { dismiss() }
         }
+      }
+      .sheet(isPresented: $addingFriend) {
+        AddFriendSheet()
       }
     }
   }

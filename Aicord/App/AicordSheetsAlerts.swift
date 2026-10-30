@@ -28,6 +28,14 @@ struct AicordSheetsAlerts: ViewModifier {
         }
         .frame(idealWidth: 400, idealHeight: 300)
       }
+      .sheet(
+        item: Binding(
+          get: { appState.invitePreviewCode.map(InviteCode.init(code:)) },
+          set: { appState.invitePreviewCode = $0?.code }
+        )
+      ) { item in
+        InvitePreviewSheet(code: item.code)
+      }
       .alert(
         "Error",
         isPresented: $appState.showingError,

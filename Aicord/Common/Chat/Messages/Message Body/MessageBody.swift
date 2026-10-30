@@ -131,11 +131,18 @@ extension MessageCell {
           by: mediaFilter.redaction(for:)
         )
         if let shown = embeds[.show] {
-          EmbedsView(embeds: shown, message: message)
+          EmbedsView(embeds: shown, message: message, showsLinkMedia: showsLinkMedia)
         }
         if let blurred = embeds[.blur] {
           SensitiveMediaCover {
-            EmbedsView(embeds: blurred, message: message)
+            EmbedsView(embeds: blurred, message: message, showsLinkMedia: showsLinkMedia)
+          }
+        }
+
+        // Invite cards for the server links in the text, like Discord
+        if !isSnapshot {
+          ForEach(InviteLink.codes(in: message.content ?? "").prefix(3), id: \.self) { code in
+            InvitePreview(code: code)
           }
         }
 
@@ -195,13 +202,17 @@ extension MessageCell {
     /// Embeds after Discord's "show embeds" and "show media posted as links".
     private var visibleEmbeds: [Embed] {
       guard settings?.rendersEmbeds ?? true else { return [] }
-      guard settings?.inlinesEmbedMedia ?? true else {
+      guard showsLinkMedia else {
         return (message.embeds ?? []).filter { embed in
-          embed.type.map { !Self.linkMediaKinds.contains($0) } ?? true
+          // a titled video keeps its card, just without the thumbnail
+          if embed.type == .video { return embed.title != nil }
+          return embed.type.map { !Self.linkMediaKinds.contains($0) } ?? true
         }
       }
       return message.embeds ?? []
     }
+
+    private var showsLinkMedia: Bool { settings?.inlinesEmbedMedia ?? true }
 
     private static let linkMediaKinds: [Embed.Kind] = [.image, .gifv, .video]
 

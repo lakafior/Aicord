@@ -24,8 +24,10 @@ extension View {
 
 struct GuildContextMenu: ViewModifier {
   @Environment(\.gateway) var gw
+  @Environment(\.appState) var appState
   let guild: Guild
   @State private var showsSettings = false
+  @State private var showsInvite = false
   @State private var error: String?
 
   func body(content: Content) -> some View {
@@ -43,6 +45,11 @@ struct GuildContextMenu: ViewModifier {
         ) {
           withAnimation { PinnedPlacesStore.shared.togglePin(guild.id) }
         }
+
+        Button("Invite People", systemImage: "person.badge.plus") {
+          showsInvite = true
+        }
+        .disabled(InvitePeople.channels(in: guild.id, gw: gw).isEmpty)
 
         Divider()
 
@@ -62,6 +69,12 @@ struct GuildContextMenu: ViewModifier {
       }
       .sheet(isPresented: $showsSettings) {
         ServerSettingsSheet(guildId: guild.id)
+      }
+      .sheet(isPresented: $showsInvite) {
+        InvitePeopleSheet(
+          guildId: guild.id,
+          preferredChannel: appState.selectedGuild == guild.id ? appState.selectedChannel : nil
+        )
       }
       .saveErrorAlert($error)
   }
@@ -258,7 +271,7 @@ extension View {
   }
 }
 
-private func copyToPasteboard(_ string: String) {
+func copyToPasteboard(_ string: String) {
   #if os(macOS)
     NSPasteboard.general.clearContents()
     NSPasteboard.general.setString(string, forType: .string)
