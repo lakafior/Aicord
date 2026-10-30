@@ -91,6 +91,26 @@ class ReadStateStore: DiscordDataStore {
     }
   }
 
+  /// Marks channels read up to their latest message, 100 per request.
+  func markRead(_ channels: [DiscordChannel]) async throws {
+    guard let gateway else { return }
+    let pending: [(ChannelSnowflake, MessageSnowflake)] = channels.compactMap { channel in
+      guard let last = channel.last_message_id,
+        isUnread(channelId: channel.id, lastMessageId: last)
+          || mentionCount(channelId: channel.id) > 0
+      else { return nil }
+      return (channel.id, last)
+    }
+    for start in stride(from: 0, to: pending.count, by: 100) {
+      let batch = pending[start..<min(start + 100, pending.count)]
+      let res = try await gateway.client.bulkAckReadStates(
+        payload: .init(read_states: batch.map { .init(channel_id: $0.0, message_id: $0.1) })
+      )
+      try res.guardSuccess()
+      for (channel, message) in batch { applyAck(channelId: channel, messageId: message) }
+    }
+  }
+
   func isUnread(channelId: ChannelSnowflake, lastMessageId: MessageSnowflake?) -> Bool {
     guard let lastMessageId else { return false }
     guard let acked = readStates[AnySnowflake(channelId)]?.last_message_id else { return true }

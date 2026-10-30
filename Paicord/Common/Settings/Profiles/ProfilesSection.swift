@@ -246,7 +246,7 @@ struct ServerProfileEditor: View {
     } footer: {
       Text("Change how you appear on one server. Other servers keep your main profile.")
     }
-    .onChange(of: guildID) { _, _ in loadMember() }
+    .onChange(of: guildID, initial: true) { _, _ in loadMember() }
 
     if guildID != nil {
       Section("Preview") {

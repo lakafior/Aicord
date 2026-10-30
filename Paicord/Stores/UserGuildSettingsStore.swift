@@ -91,15 +91,99 @@ class UserGuildSettingsStore: DiscordDataStore {
   func setLevel(
     _ level: Level, guildId: GuildSnowflake, channelId: ChannelSnowflake? = nil
   ) async throws {
-    guard let gateway else { return }
-    let payload: Payloads.ModifyUserGuildSettings
     if let channelId {
-      payload = .init(channel_overrides: [
-        channelId.rawValue: .init(message_notifications: level.rawValue)
-      ])
+      try await modify(
+        guildId,
+        .init(channel_overrides: [
+          channelId.rawValue: .init(message_notifications: level.rawValue)
+        ])
+      )
     } else {
-      payload = .init(message_notifications: level.rawValue)
+      try await modify(guildId, .init(message_notifications: level.rawValue))
     }
+  }
+
+  // MARK: - Mute
+
+  /// The lengths Discord offers for a mute.
+  enum MuteDuration: Int, CaseIterable, Identifiable {
+    case fifteenMinutes = 900
+    case oneHour = 3600
+    case eightHours = 28800
+    case twentyFourHours = 86400
+    case untilTurnedOff = -1
+
+    var id: Int { rawValue }
+
+    var title: LocalizedStringResource {
+      switch self {
+      case .fifteenMinutes: "For 15 Minutes"
+      case .oneHour: "For 1 Hour"
+      case .eightHours: "For 8 Hours"
+      case .twentyFourHours: "For 24 Hours"
+      case .untilTurnedOff: "Until I Turn It Back On"
+      }
+    }
+  }
+
+  /// When an active mute ends; `nil` if it lasts until turned off or isn't on.
+  func muteEnd(guildId: GuildSnowflake?, channelId: ChannelSnowflake? = nil) -> Date? {
+    let config: Guild.UserGuildSettings.MuteConfig??
+    if let channelId {
+      config = override(guildId: guildId, channelId: channelId)?.mute_config
+    } else {
+      config = userGuildSettings[guildId]?.mute_config
+    }
+    guard let end = config??.end_time?.date, end > .now else { return nil }
+    return end
+  }
+
+  /// Mutes a server (or a channel, with `channelId`) for `duration`, or unmutes it.
+  func setMuted(
+    _ muted: Bool, for duration: MuteDuration = .untilTurnedOff,
+    guildId: GuildSnowflake, channelId: ChannelSnowflake? = nil
+  ) async throws {
+    let config: Payloads.ModifyUserGuildSettings.MuteConfig? =
+      muted
+      ? .init(
+        selected_time_window: duration.rawValue,
+        end_time: duration == .untilTurnedOff
+          ? nil : Date.now.addingTimeInterval(TimeInterval(duration.rawValue))
+      )
+      : nil
+    if let channelId {
+      try await modify(
+        guildId,
+        .init(channel_overrides: [
+          channelId.rawValue: .init(muted: muted, mute_config: config)
+        ])
+      )
+    } else {
+      try await modify(guildId, .init(muted: muted, mute_config: config))
+    }
+  }
+
+  // MARK: - Suppression
+
+  func suppressesEveryone(guildId: GuildSnowflake) -> Bool {
+    userGuildSettings[guildId]?.suppress_everyone ?? false
+  }
+
+  func suppressesRoles(guildId: GuildSnowflake) -> Bool {
+    userGuildSettings[guildId]?.suppress_roles ?? false
+  }
+
+  /// Turns off (or back on) notifications for @everyone and @here, or for role mentions.
+  func setSuppress(
+    everyone: Bool? = nil, roles: Bool? = nil, guildId: GuildSnowflake
+  ) async throws {
+    try await modify(guildId, .init(suppress_everyone: everyone, suppress_roles: roles))
+  }
+
+  private func modify(
+    _ guildId: GuildSnowflake, _ payload: Payloads.ModifyUserGuildSettings
+  ) async throws {
+    guard let gateway else { return }
     let res = try await gateway.client.modifyUserGuildSettings(
       guildId: guildId, payload: payload
     )

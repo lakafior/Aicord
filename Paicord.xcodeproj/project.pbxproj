@@ -105,6 +105,8 @@
 		AA7B38F22EB37F9B00CA4A3C /* PermsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7B38F12EB37F9500CA4A3C /* PermsHelper.swift */; };
 		AA7B38F42EB50F0100CA4A3C /* MessageDrainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7B38F32EB50EFD00CA4A3C /* MessageDrainStore.swift */; };
 		AA9C81832E6660BE0086B1DA /* GuildButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C81822E6660BE0086B1DA /* GuildButton.swift */; };
+		C0FFEE012F00000000000004 /* ServerSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */; };
+		C0FFEE012F00000000000002 /* PlaceContextMenus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012F00000000000001 /* PlaceContextMenus.swift */; };
 		AA9C81862E66670E0086B1DA /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C81852E66670E0086B1DA /* CornerRadius.swift */; };
 		AA9D26B12EC95EE4006071FE /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9D26B02EC95EE3006071FE /* FlowLayout.swift */; };
 		AA9D26B32EC97721006071FE /* ViewUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9D26B22EC97714006071FE /* ViewUtils.swift */; };
@@ -135,6 +137,7 @@
 		AACADCBA2F3372060007F705 /* TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACADCB92F3372060007F705 /* TextView.swift */; };
 		AAD4469D2ECFBC1A006CB07C /* UserGuildSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD4469C2ECFB915006CB07C /* UserGuildSettingsStore.swift */; };
 		AAD4469F2ECFD6D6006CB07C /* ReadStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD4469E2ECFD6D2006CB07C /* ReadStateStore.swift */; };
+		C0FFEE012F00000000000006 /* PinnedPlacesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012F00000000000005 /* PinnedPlacesStore.swift */; };
 		AE51A0022F00000100A1C0DE /* NotificationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE51A0012F00000100A1C0DE /* NotificationStore.swift */; };
 		AAD446A42ED0B631006CB07C /* ShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD446A32ED0B631006CB07C /* ShellView.swift */; };
 		AAD73EB62E93E29E00470158 /* DMsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD73EB52E93E29E00470158 /* DMsView.swift */; };
@@ -256,6 +259,8 @@
 		AA7B38F12EB37F9500CA4A3C /* PermsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermsHelper.swift; sourceTree = "<group>"; };
 		AA7B38F32EB50EFD00CA4A3C /* MessageDrainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDrainStore.swift; sourceTree = "<group>"; };
 		AA9C81822E6660BE0086B1DA /* GuildButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuildButton.swift; sourceTree = "<group>"; };
+		C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerSettingsSheet.swift; sourceTree = "<group>"; };
+		C0FFEE012F00000000000001 /* PlaceContextMenus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceContextMenus.swift; sourceTree = "<group>"; };
 		AA9C81852E66670E0086B1DA /* CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerRadius.swift; sourceTree = "<group>"; };
 		AA9D26B02EC95EE3006071FE /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		AA9D26B22EC97714006071FE /* ViewUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewUtils.swift; sourceTree = "<group>"; };
@@ -287,6 +292,7 @@
 		AACADCB92F3372060007F705 /* TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextView.swift; sourceTree = "<group>"; };
 		AAD4469C2ECFB915006CB07C /* UserGuildSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGuildSettingsStore.swift; sourceTree = "<group>"; };
 		AAD4469E2ECFD6D2006CB07C /* ReadStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadStateStore.swift; sourceTree = "<group>"; };
+		C0FFEE012F00000000000005 /* PinnedPlacesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedPlacesStore.swift; sourceTree = "<group>"; };
 		AE51A0012F00000100A1C0DE /* NotificationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationStore.swift; sourceTree = "<group>"; };
 		AAD446A32ED0B631006CB07C /* ShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellView.swift; sourceTree = "<group>"; };
 		AAD73EB52E93E29E00470158 /* DMsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DMsView.swift; sourceTree = "<group>"; };
@@ -398,6 +404,8 @@
 				AAD73EB52E93E29E00470158 /* DMsView.swift */,
 				AA1878F22E81A305009C7E40 /* GuildView.swift */,
 				AA9C81822E6660BE0086B1DA /* GuildButton.swift */,
+				C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */,
+				C0FFEE012F00000000000001 /* PlaceContextMenus.swift */,
 			);
 			path = Guilds;
 			sourceTree = "<group>";
@@ -939,6 +947,7 @@
 				AABED59F2E7F48F9005BDD63 /* CurrentUserStore.swift */,
 				AAD4469C2ECFB915006CB07C /* UserGuildSettingsStore.swift */,
 				AAD4469E2ECFD6D2006CB07C /* ReadStateStore.swift */,
+				C0FFEE012F00000000000005 /* PinnedPlacesStore.swift */,
 				AE51A0012F00000100A1C0DE /* NotificationStore.swift */,
 				AABED5A32E7F4DAE005BDD63 /* GuildStore.swift */,
 				AABED59D2E7F4637005BDD63 /* ChannelStore.swift */,
@@ -1087,6 +1096,8 @@
 				AA0624802F0A04DF007F28EB /* MessageDrainView.swift in Sources */,
 				AAB905302E82FD9200EA171B /* Conformances.swift in Sources */,
 				AA9C81832E6660BE0086B1DA /* GuildButton.swift in Sources */,
+				C0FFEE012F00000000000004 /* ServerSettingsSheet.swift in Sources */,
+				C0FFEE012F00000000000002 /* PlaceContextMenus.swift in Sources */,
 				AA4207CF2F2D1170006B8227 /* EmojiPicker.swift in Sources */,
 				AA2F51C32EE4ABCE00F18DB7 /* Storage.swift in Sources */,
 				AACADCB82F3371160007F705 /* DocumentPickerViewController.swift in Sources */,
@@ -1132,6 +1143,7 @@
 				A2C21A1E2FA8150200B0F069 /* SettingsSheet.swift in Sources */,
 				AA21D27E2EA8ED4400C75093 /* ProfileFullSheetView.swift in Sources */,
 				AAD4469F2ECFD6D6006CB07C /* ReadStateStore.swift in Sources */,
+				C0FFEE012F00000000000006 /* PinnedPlacesStore.swift in Sources */,
 				AE51A0022F00000100A1C0DE /* NotificationStore.swift in Sources */,
 				AA5CA6542E9BD37D00C7C82A /* ComponentsV2.swift in Sources */,
 				AABED5A92E7FF982005BDD63 /* Merging.swift in Sources */,

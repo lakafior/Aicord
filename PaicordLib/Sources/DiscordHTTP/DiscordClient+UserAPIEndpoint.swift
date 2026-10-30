@@ -780,6 +780,16 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint), payload: payload)
   }
 
+  /// Marks many channels read at once, up to 100 per call.
+  /// https://docs.discord.food/topics/read-state#bulk-acknowledge
+  @inlinable
+  public func bulkAckReadStates(
+    payload: Payloads.BulkAckReadStates
+  ) async throws -> DiscordHTTPResponse {
+    let endpoint = UserAPIEndpoint.bulkAckReadStates
+    return try await self.send(request: .init(to: endpoint), payload: payload)
+  }
+
   /// Proxies external image URLs through Discord's media proxy so they can be used as rich presence assets.
   /// Each result's `external_asset_path` is used as `mp:<path>` in the activity assets.
   /// https://docs.discord.food/resources/application#create-application-external-assets

@@ -44,6 +44,7 @@ public enum UserAPIEndpoint: Endpoint {
   // MARK: - User Guild Settings
   /// `nil` is the settings for direct messages (`@me`).
   case modifyUserGuildSettings(guildId: GuildSnowflake?)
+  case bulkAckReadStates
 
   // MARK: - Directory Entries
 
@@ -342,6 +343,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/connections/\(type.rawValue)/\(id)"
     case .modifyUserGuildSettings(let guildId):
       suffix = "users/@me/guilds/\(guildId?.rawValue ?? "@me")/settings"
+    case .bulkAckReadStates:
+      suffix = "read-states/ack-bulk"
 
     // MARK: - Remote Authentication
     case .createRemoteAuthSession:
@@ -514,6 +517,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/connections/\(type.rawValue)/\(id)"
     case .modifyUserGuildSettings(let guildId):
       suffix = "users/@me/guilds/\(guildId?.rawValue ?? "@me")/settings"
+    case .bulkAckReadStates:
+      suffix = "read-states/ack-bulk"
     case .createRemoteAuthSession:
       suffix = "users/@me/remote-auth"
     case .finishRemoteAuthSession:
@@ -595,6 +600,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyOwnConnection: return .PATCH
     case .deleteOwnConnection: return .DELETE
     case .modifyUserGuildSettings: return .PATCH
+    case .bulkAckReadStates: return .POST
     case .createRemoteAuthSession: return .POST
     case .finishRemoteAuthSession: return .POST
     case .cancelRemoteAuthSession: return .POST
@@ -666,6 +672,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .listOAuth2Tokens, .revokeOAuth2Token: return true
     case .modifyOwnConnection, .deleteOwnConnection: return true
     case .modifyUserGuildSettings: return true
+    case .bulkAckReadStates: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -737,6 +744,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .listOAuth2Tokens, .revokeOAuth2Token: return true
     case .modifyOwnConnection, .deleteOwnConnection: return true
     case .modifyUserGuildSettings: return true
+    case .bulkAckReadStates: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -839,6 +847,7 @@ public enum UserAPIEndpoint: Endpoint {
       .deleteOwnConnection(let type, let id):
       return [type.rawValue, id]
     case .modifyUserGuildSettings(let guildId): return [guildId?.rawValue ?? "@me"]
+    case .bulkAckReadStates: return []
     case .createRemoteAuthSession: return []
     case .finishRemoteAuthSession: return []
     case .cancelRemoteAuthSession: return []
@@ -921,6 +930,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyOwnConnection: return 135
     case .deleteOwnConnection: return 136
     case .modifyUserGuildSettings: return 137
+    case .bulkAckReadStates: return 138
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -1049,6 +1059,7 @@ public enum UserAPIEndpoint: Endpoint {
       return "deleteOwnConnection(type: \(type), id: \(id))"
     case .modifyUserGuildSettings(let guildId):
       return "modifyUserGuildSettings(guildId: \(String(describing: guildId)))"
+    case .bulkAckReadStates: return "bulkAckReadStates"
     case .createRemoteAuthSession: return "createRemoteAuthSession"
     case .finishRemoteAuthSession: return "finishRemoteAuthSession"
     case .cancelRemoteAuthSession: return "cancelRemoteAuthSession"
