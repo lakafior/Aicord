@@ -26,6 +26,8 @@ class CurrentUserStore: DiscordDataStore {
   private var presenceBoxes: [UserSnowflake: PresenceBox] = [:]
   var users: [UserSnowflake: PartialUser] = [:]
   var sessions: [Gateway.Session] = []
+  /// Hash of the auth session this client is logged in with, to mark it in Devices.
+  var authSessionIdHash: String?
   var emojis: [GuildSnowflake: [EmojiSnowflake: Emoji]] = [:]
   var stickers: [GuildSnowflake: [StickerSnowflake: Sticker]] = [:]
   var premiumKind: DiscordUser.PremiumKind = .none
@@ -106,6 +108,9 @@ class CurrentUserStore: DiscordDataStore {
         case .sessionsReplace(let sessionsReplace):
           self.sessions = sessionsReplace
 
+        case .authSessionChange(let change):
+          authSessionIdHash = change.auth_session_id_hash
+
         case .guildEmojisUpdate(let emojisUpdate):
           handleGuildEmojisUpdate(emojisUpdate)
 
@@ -122,6 +127,7 @@ class CurrentUserStore: DiscordDataStore {
   // MARK: - Event Handlers
   private func handleReady(_ readyData: Gateway.Ready) {
     sessions = readyData.sessions
+    authSessionIdHash = readyData.auth_session_id_hash
     currentUser = readyData.user
 
     premiumKind = readyData.user.premium_type ?? .none

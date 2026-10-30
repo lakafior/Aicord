@@ -56,6 +56,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **New** · Settings → Content & Social: sensitive and graphic media (show, blur or block), keyword filters, DM spam filter, message requests and who can send you friend requests, saved to your Discord account
 - **New** · Settings → Data & Privacy: activity privacy (share your activity, in new servers, who can join without asking, recent games), how Discord may use your data, and requesting a copy of your data
 - **New** · Settings → Authorised Apps: the bots and sites you signed in to with Discord, what each may do in plain words, and deauthorising one after a confirmation
+- **New** · Settings → Devices: where your account is logged in (system, client, approximate location, last used), with this device marked, and logging out one device or all others after a confirmation
 - **New** · Media Discord flags as sensitive is blurred or blocked in chats according to those settings, and an optional word filter hides matching messages behind a tap, using the community LDNOOBW lists (CC BY 4.0) plus your own words
 - **New** · About Aicord in Settings with version, licence and a link to this repository
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory

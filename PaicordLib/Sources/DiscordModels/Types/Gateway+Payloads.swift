@@ -460,6 +460,9 @@ extension Gateway {
     public var guilds: [Guild]
     public var geo_ordered_rtc_regions: [String]?
     public var auth_token: Secret?
+    /// Hash of the auth session behind the token this connection uses; matches
+    /// `UserAuthenticationSessions.Session.id_hash`.
+    public var auth_session_id_hash: String?
   }
 
   /// https://docs.discord.food/topics/gateway-events#ready-supplemental
@@ -469,7 +472,7 @@ extension Gateway {
 
   /// https://docs.discord.food/topics/gateway-events#auth-session-change
   public struct AuthSessionChange: Sendable, Codable {
-
+    public var auth_session_id_hash: String?
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#thread-delete

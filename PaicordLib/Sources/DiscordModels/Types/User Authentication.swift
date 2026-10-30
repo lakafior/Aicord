@@ -11,7 +11,8 @@
 public struct UserAuthenticationSessions: Sendable, Codable {
   public var user_sessions: [Session]
 
-  public struct Session: Sendable, Codable {
+  public struct Session: Sendable, Codable, Identifiable {
+    public var id: String { id_hash }
     public var id_hash: String
     public var approx_last_used_time: DiscordTimestamp
     public var client_info: ClientInfo
