@@ -3078,28 +3078,88 @@ public enum Payloads {
     public var suppress_roles: Bool?
     public var channel_overrides: [String: ChannelOverride]?
 
+    public var mute_config: MuteConfig?
+
     public struct ChannelOverride: Sendable, Encodable {
       public var message_notifications: Int?
       public var muted: Bool?
+      public var mute_config: MuteConfig?
 
-      public init(message_notifications: Int? = nil, muted: Bool? = nil) {
+      public init(
+        message_notifications: Int? = nil, muted: Bool? = nil, mute_config: MuteConfig? = nil
+      ) {
         self.message_notifications = message_notifications
         self.muted = muted
+        self.mute_config = mute_config
+      }
+    }
+
+    /// How long a mute lasts. `selected_time_window` is in seconds, -1 with no
+    /// `end_time` meaning until it is turned off.
+    public struct MuteConfig: Sendable, Encodable {
+      public var selected_time_window: Int
+      public var end_time: Date?
+
+      public init(selected_time_window: Int, end_time: Date?) {
+        self.selected_time_window = selected_time_window
+        self.end_time = end_time
+      }
+
+      public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(selected_time_window, forKey: .selected_time_window)
+        // Discord wants the key present, as null, for a mute without an end
+        if let end_time {
+          try container.encode(ISO8601DateFormatter().string(from: end_time), forKey: .end_time)
+        } else {
+          try container.encodeNil(forKey: .end_time)
+        }
+      }
+
+      enum CodingKeys: String, CodingKey {
+        case selected_time_window, end_time
       }
     }
 
     public init(
       message_notifications: Int? = nil,
       muted: Bool? = nil,
+      mute_config: MuteConfig? = nil,
       suppress_everyone: Bool? = nil,
       suppress_roles: Bool? = nil,
       channel_overrides: [String: ChannelOverride]? = nil
     ) {
       self.message_notifications = message_notifications
       self.muted = muted
+      self.mute_config = mute_config
       self.suppress_everyone = suppress_everyone
       self.suppress_roles = suppress_roles
       self.channel_overrides = channel_overrides
+    }
+
+    public func validate() -> [ValidationFailure] {}
+  }
+
+  /// https://docs.discord.food/topics/read-state#bulk-acknowledge
+  public struct BulkAckReadStates: Sendable, Encodable, ValidatablePayload {
+    public var read_states: [ReadState]
+
+    public struct ReadState: Sendable, Encodable {
+      public var channel_id: ChannelSnowflake
+      public var message_id: MessageSnowflake
+      public var read_state_type: Int?
+
+      public init(
+        channel_id: ChannelSnowflake, message_id: MessageSnowflake, read_state_type: Int? = nil
+      ) {
+        self.channel_id = channel_id
+        self.message_id = message_id
+        self.read_state_type = read_state_type
+      }
+    }
+
+    public init(read_states: [ReadState]) {
+      self.read_states = read_states
     }
 
     public func validate() -> [ValidationFailure] {}

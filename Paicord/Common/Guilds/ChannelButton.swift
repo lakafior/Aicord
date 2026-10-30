@@ -159,8 +159,11 @@ struct ChannelButton: View {
 
     case .guildCategory:
       let expectedParentID = channel.id
+      // pinned channels show at the top of the list instead
+      let pinned = guild.map { PinnedPlacesStore.shared.channels[$0.guildId] ?? [] } ?? []
       let childChannels = channels.values
         .filter { $0.parent_id ?? (try! .makeFake()) == expectedParentID }
+        .filter { !pinned.contains($0.id) }
         .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
         .map { $0.id }
 
@@ -310,6 +313,20 @@ struct ChannelButton: View {
         }
         .onHover { isHovered = $0 }
         .buttonStyle(.borderless)
+        .modifier(OptionalChannelContextMenu(channel: channel, guildId: guild?.guildId))
+      }
+    }
+  }
+
+  /// Direct messages and groups have no channel menu.
+  private struct OptionalChannelContextMenu: ViewModifier {
+    let channel: DiscordChannel
+    let guildId: GuildSnowflake?
+    func body(content: Content) -> some View {
+      if let guildId {
+        content.channelContextMenu(channel, in: guildId)
+      } else {
+        content
       }
     }
   }

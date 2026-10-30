@@ -222,10 +222,7 @@ struct GuildButton: View {
         }
 
         if isExpanded {
-          let guilds: [Guild] = folder.guildIds.compactMap { guildID in
-            let guildID = GuildSnowflake(guildID.description)
-            return gw.user.guilds[guildID]
-          }
+          // the folder was given its guilds without the pinned ones
           ForEach(guilds) { guild in
             GuildButton(guild: guild)  // imagine recursion lol (i joke)
               .padding(.horizontal, 2)
@@ -365,21 +362,20 @@ struct GuildButton: View {
     }
     .help(guild == nil ? "Direct Messages" : guild!.name)
     .buttonStyle(.borderless)
-    .contextMenu {
-      if let id = guild?.id, gw.settings.userSettings.appearance.developerMode {
-        Button("Copy Server ID") {
-          #if os(macOS)
-            let pasteboard = NSPasteboard.general
-            pasteboard.clearContents()
-            pasteboard.setString(id.rawValue, forType: .string)
-          #elseif os(iOS)
-            UIPasteboard.general.string = id.rawValue
-          #endif
-        }
+    .modifier(OptionalGuildContextMenu(guild: guild))
+  }
+
+  /// Direct messages have no server menu.
+  private struct OptionalGuildContextMenu: ViewModifier {
+    let guild: Guild?
+    func body(content: Content) -> some View {
+      if let guild {
+        content.guildContextMenu(guild)
+      } else {
+        content
       }
     }
   }
-
 
   func hasUnreadChannels(_ guild: Guild) -> Bool {
     GuildButton.hasUnreadChannels(guild, readStates: gw.readStates)

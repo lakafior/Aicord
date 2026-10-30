@@ -33,13 +33,19 @@ struct GuildScrollBar: View {
           .padding(.horizontal, 8)
       }
 
+      // servers pinned in Aicord, taken out of their place below
+      let pinned = PinnedPlacesStore.shared.guilds
+      ForEach(pinned.compactMap { gw.user.guilds[$0] }, id: \.id) { guild in
+        GuildButton(guild: guild)
+      }
+
       // the usersettings guild folders can sometimes not cover all guilds
       // in this case, we need to find the unlisted guilds, and order by join date, newest first
       // this code covers the case where the user never reordered their guilds.
       // reordering would trigger usage of the guild folders method of organisation.
       if let userID = gw.user.currentUser?.id {
         let unlistedGuilds = gw.user.guilds.values.filter { guild in
-          !gw.settings.userSettings.guildFolders.folders.contains { folder in
+          !pinned.contains(guild.id) && !gw.settings.userSettings.guildFolders.folders.contains { folder in
             folder.guildIds.contains(where: {
               $0.description == guild.id.rawValue
             })
@@ -66,16 +72,19 @@ struct GuildScrollBar: View {
           if folder.hasID == false {
             // anon folder, should have only one guild id
             if let guildIDString = folder.guildIds.first?.description,
-              let guild = gw.user.guilds[GuildSnowflake(guildIDString)]
+              let guild = gw.user.guilds[GuildSnowflake(guildIDString)],
+              !pinned.contains(guild.id)
             {
               GuildButton(guild: guild)
             }
           } else {
             let guilds = folder.guildIds.compactMap { guildID in
               let guildID = GuildSnowflake(guildID.description)
-              return gw.user.guilds[guildID]
+              return pinned.contains(guildID) ? nil : gw.user.guilds[guildID]
             }
-            GuildButton(folder: folder, guilds: guilds)
+            if !guilds.isEmpty {
+              GuildButton(folder: folder, guilds: guilds)
+            }
           }
         }
       }

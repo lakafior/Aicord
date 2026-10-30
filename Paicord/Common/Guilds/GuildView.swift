@@ -50,8 +50,12 @@ struct GuildView: View {
 
         // these are channels without a category, aka categories themselves or actually uncategorized channels
         // also, while sorting ($0.position ?? 0) < ($1.position ?? 0), sort channels to the top and categories to the bottom
+        let pinnedIDs = PinnedPlacesStore.shared.channels[guild.guildId] ?? []
+        let pinnedChannels = pinnedIDs.compactMap { guild.channels[$0] }.filter { channel in
+          showsHiddenChannels || guild.hasPermission(channel: channel, .viewChannel)
+        }
         let uncategorizedChannels = guild.channels.values
-          .filter { $0.parent_id == nil }
+          .filter { $0.parent_id == nil && !pinnedIDs.contains($0.id) }
           .sorted { lhs, rhs in
             let lhsIsCategory = lhs.type == .guildCategory
             let rhsIsCategory = rhs.type == .guildCategory
@@ -75,11 +79,20 @@ struct GuildView: View {
         }?.id
 
         VStack(spacing: 1) {
+          // channels pinned in Aicord, above everything else
+          ForEach(pinnedChannels) { channel in
+            ChannelButton(channels: guild.channels, channel: channel)
+              .padding(.horizontal, 4)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .environment(\.isFirstInChannelList, channel.id == pinnedChannels.first?.id)
+          }
           ForEach(uncategorizedChannels) { channel in
             ChannelButton(channels: guild.channels, channel: channel)
               .padding(.horizontal, 4)
               .frame(maxWidth: .infinity, alignment: .leading)
-              .environment(\.isFirstInChannelList, channel.id == firstVisibleID)
+              .environment(
+                \.isFirstInChannelList, pinnedChannels.isEmpty && channel.id == firstVisibleID
+              )
           }
         }
         .padding(.vertical, 4)
