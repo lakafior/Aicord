@@ -45,7 +45,7 @@ import SwiftUI
 ///
 /// ```swift
 /// StructuredText(markdown: markdown)
-///   .textual.structuredTextStyle(.gitHub)
+///   .textual.structuredTextStyle(.discord)
 /// ```
 ///
 /// For more control, you can customize individual block and inline styles. Inline styles
@@ -56,9 +56,8 @@ import SwiftUI
 /// - ``TextualNamespace/listItemStyle(_:)``, ``TextualNamespace/unorderedListMarker(_:)``,
 ///   ``TextualNamespace/orderedListMarker(_:)``
 /// - ``TextualNamespace/codeBlockStyle(_:)``, ``TextualNamespace/highlighterTheme(_:)``
-/// - ``TextualNamespace/tableStyle(_:)``, ``TextualNamespace/tableCellStyle(_:)``
 ///
-/// Code blocks and tables may overflow horizontally. You can choose between scrolling and
+/// Code blocks may overflow horizontally. You can choose between scrolling and
 /// wrapping with ``TextualNamespace/overflowMode(_:)``.
 ///
 /// ```swift

@@ -49,8 +49,6 @@ extension StructuredText {
         BlockQuote(intent: intent, content: content)
       case .thematicBreak:
         ThematicBreak(content)
-      case .table(let columns):
-        Table(intent: intent, content: content, columns: columns)
       default:
         Paragraph(content)
       }

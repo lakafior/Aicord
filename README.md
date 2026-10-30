@@ -12,7 +12,7 @@ A native Discord client for iOS and macOS, written in pure Swift 6 and SwiftUI.
 ![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
 ![iOS 26](https://img.shields.io/badge/iOS-26%2B-000000?logo=apple&logoColor=white)
 ![macOS 26](https://img.shields.io/badge/macOS-26%2B-000000?logo=apple&logoColor=white)
-![Dependencies](https://img.shields.io/badge/dependencies-4-EA6532)
+![Dependencies](https://img.shields.io/badge/dependencies-6-EA6532)
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 
 </div>
@@ -23,21 +23,6 @@ A native Discord client for iOS and macOS, written in pure Swift 6 and SwiftUI.
 
 Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](https://github.com/llsc12). The upstream project doesn't accept AI-assisted pull requests, so the modernisation work lives here instead. Same app at heart, rebuilt on the newest Apple platforms with almost nothing but Apple's own frameworks.
 
-## What changed
-
-|                         | Paicord                         | Aicord                                   |
-| ----------------------- | ------------------------------- | ---------------------------------------- |
-| App size (macOS, arm64)  | 61.8 MB                        | **20.8 MB** (−66%)                       |
-| Download (zipped)       | 24.0 MB                         | **9.2 MB** (−62%)                        |
-| Swift packages          | 58 resolved (31 direct)         | **4**                                    |
-| Language mode           | Swift 5                         | **Swift 6**, strict concurrency, no warnings |
-| Minimum OS              | iOS 17 · macOS 14               | **iOS 26 · macOS 26**                    |
-| Networking              | SwiftNIO, AsyncHTTPClient       | **URLSession**, `URLSessionWebSocketTask` |
-| Code highlighting       | Prism.js in JavaScriptCore      | **Native Swift tokenizer**               |
-| Design                  | Custom blur and mesh hacks      | **Liquid Glass**, `MeshGradient`          |
-
-**Swapped for system APIs or removed:** SwiftUIX, Nuke, Sparkle, Lottie, SettingsKit, SwiftUIIntrospect, HCaptcha, KeychainAccess, CodeScanner, MijickCamera, MeshGradient, ColorCube, SwiftEmoji, FLEX, Loupe, Conditionals, SwiftPrettyPrint, UInt128, Yams, swift-crypto, multipart-kit and the whole SwiftNIO stack. What's left: swift-log, swift-protobuf, zstd and swift-syntax (build-time macros only).
-
 ## Highlights
 
 - **Voice and calls** — server voice channels and DM or group calls, end-to-end encrypted with DAVE, with push-to-talk and device choice
@@ -46,7 +31,8 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 - **Notifications that follow your Discord rules** — per server and channel, quiet hours, keywords, Reply and Mark as Read, without a push server
 - **Messages done properly** — forwards, message requests and a spam folder, friend requests, a long-press menu with quick reactions
 - **Things the official app doesn't do** — keep deleted messages and edit history in memory, see hidden channels and who can view them, a local word filter, pinned servers and channels
-- **Native on iPhone and Mac** — Liquid Glass throughout, built almost only on Apple's own frameworks and much smaller than the original
+- **Native on iPhone and Mac** — Liquid Glass throughout, Swift 6 with strict concurrency, iOS 26 and macOS 26, and almost only Apple's own frameworks
+- **Swapped for system APIs or removed** — SwiftUIX, Nuke, Sparkle, Lottie, SettingsKit, SwiftUIIntrospect, HCaptcha, KeychainAccess, CodeScanner, MijickCamera, MeshGradient, ColorCube, SwiftEmoji, FLEX, Loupe, Conditionals, SwiftPrettyPrint, UInt128, Yams, swift-crypto, multipart-kit and the whole SwiftNIO stack. What's left: swift-log, swift-protobuf, zstd, swift-syntax (build-time macros only), and for voice DaveKit (end-to-end encryption, which brings OpenSSL) and swift-opus.
 
 Everything else that's new or fixed is in **[SHIPPED.md](SHIPPED.md)**, and what's next in the [roadmap](ROADMAP.md).
 
@@ -56,10 +42,10 @@ Requires **Xcode 26** on macOS 26.
 
 ```bash
 git clone https://github.com/lakafior/Aicord.git
-open Aicord/Paicord.xcworkspace
+open Aicord/Aicord.xcworkspace
 ```
 
-Pick the **Paicord** scheme, choose a Mac or an iOS 26 device or simulator, and run. The macOS app is built for Apple silicon only. There are no prebuilt releases of Aicord yet.
+Pick the **Aicord** scheme, choose a Mac or an iOS 26 device or simulator, and run. The macOS app is built for Apple silicon only. There are no prebuilt releases of Aicord yet.
 
 ## Contributing
 
@@ -72,7 +58,7 @@ Like every third-party client, using Aicord breaks Discord's Terms of Service. I
 ## Credits
 
 - [Paicord](https://github.com/llsc12/Paicord) by llsc12, the project this fork is built on
-- [DiscordBM](https://github.com/DiscordBM/DiscordBM) and [Textual](https://github.com/gonzalezreal/textual), modified versions of which live in `PaicordLib` and `Textual`
+- [DiscordBM](https://github.com/DiscordBM/DiscordBM) and [Textual](https://github.com/gonzalezreal/textual), modified versions of which live in `AicordKit` and `Textual`
 - [Discord Userdoccers](https://docs.discord.food) for the unofficial API documentation
 
 Licensed under [GPL-3.0](LICENSE).

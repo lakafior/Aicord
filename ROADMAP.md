@@ -6,29 +6,17 @@ Kierunek: czysty **Swift 6**, **iOS 26 i macOS 26**, natywne **SwiftUI** z **Liq
 
 ---
 
-### ⏳ Etap 5: Optymalizacja Architektury, Sieci i Rebranding do Aicord
-4. **Rebranding `Paicord` → `Aicord`:**
-   - [ ] Zmiana nazw targetów/schematów (`Paicord` → `Aicord`) oraz odniesień do oryginalnego repozytorium.
-
----
-
 ### 🔜 Etap 6: Tożsamość Aicord, poprawki i dokumentacja
 4. **Porządek w dokumentacji:**
    - [ ] Zrzuty ekranu do README z iPhone'a i Maca, zrobione na NAScin (bez cudzych wiadomości i nicków).
 
 ---
 
-### 🔜 Etap 7: Własne biblioteki zamiast forków (`PaicordLib`, `Textual`)
-`PaicordLib` (przerobiony DiscordBM) i `Textual` zostają lokalnymi paczkami SPM — osobne moduły dają szybszą kompilację przyrostową, testy przez `swift test` i miejsce na target makr. Traktujemy je jednak jako własny kod, bez synchronizacji z upstreamem.
-1. **Odchudzenie `DiscordModels` (~6,9 MB z ~18,5 MB kodu arm64):**
-   - [ ] Usunięcie modeli i endpointów tylko dla botów: interakcje, komendy aplikacji, logi audytu, automoderacja, webhooki.
-   - [ ] Usunięcie infrastruktury shardowania botów (`ShardCoordinator` i powiązane).
-   - [ ] Ograniczenie kodu kopiowania generowanego dla dużych struktur z wieloma polami opcjonalnymi (`Guild`, `Gateway.Ready` itd., ~2,9 MB).
-2. **Uproszczenie modułów `PaicordLib`:**
-   - [ ] Scalenie prawie pustych bibliotek (`DiscordCore`, `DiscordAuth`, `DiscordUtilities`) w 2–3 sensowne moduły.
-   - [ ] Zmiana nazwy na własną (np. `AicordKit`) i usunięcie pozostałości DiscordBM (komentarze, przestarzałe API dla botów).
-3. **`Textual`:**
-   - [ ] Usunięcie elementów, których aplikacja nie renderuje.
+### 🔜 Etap 7: Własne biblioteki zamiast forków (`AicordKit`, `Textual`)
+Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`). Zostały propozycje z tamtej pracy:
+4. **Dalej:**
+   - [ ] Dalsze odchudzanie `DiscordModels` (4,45 MB): największe są teraz `CodingKeys` (~0,9 MB) oraz `init(from:)`/`encode(to:)`; `SwiftProtobuf` to 1,15 MB.
+   - [ ] `Textual/Tests` nie ma targetu testów w `Package.swift`, więc testy snapshotowe nigdy się nie uruchamiają: dodać target z zależnością od swift-snapshot-testing albo usunąć katalog.
 
 ---
 
@@ -41,7 +29,7 @@ Kierunek: czysty **Swift 6**, **iOS 26 i macOS 26**, natywne **SwiftUI** z **Liq
    - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`.
    - [ ] Kontener kanałów na Home w ciemnym motywie: lewy górny róg zaokrąglony (25 pt), prawy ucięty krawędzią ekranu, więc wygląda niespójnie. Oba górne rogi zaokrąglone, prawy dopasowany do zaokrąglenia ekranu (albo żaden).
    - [ ] Widok serwerów i kanałów od nowa, bardziej natywnie: kanały jako `List` w stylu `.sidebar` z systemowo zwijanymi sekcjami (`Section(isExpanded:)`), zaznaczeniem, przesunięciami i menu, pasek serwerów jako wąska kolumna, bez własnego kontenera, tła i masek. Dynamic Type, VoiceOver, ciemny motyw i Liquid Glass bez ręcznych poprawek. W tej samej przeróbce lista członków (`Member Sidebar`, dziś `ScrollView` z `LazyVStack`) jako `List` z sekcjami ról. Czat, popouty profilu, logowanie i szybki przełącznik zostają własne. Razem z Etapem 11, bo Mac też odchodzi od wspólnego szkieletu; po tej przeróbce punkt o rogach wyżej znika sam.
-   - [ ] Add Friend: wysyłanie zaproszenia do znajomych po nazwie użytkownika w Messages → Friends oraz z profilu osoby (`sendFriendRequest` już jest w PaicordLib).
+   - [ ] Add Friend: wysyłanie zaproszenia do znajomych po nazwie użytkownika w Messages → Friends oraz z profilu osoby (`sendFriendRequest` już jest w AicordKit).
    - [ ] Invite People w menu serwera: link zaproszenia z czasem ważności i limitem użyć, do skopiowania i udostępnienia (`createChannelInvite`).
    - [ ] Join: przycisk na karcie zaproszenia w czacie i po otwarciu linku `discord.gg/…`, z podglądem serwera przed dołączeniem (`resolveInvite`, `acceptInvite`). Potrzebne też rozszerzeniu Safari poniżej.
    - [ ] Rozszerzenie Safari: linki zaproszeń `discord.gg/…` i `discord.com/invite/…` otwierane w Aicord przez własny schemat URL (Universal Links dla discord.com należą do Discorda). Osobny target, włączany przez użytkownika w ustawieniach Safari.

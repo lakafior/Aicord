@@ -1,0 +1,265 @@
+//
+//  PresenceStore.swift
+//  Aicord
+//
+//  Created by Lakhan Lothiyi on 30/11/2025.
+//  Copyright © 2025 Lakhan Lothiyi.
+//
+
+import Foundation
+import AicordKit
+import SwiftUI
+
+// When it's time to add support for rich presence data from other apps and games, this will need reworking.
+
+@MainActor
+@Observable
+class PresenceStore: DiscordDataStore {
+  var gateway: GatewayStore?
+
+  var eventTask: Task<Void, Never>?
+
+  func setupEventHandling() {
+    guard let gateway = gateway?.gateway else { return }
+    let events = gateway.events
+    eventTask = Task {
+      for await event in events {
+        switch event.data {
+        case .ready(let readyData):
+          handleReady(readyData)
+        case .sessionsReplace(let sessions):
+          handleSessionsReplace(sessions)
+        default: break
+        }
+      }
+    }
+  }
+
+  // Stores custom status which is a form of activity
+  @ObservationIgnored
+  @AppStorage("Paicord.Presence.LastKnownClientStatusActivity")
+  @Storage
+  var _currentClientStatusActivity: Gateway.Activity? = nil
+  @ObservationIgnored
+  @AppStorage("Paicord.Presence.LastKnownClientStatus")  // dnd, afk, online, invisible, offline
+  @Storage
+  var _currentClientStatus: Gateway.Status = .online
+
+  var currentClientStatusActivity: Gateway.Activity? {
+    get {
+      access(keyPath: \._currentClientStatusActivity)
+      return _currentClientStatusActivity
+    }
+    set {
+      withMutation(keyPath: \._currentClientStatusActivity) {
+        _currentClientStatusActivity = newValue
+      }
+    }
+  }
+  var currentClientStatus: Gateway.Status {
+    get {
+      access(keyPath: \._currentClientStatus)
+      return _currentClientStatus
+    }
+    set {
+      withMutation(keyPath: \._currentClientStatus) {
+        _currentClientStatus = newValue
+      }
+    }
+  }
+
+  var sessions: [Gateway.Session] = []
+
+  /// The user's own rich presence, ready to send (images already resolved).
+  var richPresenceActivity: Gateway.Activity? = nil
+
+  /// Everything this client shows: the custom status first, then the rich presence.
+  var ourActivities: [Gateway.Activity] {
+    [currentClientStatusActivity, richPresenceActivity].compactMap { $0 }
+  }
+
+  private func handleReady(_ data: Gateway.Ready) {
+    self.sessions = data.sessions
+
+    // theres two routes to go here
+    // 1. we have a stored presence, set this if there are no other existing sessions with a presence to copy
+    // 2. there's another session already, other than us, with a presence, copy that presence over to us and set it as our presence
+    if let session = data.sessions.first(where: { $0.id == "all" })
+      ?? data.sessions.first
+    {
+      self.currentClientStatus = session.status
+      if let existingActivity = session.activities.first(where: {
+        $0.type == .custom
+      }) {
+        self.currentClientStatusActivity = existingActivity
+      }
+    } else if let userSettings = data.user_settings_proto, userSettings.hasStatus {
+      let statusSettings = userSettings.status
+      if let status = statusSettings.gatewayStatus {
+        self.currentClientStatus = status
+      }
+      self.currentClientStatusActivity =
+        statusSettings.gatewayCustomStatusActivity()
+    }
+    // use stored presence if any to update our presence
+    Task {
+      await self.restoreRichPresence()
+      await self.setPresence(
+        status: self.currentClientStatus,
+        activities: self.ourActivities
+      )
+    }
+  }
+
+  private func handleSessionsReplace(_ sessions: Gateway.SessionsReplace) {
+    defer { self.sessions = sessions }
+    // a session updated presence probably. every session has the same custom activity data and status except the one that just changed
+    // also this event doesnt send "all" session. we'll need to update our presence if another session changed theirs
+    // other sessions (not this client) will update their presence, according to this sessionreplace too so we'll receive more of these events.
+    // we'll filter `sessions` to get rid of our own session first, then filter by those with custom activity that isnt equal to our current status activity and status
+    // all session isnt included here, but filtering it out just bc ykyk
+
+    // ultra sanity check
+    Task {
+      let oldStatusActivity = self.currentClientStatusActivity
+      let oldStatus = self.currentClientStatus
+
+      let currentSessionID = await gateway?.gateway?.getSessionID()
+
+      let otherSessions =
+        sessions
+        .filter { $0.id != "all" }
+        .filter { $0.id != currentSessionID }
+
+      if let session = otherSessions.first {
+        self.currentClientStatus = session.status
+        if let existingActivity = session.activities.first(where: {
+          $0.type == .custom
+        }) {
+          self.currentClientStatusActivity = existingActivity
+        }
+        self.currentClientStatus = session.status
+      }
+
+      if oldStatus != self.currentClientStatus
+        || oldStatusActivity != self.currentClientStatusActivity
+      {
+        // presence changed, update our presence to match
+        await self.setPresence(
+          status: self.currentClientStatus,
+          activities: self.ourActivities
+        )
+      }
+    }
+  }
+
+  // MARK: - Changing our own status
+
+  /// Sets online/idle/dnd/invisible for this session and saves it to the account,
+  /// so other clients and the next launch pick it up.
+  func changeStatus(_ status: Gateway.Status) async throws {
+    currentClientStatus = status
+    await setPresence(status: status)
+
+    var partial = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings()
+    partial.status.status = .init(status.rawValue)
+    partial.status.statusExpiresAtMs = 0
+    try await gateway?.settings.patchUserSettings(partial)
+  }
+
+  /// Sets the custom status, or clears it when both `text` and `emoji` are empty.
+  func changeCustomStatus(
+    text: String,
+    emoji: Gateway.Activity.ActivityEmoji?,
+    expiresAt: Date?
+  ) async throws {
+    let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    let nowMs = UInt64(Date.now.timeIntervalSince1970 * 1_000)
+    var custom = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings.CustomStatus()
+
+    if text.isEmpty && emoji == nil {
+      currentClientStatusActivity = nil
+      // the server merges partial settings, so an empty message would not remove
+      // the old status; an already expired one reads as "no custom status" everywhere
+      custom.expiresAtMs = nowMs
+    } else {
+      var activity = Gateway.Activity(
+        name: "Custom Status",
+        type: .custom,
+        state: text.isEmpty ? nil : text
+      )
+      activity.emoji = emoji
+      currentClientStatusActivity = activity
+
+      custom.text = text
+      custom.emojiName = emoji?.name ?? ""
+      custom.emojiID = emoji?.id.flatMap { UInt64($0.rawValue) } ?? 0
+      custom.createdAtMs = nowMs
+      custom.expiresAtMs = expiresAt.map { UInt64($0.timeIntervalSince1970 * 1_000) } ?? 0
+    }
+    await setPresence(activities: ourActivities)
+
+    var partial = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings()
+    partial.status.customStatus = custom
+    try await gateway?.settings.patchUserSettings(partial)
+  }
+
+  func setPresence(
+    status: Gateway.Status? = nil,
+    activities: [Gateway.Activity]? = nil,
+  ) async {
+    guard let gateway = gateway?.gateway else { return }
+    if status == nil && activities == nil {
+      return
+    }
+    let status = status ?? currentClientStatus
+    let activities = activities ?? ourActivities
+    await gateway.updatePresence(
+      payload: .init(
+        activities: activities,
+        status: status,
+        afk: false
+      )
+    )
+  }
+}
+
+// allow storing of Gateway.Activity in AppStorage
+extension Optional: AppStorageConvertible where Wrapped == Gateway.Activity {
+  init?(_ storedValue: String) {
+    guard let data = storedValue.data(using: .utf8) else {
+      self = nil
+      return
+    }
+    let decoder = JSONDecoder()
+    if let decoded = try? decoder.decode(Gateway.Activity.self, from: data) {
+      self = .some(decoded)
+    } else {
+      self = nil
+    }
+  }
+
+  var storedValue: String {
+    guard let self = self else {
+      return ""
+    }
+    let encoder = JSONEncoder()
+    if let data = try? encoder.encode(self),
+      let jsonString = String(data: data, encoding: .utf8)
+    {
+      return jsonString
+    } else {
+      return ""
+    }
+  }
+}
+
+extension Gateway.Status: AppStorageConvertible {
+  init?(_ storedValue: String) {
+    // store rawvalue
+    self = Gateway.Status(rawValue: storedValue) ?? .online
+  }
+  var storedValue: String {
+    self.rawValue
+  }
+}

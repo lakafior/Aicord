@@ -17,8 +17,6 @@ extension StructuredText {
     public let unorderedListMarker: HierarchicalSymbolListMarker = .init(
       .disc, .circle, clamps: true)
     public let orderedListMarker: DecimalListMarker = .decimal
-    public let tableStyle: DefaultTableStyle = .default
-    public let tableCellStyle: DefaultTableCellStyle = .default
     public let thematicBreakStyle: DividerThematicBreakStyle = .divider
 
     public init() {}

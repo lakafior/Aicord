@@ -44,8 +44,8 @@ jobs:
         id: build
         run: |
           set -o pipefail
-          xcodebuild -workspace Paicord.xcworkspace \
-            -scheme Paicord \
+          xcodebuild -workspace Aicord.xcworkspace \
+            -scheme Aicord \
             -configuration Debug \
             -destination "platform=macOS" \
             -derivedDataPath build \
@@ -95,8 +95,8 @@ jobs:
         id: build
         run: |
           set -o pipefail
-          xcodebuild -workspace Paicord.xcworkspace \
-            -scheme Paicord \
+          xcodebuild -workspace Aicord.xcworkspace \
+            -scheme Aicord \
             -configuration Debug \
             -arch arm64 \
             -sdk iphoneos \

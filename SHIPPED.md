@@ -55,6 +55,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Library
 
+- **New** · The Discord library is now Aicord's own `AicordKit`: bot-only endpoints, sharding and bot authentication are gone, and large message and user models are stored more compactly, so the compiled code is 42% smaller and the Mac app went from 60.9 MB to 51.5 MB
+- **New** · The Mac app is called Aicord in the menu bar and the Dock
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
 
 ### Fixed
@@ -166,6 +168,8 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
 4. **Rebranding `Paicord` → `Aicord`:**
    - [x] Usunięcie zewnętrznych odznak sponsorów/telemetrii w `ExternalBadgeStore.swift`.
    - [x] Zmiana identyfikatora Bundle ID (`net.smigi.aicord`).
+4. **Rebranding `Paicord` → `Aicord` (dokończenie):**
+   - [x] Target, schematy (`Aicord`, `Aicord Release`) i produkt `Aicord.app`, katalogi `Aicord/` i `AicordKit/`, `Aicord.xcodeproj` i `Aicord.xcworkspace`; nazwa w menu i Docku na macOS. Identyfikator `net.smigi.aicord`, pęk kluczy, cache, klucze `Paicord.*` w `UserDefaults` i schemat `paicord://` zostają, więc logowanie i ustawienia przetrwały. Szczegóły: `docs/SLIM_NOTES.md`.
 
 ---
 
@@ -301,3 +305,17 @@ Startujemy po odświeżeniu UI. To port, nie merge. Bazą kodu jest gałąź [`u
    - [x] Nie przenosimy usunięć z gałęzi voice (`DiscordCache`, `GatewayEventHandler`, `BotAuthManager`), zmian nawigacji w `PaicordAppState` ani starych zależności.
 6. **Weryfikacja:**
    - [x] PaicordLib i aplikacja (macOS, arm64) się budują, testy przechodzą.
+
+---
+
+### ✅ Etap 7: Własne biblioteki zamiast forków (`AicordKit`, `Textual`)
+Szczegóły, decyzje i pomiary: `docs/SLIM_NOTES.md`. Binarka iOS (Release, arm64) 51,9 → 41,9 MB, skompilowany kod (`__text`) −42%; `.app` na macOS 60,9 → 51,5 MB.
+1. **Odchudzenie `DiscordModels`:**
+   - [x] Usunięcie modeli i endpointów tylko dla botów: interakcje, komendy aplikacji, logi audytu, automoderacja, webhooki (modele potrzebne do wyświetlania zostały).
+   - [x] Usunięcie shardowania (`ShardCoordinator`), intencji i uwierzytelniania bota (`DiscordAuth`, `BotAuthManager`).
+   - [x] Kod kopiowania: winne okazały się zagnieżdżone opcjonalne struktury wiadomości, użytkowników, profili, zaproszeń i emoji, nie `Guild`/`Gateway.Ready`. Przechowywane poza linią (`@Indirect`), więc kopia to jedno zwiększenie licznika referencji.
+2. **Uproszczenie modułów:**
+   - [x] Scalenie prawie pustych modułów i nazwa `AicordKit`, bez pozostałości DiscordBM.
+3. **`Textual`:**
+   - [x] Usunięty styl GitHub, przestarzałe API i renderowanie tabel, których aplikacja nie używa.
+

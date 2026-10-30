@@ -1,0 +1,107 @@
+//
+//  GuildView.swift
+//  Aicord
+//
+//  Created by Lakhan Lothiyi on 22/09/2025.
+//  Copyright © 2025 Lakhan Lothiyi.
+//
+
+import AicordKit
+import SwiftUI
+
+struct GuildView: View {
+  var guild: GuildStore
+  @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
+  @Environment(\.userInterfaceIdiom) var idiom
+  @Environment(\.theme) var theme
+  var body: some View {
+    ScrollView {
+      VStack(spacing: 0) {
+        Utils.GuildBannerURL(guild: guild, animated: true) { bannerURL in
+          if let bannerURL {
+            Color.clear
+              .aspectRatio(16 / 9, contentMode: .fit)
+              .overlay(
+                NukeImage(url: bannerURL)
+                  .resizable()
+                  .scaledToFill()
+              )
+              .frame(maxWidth: .infinity)
+              .clipped()
+          }
+        }
+
+        if idiom == .phone {
+          VStack(spacing: 0) {
+            VStack(alignment: .leading) {
+              Text(guild.guild?.name ?? "Unknown Guild")
+                .font(.title3)
+                .bold()
+                .frame(maxWidth: .infinity, alignment: .leading)
+              Text("\(guild.guild?.member_count ?? 0) members")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            }
+            .padding()
+
+            Divider()
+          }
+        }
+
+        // these are channels without a category, aka categories themselves or actually uncategorized channels
+        // also, while sorting ($0.position ?? 0) < ($1.position ?? 0), sort channels to the top and categories to the bottom
+        let pinnedIDs = PinnedPlacesStore.shared.channels[guild.guildId] ?? []
+        let pinnedChannels = pinnedIDs.compactMap { guild.channels[$0] }.filter { channel in
+          showsHiddenChannels || guild.hasPermission(channel: channel, .viewChannel)
+        }
+        let uncategorizedChannels = guild.channels.values
+          .filter { $0.parent_id == nil && !pinnedIDs.contains($0.id) }
+          .sorted { lhs, rhs in
+            let lhsIsCategory = lhs.type == .guildCategory
+            let rhsIsCategory = rhs.type == .guildCategory
+            if lhsIsCategory == rhsIsCategory {
+              return (lhs.position ?? 0) < (rhs.position ?? 0)
+            } else {
+              return !lhsIsCategory && rhsIsCategory
+            }
+          }
+
+        // hidden channels render nothing, so the separator skips the first one that shows
+        let firstVisibleID = uncategorizedChannels.first { channel in
+          if showsHiddenChannels { return true }
+          if channel.type == .guildCategory {
+            let categoryID = AnySnowflake(channel.id)
+            return guild.channels.values.contains {
+              $0.parent_id == categoryID && guild.hasPermission(channel: $0, .viewChannel)
+            }
+          }
+          return guild.hasPermission(channel: channel, .viewChannel)
+        }?.id
+
+        VStack(spacing: 1) {
+          // channels pinned in Aicord, above everything else
+          ForEach(pinnedChannels) { channel in
+            ChannelButton(channels: guild.channels, channel: channel)
+              .padding(.horizontal, 4)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .environment(\.isFirstInChannelList, channel.id == pinnedChannels.first?.id)
+          }
+          ForEach(uncategorizedChannels) { channel in
+            ChannelButton(channels: guild.channels, channel: channel)
+              .padding(.horizontal, 4)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .environment(
+                \.isFirstInChannelList, pinnedChannels.isEmpty && channel.id == firstVisibleID
+              )
+          }
+        }
+        .padding(.vertical, 4)
+      }
+    }
+    // macos 26/27 bug workaround
+    .padding(.top, 1)
+    .frame(maxWidth: .infinity)
+    .background(theme.common.secondaryBackground.opacity(0.5))
+    .roundedCorners(radius: 10, corners: .topLeft)
+  }
+}

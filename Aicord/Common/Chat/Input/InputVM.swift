@@ -1,0 +1,623 @@
+//
+//  InputVM.swift
+//  Aicord
+//
+//  Created by Lakhan Lothiyi on 18/12/2025.
+//  Copyright © 2025 Lakhan Lothiyi.
+//
+
+import AVFoundation
+import ImageIO
+import AicordKit
+import PhotosUI
+import QuickLookThumbnailing
+import SwiftUI
+import UniformTypeIdentifiers
+
+#if canImport(AppKit)
+  import AppKit
+#endif
+
+extension ChatView.InputBar {
+  @MainActor
+  @Observable
+  class InputVM {
+    var channelStore: ChannelStore
+    init(channelStore: ChannelStore) {
+      self.channelStore = channelStore
+    }
+
+    /// The text field content
+    var content: String = "" {
+      didSet {
+        guard !content.isEmpty else { return }
+        sendTypingIndicatorIfNeeded()
+      }
+    }
+
+    private var lastTypingIndicatorSentAt: Date?
+    private func sendTypingIndicatorIfNeeded() {
+      let now = Date()
+      if let lastTypingIndicatorSentAt, now.timeIntervalSince(lastTypingIndicatorSentAt) < 8 {
+        return
+      }
+      lastTypingIndicatorSentAt = now
+      guard let client = channelStore.gateway?.client else { return }
+      let channelId = channelStore.channelId
+      Task.detached {
+        try? await client.triggerTypingIndicator(channelId: channelId)
+      }
+    }
+
+    private var appCreatedTempFiles: Set<URL> = []
+
+    func trackTempFile(_ url: URL) {
+      appCreatedTempFiles.insert(url)
+    }
+
+    private func cleanupTempFile(_ url: URL) {
+      guard appCreatedTempFiles.contains(url) else { return }
+      try? FileManager.default.removeItem(at: url)
+      appCreatedTempFiles.remove(url)
+    }
+
+    func cleanupAllTempFiles() {
+      print("cleaned files")
+      for url in appCreatedTempFiles {
+        try? FileManager.default.removeItem(at: url)
+      }
+      appCreatedTempFiles.removeAll()
+    }
+
+    #if os(iOS)
+      /// Photos selected from the system photo picker
+      var selectedPhotos: [PhotosPickerItem] = [] {
+        didSet {
+          // this needs to figure out what items were added and removed from selectedPhotos and sync uploadItems accordingly
+          let uploadItemsPhotoItems = uploadItems.compactMap {
+            item -> PhotosPickerItem? in
+            switch item {
+            case .pickerItem(_, let photoItem):
+              return photoItem
+            default:
+              return nil
+            }
+          }
+
+          // find added items
+          for photoItem in selectedPhotos {
+            if uploadItemsPhotoItems.contains(photoItem) == false {
+              let uploadItem = UploadItem.pickerItem(
+                id: UUID(),
+                item: photoItem
+              )
+              uploadItems.append(uploadItem)
+            }
+          }
+
+          // remove deleted items
+          for uploadItem in uploadItems {
+            switch uploadItem {
+            case .pickerItem(_, let photoItem):
+              if selectedPhotos.contains(photoItem) == false {
+                if let index = uploadItems.firstIndex(of: uploadItem) {
+                  uploadItems.remove(at: index)
+                }
+              }
+            default: continue
+            }
+          }
+
+          // if the addition of new photos caused uploadItems to exceed 10, trim it
+          if uploadItems.count > 10 {
+            uploadItems = Array(uploadItems.prefix(10))
+          }
+
+          // prune selected photos again
+          for uploadItem in uploadItems {
+            switch uploadItem {
+            case .pickerItem(_, let photoItem):
+              if selectedPhotos.contains(photoItem) == false {
+                if let index = uploadItems.firstIndex(of: uploadItem) {
+                  uploadItems.remove(at: index)
+                }
+              }
+            default: continue
+            }
+          }
+        }
+      }
+
+    #endif
+    /// Used to receive files from the file importer
+    var selectedFiles: [URL] = [] {
+      didSet {
+        // when this is set, add the files to uploadItems
+        for fileURL in selectedFiles {
+          // get file size
+          let fileSize: Int64
+          do {
+            let canAccess = fileURL.startAccessingSecurityScopedResource()
+            defer {
+              if canAccess { fileURL.stopAccessingSecurityScopedResource() }
+            }
+
+            let fileAttributes = try FileManager.default.attributesOfItem(
+              atPath: fileURL.path
+            )
+            fileSize = fileAttributes[.size] as? Int64 ?? 0
+          } catch {
+            fileSize = 0
+          }
+
+          let uploadItem = UploadItem.file(
+            id: UUID(),
+            url: fileURL,
+            size: fileSize
+          )
+          uploadItems.append(uploadItem)
+        }
+        // used to clear the array here but that causes recursion until stack overflow oops
+        // its fine, setting this array again from the file importer will reset this array with new files to add as needed.
+
+        // if the addition of new files caused uploadItems to exceed 10, trim it
+        if uploadItems.count > 10 {
+          uploadItems = Array(uploadItems.prefix(10))
+        }
+      }
+    }
+
+    /// Contains a reference to the message being replied to or edited, if any, inside of an action enum
+    var messageAction: MessageAction? = nil {
+      didSet {
+        // when this is set to edit, set content to the message content
+        if let action = messageAction {
+          switch action {
+          case .edit(let message):
+            content = message.content
+            uploadItems = []  // cant do anything other than edit text when editing a message
+          case .reply:
+            break
+          }
+        }
+      }
+    }
+
+    var isResetting = false
+
+    /// The input bar displays items from this.
+    var uploadItems: [UploadItem] = [] {
+      didSet {
+        let oldURLs = Set(
+          oldValue.compactMap { item -> URL? in
+            switch item {
+            case .file(_, let url, _): return url
+            #if os(iOS)
+              case .cameraVideo(_, let url): return url
+            #endif
+            default: return nil
+            }
+          }
+        )
+
+        let newURLs = Set(
+          uploadItems.compactMap { item -> URL? in
+            switch item {
+            case .file(_, let url, _): return url
+            #if os(iOS)
+              case .cameraVideo(_, let url): return url
+            #endif
+            default: return nil
+            }
+          }
+        )
+
+        if !isResetting {
+          // prevent deletion of files on reset
+          // else the copied vm wont have the files.
+          let removedURLs = oldURLs.subtracting(newURLs)
+          for url in removedURLs {
+            cleanupTempFile(url)
+          }
+        }
+
+        #if os(iOS)
+          let uploadItemsPhotoItems = uploadItems.compactMap {
+            item -> PhotosPickerItem? in
+            switch item {
+            case .pickerItem(_, let photoItem):
+              return photoItem
+            default:
+              return nil
+            }
+          }
+          // remove deleted items
+          for photoItem in selectedPhotos {
+            if uploadItemsPhotoItems.contains(photoItem) == false {
+              if let index = selectedPhotos.firstIndex(of: photoItem) {
+                selectedPhotos.remove(at: index)
+              }
+            }
+          }
+        #endif
+      }
+    }
+
+    func copy() -> InputVM {
+      let vm = InputVM(channelStore: channelStore)
+      #if os(iOS)
+        vm.selectedPhotos = selectedPhotos
+      #endif
+      vm.uploadItems = uploadItems
+      vm.messageAction = messageAction
+      vm.content = content
+      return vm
+    }
+
+    func reset() {
+      isResetting = true
+      #if os(iOS)
+        selectedPhotos = []
+      #endif
+      selectedFiles = []
+      uploadItems = []
+      messageAction = nil
+      content = ""
+      isResetting = false
+    }
+
+  }
+}
+
+extension ChatView.InputBar.InputVM {
+  enum MessageAction {
+    case reply(message: DiscordChannel.Message, mention: Bool)
+    case edit(message: DiscordChannel.Message)
+  }
+
+  enum UploadItem: Identifiable, Equatable, Sendable {
+    static func == (
+      lhs: ChatView.InputBar.InputVM.UploadItem, rhs: ChatView.InputBar.InputVM.UploadItem
+    ) -> Bool {
+      return lhs.id == rhs.id
+    }
+
+    case pickerItem(id: UUID, item: PhotosPickerItem)
+    case file(id: UUID, url: URL, size: Int64)
+    #if os(iOS)
+      case cameraPhoto(id: UUID, image: UIImage)
+      case cameraVideo(id: UUID, url: URL)
+    #endif
+
+    var id: UUID {
+      switch self {
+      #if os(iOS)
+        case .pickerItem(let id, _),
+          .file(let id, _, _),
+          .cameraPhoto(let id, _),
+          .cameraVideo(let id, _):
+          return id
+      #else
+        case .pickerItem(let id, _),
+          .file(let id, _, _):
+          return id
+      #endif
+      }
+    }
+
+    func filesize() async -> Int? {
+      switch self {
+      case .pickerItem(_, let item):
+        let data =
+          try? await item.loadTransferable(type: Data.self)?.count ?? 0
+        if let data {
+          return Int(data)
+        } else {
+          return nil
+        }
+      case .file(_, _, let size):
+        return Int(size)
+      #if os(iOS)
+        case .cameraPhoto(_, let image):
+          if let imageData = image.pngData() {
+            return Int(imageData.count)
+          } else {
+            return nil
+          }
+        case .cameraVideo(_, let url):
+          do {
+            let fileAttributes = try FileManager.default.attributesOfItem(
+              atPath: url.path
+            )
+            let fileSize = fileAttributes[.size] as? Int64 ?? 0
+            return Int(fileSize)
+          } catch {
+            return nil
+          }
+      #endif
+      }
+    }
+
+    func videoDuration() async -> TimeInterval? {
+      switch self {
+      #if os(iOS)
+        case .cameraVideo(_, let url):
+          let asset = AVURLAsset(url: url)
+          return try? await asset.load(.duration).seconds
+      #endif
+      case .file(_, let url, _):
+        let canAccess = url.startAccessingSecurityScopedResource()
+        defer {
+          if canAccess { url.stopAccessingSecurityScopedResource() }
+        }
+
+        guard
+          let typeIdentifier = try? url.resourceValues(forKeys: [
+            .typeIdentifierKey
+          ]
+          ).typeIdentifier,
+          let utType = UTType(typeIdentifier)
+        else {
+          return nil
+        }
+
+        let videoTypes: [UTType] = [
+          .movie, .video, .mpeg4Movie, .quickTimeMovie, .avi,
+        ]
+        if videoTypes.contains(where: { utType.conforms(to: $0) }) {
+          let asset = AVURLAsset(url: url)
+          return try? await asset.load(.duration).seconds
+        } else {
+          return nil
+        }
+      default:
+        return nil
+      }
+    }
+
+    var isMediaItem: Bool {
+      switch self {
+      #if os(iOS)
+        case .cameraPhoto:
+          return true
+        case .cameraVideo:
+          return true
+      #endif
+      case .pickerItem:
+        return true
+      case .file(_, let url, _):
+        let canAccess = url.startAccessingSecurityScopedResource()
+        defer {
+          if canAccess { url.stopAccessingSecurityScopedResource() }
+        }
+        let imageTypes: [UTType] = [
+          .image, .png, .jpeg, .gif, .webP, .heic, .heif, .tiff, .bmp,
+        ]
+        let videoTypes: [UTType] = [
+          .movie, .video, .mpeg4Movie, .quickTimeMovie, .avi,
+        ]
+        let acceptedTypes = imageTypes + videoTypes
+
+        if let typeIdentifier = try? url.resourceValues(forKeys: [
+          .typeIdentifierKey
+        ]
+        ).typeIdentifier,
+          let utType = UTType(typeIdentifier),
+          acceptedTypes.contains(utType)
+        {
+          return true
+        }
+        return false
+      }
+    }
+  }
+}
+
+private let maxDimension: CGFloat = 240
+extension ChatView.InputBar.InputVM {
+  func getThumbnail(for item: UploadItem) async -> Image? {
+    switch item {
+    case .pickerItem(_, let photoItem):
+      if let thumbnail = try? await loadTransferable(from: photoItem) {
+        return thumbnail.image
+      } else {
+        return nil
+      }
+    #if os(iOS)
+      case .cameraPhoto(_, let image):
+        return Image(uiImage: image)
+      case .cameraVideo(_, let url):
+        #if canImport(AVFoundation)
+          return await generateVideoThumbnail(from: url)
+        #else
+          return await generateQuickLookThumbnail(from: url)
+        #endif
+    #endif
+    case .file(_, let url, _):
+      return await generateFileThumbnail(from: url)
+    }
+  }
+
+  private func generateFileThumbnail(from url: URL) async -> Image? {
+    let canAccess = url.startAccessingSecurityScopedResource()
+    defer {
+      if canAccess { url.stopAccessingSecurityScopedResource() }
+    }
+
+    let imageTypes: [UTType] = [
+      .image, .png, .jpeg, .gif, .webP, .heic, .heif, .tiff, .bmp,
+    ]
+    let videoTypes: [UTType] = [
+      .movie, .video, .mpeg4Movie, .quickTimeMovie, .avi,
+    ]
+    let acceptedTypes = imageTypes + videoTypes
+
+    guard
+      let typeIdentifier = try? url.resourceValues(forKeys: [.typeIdentifierKey]
+      ).typeIdentifier,
+      let utType = UTType(typeIdentifier),
+      acceptedTypes.contains(utType)
+    else {
+      return await generateQuickLookThumbnail(from: url, kind: .icon)
+    }
+
+    if imageTypes.contains(where: { utType.conforms(to: $0) }) {
+      if let thumbnail = generateDownsampledImageThumbnail(from: url) {
+        return thumbnail
+      }
+    }
+    if videoTypes.contains(where: { utType.conforms(to: $0) }) {
+      if let image = await generateVideoThumbnail(from: url) {
+        return image
+      }
+    }
+
+    return await generateQuickLookThumbnail(from: url, kind: .thumbnail)
+  }
+
+  private func generateVideoThumbnail(from url: URL) async -> Image? {
+    let asset = AVURLAsset(url: url)
+    let generator = AVAssetImageGenerator(asset: asset)
+    generator.appliesPreferredTrackTransform = true
+    generator.maximumSize = CGSize(width: maxDimension, height: maxDimension)
+
+    do {
+      let (cgImage, _) = try await generator.image(at: .zero)
+      #if canImport(AppKit)
+        let nsImage = NSImage(
+          cgImage: cgImage,
+          size: NSSize(width: cgImage.width, height: cgImage.height)
+        )
+        return Image(nsImage: nsImage)
+      #elseif canImport(UIKit)
+        let uiImage = UIImage(cgImage: cgImage)
+        return Image(uiImage: uiImage)
+      #else
+        return nil
+      #endif
+    } catch {
+      return nil
+    }
+  }
+
+  private func generateQuickLookThumbnail(
+    from url: URL,
+    kind: QLThumbnailGenerator.Request.RepresentationTypes
+  ) async -> Image? {
+    let size = CGSize(width: maxDimension, height: maxDimension)
+    let scale: CGFloat
+    #if canImport(AppKit)
+      scale = NSScreen.main?.backingScaleFactor ?? 2.0
+    #else
+      scale = await MainActor.run {
+        UIApplication.shared.connectedScenes
+          .compactMap { ($0 as? UIWindowScene)?.screen.scale }
+          .first ?? 2.0
+      }
+    #endif
+
+    let request = QLThumbnailGenerator.Request(
+      fileAt: url,
+      size: size,
+      scale: scale,
+      representationTypes: kind
+    )
+
+    do {
+      let representation = try await QLThumbnailGenerator.shared
+        .generateBestRepresentation(for: request)
+      #if canImport(AppKit)
+        return Image(nsImage: representation.nsImage)
+      #elseif canImport(UIKit)
+        return Image(uiImage: representation.uiImage)
+      #else
+        return nil
+      #endif
+    } catch {
+      return nil
+    }
+  }
+
+  private func generateDownsampledImageThumbnail(from url: URL) -> Image? {
+    guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+      return nil
+    }
+
+    let options: [CFString: Any] = [
+      kCGImageSourceThumbnailMaxPixelSize: maxDimension,
+      kCGImageSourceCreateThumbnailFromImageAlways: true,
+      kCGImageSourceCreateThumbnailWithTransform: true,
+    ]
+
+    guard
+      let cgImage = CGImageSourceCreateThumbnailAtIndex(
+        imageSource,
+        0,
+        options as CFDictionary
+      )
+    else {
+      return nil
+    }
+
+    #if canImport(AppKit)
+      let nsImage = NSImage(
+        cgImage: cgImage,
+        size: NSSize(width: cgImage.width, height: cgImage.height)
+      )
+      return Image(nsImage: nsImage)
+    #elseif canImport(UIKit)
+      let uiImage = UIImage(cgImage: cgImage)
+      return Image(uiImage: uiImage)
+    #else
+      return nil
+    #endif
+  }
+
+  private func loadTransferable(from imageSelection: PhotosPickerItem)
+    async throws -> Thumbnail?
+  {
+    try await imageSelection.loadTransferable(type: Thumbnail.self)
+  }
+}
+
+struct Thumbnail: Transferable {
+  let image: Image
+
+  static var transferRepresentation: some TransferRepresentation {
+    DataRepresentation(importedContentType: .image) { data in
+      #if canImport(AppKit)
+        guard let nsImage = NSImage(data: data) else {
+          throw NSError(
+            domain: "Thumbnail",
+            code: -1,
+            userInfo: [
+              NSLocalizedDescriptionKey: "Failed to create NSImage from data."
+            ]
+          )
+        }
+        let image = Image(nsImage: nsImage)
+        return Thumbnail(image: image)
+      #elseif canImport(UIKit)
+        guard let uiImage = UIImage(data: data) else {
+          throw NSError(
+            domain: "Thumbnail",
+            code: -1,
+            userInfo: [
+              NSLocalizedDescriptionKey: "Failed to create UIImage from data."
+            ]
+          )
+        }
+        let image = Image(uiImage: uiImage)
+        return Thumbnail(image: image)
+      #else
+        throw NSError(
+          domain: "Thumbnail",
+          code: -1,
+          userInfo: [
+            NSLocalizedDescriptionKey: "Unsupported platform for Thumbnail."
+          ]
+        )
+      #endif
+    }
+  }
+}

@@ -9,5 +9,5 @@ Package.resolved
 **/*.xcuserstate
 /.gradle
 /.idea
-/PaicordLib/build
+/AicordKit/build
 skills
