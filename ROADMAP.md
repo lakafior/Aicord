@@ -37,7 +37,7 @@ Kierunek: czysty **Swift 6**, **iOS 26 i macOS 26**, natywne **SwiftUI** z **Liq
    - [ ] Language: na koniec, po pozostałych poprawkach. Voice & Video powstaje razem z Etapem 9 (wybór urządzeń, push-to-talk, wyciszenie).
    - Nie robimy: powiadomień push na iOS, gdy Aicord jest zamknięty. Wymagałyby własnego serwera trzymającego token konta i połączenie z gatewayem; zostają lokalne powiadomienia z działającej aplikacji.
 8. **Poprawki interfejsu (po Ustawieniach):**
-   - [ ] Purge: usuwanie własnych wiadomości z czatu (z ostatnich X minut albo wszystkich), powoli, z potwierdzeniem i postępem. Cudzych wiadomości w DM API Discorda nie pozwala usunąć, a masowe usuwanie z konta użytkownika to ryzyko blokady.
+   - Nie robimy: Purge (masowe usuwanie wiadomości z czatu). API Discorda pozwala usunąć tylko własne wiadomości w DM, a cudze na serwerze tylko z Manage Messages; masowe usuwanie z konta użytkownika to automatyzacja, za którą Discord blokuje konta (ostrzega przed tym nawet Undiscord).
    - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`.
    - [ ] Add Friend: wysyłanie zaproszenia do znajomych po nazwie użytkownika w Messages → Friends oraz z profilu osoby (`sendFriendRequest` już jest w PaicordLib).
    - [ ] Invite People w menu serwera: link zaproszenia z czasem ważności i limitem użyć, do skopiowania i udostępnienia (`createChannelInvite`).
