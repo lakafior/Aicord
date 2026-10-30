@@ -85,36 +85,6 @@ extension TextualNamespace where Base: View {
     }
   }
 
-  /// Adds a background that can align with table cell bounds.
-  ///
-  /// Use this modifier when building custom table styles. It reads table cell bounds from
-  /// preferences and provides a ``StructuredText/TableLayout`` for precise alignment.
-  public func tableBackground(
-    @ViewBuilder content: @escaping (_ layout: StructuredText.TableLayout) -> some View
-  ) -> some View {
-    base.backgroundPreferenceValue(StructuredText.TableCell.BoundsKey.self) { values in
-      GeometryReader { geometry in
-        content(.init(values, geometry: geometry))
-      }
-      .allowsHitTesting(false)
-    }
-  }
-
-  /// Adds an overlay that can align with table cell bounds.
-  ///
-  /// Use this modifier when building custom table styles. It reads table cell bounds from
-  /// preferences and provides a ``StructuredText/TableLayout`` for precise alignment.
-  public func tableOverlay(
-    @ViewBuilder content: @escaping (_ layout: StructuredText.TableLayout) -> some View
-  ) -> some View {
-    base.overlayPreferenceValue(StructuredText.TableCell.BoundsKey.self) { values in
-      GeometryReader { geometry in
-        content(.init(values, geometry: geometry))
-      }
-      .allowsHitTesting(false)
-    }
-  }
-
   /// Sets the spacing used between list items in ``StructuredText``.
   public func listItemSpacing(
     _ listItemSpacing: FontScaled<StructuredText.BlockSpacing>
@@ -175,17 +145,6 @@ extension TextualNamespace where Base: View {
   /// back to each run rendering its `backgroundColor` as a flat rectangle.
   public func roundedBackgroundStyle(_ style: RoundedBackgroundStyle?) -> some View {
     base.environment(\.roundedBackgroundStyle, style)
-  }
-
-  /// Sets the spacing used between table cells in ``StructuredText``.
-  public func tableCellSpacing(
-    horizontal: CGFloat? = nil,
-    vertical: CGFloat? = nil
-  ) -> some View {
-    base.preference(
-      key: StructuredText.TableCell.SpacingKey.self,
-      value: .init(horizontal: horizontal, vertical: vertical)
-    )
   }
 
   /// Controls how content that overflows horizontally behaves in ``Overflow``.
@@ -267,22 +226,6 @@ extension TextualNamespace where Base: View {
     base.environment(\.codeBlockStyle, codeBlockStyle)
   }
 
-  /// Sets the table cell style used by ``StructuredText``.
-  @inlinable
-  public func tableCellStyle(
-    _ tableCellStyle: some StructuredText.TableCellStyle
-  ) -> some View {
-    base.environment(\.tableCellStyle, tableCellStyle)
-  }
-
-  /// Sets the table style used by ``StructuredText``.
-  @inlinable
-  public func tableStyle(
-    _ tableStyle: some StructuredText.TableStyle
-  ) -> some View {
-    base.environment(\.tableStyle, tableStyle)
-  }
-
   /// Sets all the styles used by ``StructuredText``.
   ///
   /// Use this modifier when you want to apply a consistent look to structured text in one place.
@@ -299,8 +242,6 @@ extension TextualNamespace where Base: View {
       .environment(\.listItemStyle, style.listItemStyle)
       .environment(\.unorderedListMarker, style.unorderedListMarker)
       .environment(\.orderedListMarker, style.orderedListMarker)
-      .environment(\.tableStyle, style.tableStyle)
-      .environment(\.tableCellStyle, style.tableCellStyle)
       .environment(\.thematicBreakStyle, style.thematicBreakStyle)
   }
 }

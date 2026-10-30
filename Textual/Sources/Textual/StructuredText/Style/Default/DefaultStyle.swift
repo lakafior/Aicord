@@ -13,8 +13,6 @@ extension StructuredText {
     public let listItemStyle: DefaultListItemStyle = .default
     public let unorderedListMarker: SymbolListMarker = .disc
     public let orderedListMarker: DecimalListMarker = .decimal
-    public let tableStyle: DefaultTableStyle = .default
-    public let tableCellStyle: DefaultTableCellStyle = .default
     public let thematicBreakStyle: DividerThematicBreakStyle = .divider
 
     public init() {}
