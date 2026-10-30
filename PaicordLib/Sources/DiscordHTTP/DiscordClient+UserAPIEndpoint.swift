@@ -729,6 +729,22 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint), payload: payload)
   }
 
+  /// Applications the user has authorised, the latest authorisation of each.
+  /// https://docs.discord.food/topics/oauth2#get-oauth2-authorizations
+  @inlinable
+  public func listOAuth2Tokens() async throws -> DiscordClientResponse<[OAuth2Authorization]> {
+    let endpoint = UserAPIEndpoint.listOAuth2Tokens
+    return try await self.send(request: .init(to: endpoint))
+  }
+
+  /// Revokes an authorisation, so the application loses access to the account.
+  /// https://docs.discord.food/topics/oauth2#delete-oauth2-authorization
+  @inlinable
+  public func revokeOAuth2Token(id: OAuth2TokenSnowflake) async throws -> DiscordHTTPResponse {
+    let endpoint = UserAPIEndpoint.revokeOAuth2Token(tokenId: id)
+    return try await self.send(request: .init(to: endpoint))
+  }
+
   /// Proxies external image URLs through Discord's media proxy so they can be used as rich presence assets.
   /// Each result's `external_asset_path` is used as `mp:<path>` in the activity assets.
   /// https://docs.discord.food/resources/application#create-application-external-assets

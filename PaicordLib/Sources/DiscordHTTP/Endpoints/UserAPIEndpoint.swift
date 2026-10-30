@@ -145,6 +145,10 @@ public enum UserAPIEndpoint: Endpoint {
   case getUserHarvest
   case createUserHarvest
 
+  // MARK: - OAuth2
+  case listOAuth2Tokens
+  case revokeOAuth2Token(tokenId: OAuth2TokenSnowflake)
+
   // MARK: - Remote Authentication
   case createRemoteAuthSession
   case finishRemoteAuthSession
@@ -323,6 +327,10 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/consent"
     case .getUserHarvest, .createUserHarvest:
       suffix = "users/@me/harvest"
+    case .listOAuth2Tokens:
+      suffix = "oauth2/tokens"
+    case .revokeOAuth2Token(let tokenId):
+      suffix = "oauth2/tokens/\(tokenId.rawValue)"
 
     // MARK: - Remote Authentication
     case .createRemoteAuthSession:
@@ -486,6 +494,10 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/consent"
     case .getUserHarvest, .createUserHarvest:
       suffix = "users/@me/harvest"
+    case .listOAuth2Tokens:
+      suffix = "oauth2/tokens"
+    case .revokeOAuth2Token(let tokenId):
+      suffix = "oauth2/tokens/\(tokenId.rawValue)"
     case .createRemoteAuthSession:
       suffix = "users/@me/remote-auth"
     case .finishRemoteAuthSession:
@@ -562,6 +574,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyUserConsents: return .POST
     case .getUserHarvest: return .GET
     case .createUserHarvest: return .POST
+    case .listOAuth2Tokens: return .GET
+    case .revokeOAuth2Token: return .DELETE
     case .createRemoteAuthSession: return .POST
     case .finishRemoteAuthSession: return .POST
     case .cancelRemoteAuthSession: return .POST
@@ -630,6 +644,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyUserSettingsProto: return true
     case .getUserConsents, .modifyUserConsents: return true
     case .getUserHarvest, .createUserHarvest: return true
+    case .listOAuth2Tokens, .revokeOAuth2Token: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -698,6 +713,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyUserSettingsProto: return true
     case .getUserConsents, .modifyUserConsents: return true
     case .getUserHarvest, .createUserHarvest: return true
+    case .listOAuth2Tokens, .revokeOAuth2Token: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -794,6 +810,8 @@ public enum UserAPIEndpoint: Endpoint {
       return [type.rawValue.description]
     case .getUserConsents, .modifyUserConsents: return []
     case .getUserHarvest, .createUserHarvest: return []
+    case .listOAuth2Tokens: return []
+    case .revokeOAuth2Token(let tokenId): return [tokenId.rawValue]
     case .createRemoteAuthSession: return []
     case .finishRemoteAuthSession: return []
     case .cancelRemoteAuthSession: return []
@@ -871,6 +889,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyUserConsents: return 130
     case .getUserHarvest: return 131
     case .createUserHarvest: return 132
+    case .listOAuth2Tokens: return 133
+    case .revokeOAuth2Token: return 134
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -990,6 +1010,9 @@ public enum UserAPIEndpoint: Endpoint {
     case .modifyUserConsents: return "modifyUserConsents"
     case .getUserHarvest: return "getUserHarvest"
     case .createUserHarvest: return "createUserHarvest"
+    case .listOAuth2Tokens: return "listOAuth2Tokens"
+    case .revokeOAuth2Token(let tokenId):
+      return "revokeOAuth2Token(tokenId: \(tokenId))"
     case .createRemoteAuthSession: return "createRemoteAuthSession"
     case .finishRemoteAuthSession: return "finishRemoteAuthSession"
     case .cancelRemoteAuthSession: return "cancelRemoteAuthSession"

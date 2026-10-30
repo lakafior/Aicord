@@ -595,3 +595,6 @@ public func murmurhash32(
     return -Int((unsignedVal ^ 0xFFFF_FFFF) + 1)
   }
 }
+
+/// Convenience type-alias for `Snowflake<OAuth2Authorization>`
+public typealias OAuth2TokenSnowflake = Snowflake<OAuth2Authorization>

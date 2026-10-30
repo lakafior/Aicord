@@ -30,3 +30,13 @@ public enum OAuth2Scope: Sendable, Codable {
   case webhookIncoming  // "webhook.incoming"
   case __undocumented(String)
 }
+
+/// An application the user has authorised, with the scopes they granted it.
+/// Discord returns only the latest authorisation per application.
+/// https://docs.discord.food/topics/oauth2#oauth2-authorization-object
+public struct OAuth2Authorization: Sendable, Codable, Identifiable {
+  public var id: OAuth2TokenSnowflake
+  public var scopes: [OAuth2Scope]
+  public var application: PartialApplication
+  public var disclosures: [Int]?
+}

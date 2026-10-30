@@ -79,6 +79,19 @@ enum DiscordImageURL {
     )
   }
 
+  // MARK: Application icons
+
+  static func applicationIcon(
+    id: ApplicationSnowflake,
+    icon: String,
+    size: Int = 128
+  ) -> URL? {
+    URL(
+      string: CDNEndpoint.applicationIcon(appId: id, icon: icon).url
+        + ".webp?size=\(size)"
+    )
+  }
+
   // MARK: Channel icons
 
   static func channelIcon(
