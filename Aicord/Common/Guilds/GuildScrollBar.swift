@@ -27,6 +27,9 @@ struct GuildScrollBar: View {
 
   private var guildList: some View {
     LazyVStack {
+      // summaries of every unread channel, read-only
+      CatchUpButton()
+
       // on iPhone direct messages have their own tab
       if idiom != .phone {
         GuildButton(guild: nil)  // becomes dms "guild"

@@ -19,6 +19,8 @@ struct ChatView: View {
   @Environment(\.scenePhase) var scenePhase
 
   @State private var currentScrollPosition: MessageSnowflake?
+  @State private var summaryRange: SummaryRange?
+  @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
 
   var drain: MessageDrainStore { gw.messageDrain }
@@ -187,6 +189,12 @@ struct ChatView: View {
         }
         .sharedBackgroundVisibility(.hidden)
       #endif
+      // read-only summaries; in DMs only when allowed in Settings → Intelligence
+      if !isPrivateChannel || intelligenceInDMs {
+        ToolbarItem(placement: .primaryAction) {
+          ChannelIntelligenceMenu(channelId: vm.channelId, summary: $summaryRange)
+        }
+      }
       // no calls before a request is accepted
       if vm.channel?.type == .dm || vm.channel?.type == .groupDm,
         gw.user.privateChannels[vm.channelId].map({ !$0.isPendingMessageRequest && !$0.isSpam })
@@ -196,6 +204,14 @@ struct ChatView: View {
           DMCallButton(channelID: vm.channelId)
         }
       }
+    }
+    .sheet(item: $summaryRange) { range in
+      ChannelSummarySheet(
+        channelId: vm.channelId,
+        guildId: vm.guildStore?.guildId,
+        channelName: channelTitle,
+        range: range
+      )
     }
     .onChange(of: vm.scrollRequest) { _, request in
       guard let request else { return }
@@ -234,6 +250,19 @@ struct ChatView: View {
       await vm.jump(to: jump.messageID)
     }
     .onChange(of: scenePhase) { acknowledgeLatestIfVisible() }
+  }
+
+  private var isPrivateChannel: Bool {
+    vm.channel?.type == .dm || vm.channel?.type == .groupDm
+  }
+
+  /// How summaries name the channel.
+  private var channelTitle: String {
+    if let name = vm.channel?.name, !name.isEmpty {
+      return isPrivateChannel ? name : "#" + name
+    }
+    let people = vm.channel?.recipients?.map { $0.global_name ?? $0.username } ?? []
+    return people.isEmpty ? String(localized: "this conversation") : people.joined(separator: ", ")
   }
 
   /// Whether the chat is scrolled to (or near) the newest messages. A `nil` scroll position

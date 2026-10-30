@@ -96,6 +96,13 @@ extension MessageCell {
           }
         }
 
+        // A translation from the message menu or automatic translation
+        #if !os(visionOS)
+          if !isSnapshot, !messageContentHidden, !(message.content ?? "").isEmpty {
+            MessageTranslationView(message: message)
+          }
+        #endif
+
         // Attachments, flagged ones blurred or left out per Content & Social
         let attachments = Dictionary(
           grouping: message.attachments ?? [],

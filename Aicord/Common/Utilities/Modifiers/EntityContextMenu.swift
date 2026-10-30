@@ -114,6 +114,9 @@ struct EntityContextMenu<Entity>: ViewModifier {
         } label: {
           Label("Copy Text", systemImage: "doc.on.doc")
         }
+        #if !os(visionOS)
+          translateButton(message)
+        #endif
       }
       Button {
         let guildID = appState.selectedGuild?.rawValue ?? "@me"
@@ -176,6 +179,27 @@ struct EntityContextMenu<Entity>: ViewModifier {
       }
     }
   }
+
+  #if !os(visionOS)
+    /// On-device translation, shown under the message; again to take it away.
+    @ViewBuilder
+    func translateButton(_ message: DiscordChannel.Message) -> some View {
+      let translator = MessageTranslator.shared
+      if translator.isShowing(message.id) {
+        Button {
+          translator.hide(message.id)
+        } label: {
+          Label("Show Original", systemImage: "translate")
+        }
+      } else {
+        Button {
+          translator.translate(message.toPartialMessage())
+        } label: {
+          Label("Translate", systemImage: "translate")
+        }
+      }
+    }
+  #endif
 
   func deleteMessageButton(_ message: DiscordChannel.Message) -> some View {
     Button(role: .destructive) {
