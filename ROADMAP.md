@@ -46,7 +46,6 @@ Zrobione (szczegóły w SHIPPED i `docs/INTELLIGENCE_NOTES.md`): ustawienia, tł
    - [ ] Na urządzeniu: opisy obrazów z VoiceOverem (etykieta z tekstem z Vision, opcjonalnie z API), Show Conversation, Explain Slang, podsumowanie wątku i odpowiedzi, ważne powiadomienia z wyciszonych kanałów, baner oszustwa, Ask na urządzeniu z narzędziami Foundation Models (sprawdzone tylko przez API), arkusz pobierania języka i automatyczne tłumaczenie. Lista kroków: `docs/INTELLIGENCE_NOTES.md`.
    - [ ] Komunikat „Apple Intelligence niedostępne” na urządzeniu bez modelu.
 2. **Dokończenia:**
-   - [ ] Okno 4 tys. tokenów na urządzeniu szybko się zapełnia przy narzędziach (wyniki przycięte do 6 po 220 znaków): sprawdzić jakość odpowiedzi i ewentualnie mniejsze schematy narzędzi.
 3. **Wyszukiwanie po sensie:**
    - [ ] „Index Channel” dla wybranych kanałów: lokalny indeks wektorowy ostatnich N wiadomości (pobieranie historii po 100 na zapytanie, z limitami, więc z paskiem postępu), aktualizowany o nowe wiadomości, z rozmiarem na dysku i „Delete Index”. Foundation Models nie daje wektorów; opcjonalnie mały wielojęzyczny model embeddingowy w Core ML (lepsza jakość, aplikacja większa o kilkadziesiąt–sto MB).
 4. **Granice:**

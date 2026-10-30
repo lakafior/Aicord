@@ -258,7 +258,7 @@ struct IntelligenceModel: Sendable {
     }
   }
 
-  private static func isContextOverflow(_ error: any Error) -> Bool {
+  static func isContextOverflow(_ error: any Error) -> Bool {
     if #available(iOS 27.0, macOS 27.0, visionOS 27.0, *),
       let error = error as? LanguageModelError, case .contextSizeExceeded = error
     {
@@ -273,7 +273,7 @@ struct IntelligenceModel: Sendable {
   }
 
   /// Apple's errors say what went wrong for a developer; these say it for a reader.
-  private static func friendly(_ error: any Error) -> any Error {
+  static func friendly(_ error: any Error) -> any Error {
     if #available(iOS 27.0, macOS 27.0, visionOS 27.0, *),
       let error = error as? LanguageModelError
     {

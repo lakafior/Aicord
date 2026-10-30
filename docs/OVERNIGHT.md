@@ -133,6 +133,15 @@ Pomiar jak w `docs/SLIM_NOTES.md`: Release, `generic/platform=iOS`, mapa linkera
 - **Ollama:** `curl localhost:11434` nie odpowiada (nie jest zainstalowana albo nie działa). **Sprawdzone zamiast tego:** prosty serwer zgodny z OpenAI w Pythonie na `localhost:8099` (skrypt w scratchpadzie sesji); w symulatorze Settings → Intelligence → API → adres `localhost:8099` → „Requests go to http://localhost:8099/v1 …” → Load Models from Server → `fake-local-model` (serwer odnotował `GET /v1/models`). Ustawienia przywrócone na koniec nocy.
 - **Do sprawdzenia rano:** z iPhone'a na prawdziwą Ollamę na Macu (`nazwa-maca.local:11434`) — pytanie o sieć lokalną i odpowiedź modelu.
 
+### 3d. Jakość w oknie 4 tys. tokenów
+
+**Stan: zrobione.** Commit: `fix: on-device answers with tools survive a full window`.
+
+- Budżet na urządzeniu (Ask): wcześniej 5 przypiętych + 20 ostatnich po 220 znaków, teraz 5 najnowszych + 15 najlepiej pasujących do pytania z 50 ostatnich (punkt 3a), a wyniki narzędzia `search` to 6 najbliższych pytaniu zamiast 6 najnowszych.
+- `IntelligenceModel.answer(…toolbox:)` na urządzeniu nie miał tego, co ma zwykłe `respond`: limitu czasu (90 s), przyjaznych komunikatów i reakcji na przepełnienie okna. Teraz ma; przy przepełnieniu (zwykle po wynikach narzędzi) druga próba bez narzędzi na ostatnich 60% promptu (pytanie jest na końcu, więc zostaje).
+- **Decyzja:** nie skracałem schematów narzędzi. Opisy i parametry już są krótkie (5 pól w `searchMessages`), a test pokazał poprawną odpowiedź; zysk z wycinania parametrów byłby mały, a model traciłby filtry.
+- **Sprawdzone:** Ask w NAScin #ogólny na urządzeniu (symulator, Apple Intelligence): poprawna odpowiedź o Kite.ipa z linkiem. Ścieżki przepełnienia nie da się łatwo wywołać na tak małym kanale.
+
 ---
 
 ## Do sprawdzenia rano

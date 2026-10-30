@@ -419,8 +419,29 @@ extension IntelligenceModel {
         SearchMessagesTool(toolbox: toolbox), MessagesAroundTool(toolbox: toolbox),
         ReplyChainTool(toolbox: toolbox),
       ]
-      let session = LanguageModelSession(tools: tools, instructions: instructions)
-      return try await session.respond(to: prompt).content
+      do {
+        return try await withThrowingTaskGroup(of: String.self) { group in
+          group.addTask {
+            let session = LanguageModelSession(tools: tools, instructions: instructions)
+            return try await session.respond(to: prompt).content
+          }
+          group.addTask {
+            try await Task.sleep(for: IntelligenceModel.onDeviceTimeout)
+            throw IntelligenceError("Apple Intelligence took too long to answer. Try again.")
+          }
+          defer { group.cancelAll() }
+          return try await group.next() ?? ""
+        }
+      } catch where IntelligenceModel.isContextOverflow(error) {
+        // tool schemas and results filled the small window: answer from the
+        // messages given up front, newest part first, without lookups
+        let kept = String(prompt.suffix(prompt.count * 3 / 5))
+        return try await respond(instructions: instructions, prompt: kept)
+      } catch let error as IntelligenceError {
+        throw error
+      } catch {
+        throw IntelligenceModel.friendly(error)
+      }
     }
   }
 }
