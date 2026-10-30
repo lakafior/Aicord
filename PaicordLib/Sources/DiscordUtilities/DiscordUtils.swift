@@ -22,19 +22,6 @@ public enum DiscordUtils {
     "<@&\(id.rawValue)>"
   }
 
-  /// When used in a Discord message, shows up as mentioning a slash command.
-  @inlinable
-  public static func slashCommand(
-    name: String,
-    id: CommandSnowflake,
-    subcommand: String? = nil,
-    subcommandGroup: String? = nil
-  ) -> String {
-    let subcommandGroup = subcommandGroup.map { " \($0)" } ?? ""
-    let subcommand = subcommand.map { " \($0)" } ?? ""
-    return "</\(name)\(subcommandGroup)\(subcommand):\(id.rawValue)>"
-  }
-
   /// When used in a Discord message, shows up as an emoji.
   @inlinable
   public static func standardUnicodeEmoji(emoji: String) -> String {

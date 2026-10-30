@@ -39,13 +39,8 @@ public struct ClientConfiguration: Sendable {
       self.cdnEndpointsDefaultTTL = cdnEndpointsDefaultTTL
       self.looseEndpointsTTL = looseEndpointsTTL
 
-      /// Necessary for `ShardingGatewayManager`/`BotGatewayManager`.
-      /// Users realistically shouldn't need to call these endpoints anyway.
-      ///
-      /// FIXME: do this in a cleaner way
+      /// The gateway URL rarely changes, so it is cached for two minutes.
       self.apiEndpointsStorage.updateValue(.seconds(120), forKey: .getGateway)
-      self.apiEndpointsStorage.updateValue(
-        .seconds(120), forKey: .getBotGateway)
 
       // Client can make a lot of getUserProfile calls, so caching it for a minute is beneficial.
       // Add any other common user API endpoints here if needed.
@@ -54,7 +49,7 @@ public struct ClientConfiguration: Sendable {
 
     /// Uses the TTL in the 'endpoints'. If not available, falls back to the 'defaultTTL'.
     /// Setting TTL to `.zero` in 'endpoints' dictionary, disables caching for that endpoint.
-    /// NOTE: Caching behavior for `getGateway` and `getBotGateway` api endpoints
+    /// NOTE: Caching behavior for the `getGateway` api endpoint
     /// can't be modified by users.
     @inlinable
     public static func custom(

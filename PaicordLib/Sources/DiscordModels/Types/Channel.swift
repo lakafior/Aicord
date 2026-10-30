@@ -271,7 +271,7 @@ extension DiscordChannel {
       stickers: [Sticker]? = nil,
       position: Int? = nil,
       role_subscription_data: RoleSubscriptionData? = nil,
-      resolved: Interaction.ApplicationCommand.ResolvedData? = nil,
+      resolved: Interaction.ResolvedData? = nil,
       poll: Poll? = nil,
       call: Call? = nil,
       guild_id: GuildSnowflake? = nil,
@@ -724,7 +724,7 @@ extension DiscordChannel {
     public var stickers: [Sticker]?
     public var position: Int?
     public var role_subscription_data: RoleSubscriptionData?
-    public var resolved: Interaction.ApplicationCommand.ResolvedData?
+    public var resolved: Interaction.ResolvedData?
     public var poll: Poll?
     public var call: Call?
     /// Extra fields, not sure why I've added them to this specific type:
@@ -746,7 +746,7 @@ extension DiscordChannel {
       public var type: DiscordChannel.Message.Kind
       public var flags: IntBitField<DiscordChannel.Message.Flag>?
       public var components: Interaction.ComponentSwitch?
-      public var resolved: Interaction.ApplicationCommand.ResolvedData?
+      public var resolved: Interaction.ResolvedData?
       public var sticker_items: [StickerItem]?
       public var soundboard_sounds: [SoundboardSound]?
     }
@@ -790,7 +790,7 @@ extension DiscordChannel {
       stickers: [Sticker]? = nil,
       position: Int? = nil,
       role_subscription_data: RoleSubscriptionData? = nil,
-      resolved: Interaction.ApplicationCommand.ResolvedData? = nil,
+      resolved: Interaction.ResolvedData? = nil,
       poll: Poll? = nil,
       call: DiscordChannel.Message.Call? = nil,
       member: Guild.PartialMember? = nil,
@@ -868,7 +868,7 @@ extension DiscordChannel {
     public var stickers: [Sticker]?
     public var position: Int?
     public var role_subscription_data: RoleSubscriptionData?
-    public var resolved: Interaction.ApplicationCommand.ResolvedData?
+    public var resolved: Interaction.ResolvedData?
     public var poll: Poll?
     public var call: DiscordChannel.Message.Call?
     /// Extra fields:

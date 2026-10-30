@@ -917,7 +917,7 @@ extension Gateway {
     public var stickers: [Sticker]?
     public var position: Int?
     public var role_subscription_data: RoleSubscriptionData?
-    public var resolved: Interaction.ApplicationCommand.ResolvedData?
+    public var resolved: Interaction.ResolvedData?
     public var poll: Poll?
     public var call: DiscordChannel.Message.Call?
     /// Extra fields:
@@ -1531,12 +1531,6 @@ extension Gateway {
     public var endpoint: String?
   }
 
-  /// https://discord.com/developers/docs/topics/gateway-events#webhooks-update-webhooks-update-event-fields
-  public struct WebhooksUpdate: Sendable, Codable {
-    public var guild_id: GuildSnowflake
-    public var channel_id: ChannelSnowflake
-  }
-
   /// https://discord.com/developers/docs/topics/gateway#get-gateway
   public struct URL: Sendable, Codable {
     public var url: String
@@ -1636,114 +1630,10 @@ extension Gateway {
     public var suggested_user_id: UserSnowflake
   }
 
-  /// https://docs.discord.food/topics/gateway-events#guild-application-command-index-update
-  public struct GuildApplicationCommandIndexUpdate: Sendable, Codable {
-    public var guild_id: GuildSnowflake
-  }
-
   /// https://docs.discord.food/topics/gateway-events#guild-scheduled-event-exceptions-delete
   public struct GuildScheduledEventExceptionsDelete: Sendable, Codable {
     public var guild_id: GuildSnowflake
     public var event_id: GuildScheduledEventSnowflake
-  }
-
-  /// https://docs.discord.food/topics/gateway-events#interaction-create
-  public struct InteractionCreate: Sendable, Codable {
-    public var id: InteractionSnowflake
-    public var nonce: String?
-  }
-
-  /// https://docs.discord.food/topics/gateway-events#interaction-failure
-  public struct InteractionFailure: Sendable, Codable {
-    public var id: InteractionSnowflake
-    public var nonce: String?
-    public var reason_code: Reason
-
-    #if Non64BitSystemsCompatibility
-      @UnstableEnum<UInt64>
-    #else
-      @UnstableEnum<UInt>
-    #endif
-    public enum Reason: Sendable, Codable {
-      case unknown  // 1
-      case timeout  // 2
-      case activityLaunchUnknownApplication  // 3
-      case activityLaunchUnknownChannel  // 4
-      case activityLaunchUnknownGuild  // 5
-      case activityLaunchInvalidPlatform  // 6
-      case activityLaunchNotInExperiment  // 7
-      case activityLaunchInvalidChannelType  // 8
-      case activityLaunchInvalidChannelNoAFK  // 9
-      case activityLaunchInvalidDevPreviewGuildSize  // 10
-      case activityLaunchInvalidUserAgeGate  // 11
-      case activityLaunchInvalidUserVerificationLevel  // 12
-      case activityLaunchInvalidUserPermissions  // 13
-      case activityLaunchInvalidConfigurationNotEmbedded  // 14
-      case activityLaunchInvalidConfigurationPlatformNotSupported  // 15
-      case activityLaunchInvalidConfigurationPlatformNotReleased  // 16
-      case activityLaunchFailedToLaunch  // 17
-      case activityLaunchInvalidUserNoAccessToActivity  // 18
-      case activityLaunchInvalidLocationType  // 19
-      case activityLaunchInvalidUserRegionForApplication  // 20
-
-      #if Non64BitSystemsCompatibility
-        case __undocumented(UInt64)
-      #else
-        case __undocumented(UInt)
-      #endif
-    }
-  }
-
-  /// https://docs.discord.food/topics/gateway-events#interaction-success
-  public struct InteractionSuccess: Sendable, Codable {
-    public var id: InteractionSnowflake
-    public var nonce: String?
-  }
-
-  /// https://docs.discord.food/topics/gateway-events#application-command-autocomplete-response
-  public struct ApplicationCommandAutocomplete: Sendable, Codable {
-    public var choices: [ApplicationCommand.Option.Choice]
-    public var nonce: String?
-  }
-
-  /// https://docs.discord.food/topics/gateway-events#interaction-modal-create
-  public struct InteractionModalCreate: Sendable, Codable {
-    public var id: InteractionSnowflake
-    public var channel_id: ChannelSnowflake
-    public var custom_id: String
-    public var application: PartialApplication
-    public var title: String
-    public var nonce: String?
-    public var components: [Interaction.MessageComponent]  // FIXME: might not be correct
-  }
-
-  /// https://docs.discord.food/topics/gateway-events#interaction-iframe-modal-create
-  public struct InteractionIFrameModalCreate: Sendable, Codable {
-    public var id: InteractionSnowflake
-    public var channel_id: ChannelSnowflake
-    public var custom_id: String
-    public var application: PartialApplication
-    public var title: String
-    public var nonce: String?
-    public var iframe_path: String
-    public var modal_size: ModalSize
-
-    #if Non64BitSystemsCompatibility
-      @UnstableEnum<UInt64>
-    #else
-      @UnstableEnum<UInt>
-    #endif
-    public enum ModalSize: Sendable, Codable {
-      case small  // 1
-      case normal  // 2
-      case big  // 3
-
-      #if Non64BitSystemsCompatibility
-        case __undocumented(UInt64)
-      #else
-        case __undocumented(UInt)
-      #endif
-    }
   }
 
   /// https://docs.discord.food/topics/gateway-events#recent-mention-delete

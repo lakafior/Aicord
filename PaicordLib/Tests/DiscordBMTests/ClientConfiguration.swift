@@ -576,7 +576,7 @@ class ClientConfigurationTests: XCTestCase {
       await cache.save(response: response, item: item, ttl: .seconds(5))
       let fromCache = await cache.get(
         item: .init(
-          identity: .api(.listGuildAuditLogEntries),
+          identity: .api(.listPinnedMessages),
           parameters: [],
           queries: []
         )

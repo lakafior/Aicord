@@ -26,36 +26,6 @@ class DiscordUtilsTests: XCTestCase {
     }
 
     do {
-      let id =
-        "\(Int.random(in: 1_000_000_000_000_000...10_000_000_000_000_000))"
-      let string = DiscordUtils.slashCommand(name: "abcd", id: Snowflake(id))
-      XCTAssertEqual(string, "</abcd:\(id)>")
-    }
-
-    do {
-      let id =
-        "\(Int.random(in: 1_000_000_000_000_000...10_000_000_000_000_000))"
-      let string = DiscordUtils.slashCommand(
-        name: "polikj",
-        id: Snowflake(id),
-        subcommand: "hey"
-      )
-      XCTAssertEqual(string, "</polikj hey:\(id)>")
-    }
-
-    do {
-      let id =
-        "\(Int.random(in: 1_000_000_000_000_000...10_000_000_000_000_000))"
-      let string = DiscordUtils.slashCommand(
-        name: "bhjksa",
-        id: Snowflake(id),
-        subcommand: "poi",
-        subcommandGroup: "homdas"
-      )
-      XCTAssertEqual(string, "</bhjksa homdas poi:\(id)>")
-    }
-
-    do {
       let string = DiscordUtils.standardUnicodeEmoji(emoji: "🥳")
       XCTAssertEqual(string, "🥳")
     }

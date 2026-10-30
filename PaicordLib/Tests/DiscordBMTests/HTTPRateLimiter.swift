@@ -7,11 +7,8 @@ class HTTPRateLimiterTests: XCTestCase {
 
   var rateLimiter = HTTPRateLimiter(label: "Test_RateLimiter")
   let endpoint = AnyEndpoint.api(.getGateway)
-  /// Interactions endpoints are unique in the sense that they by-pass the global rate limit.
-  let interactionEndpoint = APIEndpoint.createInteractionResponse(
-    interactionId: "",
-    interactionToken: ""
-  )
+  /// Some endpoints (like `getExperiments`) by-pass the global rate limit.
+  let unlimitedEndpoint = AnyEndpoint.userApi(.getExperiments)
 
   override func setUp() async throws {
     self.rateLimiter = HTTPRateLimiter(label: "Test_RateLimiter")
@@ -130,10 +127,10 @@ class HTTPRateLimiterTests: XCTestCase {
       XCTAssertEqual(shouldRequest, lessThan1min ? .false : .true)
     }
 
-    /// Interactions endpoints are not limited by the global rate limit, so should allow requests.
+    /// Endpoints outside the global rate limit should still allow requests.
     do {
       let shouldRequest = await rateLimiter.shouldRequest(
-        to: .api(interactionEndpoint)
+        to: unlimitedEndpoint
       )
       XCTAssertEqual(shouldRequest, .true)
     }

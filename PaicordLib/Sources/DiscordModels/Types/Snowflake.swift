@@ -379,9 +379,6 @@ public typealias StickerSnowflake = Snowflake<Sticker>
 /// Convenience type-alias for `Snowflake<Role>`
 public typealias RoleSnowflake = Snowflake<Role>
 
-/// Convenience type-alias for `Snowflake<AutoModerationRule>`
-public typealias RuleSnowflake = Snowflake<AutoModerationRule>
-
 /// Convenience type-alias for `Snowflake<StickerPack>`
 public typealias StickerPackSnowflake = Snowflake<StickerPack>
 
@@ -404,17 +401,11 @@ public typealias OnboardingPromptOptionSnowflake = Snowflake<
   Guild.Onboarding.Prompt.Option
 >
 
-/// Convenience type-alias for `Snowflake<ApplicationCommand>`
-public typealias CommandSnowflake = Snowflake<ApplicationCommand>
-
 /// Convenience type-alias for `Snowflake<Interaction>`
 public typealias InteractionSnowflake = Snowflake<Interaction>
 
 /// Convenience type-alias for `Snowflake<Integration>`
 public typealias IntegrationSnowflake = Snowflake<Integration>
-
-/// Convenience type-alias for `Snowflake<AuditLog.Entry>`
-public typealias AuditLogEntrySnowflake = Snowflake<AuditLog.Entry>
 
 /// Convenience type-alias for `Snowflake<DiscordChannel.Message.Attachment>`
 public typealias AttachmentSnowflake = Snowflake<

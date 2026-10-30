@@ -146,10 +146,6 @@ public struct Gateway: Sendable, Codable {
       case threadMemberUpdate(ThreadMemberUpdate)
       case threadMembersUpdate(ThreadMembersUpdate)
 
-      case entitlementCreate(Entitlement)
-      case entitlementUpdate(Entitlement)
-      case entitlementDelete(Entitlement)
-
       case friendSuggestionCreate(FriendSuggestionCreate)
       case friendSuggestionDelete(FriendSuggestionDelete)
 
@@ -160,11 +156,7 @@ public struct Gateway: Sendable, Codable {
       case guildUpdate(Guild)
       case guildDelete(UnavailableGuild)
 
-      case guildApplicationCommandIndexUpdate(
-        GuildApplicationCommandIndexUpdate
-      )
       case guildAppliedBoostsUpdate(Guild.PremiumGuildSubscription)
-      case guildAuditLogEntryCreate(AuditLog.Entry)
 
       case guildBanAdd(GuildBan)
       case guildBanRemove(GuildBan)
@@ -225,16 +217,6 @@ public struct Gateway: Sendable, Codable {
       case integrationDelete(IntegrationDelete)
 
       //			case interactionCreate(Interaction) // bot gets full interaction object
-      case interactionCreate(InteractionCreate)  // user gets limited object
-      case interactionFailure(InteractionFailure)
-      case interactionSuccess(InteractionSuccess)
-
-      case applicationCommandAutocompleteResponse(
-        ApplicationCommandAutocomplete
-      )
-
-      case interactionModalCreate(InteractionModalCreate)
-      case interactionIFrameModalCreate(InteractionIFrameModalCreate)
 
       case inviteCreate(InviteCreate)
       case inviteDelete(InviteDelete)
@@ -285,15 +267,6 @@ public struct Gateway: Sendable, Codable {
       case channelMemberCountUpdate(ChannelMemberCountUpdate)
       case requestChannelMemberCount(RequestChannelMemberCount)
 
-      case autoModerationRuleCreate(AutoModerationRule)
-      case autoModerationRuleUpdate(AutoModerationRule)
-      case autoModerationRuleDelete(AutoModerationRule)
-
-      case autoModerationActionExecution(AutoModerationActionExecution)
-      case autoModerationMentionRaidDetection(
-        AutoModerationMentionRaidDetection
-      )
-
       case stageInstanceCreate(StageInstance)
       case stageInstanceDelete(StageInstance)
       case stageInstanceUpdate(StageInstance)
@@ -320,12 +293,6 @@ public struct Gateway: Sendable, Codable {
       case voiceChannelStartTimeUpdate(VoiceChannelStartTimeUpdate)
       //			case voiceChannelEffectSend() // TODO
 
-      case webhooksUpdate(WebhooksUpdate)
-
-      case applicationCommandPermissionsUpdate(
-        GuildApplicationCommandPermissions
-      )
-
       case userApplicationUpdate(UserApplicationUpdate)
       case userApplicationRemove(UserApplicationRemove)
 
@@ -351,73 +318,6 @@ public struct Gateway: Sendable, Codable {
 
       // MARK: - End of payloads
 
-      public var correspondingIntents: [Intent] {
-        switch self {
-        case .heartbeat, .identify, .hello, .ready, .resume, .resumed,
-          .invalidSession, .requestGuildMembers,
-          .requestPresenceUpdate, .requestVoiceStateUpdate, .interactionCreate,
-          .entitlementCreate,
-          .entitlementUpdate, .entitlementDelete,
-          .applicationCommandPermissionsUpdate, .userUpdate,
-          .voiceServerUpdate, .updateGuildSubscriptions, .guildMemberListUpdate:
-          return []
-        case .guildCreate, .guildUpdate, .guildDelete, .guildMembersChunk,
-          .guildRoleCreate, .guildRoleUpdate,
-          .guildRoleDelete, .channelCreate, .channelUpdate, .channelDelete,
-          .threadCreate, .threadUpdate,
-          .threadDelete, .threadSyncList, .threadMemberUpdate,
-          .stageInstanceCreate, .stageInstanceDelete,
-          .stageInstanceUpdate:
-          return [.guilds]
-        case .channelPinsUpdate:
-          return [.guilds, .directMessages]
-        case .threadMembersUpdate, .guildMemberAdd, .guildMemberRemove,
-          .guildMemberUpdate:
-          return [.guilds, .guildMembers]
-        case .guildAuditLogEntryCreate, .guildBanAdd, .guildBanRemove:
-          return [.guildModeration]
-        case .guildEmojisUpdate, .guildStickersUpdate:
-          return [.guildEmojisAndStickers]
-        case .guildIntegrationsUpdate, .integrationCreate, .integrationUpdate,
-          .integrationDelete:
-          return [.guildIntegrations]
-        case .webhooksUpdate:
-          return [.guildWebhooks]
-        case .inviteCreate, .inviteDelete:
-          return [.guildInvites]
-        case .voiceStateUpdate:
-          return [.guildVoiceStates]
-        case .presenceUpdate:
-          return [.guildPresences]
-        case .messageCreate, .messageUpdate, .messageDelete,
-          .messageAcknowledge:
-          return [.guildMessages, .directMessages]
-        case .messageDeleteBulk:
-          return [.guildMessages]
-        case .messageReactionAdd, .messageReactionRemove,
-          .messageReactionRemoveAll,
-          .messageReactionRemoveEmoji:
-          return [.guildMessageReactions]
-        case .typingStart:
-          return [.guildMessageTyping]
-        case .guildScheduledEventCreate, .guildScheduledEventUpdate,
-          .guildScheduledEventDelete,
-          .guildScheduledEventUserAdd, .guildScheduledEventUserRemove:
-          return [.guildScheduledEvents]
-        case .autoModerationRuleCreate, .autoModerationRuleUpdate,
-          .autoModerationRuleDelete:
-          return [.autoModerationConfiguration]
-        case .autoModerationActionExecution:
-          return [.autoModerationExecution]
-        case .messagePollVoteAdd:
-          return [.guildMessagePolls, .directMessagePolls]
-        case .messagePollVoteRemove:
-          return [.guildMessagePolls, .directMessagePolls]
-        case .__undocumented:
-          return []
-        default: return []
-        }
-      }
     }
 
     public enum GatewayDecodingError: Error, CustomStringConvertible {
@@ -531,12 +431,6 @@ public struct Gateway: Sendable, Codable {
           self.data = try .threadMemberUpdate(decodeData())
         case "THREAD_MEMBERS_UPDATE":
           self.data = try .threadMembersUpdate(decodeData())
-        case "ENTITLEMENT_CREATE":
-          self.data = try .entitlementCreate(decodeData())
-        case "ENTITLEMENT_UPDATE":
-          self.data = try .entitlementUpdate(decodeData())
-        case "ENTITLEMENT_DELETE":
-          self.data = try .entitlementDelete(decodeData())
         case "GUILD_CREATE":
           self.data = try .guildCreate(decodeData())
         case "GUILD_UPDATE":
@@ -577,16 +471,12 @@ public struct Gateway: Sendable, Codable {
           self.data = try .guildScheduledEventUserAdd(decodeData())
         case "GUILD_SCHEDULED_EVENT_USER_REMOVE":
           self.data = try .guildScheduledEventUserRemove(decodeData())
-        case "GUILD_AUDIT_LOG_ENTRY_CREATE":
-          self.data = try .guildAuditLogEntryCreate(decodeData())
         case "INTEGRATION_CREATE":
           self.data = try .integrationCreate(decodeData())
         case "INTEGRATION_UPDATE":
           self.data = try .integrationUpdate(decodeData())
         case "INTEGRATION_DELETE":
           self.data = try .integrationDelete(decodeData())
-        case "INTERACTION_CREATE":
-          self.data = try .interactionCreate(decodeData())
         case "INVITE_CREATE":
           self.data = try .inviteCreate(decodeData())
         case "INVITE_DELETE":
@@ -634,26 +524,12 @@ public struct Gateway: Sendable, Codable {
           self.data = try .voiceStateUpdate(decodeData())
         case "VOICE_SERVER_UPDATE":
           self.data = try .voiceServerUpdate(decodeData())
-        case "WEBHOOKS_UPDATE":
-          self.data = try .webhooksUpdate(decodeData())
-        case "APPLICATION_COMMAND_PERMISSIONS_UPDATE":
-          self.data = try .applicationCommandPermissionsUpdate(decodeData())
-        case "AUTO_MODERATION_RULE_CREATE":
-          self.data = try .autoModerationRuleCreate(decodeData())
-        case "AUTO_MODERATION_RULE_UPDATE":
-          self.data = try .autoModerationRuleUpdate(decodeData())
-        case "AUTO_MODERATION_RULE_DELETE":
-          self.data = try .autoModerationRuleDelete(decodeData())
-        case "AUTO_MODERATION_ACTION_EXECUTION":
-          self.data = try .autoModerationActionExecution(decodeData())
         case "MESSAGE_POLL_VOTE_ADD":
           self.data = try .messagePollVoteAdd(decodeData())
         case "MESSAGE_POLL_VOTE_REMOVE":
           self.data = try .messagePollVoteRemove(decodeData())
         case "AUTH_SESSION_CHANGE":
           self.data = try .authSessionChange(decodeData())
-        case "AUTO_MODERATION_MENTION_RAID_DETECTION":
-          self.data = try .autoModerationMentionRaidDetection(decodeData())
         case "CALL_CREATE":
           self.data = try .callCreate(decodeData())
         case "CALL_UPDATE":
@@ -680,8 +556,6 @@ public struct Gateway: Sendable, Codable {
           self.data = try .friendSuggestionCreate(decodeData())
         case "FRIEND_SUGGESTION_DELETE":
           self.data = try .friendSuggestionDelete(decodeData())
-        case "GUILD_APPLICATION_COMMAND_INDEX_UPDATE":
-          self.data = try .guildApplicationCommandIndexUpdate(decodeData())
         case "GUILD_APPLIED_BOOSTS_UPDATE":
           self.data = try .guildAppliedBoostsUpdate(decodeData())
         case "GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE":
@@ -700,16 +574,6 @@ public struct Gateway: Sendable, Codable {
           self.data = try .guildSoundboardSoundDelete(decodeData())
         case "SOUNDBOARD_SOUNDS":
           self.data = try .soundboardSounds(decodeData())
-        case "INTERACTION_FAILURE":
-          self.data = try .interactionFailure(decodeData())
-        case "INTERACTION_SUCCESS":
-          self.data = try .interactionSuccess(decodeData())
-        case "APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE":
-          self.data = try .applicationCommandAutocompleteResponse(decodeData())
-        case "INTERACTION_MODAL_CREATE":
-          self.data = try .interactionModalCreate(decodeData())
-        case "INTERACTION_IFRAME_MODAL_CREATE":
-          self.data = try .interactionIFrameModalCreate(decodeData())
         case "MESSAGE_REACTION_ADD_MANY":
           self.data = try .messageReactionAddMany(decodeData())
         case "RECENT_MENTION_DELETE":
@@ -754,6 +618,27 @@ public struct Gateway: Sendable, Codable {
           self.data = try .voiceChannelStartTimeUpdate(decodeData())
         case "GUILD_JOIN_REQUEST_UPDATE":
           self.data = try .guildJoinRequestUpdate(decodeData())
+        /// Events for bots, interactions and app commands. The client does not
+        /// use them, so they are accepted without decoding their data.
+        case "ENTITLEMENT_CREATE",
+          "ENTITLEMENT_UPDATE",
+          "ENTITLEMENT_DELETE",
+          "GUILD_AUDIT_LOG_ENTRY_CREATE",
+          "INTERACTION_CREATE",
+          "WEBHOOKS_UPDATE",
+          "APPLICATION_COMMAND_PERMISSIONS_UPDATE",
+          "AUTO_MODERATION_RULE_CREATE",
+          "AUTO_MODERATION_RULE_UPDATE",
+          "AUTO_MODERATION_RULE_DELETE",
+          "AUTO_MODERATION_ACTION_EXECUTION",
+          "AUTO_MODERATION_MENTION_RAID_DETECTION",
+          "GUILD_APPLICATION_COMMAND_INDEX_UPDATE",
+          "INTERACTION_FAILURE",
+          "INTERACTION_SUCCESS",
+          "APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE",
+          "INTERACTION_MODAL_CREATE",
+          "INTERACTION_IFRAME_MODAL_CREATE":
+          self.data = nil
         default:
           throw GatewayDecodingError.unhandledDispatchEvent(type: self.type)
         }
@@ -824,44 +709,6 @@ public struct Gateway: Sendable, Codable {
           message: "'\(self)' data is supposed to never be sent."
         )
       }
-    }
-  }
-}
-
-// MARK: + Gateway.Intent
-extension Gateway.Intent {
-  /// All intents that require no privileges.
-  /// https://discord.com/developers/docs/topics/gateway#privileged-intents
-  public static var unprivileged: [Gateway.Intent] {
-    Gateway.Intent.allCases.filter { !$0.isPrivileged }
-  }
-
-  /// https://discord.com/developers/docs/topics/gateway#privileged-intents
-  public var isPrivileged: Bool {
-    switch self {
-    case .guilds: return false
-    case .guildMembers: return true
-    case .guildModeration: return false
-    case .guildEmojisAndStickers: return false
-    case .guildIntegrations: return false
-    case .guildWebhooks: return false
-    case .guildInvites: return false
-    case .guildVoiceStates: return false
-    case .guildPresences: return true
-    case .guildMessages: return false
-    case .guildMessageReactions: return false
-    case .guildMessageTyping: return false
-    case .directMessages: return false
-    case .directMessageReactions: return false
-    case .directMessageTyping: return false
-    case .messageContent: return true
-    case .guildScheduledEvents: return false
-    case .autoModerationConfiguration: return false
-    case .autoModerationExecution: return false
-    case .guildMessagePolls: return false
-    case .directMessagePolls: return false
-    /// Undocumented cases are considered privileged just to be safe than sorry
-    case .__undocumented: return true
     }
   }
 }
