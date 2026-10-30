@@ -38,61 +38,17 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 
 **Swapped for system APIs or removed:** SwiftUIX, Nuke, Sparkle, Lottie, SettingsKit, SwiftUIIntrospect, HCaptcha, KeychainAccess, CodeScanner, MijickCamera, MeshGradient, ColorCube, SwiftEmoji, FLEX, Loupe, Conditionals, SwiftPrettyPrint, UInt128, Yams, swift-crypto, multipart-kit and the whole SwiftNIO stack. What's left: swift-log, swift-protobuf, zstd and swift-syntax (build-time macros only).
 
-The full history is in [ROADMAP.md](ROADMAP.md).
+## Highlights
 
-## New & fixed
+- **Voice and calls** — server voice channels and DM or group calls, end-to-end encrypted with DAVE, with push-to-talk and device choice
+- **Nearly all of Discord's settings** — privacy, content filters, devices, connections, appearance, chat and notifications, saved to your account so the official apps see them too
+- **One search for everything** — servers, channels, people and messages, with date and regex filters, opening a result right at the message
+- **Notifications that follow your Discord rules** — per server and channel, quiet hours, keywords, Reply and Mark as Read, without a push server
+- **Messages done properly** — forwards, message requests and a spam folder, friend requests, a long-press menu with quick reactions
+- **Things the official app doesn't do** — keep deleted messages and edit history in memory, see hidden channels and who can view them, a local word filter, pinned servers and channels
+- **Native on iPhone and Mac** — Liquid Glass throughout, built almost only on Apple's own frameworks and much smaller than the original
 
-- **New** · Forward messages to up to five DMs, group chats or channels with an optional comment; forwarded messages show where they came from, and tapping the source opens the original
-- **New** · Message Requests and Spam folders in Messages (on Mac and iPad above the direct messages): accept, ignore or reject requests, move messages out of spam or delete them
-- **New** · Friend requests: Incoming and Sent tabs in Friends with accept, ignore and cancel, and a badge that updates live
-- **New** · Search opens a message result at the message and highlights it, and filters by date range and by a regular expression
-- **New** · Voice: join server voice channels and start or join DM and group calls, end-to-end encrypted with DAVE; a call panel with mute, deafen and disconnect (a tab bar accessory on iPhone), who is in each voice channel with speaking rings, push-to-talk, and Settings → Voice & Video for devices, volumes, input mode and voice processing
-- **New** · Rebuilt message menu: a row of quick reactions from your favourite and most used emoji, tidier groups, and a working Mark Unread; the empty Apps, Thread and Forward items are gone
-- **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
-- **New** · iOS draws the app with Liquid Glass: the compatibility flag that kept the old look is gone, the tab bar is the system glass one and lists scroll underneath it
-- **New** · Settings is a tab on iPhone; the empty Notifications tab is gone
-- **New** · Channel categories start expanded and have cleaner headers with a hairline between them
-- **New** · Working status picker (online, idle, do not disturb, invisible) and a custom status editor with emoji and "clear after", saved to your account so other clients see it
-- **New** · "Member since" on your profile, and Log Out next to account switching
-- **New** · Settings → My Account shows your account details and accounts, and Keybinds lists the shortcuts
-- **New** · One search for servers, channels, people and messages: pick a server, channel or person and the next results narrow to it
-- **New** · Edit your profile in the app: display name, pronouns, about me and avatar, plus a nickname and pronouns per server
-- **New** · iPhone tabs are Home, Messages, Search and Settings; Messages holds direct messages, group chats, mentions and friends, and your status and activity sit behind a profile card at the top of Settings
-- **New** · Custom rich presence ("Playing …", "Listening to …") with images, timers, party size and buttons, a live preview, and a "Share my activity" switch; your Discord application ID lives in Settings → My Account and is checked before saving
-- **New** · Settings → Content & Social: sensitive and graphic media (show, blur or block), keyword filters, DM spam filter, message requests and who can send you friend requests, saved to your Discord account
-- **New** · Settings → Data & Privacy: activity privacy (share your activity, in new servers, who can join without asking, recent games), how Discord may use your data, and requesting a copy of your data
-- **New** · Settings → Authorised Apps: the bots and sites you signed in to with Discord, what each may do in plain words, and deauthorising one after a confirmation
-- **New** · Settings → Devices: where your account is logged in (system, client, approximate location, last used), with this device marked, and logging out one device or all others after a confirmation
-- **New** · Settings → Connections: your linked accounts (Spotify, Steam, GitHub…) with toggles for showing each on your profile, its details and its activity as your status, removing one after a confirmation, and a link to add new ones on discord.com
-- **New** · Settings → Advanced: Developer Mode for Copy ID in menus, image cache size with Clear Cache, and viewing or sharing the app's logs; the separate Debug page is gone
-- **Fixed** · iPhone opens on Home instead of an empty chat screen, and the channel list's background reaches under the tab bar in the dark theme
-- **New** · Settings → Appearance: Light, Dark or Automatic, an accent colour that can also tint the tab bar and icons, text size and font (System, Rounded, Serif, Monospaced), Reduce Motion, and Discord's animated emoji, GIF autoplay, sticker animation and image description settings, saved to your account
-- **New** · Settings → Chat: Cozy or Compact message display (no avatars, time and name on the message's line), Discord's options for reactions, link previews, uploaded and linked media, spoilers (now also covering spoiler images) and converting emoticons like :) to emoji when sending, saved to your account
-- **New** · The emoji picker only offers emoji you can actually use: without Nitro that's standard emoji and the still ones from the server you're in, which comes first; an option in Settings → Chat shows the rest locked
-- **New** · Optionally show the channels you can't view, locked, with their topic and which roles can view them (never their messages), from Settings → Chat
-- **New** · Optional message logging in Settings → Chat: other people's deleted messages stay in the chat marked in red, and edited messages show what they said before; kept only in memory, cleared when you quit or turn it off
-- **New** · Notifications for messages, sent by Aicord itself while it runs (on iPhone while it's open and briefly after): they follow each server's and channel's settings from Discord, with direct messages from everyone, friends, chosen people or all but some, only selected servers or silencing servers and channels on your account, keywords, @everyone and role mentions, quiet hours and Do Not Disturb, a hidden preview, Reply and Mark as Read, and an unread badge on the app icon
-- **Fixed** · Unread direct messages arriving while the app runs now count towards the Messages badge
-- **New** · Long press (right click on Mac) a server or channel for Mark as Read, Pin to Top (kept in Aicord), Mute for 15 minutes to until you turn it back on, and Notify with @everyone and role mention switches, saved to your Discord account; Server Settings… gathers a server's notifications, DM, message request and activity exceptions and links to its server profile
-- **New** · Scan QR Code on iPhone uses the whole screen for the camera, starts over after a code that isn't a Discord login, and explains how to allow camera access when it's off
-- **New** · Media Discord flags as sensitive is blurred or blocked in chats according to those settings, and an optional word filter hides matching messages behind a tap (also in reply quotes, mentions and search results), using the community LDNOOBW lists (CC BY 4.0) plus your own words
-- **New** · About Aicord in Settings with version, licence and a link to this repository
-- **New** · Logging goes through `os.Logger` instead of capturing stdout into memory
-- **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
-- **Fixed** · Edit Message in a message's menu on iPhone opens the editor instead of doing nothing
-- **Fixed** · Colours in imported JSON themes are read correctly instead of coming out transparent
-- **Fixed** · The macOS app no longer crashes a few seconds after loading: the chat and the member list stopped fighting over column widths, and the window now opens at a sensible size
-- **Fixed** · The member list no longer scrolls itself out of view when it opens
-- **Fixed** · Channel names in the title bar show in full instead of being cut off inside a glass pill
-- **Fixed** · Opening a channel or scrolling to the bottom now marks it as read
-- **Fixed** · Forum and media channels show an icon instead of a raw type name, and the macOS Settings window no longer cuts off section names
-- **Fixed** · Requests that Discord answers with a captcha or a 2FA prompt go through once you solve it, instead of failing with 403
-- **Fixed** · Changing one account setting no longer resets the others in the same group (for example "Share my activity" clearing your custom status)
-- **Fixed** · Changing account settings actually reaches Discord (the request went out empty), and settings changed on another device are merged in
-- **Fixed** · Incoming messages keep their slash command info, and a message reference without a type no longer breaks decoding
-- **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file
-- **Removed** · Third-party sponsor badges and the telemetry requests behind them
-- **Removed** · Donate buttons, the sponsor pop-up and the update check, all of which pointed at the upstream app
+Everything else that's new or fixed is in **[SHIPPED.md](SHIPPED.md)**, and what's next in the [roadmap](ROADMAP.md).
 
 ## Building
 

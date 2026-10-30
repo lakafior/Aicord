@@ -20,5 +20,5 @@ Before your pull request can be merged, please follow these guidelines:
    redesign. Document `PaicordLib` changes thoroughly.
 5. Split unrelated contributions into separate pull requests, one branch per
    feature. That makes them easier to review and quicker to merge.
-6. Bigger user-visible changes should also get a line in the README's
-   "New & fixed" section.
+6. Bigger user-visible changes should also get a line in
+   [SHIPPED.md](../SHIPPED.md), in the group it belongs to.
