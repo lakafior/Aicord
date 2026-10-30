@@ -28,6 +28,7 @@ Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`).
    - Nie robimy: Purge (masowe usuwanie wiadomości z czatu). API Discorda pozwala usunąć tylko własne wiadomości w DM, a cudze na serwerze tylko z Manage Messages; masowe usuwanie z konta użytkownika to automatyzacja, za którą Discord blokuje konta (ostrzega przed tym nawet Undiscord).
    - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`. Do tego z zaproszeń: prawdziwe Add Friend (z listy i z profilu), Join na serwerze, w którym jeszcze nie jesteś, włączenie rozszerzenia Safari na iOS i macOS. Kroki: `docs/INVITES_NOTES.md`.
    - [ ] Natywne listy: sprawdzić na iPadzie i przewijanie dużej listy członków (`docs/LISTS_NOTES.md`).
+   - [ ] Leave Server w menu serwera i w Server Settings, z potwierdzeniem (`DELETE /users/@me/guilds/{id}`); właściciel serwera nie może wyjść, więc dla niego opcja jest ukryta.
    - [ ] Lista i unieważnianie zaproszeń serwera (Server Settings → Invites, `revokeInvite`). Po testach zostało na NAScin zaproszenie `EdxGVcWd` (7 dni).
    - [ ] macOS: kliknięcie linku zaproszenia w treści wiadomości nie otwiera podglądu (kliknięcia nie docierają do widoku tekstu z Textual); karta pod wiadomością działa.
 
