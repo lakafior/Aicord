@@ -184,6 +184,8 @@ struct ProfilePopoutView: View {
       {
         MarkdownText(content: bio, channelStore: channel)
       }
+
+      AddFriendProfileButton(user: user)
     }
   }
 

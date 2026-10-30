@@ -28,6 +28,15 @@ struct ServerSettingsSheet: View {
   var body: some View {
     NavigationStack {
       Form {
+        Section {
+          NavigationLink {
+            InvitePeopleView(guildId: guildId)
+          } label: {
+            Label("Invite People", systemImage: "person.badge.plus")
+          }
+          .disabled(InvitePeople.channels(in: guildId, gw: gw).isEmpty)
+        }
+
         if let guild {
           notificationsSection(guild)
         }

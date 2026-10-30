@@ -18,6 +18,7 @@ struct MarkdownText: View {
 
   @Environment(\.theme) var theme
   @Environment(\.gateway) var gw
+  @Environment(\.appState) var appState
   @State private var revealedSpoilers: Set<String> = []
   @State private var userPopover: PartialUser?
   @State private var emojiPopover: DiscordModels.Emoji?
@@ -102,6 +103,10 @@ struct MarkdownText: View {
       \.openURL,
       OpenURLAction { url in
         if !handleInteractions { return .handled }
+        if let code = InviteLink.code(from: url) {
+          appState.invitePreviewCode = code
+          return .handled
+        }
         return url.scheme == "textual-discord" || AicordChatLink(url: url) != nil
           ? .handled : .systemAction
       }
@@ -495,6 +500,8 @@ struct MarkdownText: View {
     let gw = GatewayStore.shared
 
     switch cmd {
+    case .invite(let code):
+      appState.invitePreviewCode = code
     case .userMention(let userID):
       if let user = gw.user.users[userID] {
         ImpactGenerator.impact(style: .light)

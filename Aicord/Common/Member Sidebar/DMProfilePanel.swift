@@ -111,6 +111,8 @@ extension MemberSidebarView {
         if let bio = profileMeta?.bio ?? profile?.user_profile?.bio {
           MarkdownText(content: bio)
         }
+
+        AddFriendProfileButton(user: user)
       }
     }
 

@@ -6,6 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
+import AicordKit
 import SwiftUI
 
 // Handles using phone suitable layout or desktop suitable layout
@@ -75,6 +76,17 @@ struct RootView: View {
       )
     )
     .onAppear { setupGatewayCallbacks() }
+    // invite links handed over by the Safari extension (aicord://invite/…)
+    .onOpenURL { url in
+      guard gatewayStore.accounts.currentAccountID != nil,
+        let code = InviteLink.code(from: url)
+      else { return }
+      appState.invitePreviewCode = code
+    }
+    #if os(macOS)
+      // into the open window rather than a new one
+      .handlesExternalEvents(preferring: [InviteLink.appScheme], allowing: ["*"])
+    #endif
     #if os(macOS)
       .toolbarBackgroundVisibility(
         gatewayStore.accounts.currentAccountID == nil ? .hidden : .automatic,
