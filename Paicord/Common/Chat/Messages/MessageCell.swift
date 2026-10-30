@@ -69,7 +69,10 @@ struct MessageCell: View {
       && message.type == .default
       && priorMessage?.type != .guildMemberJoin
 
-    Group {
+    let isDeleted = channelStore.deletedMessageIDs.contains(message.id)
+    let previousVersions = channelStore.previousVersions[message.id] ?? []
+
+    VStack(alignment: .leading, spacing: 2) {
       // Content
       switch message.type {
       case .default, .reply:
@@ -93,13 +96,27 @@ struct MessageCell: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
       }
+
+      if !previousVersions.isEmpty {
+        EditHistory(versions: previousVersions)
+      }
+      if isDeleted {
+        DeletedNote {
+          withAnimation { channelStore.hideDeletedMessage(message.id) }
+        }
+      }
     }
     .background(Color.almostClear)
     .padding(.horizontal, 10)
     .padding(.vertical, 2)
-    .background(Color(hexadecimal6: 0xcc8735).opacity(userMentioned ? 0.05 : 0))
+    .background(Color(hexadecimal6: 0xcc8735).opacity(userMentioned && !isDeleted ? 0.05 : 0))
     .background(alignment: .leading) {
-      Color(hexadecimal6: 0xce9c5c).opacity(userMentioned ? 1 : 0)
+      Color(hexadecimal6: 0xce9c5c).opacity(userMentioned && !isDeleted ? 1 : 0)
+        .frame(maxWidth: 2)
+    }
+    .background(Color.red.opacity(isDeleted ? 0.08 : 0))
+    .background(alignment: .leading) {
+      Color.red.opacity(isDeleted ? 0.8 : 0)
         .frame(maxWidth: 2)
     }
     #if os(macOS)
@@ -109,8 +126,84 @@ struct MessageCell: View {
           ? Color(NSColor.secondaryLabelColor).opacity(0.1) : .clear
       )
     #endif
-    .entityContextMenu(for: message)
+    .modifier(DeletedAwareContextMenu(message: message, isDeleted: isDeleted) {
+      withAnimation { channelStore.hideDeletedMessage(message.id) }
+    })
     .padding(.top, inline ? 0 : 15)  // adds space between message groups
+  }
+
+  /// What an edited message said before, kept by the Chat setting.
+  struct EditHistory: View {
+    let versions: [String]
+
+    var body: some View {
+      HStack(alignment: .top, spacing: 0) {
+        AvatarBalancing()
+          .padding(.trailing, 8)
+        VStack(alignment: .leading, spacing: 2) {
+          ForEach(Array(versions.enumerated()), id: \.offset) { _, version in
+            Text(verbatim: version)
+              .strikethrough()
+          }
+          Text(versions.count == 1 ? "Before the edit" : "Earlier versions, oldest first")
+            .font(.caption2)
+            .foregroundStyle(.tertiary)
+        }
+        .font(.callout)
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+      }
+    }
+  }
+
+  /// Marks a message Discord deleted that the Chat setting kept.
+  struct DeletedNote: View {
+    var hide: () -> Void
+
+    var body: some View {
+      HStack(spacing: 0) {
+        AvatarBalancing()
+          .padding(.trailing, 8)
+        HStack(spacing: 6) {
+          Image(systemName: "trash")
+          Text("Deleted")
+          Button("Hide", action: hide)
+            .buttonStyle(.borderless)
+        }
+        .font(.caption)
+        .foregroundStyle(.red)
+        .frame(maxWidth: .infinity, alignment: .leading)
+      }
+    }
+  }
+
+  /// A deleted message only offers what still makes sense locally.
+  struct DeletedAwareContextMenu: ViewModifier {
+    let message: DiscordChannel.Message
+    let isDeleted: Bool
+    var hide: () -> Void
+
+    func body(content: Content) -> some View {
+      if isDeleted {
+        content.contextMenu {
+          Button {
+            #if os(iOS)
+              UIPasteboard.general.string = message.content
+            #else
+              NSPasteboard.general.clearContents()
+              NSPasteboard.general.setString(message.content, forType: .string)
+            #endif
+          } label: {
+            Label("Copy Text", systemImage: "doc.on.doc")
+          }
+          Button(action: hide) {
+            Label("Hide Deleted Message", systemImage: "eye.slash")
+          }
+        }
+      } else {
+        content.entityContextMenu(for: message)
+      }
+    }
   }
 }
 

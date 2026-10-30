@@ -85,6 +85,9 @@ struct EntityContextMenu<Entity>: ViewModifier {
         }
         if messageIsFromSelf(message) {
           Button {
+            guard let channel else { return }
+            let vm = ChatView.InputBar.vm(for: channel)
+            vm.messageAction = .edit(message: message)
           } label: {
             Label("Edit Message", systemImage: "pencil")
           }

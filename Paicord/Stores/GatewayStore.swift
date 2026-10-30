@@ -172,6 +172,13 @@ final class GatewayStore {
     }
   }
 
+  /// Clears what the Chat settings kept in every open channel.
+  func discardKeptMessages(deleted: Bool = false, edits: Bool = false) {
+    for store in channels.values {
+      store.discardKept(deleted: deleted, edits: edits)
+    }
+  }
+
   private var subscribedGuilds: Set<GuildSnowflake> = []
   private var guilds: [GuildSnowflake: GuildStore] = [:]
 

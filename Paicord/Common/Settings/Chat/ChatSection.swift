@@ -27,6 +27,8 @@ struct ChatSettings: View {
 
   @AppStorage(EmojiPicker.showsNitroEmojiKey) private var showsNitroEmoji = false
   @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
+  @AppStorage(ChannelStore.keepsDeletedMessagesKey) private var keepsDeletedMessages = false
+  @AppStorage(ChannelStore.keepsEditHistoryKey) private var keepsEditHistory = false
 
   var body: some View {
     Section {
@@ -72,6 +74,29 @@ struct ChatSettings: View {
       Text("Writing")
     } footer: {
       Text("When you send, :) becomes 🙂 and <3 becomes ❤️. Code and links stay as typed.")
+    }
+
+    Section {
+      Toggle("Keep Deleted Messages", isOn: $keepsDeletedMessages)
+        #if os(macOS)
+          .toggleStyle(.switch)
+        #endif
+        .onChange(of: keepsDeletedMessages) { _, on in
+          if !on { gw.discardKeptMessages(deleted: true) }
+        }
+      Toggle("Keep Edit History", isOn: $keepsEditHistory)
+        #if os(macOS)
+          .toggleStyle(.switch)
+        #endif
+        .onChange(of: keepsEditHistory) { _, on in
+          if !on { gw.discardKeptMessages(edits: true) }
+        }
+    } header: {
+      Text("Message Logging")
+    } footer: {
+      Text(
+        "Other people's messages deleted while they're loaded stay in the chat, marked in red, and edited messages show what they said before. This includes messages removed by moderators. Kept only in memory on this device: they're gone when Aicord quits, and turning a switch off clears them at once."
+      )
     }
 
     Section {

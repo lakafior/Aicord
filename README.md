@@ -62,11 +62,13 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **New** · Settings → Chat: Discord's options for reactions, link previews, uploaded and linked media, spoilers (now also covering spoiler images) and converting emoticons like :) to emoji when sending, saved to your account
 - **New** · The emoji picker only offers emoji you can actually use: without Nitro that's standard emoji and the still ones from the server you're in, which comes first; an option in Settings → Chat shows the rest locked
 - **New** · Optionally show the channels you can't view, locked, with their topic and which roles can view them (never their messages), from Settings → Chat
+- **New** · Optional message logging in Settings → Chat: other people's deleted messages stay in the chat marked in red, and edited messages show what they said before; kept only in memory, cleared when you quit or turn it off
 - **New** · Scan QR Code on iPhone uses the whole screen for the camera, starts over after a code that isn't a Discord login, and explains how to allow camera access when it's off
 - **New** · Media Discord flags as sensitive is blurred or blocked in chats according to those settings, and an optional word filter hides matching messages behind a tap (also in reply quotes, mentions and search results), using the community LDNOOBW lists (CC BY 4.0) plus your own words
 - **New** · About Aicord in Settings with version, licence and a link to this repository
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
+- **Fixed** · Edit Message in a message's menu on iPhone opens the editor instead of doing nothing
 - **Fixed** · Colours in imported JSON themes are read correctly instead of coming out transparent
 - **Fixed** · The macOS app no longer crashes a few seconds after loading: the chat and the member list stopped fighting over column widths, and the window now opens at a sensible size
 - **Fixed** · The member list no longer scrolls itself out of view when it opens

@@ -47,6 +47,36 @@ class ChannelStore: DiscordDataStore {
 
   var reactions: [MessageSnowflake: OrderedDictionary<Emoji, Reaction>] = [:]
 
+  /// Chat settings: keep messages deleted while loaded, and what edited ones said
+  /// before. Both live only in memory for this session, never on disk.
+  static let keepsDeletedMessagesKey = "Paicord.Chat.KeepsDeletedMessages"
+  static let keepsEditHistoryKey = "Paicord.Chat.KeepsEditHistory"
+
+  /// Messages Discord deleted that stay in `messages`, shown as deleted.
+  var deletedMessageIDs: Set<MessageSnowflake> = []
+  /// Earlier text of edited messages, oldest first.
+  var previousVersions: [MessageSnowflake: [String]] = [:]
+
+  /// Drops kept deleted messages or edit history, when the setting is turned off
+  /// or one deleted message is hidden.
+  func discardKept(deleted: Bool = false, edits: Bool = false) {
+    if deleted {
+      for id in deletedMessageIDs {
+        messages.removeValue(forKey: id)
+        reactions.removeValue(forKey: id)
+      }
+      deletedMessageIDs = []
+    }
+    if edits { previousVersions = [:] }
+  }
+
+  func hideDeletedMessage(_ id: MessageSnowflake) {
+    guard deletedMessageIDs.remove(id) != nil else { return }
+    messages.removeValue(forKey: id)
+    reactions.removeValue(forKey: id)
+    previousVersions.removeValue(forKey: id)
+  }
+
   var typingTimeoutTokens: [UserSnowflake: UUID] = [:]
 
   var memberList: MemberListAccumulator? = nil
@@ -287,6 +317,11 @@ class ChannelStore: DiscordDataStore {
       requestScrollToBottom()
     }
     guard var msg = messages[message.id] else { return }
+    if UserDefaults.standard.bool(forKey: Self.keepsEditHistoryKey),
+      let newContent = message.content, newContent != msg.content, !msg.content.isEmpty
+    {
+      previousVersions[msg.id, default: []].append(msg.content)
+    }
     msg.update(with: message)
     messages.updateValue(msg, forKey: msg.id)
 
@@ -316,12 +351,26 @@ class ChannelStore: DiscordDataStore {
   }
 
   private func handleMessageDelete(_ messageDelete: Gateway.MessageDelete) {
-    messages.removeValue(forKey: messageDelete.id)
+    deleteMessage(messageDelete.id)
   }
 
   private func handleMessageDeleteBulk(_ bulkDelete: Gateway.MessageDeleteBulk) {
     for messageId in bulkDelete.ids {
-      messages.removeValue(forKey: messageId)
+      deleteMessage(messageId)
+    }
+  }
+
+  /// Removes a message, or keeps it marked as deleted when the Chat setting is on.
+  /// Your own deletions are never kept.
+  private func deleteMessage(_ id: MessageSnowflake) {
+    if UserDefaults.standard.bool(forKey: Self.keepsDeletedMessagesKey),
+      let message = messages[id],
+      message.author?.id != gateway?.user.currentUser?.id
+    {
+      deletedMessageIDs.insert(id)
+    } else {
+      messages.removeValue(forKey: id)
+      previousVersions.removeValue(forKey: id)
     }
   }
 
