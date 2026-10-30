@@ -252,3 +252,46 @@ Startujemy po odświeżeniu UI. To port, nie merge. Bazą kodu jest gałąź [`u
    - [ ] Ręczny test na koncie (zrobione: dołączenie do pustego kanału serwera i wyjście, z DAVE v1, na symulatorze iOS; zostaje test z drugą osobą, patrz `VOICE_NOTES.md`): dźwięk w obie strony z DAVE w DM, w rozmowie grupowej i na kanale serwera; dołączanie i wychodzenie uczestników; wznowienie po zerwaniu sieci.
 7. **Później:**
    - [ ] Wideo i udostępnianie ekranu. Serein ma do tego ścieżki na macOS (ScreenCaptureKit, VideoToolbox).
+
+---
+
+### 🔜 Etap 10: Intelligence — tłumaczenie i podsumowania
+
+Po Etapie 7 (odchudzenie biblioteki) i po scaleniu zestawu Messages (Forward zmienia to samo menu wiadomości). Działa na iOS i macOS, na obecnym targecie.
+
+1. **Sekcja ustawień „Intelligence” (Aicord Settings):**
+   - [ ] Dostawca: na urządzeniu (Foundation Models / Apple Intelligence, z kontrolą dostępności urządzenia i regionu) albo API zgodne z OpenAI (adres, klucz w pęku kluczy, model, „Test Connection”). Pasuje też lokalny serwer (Ollama, LM Studio).
+   - [ ] Prywatność: domyślnie tylko na urządzeniu; zewnętrzne API wyłączone, dopóki ktoś go nie skonfiguruje; przy każdej funkcji informacja, dokąd idą dane; osobny przełącznik dla DM, domyślnie wyłączony.
+2. **Tłumaczenie:**
+   - [ ] Framework Translation zamiast modelu językowego (na urządzeniu, bez klucza). „Translate” w menu wiadomości, tłumaczenie pod treścią z możliwością cofnięcia.
+   - [ ] Język docelowy i automatyczne tłumaczenie wybranych języków.
+3. **Podsumowania kanału:**
+   - [ ] „Summarize” w nagłówku kanału: nieprzeczytane albo ostatnie 100 / 500 / 1000 wiadomości. Wynik w arkuszu, punkty z linkami do wiadomości.
+   - [ ] Na urządzeniu okno kontekstu to ok. 4 tys. tokenów: podsumowanie etapami (kawałki, potem podsumowanie podsumowań), z postępem. Przez API całość jednym zapytaniem, gdy się mieści.
+4. **Czytanie i nadrabianie:**
+   - [ ] „Co mnie ominęło”: wszystkie nieprzeczytane kanały naraz jako jedna lista (serwer → kanał → 2–3 punkty).
+   - [ ] Podsumowanie wątku albo łańcucha odpowiedzi od wybranej wiadomości w górę.
+   - [ ] „Wyjaśnij”: slang, skróty i żargon serwera (np. W2C, QC) z kontekstem kilku wcześniejszych wiadomości.
+5. **Wyszukiwanie:**
+   - [ ] Wyszukiwanie w języku naturalnym w Search: zdanie („kto polecał agenta do wysyłki w zeszłym tygodniu”) zamienione na filtry (autor, kanał, daty, „zawiera link”), wyniki ułożone od najtrafniejszych.
+   - [ ] Pytanie do kanału („jaki jest regulamin aukcji?”): odpowiedź z linkami do wiadomości źródłowych, na przypiętych i ostatnich wiadomościach.
+6. **Porządek i bezpieczeństwo:**
+   - [ ] Inteligentne powiadomienia: lokalny model ocenia, czy wiadomość z wyciszonego kanału jest dla Ciebie ważna (pytanie do Ciebie, Twoje tematy), i wtedy powiadamia mimo wyciszenia. Rozszerza sekcję Notifications.
+   - [ ] Ostrzeżenie przed oszustwem w DM od nieznajomych: fałszywe Nitro, „przypadkowe zgłoszenie konta”, linki phishingowe. Na urządzeniu, uzupełnia filtr spamu z Content & Social.
+   - [ ] Opisy obrazów bez tekstu alternatywnego (także dla VoiceOver): tekst z obrazka przez Vision (OCR) na urządzeniu, pełny opis przez API, jeśli model widzi obrazy (Foundation Models ich nie obsługuje).
+7. **Granice:**
+   - [ ] Tylko czytanie: Intelligence niczego nie wysyła do Discorda (bez automatycznych odpowiedzi), więc nie jest automatyzacją konta.
+   - Nie robimy: pomocy w pisaniu (poprawianie, ton, tłumaczenie szkicu), bo daje ją już system (Writing Tools w iOS i macOS).
+
+---
+
+### 🔜 Etap 11: Aicord dla macOS
+
+Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI, nie Mac Catalyst), ale dzieli szkielet `LargeBaseplate` z iPadem i przez to wygląda jak aplikacja na iPada. Po Etapie 7 i zmianie nazw targetów (Etap 5.4), żeby przebudowywać targety i `pbxproj` tylko raz.
+
+1. **Interfejs Maca:**
+   - [ ] Własny szkielet `MacBaseplate` zamiast wspólnego z iPadem: pasek boczny serwerów i kanałów w stylu systemowym, paski narzędzi, inspektor członków.
+   - [ ] Menu aplikacji, skróty, wiele okien (kanał w osobnym oknie), Ustawienia jako systemowe okno `Settings`.
+2. **Serwer MCP (połączenie Claude z Discordem):**
+   - [ ] Mały pomocniczy program (target command-line) rozmawiający przez stdio i przekazujący zapytania do działającej aplikacji Aicord; aplikacja główna zostaje jedna.
+   - [ ] Domyślnie tylko odczyt (kanały, wiadomości, wyszukiwanie, podsumowania). Wysyłanie najwyżej z potwierdzeniem każdej akcji w aplikacji: działanie przez token użytkownika to automatyzacja konta, której Discord zabrania (self-bot), więc ryzyko blokady trzeba ograniczyć.
