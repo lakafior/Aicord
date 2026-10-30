@@ -1523,8 +1523,11 @@ extension Gateway {
 
   /// https://discord.com/developers/docs/topics/gateway-events#voice-server-update-voice-server-update-event-fields
   public struct VoiceServerUpdate: Sendable, Codable {
-    public var token: String
-    public var guild_id: GuildSnowflake
+    public var token: Secret
+    /// Absent for DM and group calls.
+    public var guild_id: GuildSnowflake?
+    /// Present for DM and group calls.
+    public var channel_id: ChannelSnowflake?
     public var endpoint: String?
   }
 
@@ -1579,6 +1582,7 @@ extension Gateway {
     public var message_id: MessageSnowflake
     public var region: String
     public var ringing: [UserSnowflake]
+    public var voice_states: [VoiceState]?
   }
 
   /// https://docs.discord.food/topics/gateway-events#call-update
