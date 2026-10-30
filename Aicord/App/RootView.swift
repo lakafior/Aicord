@@ -17,6 +17,7 @@ struct RootView: View {
   @Environment(\.challenges) var challenges
   @Environment(\.userInterfaceIdiom) var idiom
   @Environment(\.horizontalSizeClass) var hSizeClass
+  @AppStorage(MacLayoutPreferences.classicKey) var macClassicLayout = false
 
   #if os(iOS)
     @State var hasLaunchedAlready: Bool = false
@@ -48,7 +49,15 @@ struct RootView: View {
               SmallBaseplate(appState: self.appState)
             #endif
           } else {
-            LargeBaseplate()
+            #if os(macOS)
+              if macClassicLayout {
+                LargeBaseplate()
+              } else {
+                MacBaseplate()
+              }
+            #else
+              LargeBaseplate()
+            #endif
           }
         }
         .quickSwitcher()

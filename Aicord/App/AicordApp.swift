@@ -71,7 +71,12 @@ struct AicordApp: App {
       .restorationBehavior(.disabled)
       .windowToolbarStyle(.unified)
     #endif
-    #if os(macOS) || os(iOS)
+    #if os(macOS)
+      .commands {
+        AicordCommands()
+        MacCommands()
+      }
+    #elseif os(iOS)
       .commands {
         AicordCommands()
       }
@@ -79,13 +84,23 @@ struct AicordApp: App {
     .environment(\.challenges, challenges)
 
     #if os(macOS)
-      // use a normal window instead of Settings
-      Window("Settings", id: "settings") {
+      // a channel in a window of its own (Go → Open Channel in New Window)
+      WindowGroup("Channel", for: ChannelWindowValue.self) { $value in
+        if let value {
+          ChannelWindow(value: value)
+            .appAppearance()
+            .environment(\.challenges, challenges)
+        }
+      }
+      .defaultSize(width: 720, height: 760)
+      .restorationBehavior(.disabled)
+
+      // the system Settings window: ⌘, and Aicord → Settings…
+      Settings {
         SettingsView()
           .appAppearance()
+          .frame(minWidth: 760, idealWidth: 860, minHeight: 520, idealHeight: 620)
       }
-      .defaultSize(width: 860, height: 620)
-      .restorationBehavior(.disabled)
     #endif
   }
 }

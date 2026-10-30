@@ -10,7 +10,7 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 | 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | zrobione: −0,67 MB, 187 testów Textual (i naprawione przepełnienie stosu) |
 | 3 | Etap 10: dokończenia i wyszukiwanie po sensie | zrobione (ranking, VoiceOver, lokalne serwery, okno 4K, Index Channel) |
 | 4 | Etap 12: przygotowanie wydań | zrobione (pliki gotowe, nic nie uruchomione) |
-| 5 | Etap 11: interfejs Maca, serwer MCP | czeka |
+| 5 | Etap 11: interfejs Maca, serwer MCP | interfejs zrobiony (bez klikania), MCP w toku |
 | 6 | Language | czeka |
 
 **Rano sprawdzić najpierw:** patrz „Do sprawdzenia rano” na dole.
@@ -192,6 +192,31 @@ Uwaga: rozszerzenie Safari na Macu też musi być podpisane Developer ID i dosta
 - Workflowy nie były uruchomione; sprawdziłem tylko składnię YAML (Ruby), skrypt Pythona na danych testowych i lokalnie te same polecenia budowania (Release, `CODE_SIGNING_ALLOWED=NO`) i pakowania.
 - Pierwszy build w CI bez cache potrwa (SwiftPM, DaveKit z libdave w C++); w `build_pr.yml` jest ten sam problem.
 - Ikona źródła 128 px (z rozszerzenia Safari); eksport większej z `AppIcon.icon` przez Icon Composer przekroczył limit czasu.
+
+## 5. Etap 11: Aicord dla macOS
+
+### 5a. Interfejs Maca
+
+**Stan: zrobione w kodzie, niesprawdzone klikaniem** (ekran Maca zablokowany). Commit: `feat(macOS): own window layout, Go menu, channel windows and Settings scene`.
+
+Co jest w kodzie:
+- `Aicord/Baseplates/MacBaseplate.swift`:
+  - `MacBaseplate`: jak `LargeBaseplate`, ale z systemowym przełącznikiem paska bocznego (bez `.toolbar(removing: .sidebarToggle)` i bez własnego przycisku), pasek boczny 300–420 pt (serwery + `GuildView`/`DMsView`, czyli istniejąca natywna lista `.sidebar`), tytuł okna = `#kanał` albo nazwa rozmowy, podtytuł = serwer albo „Direct Messages”, w pasku narzędzi Search i Member List, `ContentUnavailableView` bez kanału. Inspektor członków jak dotąd, z tymi samymi `frame(minWidth: 0)` (poprawka pętli układu z Etapu 8).
+  - `MacCommands`: `SidebarCommands()`, View → Show Member List ⌥⌘M, Edit → Search… ⌘F, menu **Go**: Direct Messages ⌘0, Open Channel in New Window ⇧⌘O, Mark Channel as Read ⇧⎋. Akcje idą przez `FocusedValues.macWindowActions` z aktywnego okna.
+  - `ChannelWindow` + `ChannelWindowValue`: `WindowGroup("Channel", for:)` w `AicordApp`; okno z czatem i własnym inspektorem członków, arkuszami (załączniki, reakcje, Forward, Intelligence). Własny `AicordAppState(remembersSelection: false)` (nowy parametr), żeby nie nadpisywać zapamiętanego kanału głównego okna.
+  - „Open in New Window” w menu kontekstowym kanału (tylko macOS).
+- `AicordApp`: scena `Settings { SettingsView() }` zamiast `Window("Settings", id: "settings")`; polecenie ⌘, i zębatka w `ProfileBar` używają `openSettings`.
+- Settings → Advanced (tylko Mac): **Classic Window Layout** przywraca `LargeBaseplate`.
+- **Sprawdzone:** build macOS i iOS; aplikacja Debug na Macu uruchomiona z terminala działała 20 s bez awarii (bez zrzutów, ekran zablokowany).
+
+**Do sprawdzenia rano na Macu, po kolei:**
+1. Start: pasek boczny z serwerami i kanałami, tytuł okna `#kanał` i podtytuł z serwerem; systemowy przycisk paska bocznego w lewym górnym rogu chowa i pokazuje pasek (także View → Hide Sidebar, ⌃⌘S).
+2. Przycisk listy członków w pasku narzędzi i ⌥⌘M: inspektor otwiera się i zamyka; zmiana szerokości okna nie wiesza aplikacji (stary błąd pętli układu).
+3. ⌘F albo lupa: arkusz Search; otwarcie wyniku zamyka arkusz i przechodzi do kanału. **Ryzyko:** ⌘F może kolidować z Find w polach tekstowych; jeśli przeszkadza, zmienić na ⇧⌘F.
+4. Go → Direct Messages (⌘0); Go → Open Channel in New Window (⇧⌘O) i prawy klik na kanale → Open in New Window: nowe okno z tym kanałem, pisanie, załączniki, lista członków; zamknięcie okna i ponowne uruchomienie aplikacji: główne okno wraca na swój kanał.
+5. Go → Mark Channel as Read (⇧⎋) na nieprzeczytanym kanale.
+6. ⌘, i zębatka przy profilu: systemowe okno Settings (rozmiar 860×620, pasek boczny sekcji widoczny; wcześniej był tu zwykły `Window` „bo Settings” — możliwe, że z powodu rozmiaru; jeśli sekcje się ucinają, wrócić do `Window` w `AicordApp`).
+7. Settings → Advanced → Classic Window Layout: powrót do starego układu i z powrotem.
 
 ---
 

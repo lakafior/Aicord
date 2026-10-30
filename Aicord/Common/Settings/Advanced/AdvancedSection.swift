@@ -22,6 +22,9 @@ struct AdvancedSettings: View {
   @Environment(\.appState) var appState
 
   @State private var cacheSize: Int?
+  #if os(macOS)
+    @AppStorage(MacLayoutPreferences.classicKey) private var classicLayout = false
+  #endif
 
   var body: some View {
     Section {
@@ -50,6 +53,15 @@ struct AdvancedSettings: View {
         "Saved to your Discord account. Adds Copy ID to the menus of messages, users and servers, for bots and bug reports."
       )
     }
+
+    #if os(macOS)
+      Section {
+        Toggle("Classic Window Layout", isOn: $classicLayout)
+          .toggleStyle(.switch)
+      } footer: {
+        Text("The layout shared with iPad, from before the Mac got its own sidebar, toolbar and menus.")
+      }
+    #endif
 
     Section {
       NavigationLink {

@@ -133,6 +133,10 @@ struct ChannelContextMenu: ViewModifier {
         }
         .disabled(!gw.readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id))
 
+        #if os(macOS)
+          OpenInNewWindowButton(value: .init(guildId: guildId, channelId: channel.id))
+        #endif
+
         let pinned = PinnedPlacesStore.shared.isPinned(channel.id, in: guildId)
         Button(
           pinned ? "Unpin from Top" : "Pin to Top",

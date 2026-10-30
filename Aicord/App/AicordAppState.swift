@@ -17,7 +17,10 @@ final class AicordAppState {
 
   static var sharedEphemeral = AicordAppState()
 
-  init() {
+  /// `remembersSelection: false` for a window that shouldn't change which
+  /// server and channel the main window opens on next time.
+  init(remembersSelection: Bool = true) {
+    self.remembersSelection = remembersSelection
     Self.instances[id] = self
 
     loadPrevSelectedChannels()
@@ -37,6 +40,7 @@ final class AicordAppState {
   }
 
   let id = UUID()
+  @ObservationIgnored let remembersSelection: Bool
 
   // MARK: - iOS Specific
   /// iPhone opens on Home; the chat slides over once a channel is picked.
@@ -98,6 +102,7 @@ final class AicordAppState {
 
   private var _selectedGuild: GuildSnowflake? = nil {
     didSet {
+      guard remembersSelection else { return }
       UserDefaults.standard.set(
         _selectedGuild?.rawValue,
         forKey: "AppState.PrevSelectedGuild"
@@ -125,7 +130,7 @@ final class AicordAppState {
 
   var selectedChannel: ChannelSnowflake? {
     didSet {
-      guard !suppressChannelSave else { return }
+      guard !suppressChannelSave, remembersSelection else { return }
       let key = selectedGuild?.rawValue ?? "nil"
       if let channel = selectedChannel {
         rawPrevSelectedChannels[key] = channel.rawValue

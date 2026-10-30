@@ -61,6 +61,7 @@
 		AA0BAA792ECE9A3600365661 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0BAA782ECE9A3100365661 /* Color.swift */; };
 		AA1097142E64C181005BC3D2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA1097102E64C181005BC3D2 /* Assets.xcassets */; };
 		AA1097152E64C181005BC3D2 /* LargeBaseplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097042E64C181005BC3D2 /* LargeBaseplate.swift */; };
+		AFF7FBE7E20F6104DA96FEFF /* MacBaseplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC0987D2F155B763DE87797 /* MacBaseplate.swift */; };
 		AA1097172E64C181005BC3D2 /* SmallBaseplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */; };
 		AA1097182E64C181005BC3D2 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097092E64C181005BC3D2 /* HomeView.swift */; };
 		AA10971A2E64C181005BC3D2 /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10970D2E64C181005BC3D2 /* MessagesView.swift */; };
@@ -282,6 +283,7 @@
 		AA0BAA782ECE9A3100365661 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		AA1096DB2E63BE84005BC3D2 /* Aicord.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Aicord.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA1097042E64C181005BC3D2 /* LargeBaseplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeBaseplate.swift; sourceTree = "<group>"; };
+		FBC0987D2F155B763DE87797 /* MacBaseplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacBaseplate.swift; sourceTree = "<group>"; };
 		AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallBaseplate.swift; sourceTree = "<group>"; };
 		AA1097092E64C181005BC3D2 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		AA10970D2E64C181005BC3D2 /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
@@ -666,6 +668,7 @@
 			isa = PBXGroup;
 			children = (
 				AA1097042E64C181005BC3D2 /* LargeBaseplate.swift */,
+				FBC0987D2F155B763DE87797 /* MacBaseplate.swift */,
 				AAB905332E8334AC00EA171B /* SlideoverDoubleView.swift */,
 				AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */,
 			);
@@ -1322,6 +1325,7 @@
 				AAC07FC32F2D9E460077B8FA /* DownloadButton.swift in Sources */,
 				571AE5B12FFD7726006D609C /* ObservableBox.swift in Sources */,
 				AA1097152E64C181005BC3D2 /* LargeBaseplate.swift in Sources */,
+				AFF7FBE7E20F6104DA96FEFF /* MacBaseplate.swift in Sources */,
 				AAB50A562E9AD4680048E8B0 /* StickersView.swift in Sources */,
 				AA1097172E64C181005BC3D2 /* SmallBaseplate.swift in Sources */,
 				AAB50A5E2E9B21B30048E8B0 /* Thumbhash.swift in Sources */,
