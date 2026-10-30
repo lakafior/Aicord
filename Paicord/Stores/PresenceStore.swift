@@ -152,6 +152,57 @@ class PresenceStore: DiscordDataStore {
     }
   }
 
+  // MARK: - Changing our own status
+
+  /// Sets online/idle/dnd/invisible for this session and saves it to the account,
+  /// so other clients and the next launch pick it up.
+  func changeStatus(_ status: Gateway.Status) async throws {
+    currentClientStatus = status
+    await setPresence(status: status)
+
+    var partial = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings()
+    partial.status.status = .init(status.rawValue)
+    partial.status.statusExpiresAtMs = 0
+    try await gateway?.settings.patchUserSettings(partial)
+  }
+
+  /// Sets the custom status, or clears it when both `text` and `emoji` are empty.
+  func changeCustomStatus(
+    text: String,
+    emoji: Gateway.Activity.ActivityEmoji?,
+    expiresAt: Date?
+  ) async throws {
+    let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    let nowMs = UInt64(Date.now.timeIntervalSince1970 * 1_000)
+    var custom = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings.CustomStatus()
+
+    if text.isEmpty && emoji == nil {
+      currentClientStatusActivity = nil
+      // the server merges partial settings, so an empty message would not remove
+      // the old status; an already expired one reads as "no custom status" everywhere
+      custom.expiresAtMs = nowMs
+    } else {
+      var activity = Gateway.Activity(
+        name: "Custom Status",
+        type: .custom,
+        state: text.isEmpty ? nil : text
+      )
+      activity.emoji = emoji
+      currentClientStatusActivity = activity
+
+      custom.text = text
+      custom.emojiName = emoji?.name ?? ""
+      custom.emojiID = emoji?.id.flatMap { UInt64($0.rawValue) } ?? 0
+      custom.createdAtMs = nowMs
+      custom.expiresAtMs = expiresAt.map { UInt64($0.timeIntervalSince1970 * 1_000) } ?? 0
+    }
+    await setPresence(activities: currentClientStatusActivity.map { [$0] } ?? [])
+
+    var partial = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings()
+    partial.status.customStatus = custom
+    try await gateway?.settings.patchUserSettings(partial)
+  }
+
   func setPresence(
     status: Gateway.Status? = nil,
     activities: [Gateway.Activity]? = nil,

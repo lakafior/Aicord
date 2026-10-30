@@ -8,6 +8,7 @@
 
 import Foundation
 import PaicordLib
+import SwiftProtobuf
 
 @MainActor
 @Observable
@@ -120,7 +121,13 @@ class SettingsStore: DiscordDataStore {
   private func mergeUserSettings(
     with newSettings: DiscordProtos_DiscordUsers_V1_PreloadedUserSettings
   ) {
-
+    // protobuf merge: fields set in the partial update overwrite ours,
+    // nested messages are merged field by field
+    do {
+      try userSettings.merge(serializedBytes: newSettings.serializedData())
+    } catch {
+      print("[Settings] Failed to merge user settings update: \(error)")
+    }
   }
 
   private func mergeFrecencySettings(
@@ -130,6 +137,22 @@ class SettingsStore: DiscordDataStore {
   }
 
   // MARK: - Public Settings Update Methods
+
+  /// Sends only the given fields to Discord and merges them locally right away.
+  func patchUserSettings(
+    _ partial: DiscordProtos_DiscordUsers_V1_PreloadedUserSettings
+  ) async throws {
+    guard let gateway else { return }
+    mergeUserSettings(with: partial)
+    let res = try await gateway.client.modifyUserSettingsProto(
+      type: .preloaded,
+      payload: .init(settings: .preloaded(partial))
+    )
+    try res.guardSuccess()
+    if case .preloaded(let proto) = try res.decode().settings {
+      userSettings = proto
+    }
+  }
 
   /// Request user settings modification with appropriate batching delay
   /// - Parameters:

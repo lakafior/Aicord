@@ -3215,8 +3215,17 @@ public enum Payloads {
 
   /// https://docs.discord.food/resources/user-settings-proto#json-params
   public struct ModifyUserSettingsProto: Sendable, Codable, ValidatablePayload {
+    /// Only the fields being changed; the server merges them into the stored settings.
     public var settings: DiscordModels.UserSettingsProto
-    public var required_data_version: UInt32  // get this from within the last fetched proto
+    public var required_data_version: UInt32?  // get this from within the last fetched proto
+
+    public init(
+      settings: DiscordModels.UserSettingsProto,
+      required_data_version: UInt32? = nil
+    ) {
+      self.settings = settings
+      self.required_data_version = required_data_version
+    }
 
     public func validate() -> [ValidationFailure] {}
   }

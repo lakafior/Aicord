@@ -632,7 +632,7 @@ extension DiscordClient {
     payload: Payloads.ModifyUserSettingsProto
   ) async throws -> DiscordClientResponse<UserSettingsProtoResponse> {
     let endpoint = UserAPIEndpoint.modifyUserSettingsProto(type: type)
-    return try await self.send(request: .init(to: endpoint))
+    return try await self.send(request: .init(to: endpoint), payload: payload)
   }
 
   /// Creates attachment URLs to upload the intended attachments directly to Discord's GCP storage bucket.

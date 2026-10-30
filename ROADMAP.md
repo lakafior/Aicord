@@ -142,11 +142,11 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [x] Zakładki na nowym API `Tab` bez wymuszonego tła paska, więc pasek zakładek jest systemowym Liquid Glass; `TabView` nie siedzi już w `NavigationStack` (Home ma własny).
    - [x] Lista serwerów i lista kanałów na iPhonie przewijają się pod paskiem zakładek: lista serwerów to zwykły `ScrollView` z `.scrollEdgeEffectStyle(.soft)` zamiast własnej maski z zanikaniem (na macOS maska zostaje), a tło listy kanałów z zaokrąglonym rogiem sięga do dolnej krawędzi ekranu.
 3. **Profil:**
-   - [ ] Działający wybór statusu (online, zaraz wracam, nie przeszkadzać, niewidoczny) przez `setPresence` i `modifyUserSettingsProto`; dziś przyciski w `ProfileButtonPopout` są puste. Ten sam wybór w popoverze `ProfileBar` na macOS.
-   - [ ] Podgląd i edycja custom statusu (emoji i tekst).
-   - [ ] „Konto od” (data z identyfikatora użytkownika).
-   - [ ] Konta: lista z przełączaniem, „Dodaj konto”, „Wyloguj”.
-   - [ ] „Edytuj profil” jako link do ustawień profilu w przeglądarce zamiast wyłączonego przycisku.
+   - [x] Działający wybór statusu (online, zaraz wracam, nie przeszkadzać, niewidoczny) przez `setPresence` i `modifyUserSettingsProto`; ten sam `ProfileButtonPopout` w arkuszu na iOS i w popoverze `ProfileBar` na macOS. Przy okazji naprawione: `modifyUserSettingsProto` w PaicordLib nie wysyłał treści zmiany, a `SettingsStore` ignorował częściowe aktualizacje ustawień z innych klientów.
+   - [x] Podgląd i edycja custom statusu (emoji i tekst, „wyczyść po”). Czyszczenie zapisuje status z czasem wygaśnięcia „teraz”, bo serwer scala częściowe ustawienia i pusta wiadomość nie usunęłaby starego statusu. Emoji z serwera da się zachować, ale nie wybrać (pole przyjmuje emoji z klawiatury).
+   - [x] „Konto od” (data z identyfikatora użytkownika) w zakładce Profil i w okienku profilu.
+   - [x] Konta: lista z przełączaniem, „Dodaj konto”, „Wyloguj” (z potwierdzeniem; usuwa konto z pęku kluczy, token po stronie Discorda zostaje ważny).
+   - [x] „Edytuj profil” jako link do `discord.com/settings/profiles` zamiast wyłączonego przycisku. Do sprawdzenia, czy Discord otwiera pod tym adresem właściwą stronę.
 4. **Ustawienia:**
    - [x] Sekcja „Paicord” → „O Aicord”: wersja, build, licencja GPL-3, link do repozytorium; bez „Made with ❤️ by llsc12”, naklejki z CDN Discorda i przycisku Donate. Na dole dopisek, że to fork Paicorda od llsc12.
    - [ ] Moje konto: dane konta, przełączanie kont, wylogowanie (Scan QR na iOS zostaje).

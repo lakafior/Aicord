@@ -41,7 +41,7 @@ struct ProfileView: View {
                   .tint(.primary)
                   .sheet(isPresented: $statusSheetPresented) {
                     ProfileBar.ProfileButtonPopout()
-                      .presentationDetents([.medium])
+                      .presentationDetents([.medium, .large])
                   }
                 }
               }
@@ -151,6 +151,17 @@ struct ProfileView: View {
         : profileMeta?.bio ?? profile?.user_profile?.bio
       {
         MarkdownText(content: bio)
+      }
+
+      if let created = user?.id.parse()?.date {
+        VStack(alignment: .leading, spacing: 2) {
+          Text("Member Since")
+            .font(.subheadline)
+            .bold()
+          Text(created, format: .dateTime.day().month(.wide).year())
+            .foregroundStyle(.secondary)
+        }
+        .padding(.top, 8)
       }
     }
   }

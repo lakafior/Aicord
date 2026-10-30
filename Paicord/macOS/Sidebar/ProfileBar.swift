@@ -122,71 +122,87 @@ struct ProfileBar: View {
   struct ProfileButtonPopout: View {
     @Environment(\.gateway) var gw
     @Environment(\.appState) var appState
-    @State var statusSelectionExpanded = false
-    @State var accountSelectionExpanded = false
+    @Environment(\.openURL) var openURL
+    @State var editingCustomStatus = false
+    @State var confirmingLogOut = false
+
+    static let statuses: [Gateway.Status] = [
+      .online,
+      .afk,
+      .doNotDisturb,
+      .invisible,
+    ]
 
     var body: some View {
       List {
-        HStack {
-          if let user = gw.user.currentUser {
-            Profile.AvatarWithPresence(
-              member: nil,
-              user: user
-            )
-            .frame(maxWidth: 40)
-            .frame(maxHeight: 40)
-            .profileAnimated(false)
-            .profileShowsAvatarDecoration()
+        Section {
+          HStack {
+            if let user = gw.user.currentUser {
+              Profile.AvatarWithPresence(
+                member: nil,
+                user: user
+              )
+              .frame(maxWidth: 40)
+              .frame(maxHeight: 40)
+              .profileAnimated(false)
+              .profileShowsAvatarDecoration()
+            }
+
+            VStack(alignment: .leading) {
+              Text(
+                gw.user.currentUser?.global_name ?? gw.user.currentUser?.username
+                  ?? "Unknown User"
+              )
+              .bold()
+              Text(verbatim: "@\(gw.user.currentUser?.username ?? "Unknown User")")
+                .foregroundStyle(.secondary)
+            }
           }
+          .padding(.vertical, 5)
 
-          VStack(alignment: .leading) {
-            Text(
-              gw.user.currentUser?.global_name ?? gw.user.currentUser?.username
-                ?? "Unknown User"
-            )
-            .bold()
-            Text(verbatim: "@\(gw.user.currentUser?.username ?? "Unknown User")")
+          Button {
+            editingCustomStatus = true
+          } label: {
+            customStatusRow
           }
+          .buttonStyle(.borderless)
+          .tint(.primary)
         }
-        .padding(.vertical, 5)
 
-        NavigationLink(value: "gm") {
-          Label("Edit Profile", systemImage: "pencil")
-            .padding(.vertical, 4)
-        }
-        .disabled(true)
-
-        DisclosureGroup(isExpanded: $statusSelectionExpanded) {
-          let statuses: [Gateway.Status] = [
-            .online,
-            .afk,
-            .doNotDisturb,
-            .invisible,
-          ]
-
-          ForEach(statuses, id: \.self) { status in
+        Section("Status") {
+          ForEach(Self.statuses, id: \.self) { status in
             AsyncButton {
+              try await gw.presence.changeStatus(status)
             } catch: { error in
               appState.error = error
             } label: {
-              statusItem(status)
-                .padding(.vertical, 4)
+              HStack {
+                Self.statusItem(status)
+                Spacer()
+                if gw.presence.currentClientStatus == status {
+                  Image(systemName: "checkmark")
+                    .foregroundStyle(.tint)
+                }
+              }
+              .contentShape(.rect)
             }
             .buttonStyle(.borderless)
+            .tint(.primary)
           }
-        } label: {
-          Button {
-            withAnimation {
-              statusSelectionExpanded.toggle()
-            }
-          } label: {
-            statusItem(gw.presence.currentClientStatus)
-              .padding(.vertical, 4)
-          }
-          .buttonStyle(.borderless)
         }
 
-        DisclosureGroup(isExpanded: $accountSelectionExpanded) {
+        Section {
+          if let created = gw.user.currentUser?.id.parse()?.date {
+            LabeledContent("Member Since") {
+              Text(created, format: .dateTime.day().month(.wide).year())
+            }
+          }
+          Link(destination: Self.editProfileURL) {
+            Label("Edit Profile", systemImage: "pencil")
+          }
+        }
+
+        Section("Accounts") {
           ForEach(gw.accounts.accounts, id: \.id) { account in
             let isSignedInAccount = account.id == gw.accounts.currentAccountID
             AsyncButton {
@@ -216,17 +232,21 @@ struct ProfileBar: View {
                   .bold()
                   Text(verbatim: "@\(account.user.username)")
                     .lineSpacing(1)
+                    .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
                 if isSignedInAccount {
                   Image(systemName: "checkmark")
+                    .foregroundStyle(.tint)
                 }
               }
               .padding(.vertical, 2)
+              .contentShape(.rect)
             }
             .buttonStyle(.borderless)
+            .tint(.primary)
             .disabled(isSignedInAccount)
           }
 
@@ -238,30 +258,65 @@ struct ProfileBar: View {
             appState.error = error
           } label: {
             Label("Add Account", systemImage: "person.crop.circle.badge.plus")
-              .padding(.vertical, 4)
           }
           .buttonStyle(.borderless)
 
-        } label: {
-          Button {
-            withAnimation {
-              accountSelectionExpanded.toggle()
-            }
+          Button(role: .destructive) {
+            confirmingLogOut = true
           } label: {
-            Label("Switch Account", systemImage: "person.crop.circle")
-              .padding(.vertical, 4)
+            Label("Log Out", systemImage: "rectangle.portrait.and.arrow.right")
           }
           .buttonStyle(.borderless)
-
+          .confirmationDialog(
+            "Log out of this account?",
+            isPresented: $confirmingLogOut
+          ) {
+            Button("Log Out", role: .destructive) {
+              guard
+                let id = gw.accounts.currentAccountID,
+                let account = gw.accounts.account(for: id)
+              else { return }
+              Task {
+                await gw.disconnectIfNeeded()
+                gw.resetStores()
+                gw.accounts.removeAccount(account)
+              }
+            }
+          }
         }
-
       }
-      .frame(minWidth: 250)
-      .frame(minHeight: 300)
+      .frame(minWidth: 280)
+      .frame(minHeight: 420)
+      .sheet(isPresented: $editingCustomStatus) {
+        CustomStatusEditor()
+      }
     }
 
     @ViewBuilder
-    func statusItem(_ status: Gateway.Status) -> some View {
+    var customStatusRow: some View {
+      if let activity = gw.presence.currentClientStatusActivity {
+        HStack(spacing: 6) {
+          if let emoji = activity.emoji {
+            CustomStatusEmoji(emoji: emoji)
+          }
+          Text(activity.state ?? "")
+            .lineLimit(2)
+          Spacer()
+          Image(systemName: "pencil")
+            .foregroundStyle(.secondary)
+        }
+        .contentShape(.rect)
+      } else {
+        Label("Set Custom Status", systemImage: "face.smiling")
+          .contentShape(.rect)
+      }
+    }
+
+    /// Discord's own profile editor, until profile editing is built in.
+    static let editProfileURL = URL(string: "https://discord.com/settings/profiles")!
+
+    @ViewBuilder
+    static func statusItem(_ status: Gateway.Status) -> some View {
       let color: Color = {
         switch status {
         case .online: return .init(hexadecimal6: 0x42a25a)
@@ -272,7 +327,12 @@ struct ProfileBar: View {
       }()
 
       Label {
-        Text(status.rawValue.capitalized)
+        switch status {
+        case .online: Text("Online")
+        case .afk: Text("Idle")
+        case .doNotDisturb: Text("Do Not Disturb")
+        default: Text("Invisible")
+        }
       } icon: {
         Group {
           switch status {
@@ -288,6 +348,157 @@ struct ProfileBar: View {
         }
         .foregroundStyle(color)
         .frame(width: 15, height: 15)
+      }
+    }
+  }
+
+  struct CustomStatusEmoji: View {
+    var emoji: Gateway.Activity.ActivityEmoji
+
+    var body: some View {
+      if let id = emoji.id {
+        NukeImage(
+          url: DiscordImageURL.customEmoji(
+            id: id,
+            animated: emoji.animated == true,
+            size: 44
+          )
+        )
+        .resizable()
+        .scaledToFit()
+        .frame(width: 18, height: 18)
+      } else {
+        Text(emoji.name)
+      }
+    }
+  }
+
+  struct CustomStatusEditor: View {
+    @Environment(\.gateway) var gw
+    @Environment(\.appState) var appState
+    @Environment(\.dismiss) var dismiss
+
+    enum ClearAfter: Hashable, CaseIterable {
+      case never, thirtyMinutes, oneHour, fourHours, today
+
+      var title: LocalizedStringKey {
+        switch self {
+        case .never: "Don't Clear"
+        case .thirtyMinutes: "30 Minutes"
+        case .oneHour: "1 Hour"
+        case .fourHours: "4 Hours"
+        case .today: "Today"
+        }
+      }
+
+      var date: Date? {
+        switch self {
+        case .never: nil
+        case .thirtyMinutes: .now.addingTimeInterval(30 * 60)
+        case .oneHour: .now.addingTimeInterval(60 * 60)
+        case .fourHours: .now.addingTimeInterval(4 * 60 * 60)
+        case .today:
+          Calendar.current.date(
+            byAdding: .day,
+            value: 1,
+            to: Calendar.current.startOfDay(for: .now)
+          )
+        }
+      }
+    }
+
+    @State var text = ""
+    @State var emojiText = ""
+    @State var clearAfter: ClearAfter = .never
+    @State var saving = false
+    /// A server emoji can't be typed, so the existing one is kept until the field changes.
+    @State var keptEmoji: Gateway.Activity.ActivityEmoji? = nil
+
+    var body: some View {
+      NavigationStack {
+        Form {
+          Section {
+            HStack {
+              TextField("Emoji", text: $emojiText)
+                .frame(width: 60)
+                .multilineTextAlignment(.center)
+                .onChange(of: emojiText) { _, newValue in
+                  if newValue != keptEmoji?.name { keptEmoji = nil }
+                  // keep a single emoji (one grapheme)
+                  if newValue.count > 1, let last = newValue.last {
+                    emojiText = String(last)
+                  }
+                }
+              TextField("What's on your mind?", text: $text)
+            }
+          }
+
+          Section {
+            Picker("Clear After", selection: $clearAfter) {
+              ForEach(ClearAfter.allCases, id: \.self) { option in
+                Text(option.title).tag(option)
+              }
+            }
+          }
+
+          if gw.presence.currentClientStatusActivity != nil {
+            Section {
+              Button("Clear Status", role: .destructive) {
+                save(text: "", emoji: nil, expiresAt: nil)
+              }
+            }
+          }
+        }
+        .formStyle(.grouped)
+        .navigationTitle("Custom Status")
+        #if os(iOS)
+          .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Cancel", role: .cancel) { dismiss() }
+          }
+          ToolbarItem(placement: .confirmationAction) {
+            Button("Save") {
+              save(text: text, emoji: emoji, expiresAt: clearAfter.date)
+            }
+            .disabled(saving)
+          }
+        }
+      }
+      .onAppear {
+        let activity = gw.presence.currentClientStatusActivity
+        text = activity?.state ?? ""
+        keptEmoji = activity?.emoji
+        emojiText = activity?.emoji?.name ?? ""
+      }
+      #if os(iOS)
+        .presentationDetents([.medium, .large])
+      #else
+        .frame(minWidth: 360, minHeight: 260)
+      #endif
+    }
+
+    var emoji: Gateway.Activity.ActivityEmoji? {
+      if let keptEmoji { return keptEmoji }
+      let trimmed = emojiText.trimmingCharacters(in: .whitespaces)
+      return trimmed.isEmpty ? nil : .init(name: trimmed)
+    }
+
+    func save(text: String, emoji: Gateway.Activity.ActivityEmoji?, expiresAt: Date?) {
+      saving = true
+      Task {
+        defer { saving = false }
+        do {
+          try await gw.presence.changeCustomStatus(
+            text: text,
+            emoji: emoji,
+            expiresAt: expiresAt
+          )
+          dismiss()
+        } catch {
+          appState.error = error
+        }
       }
     }
   }
