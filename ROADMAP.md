@@ -39,6 +39,9 @@ Kierunek: czysty **Swift 6**, **iOS 26 i macOS 26**, natywne **SwiftUI** z **Liq
 8. **Poprawki interfejsu (po Ustawieniach):**
    - [ ] Purge: usuwanie własnych wiadomości z czatu (z ostatnich X minut albo wszystkich), powoli, z potwierdzeniem i postępem. Cudzych wiadomości w DM API Discorda nie pozwala usunąć, a masowe usuwanie z konta użytkownika to ryzyko blokady.
    - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`.
+   - [ ] Add Friend: wysyłanie zaproszenia do znajomych po nazwie użytkownika w Messages → Friends oraz z profilu osoby (`sendFriendRequest` już jest w PaicordLib).
+   - [ ] Invite People w menu serwera: link zaproszenia z czasem ważności i limitem użyć, do skopiowania i udostępnienia (`createChannelInvite`).
+   - [ ] Join: przycisk na karcie zaproszenia w czacie i po otwarciu linku `discord.gg/…`, z podglądem serwera przed dołączeniem (`resolveInvite`, `acceptInvite`). Potrzebne też rozszerzeniu Safari poniżej.
    - [ ] Rozszerzenie Safari: linki zaproszeń `discord.gg/…` i `discord.com/invite/…` otwierane w Aicord przez własny schemat URL (Universal Links dla discord.com należą do Discorda). Osobny target, włączany przez użytkownika w ustawieniach Safari.
 
 ---
