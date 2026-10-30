@@ -1,8 +1,8 @@
 /// https://discord.com/developers/docs/topics/teams#data-models-team-object
-public struct Team: Sendable, Codable, Equatable, Hashable {
+public struct Team: Sendable, Decodable, Equatable, Hashable {
 
   /// https://discord.com/developers/docs/topics/teams#data-models-team-member-object
-  public struct Member: Sendable, Codable, Equatable, Hashable {
+  public struct Member: Sendable, Decodable, Equatable, Hashable {
 
     /// https://discord.com/developers/docs/topics/teams#data-models-membership-state-enum
     #if Non64BitSystemsCompatibility

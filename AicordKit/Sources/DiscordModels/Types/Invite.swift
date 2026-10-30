@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/invite#invite-object-invite-structure
-public struct Invite: Sendable, Codable {
+public struct Invite: Sendable, Decodable {
 
   #if Non64BitSystemsCompatibility
     @UnstableEnum<Int64>
@@ -49,7 +49,7 @@ public struct Invite: Sendable, Codable {
 
 /// https://discord.com/developers/docs/resources/invite#invite-object-invite-structure
 /// https://discord.com/developers/docs/resources/invite#invite-metadata-object-invite-metadata-structure
-public struct InviteWithMetadata: Sendable, Codable {
+public struct InviteWithMetadata: Sendable, Decodable {
   public var type: Invite.Kind
   public var code: String
   @Indirect public var guild: PartialGuild?
@@ -70,7 +70,7 @@ public struct InviteWithMetadata: Sendable, Codable {
 }
 
 /// https://discord.com/developers/docs/resources/invite#invite-object-invite-structure
-public struct PartialInvite: Sendable, Codable {
+public struct PartialInvite: Sendable, Decodable {
   public var type: Invite.Kind?
   public var code: String?
   @Indirect public var guild: PartialGuild?

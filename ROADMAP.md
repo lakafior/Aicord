@@ -15,7 +15,7 @@ Kierunek: czysty **Swift 6**, **iOS 26 i macOS 26**, natywne **SwiftUI** z **Liq
 ### 🔜 Etap 7: Własne biblioteki zamiast forków (`AicordKit`, `Textual`)
 Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`). Zostały propozycje z tamtej pracy:
 4. **Dalej:**
-   - [ ] Dalsze odchudzanie `DiscordModels` (4,45 MB): największe są teraz `CodingKeys` (~0,9 MB) oraz `init(from:)`/`encode(to:)`; `SwiftProtobuf` to 1,15 MB.
+   - [ ] Dalsze odchudzanie `DiscordModels` (4,15 MB po nocy 30/31.10): `CodingKeys` to nadal ~0,9 MB, prawie w całości metadane (5 konformancji na każdy z 385 enumów). Zejść z tego może tylko własne dekodowanie ze wspólnym typem klucza (makro generujące `init(from:)`), co jest dużą i ryzykowną zmianą; `SwiftProtobuf` to 1,15 MB. Szczegóły i pomiary: `docs/OVERNIGHT.md`.
    - [ ] `Textual/Tests` nie ma targetu testów w `Package.swift`, więc testy snapshotowe nigdy się nie uruchamiają: dodać target z zależnością od swift-snapshot-testing albo usunąć katalog.
 
 ---

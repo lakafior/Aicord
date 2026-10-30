@@ -274,7 +274,7 @@ public enum JSONErrorCode: Sendable, Codable {
 }
 
 /// https://discord.com/developers/docs/topics/opcodes-and-status-codes#json
-public struct JSONError: Sendable, Codable {
+public struct JSONError: Sendable, Decodable {
   public var message: String
   /// Might be `nil` in case of something like a rate-limit error.
   public var code: JSONErrorCode?
@@ -296,8 +296,8 @@ public struct JSONError: Sendable, Codable {
   //		}
   //	}
 
-  public struct Errors: Sendable, Codable {
-    public struct FieldError: Sendable, Codable {
+  public struct Errors: Sendable, Decodable {
+    public struct FieldError: Sendable, Decodable {
       public var code: String
       public var message: String
     }

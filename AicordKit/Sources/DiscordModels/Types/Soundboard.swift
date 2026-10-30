@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct SoundboardSound: Sendable, Codable, Equatable, Hashable {
+public struct SoundboardSound: Sendable, Decodable, Equatable, Hashable {
   public var sound_id: SoundSnowflake
   public var name: String
   public var volume: Double

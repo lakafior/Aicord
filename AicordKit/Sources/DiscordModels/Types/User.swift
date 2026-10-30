@@ -178,7 +178,7 @@ public struct DiscordUser: Sendable, Codable, Equatable, Hashable {
   }
 
   /// https://docs.discord.food/resources/user#get-user-profile
-  public struct Profile: Sendable, Codable, Equatable, Hashable {
+  public struct Profile: Sendable, Decodable, Equatable, Hashable {
     @Indirect public var application: ProfileApplication?
     public var user: PartialUser
     @Indirect public var user_profile: Metadata?
@@ -236,11 +236,11 @@ public struct DiscordUser: Sendable, Codable, Equatable, Hashable {
     }
 
     /// https://docs.discord.food/resources/user#profile-application-structure
-    public struct ProfileApplication: Sendable, Codable, Equatable, Hashable {
+    public struct ProfileApplication: Sendable, Decodable, Equatable, Hashable {
     }
 
     /// https://docs.discord.food/resources/user#profile-metadata-object
-    public struct Metadata: Sendable, Codable, Equatable, Hashable {
+    public struct Metadata: Sendable, Decodable, Equatable, Hashable {
       public var guild_id: GuildSnowflake?
       public var pronouns: String?
       public var bio: String?
@@ -273,7 +273,7 @@ public struct DiscordUser: Sendable, Codable, Equatable, Hashable {
     }
 
     /// https://docs.discord.food/resources/user#profile-effect-structure
-    public struct Effect: Sendable, Codable, Equatable, Hashable {
+    public struct Effect: Sendable, Decodable, Equatable, Hashable {
       public var sku_id: SKUSnowflake
       public var expires_at: DiscordTimestamp?
 
@@ -284,7 +284,7 @@ public struct DiscordUser: Sendable, Codable, Equatable, Hashable {
     }
 
     /// https://docs.discord.food/resources/user#profile-badge-structure
-    public struct Badge: Sendable, Codable, Equatable, Hashable, Identifiable {
+    public struct Badge: Sendable, Decodable, Equatable, Hashable, Identifiable {
       public var id: AnySnowflake
       public var description: String
       public var icon: String
@@ -304,7 +304,7 @@ public struct DiscordUser: Sendable, Codable, Equatable, Hashable {
     }
 
     /// https://docs.discord.food/resources/user#mutual-guild-structure
-    public struct MutualGuild: Sendable, Codable, Equatable, Hashable {
+    public struct MutualGuild: Sendable, Decodable, Equatable, Hashable {
       public var id: GuildSnowflake
       public var nick: String?
 
@@ -349,7 +349,7 @@ extension DiscordUser.Collectibles.Nameplate.ColorPalette {
 
 /// A partial ``DiscordUser`` object.
 /// https://discord.com/developers/docs/resources/user#user-object-user-structure
-public struct PartialUser: Sendable, Codable, Equatable, Hashable {
+public struct PartialUser: Sendable, Decodable, Equatable, Hashable {
   public var id: UserSnowflake
   public var username: String?
   public var discriminator: String?
@@ -401,7 +401,7 @@ public struct PartialUser: Sendable, Codable, Equatable, Hashable {
 /// A ``DiscordUser`` with an extra `member` field.
 /// https://discord.com/developers/docs/topics/gateway-events#message-create-message-create-extra-fields
 /// https://discord.com/developers/docs/resources/user#user-object-user-structure
-public struct MentionUser: Sendable, Codable, Equatable, Hashable {
+public struct MentionUser: Sendable, Decodable, Equatable, Hashable {
   public var id: UserSnowflake
   public var username: String
   public var discriminator: String
@@ -430,7 +430,7 @@ public struct MentionUser: Sendable, Codable, Equatable, Hashable {
 extension DiscordUser {
   /// https://discord.com/developers/docs/resources/user#connection-object-connection-structure
   /// https://docs.discord.food/resources/connected-accounts#connection-structure
-  public struct Connection: Sendable, Codable {
+  public struct Connection: Sendable, Decodable {
 
     /// https://docs.discord.food/resources/connected-accounts#connection-type
     @UnstableEnum<String>
@@ -486,7 +486,7 @@ extension DiscordUser {
 
     /// A metadata value. Discord sends most of them as strings, some as
     /// numbers or booleans; anything else decodes as an empty string.
-    public struct MetadataValue: Sendable, Codable, Hashable {
+    public struct MetadataValue: Sendable, Decodable, Hashable {
       public var value: String
 
       public init(from decoder: any Decoder) throws {
@@ -502,10 +502,6 @@ extension DiscordUser {
         }
       }
 
-      public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(value)
-      }
     }
 
     public var id: String
@@ -523,7 +519,7 @@ extension DiscordUser {
   }
 
   /// https://docs.discord.food/resources/connected-accounts#partial-connection-structure
-  public struct PartialConnection: Sendable, Codable, Equatable, Hashable {
+  public struct PartialConnection: Sendable, Decodable, Equatable, Hashable {
     public var id: String
     public var name: String?
     public var type: Connection.Service
@@ -531,7 +527,7 @@ extension DiscordUser {
   }
 
   /// https://discord.com/developers/docs/resources/user#application-role-connection-object
-  public struct ApplicationRoleConnection: Sendable, Codable, Equatable,
+  public struct ApplicationRoleConnection: Sendable, Decodable, Equatable,
     Hashable, ValidatablePayload
   {
     public var platform_name: String?

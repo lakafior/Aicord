@@ -248,6 +248,6 @@ class DecodeOrNilTests: XCTestCase {
   }
 }
 
-private struct TestContainer<C: Sendable & Codable>: Codable {
+private struct TestContainer<C: Sendable & Decodable>: Decodable {
   @DecodeOrNil var value: C?
 }

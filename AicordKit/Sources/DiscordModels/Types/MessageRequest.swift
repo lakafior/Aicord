@@ -27,7 +27,7 @@ public enum MessageRequestConsentStatus: Sendable, Codable {
 
 /// The message that started a request, for previews in the request list.
 /// https://docs.discord.food/resources/channel#supplemental-message-request-object
-public struct SupplementalMessageRequest: Sendable, Codable {
+public struct SupplementalMessageRequest: Sendable, Decodable {
   public var channel_id: ChannelSnowflake
   public var message_preview: DiscordChannel.Message?
 

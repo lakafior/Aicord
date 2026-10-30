@@ -27,7 +27,7 @@ extension DiscordClient {
 
   /// Send a request to Discord with no body.
   @inlinable
-  public func send<C: Codable>(request: DiscordHTTPRequest) async throws
+  public func send<C: Decodable>(request: DiscordHTTPRequest) async throws
     -> DiscordClientResponse<C>
   {
     let response = try await self.send(request: request)
@@ -47,7 +47,7 @@ extension DiscordClient {
 
   /// Send a request to payload with a JSON body.
   @inlinable
-  public func send<E: Sendable & Encodable & ValidatablePayload, C: Codable>(
+  public func send<E: Sendable & Encodable & ValidatablePayload, C: Decodable>(
     request: DiscordHTTPRequest,
     payload: E
   ) async throws -> DiscordClientResponse<C> {
@@ -58,7 +58,7 @@ extension DiscordClient {
   /// Send a request to Discord with a Multipart body.
   @inlinable
   public func sendMultipart<
-    E: Sendable & MultipartEncodable & ValidatablePayload, C: Codable
+    E: Sendable & MultipartEncodable & ValidatablePayload, C: Decodable
   >(
     request: DiscordHTTPRequest,
     payload: E

@@ -134,6 +134,6 @@ class DecodeToleranceTests: XCTestCase {
   }
 }
 
-private struct TestContainer<C: Codable>: Codable {
+private struct TestContainer<C: Decodable>: Decodable {
   var value: C
 }

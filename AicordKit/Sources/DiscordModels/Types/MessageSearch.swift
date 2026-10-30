@@ -61,7 +61,7 @@ public struct MessageSearchQuery: Sendable {
 }
 
 /// https://docs.discord.food/resources/message#search-messages
-public struct MessageSearchResults: Sendable, Codable {
+public struct MessageSearchResults: Sendable, Decodable {
   public var total_results: Int
   /// Each inner array holds one match; older API versions added context messages around it.
   public var messages: [[DiscordChannel.Message]]

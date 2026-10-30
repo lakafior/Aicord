@@ -7,7 +7,7 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 | # | Punkt | Stan |
 |---|---|---|
 | 1 | Etap 8: Leave Server, Invites, instrukcja Safari, link na Macu | zrobione (Mac do sprawdzenia rano) |
-| 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | w toku |
+| 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | odchudzanie zrobione (−0,67 MB), testy Textual w toku |
 | 3 | Etap 10: dokończenia i wyszukiwanie po sensie | czeka |
 | 4 | Etap 12: przygotowanie wydań | czeka |
 | 5 | Etap 11: interfejs Maca, serwer MCP | czeka |
@@ -51,6 +51,39 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 
 ### Pominięte
 - Natywne listy na iPadzie (symulator iPada nie jest zalogowany), zgodnie z zadaniem.
+
+---
+
+## 2. Etap 7
+
+### 2a. Odchudzanie `DiscordModels`
+
+**Stan: zrobione (częściowo względem ambicji: CodingKeys zostały).** Commit: `perf(lib): decode-only models for data Aicord only receives`.
+
+Pomiar jak w `docs/SLIM_NOTES.md`: Release, `generic/platform=iOS`, mapa linkera (skrypt w scratchpadzie sesji, sumuje symbole z `DiscordModels.o`).
+
+| | Binarka | `__TEXT` | `__text` | `DiscordModels` | w tym CodingKeys | `init(from:)` | `encode(to:)` |
+|---|---|---|---|---|---|---|---|
+| Przed (`main` + punkt 1) | 44,87 MB | 15,09 MB | 12,45 MB | 4,46 MB | 0,94 MB | 0,49 MB | 0,36 MB |
+| Po | **44,20 MB** | 14,79 MB | 12,20 MB | **4,15 MB** | 0,92 MB | 0,49 MB | ~0 |
+
+(Binarka z `main` jest dziś większa niż 41,86 MB z SLIM_NOTES, bo od tamtej pory doszły głos, Intelligence itd.)
+
+**Co zrobiłem:**
+- 278 struktur i klas w `DiscordModels` z `Codable` na `Decodable`, potem iteracyjnie z powrotem na `Codable` to, czego wymagał kompilator: payloady (`Payloads.swift`), wiadomości gatewaya i głosu (`Gateway.Event`, `VoiceGateway.Event` zostały w całości bez zmian), `Identify`, `Resume`, `RequestGuildMembers`, `UpdateGuildSubscriptions` z `GuildSubscription`, aktywność (presence), ankiety, ekran powitalny i onboarding, `DiscordTimestamp`, `DiscordColor` itp.
+- `DiscordUser` (z `AvatarDecoration`, `Collectibles`, `PrimaryGuild`, nameplate) zostaje `Codable`: aplikacja zapisuje konto w pęku kluczy przez `JSONEncoder` (`TokenStore.AccountData`), więc format musi zostać ten sam.
+- `Emoji`: zamiast pełnego `Codable` (ciągnął `DiscordUser` i role) własne `Encodable` z `id`, `name`, `animated`, bo tylko to Discord czyta z wysłanego emoji (ankiety, reakcje).
+- Ręczne `encode(to:)` w typach, które stały się `Decodable`, usunięte (skrypt), w tym całe kodowanie komponentów wiadomości (`Interaction.swift`). `DereferenceBox` i `DecodeOrNil` mają `Encodable` warunkowo.
+- `Guild.Member` i `Gateway.GuildMemberAdd` mają ręczny `init(from:)`, a ich `CodingKeys` do tej pory syntezował kompilator przy okazji `Encodable`. Teraz są wypisane jawnie (te same klucze, które czyta `init(from:)`).
+- `DiscordClientResponse` i `DiscordClient.send` wymagają `Decodable` zamiast `Codable`.
+- **Zmiany API biblioteki:** z `CreateMessage`, `EditMessage` i `ForumMessage` zniknęło `components`, a z `CreateGuild` `roles` i `channels`. Konto użytkownika nie może wysyłać komponentów, a aplikacja nie tworzy serwerów; te pola ciągnęły za sobą `Encodable` dla prawie wszystkich modeli.
+- Testy: dwa testy sprawdzały też kodowanie (`Message` z `@Indirect`, round-trip `ResolvedData`); część kodująca usunięta, dekodowanie zostało. Nadal 143 testy.
+
+**Sprawdzone:** `swift test` (143), build iOS i macOS, w symulatorze start z kontem z pęku kluczy (dekodowanie zapisanego `DiscordUser`), READY, kanał z embedami i kartą YouTube, kolory ról autorów (dane członków).
+
+**Dlaczego nie CodingKeys:** 0,92 MB to prawie same metadane: każdy z 385 enumów `CodingKeys` ma 5 konformancji (`CodingKey`, `Hashable`, `Equatable`, `CustomStringConvertible`, `CustomDebugStringConvertible`), a do tego cache instancjacji, deskryptory i akcesory (~250 + 100 + 100 KB). Pozbyć się ich można tylko dekodując bez osobnych enumów, np. makrem generującym `init(from:)` ze wspólnym typem klucza. To przepisanie dekodowania ~400 typów naraz; za duże ryzyko na noc bez możliwości przeklikania wszystkiego. Zostawione w ROADMAP z liczbami.
+
+**Ryzyko:** gdyby gdzieś w aplikacji model był kodowany dynamicznie (`as? Encodable`), kompilator by tego nie złapał; przeszukałem `Aicord/` i `AicordKit/`, takich miejsc nie ma.
 
 ---
 

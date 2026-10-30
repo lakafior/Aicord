@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/guild#guild-object-guild-structure
-public struct Guild: Sendable, Codable, Hashable, Equatable, Identifiable {
+public struct Guild: Sendable, Decodable, Hashable, Equatable, Identifiable {
 
   public init(
     id: GuildSnowflake,
@@ -110,7 +110,7 @@ public struct Guild: Sendable, Codable, Hashable, Equatable, Identifiable {
   }
 
   /// https://discord.com/developers/docs/resources/guild#guild-member-object-guild-member-structure
-  public struct Member: Sendable, Codable, Equatable, Hashable {
+  public struct Member: Sendable, Decodable, Equatable, Hashable {
     /// https://discord.com/developers/docs/resources/guild#guild-member-object-guild-member-flags
     #if Non64BitSystemsCompatibility
       @UnstableEnum<UInt64>
@@ -204,6 +204,12 @@ public struct Guild: Sendable, Codable, Hashable, Equatable, Identifiable {
         guildMemberAdd.communication_disabled_until
       self.avatar_decoration_data = guildMemberAdd.avatar_decoration_data
       self.presence = nil
+    }
+
+    /// Written out: nothing synthesizes them for a decode-only type. Members are never sent.
+    enum CodingKeys: String, CodingKey {
+      case user, nick, avatar, roles, joined_at, premium_since, deaf, mute, flags, pending
+      case permissions, communication_disabled_until, avatar_decoration_data, presence
     }
 
     public init(from decoder: any Decoder) throws {
@@ -404,7 +410,7 @@ public struct Guild: Sendable, Codable, Hashable, Equatable, Identifiable {
   }
 
   /// https://discord.com/developers/docs/resources/guild#welcome-screen-object-welcome-screen-structure
-  public struct WelcomeScreen: Sendable, Codable, Equatable, Hashable {
+  public struct WelcomeScreen: Sendable, Decodable, Equatable, Hashable {
 
     /// https://discord.com/developers/docs/resources/guild#welcome-screen-object-welcome-screen-channel-structure
     public struct Channel: Sendable, Codable, Equatable, Hashable {
@@ -524,7 +530,7 @@ public struct Guild: Sendable, Codable, Hashable, Equatable, Identifiable {
 }
 
 /// https://discord.com/developers/docs/resources/guild#guild-object-guild-structure
-public struct PartialGuild: Sendable, Codable, Equatable, Hashable {
+public struct PartialGuild: Sendable, Decodable, Equatable, Hashable {
   public var id: GuildSnowflake
   public var name: String?
   public var icon: String?
@@ -580,7 +586,7 @@ public struct PartialGuild: Sendable, Codable, Equatable, Hashable {
 extension Guild {
   /// A partial ``Guild.Member`` object.
   /// https://discord.com/developers/docs/resources/guild#guild-member-object-guild-member-structure
-  public struct PartialMember: Sendable, Codable, Equatable, Hashable {
+  public struct PartialMember: Sendable, Decodable, Equatable, Hashable {
     public init(
       user: DiscordUser? = nil,
       nick: String? = nil,
@@ -637,7 +643,7 @@ extension Guild {
   }
 
   /// https://discord.com/developers/docs/resources/guild#guild-onboarding-object-guild-onboarding-structure
-  public struct Onboarding: Sendable, Codable {
+  public struct Onboarding: Sendable, Decodable {
 
     /// https://discord.com/developers/docs/resources/guild#guild-onboarding-object-onboarding-prompt-structure
     public struct Prompt: Sendable, Codable {
@@ -725,7 +731,7 @@ extension Guild {
   }
 
   /// https://discord.com/developers/docs/resources/guild#guild-preview-object-guild-preview-structure
-  public struct Preview: Sendable, Codable {
+  public struct Preview: Sendable, Decodable {
     public var id: GuildSnowflake
     public var name: String
     public var icon: String?
@@ -740,19 +746,19 @@ extension Guild {
   }
 
   /// https://discord.com/developers/docs/resources/guild#ban-object-ban-structure
-  public struct Ban: Sendable, Codable {
+  public struct Ban: Sendable, Decodable {
     public var reason: String?
     public var user: DiscordUser
   }
 
   /// https://discord.com/developers/docs/resources/guild#guild-widget-settings-object-guild-widget-settings-structure
-  public struct WidgetSettings: Sendable, Codable {
+  public struct WidgetSettings: Sendable, Decodable {
     public var enabled: Bool
     public var channel_id: ChannelSnowflake?
   }
 
   /// https://discord.com/developers/docs/resources/guild#guild-widget-object-guild-widget-structure
-  public struct Widget: Sendable, Codable {
+  public struct Widget: Sendable, Decodable {
     public var id: GuildSnowflake
     public var name: String
     public var instant_invite: String?
@@ -762,7 +768,7 @@ extension Guild {
   }
 
   /// https://docs.discord.food/resources/guild#premium-guild-subscription-object
-  public struct PremiumGuildSubscription: Sendable, Codable {
+  public struct PremiumGuildSubscription: Sendable, Decodable {
     public var id: EntitlementSnowflake
     public var user_id: UserSnowflake
     public var user: PartialUser?
@@ -773,7 +779,7 @@ extension Guild {
   }
 
   ///	https://docs.discord.food/resources/user-settings#user-guild-settings-object
-  public struct UserGuildSettings: Sendable, Codable {
+  public struct UserGuildSettings: Sendable, Decodable {
     public var channel_overrides: [ChannelOverride]
     public var flags: IntBitField<Flag>
     public var guild_id: GuildSnowflake?
@@ -789,7 +795,7 @@ extension Guild {
     public var version: Int
 
     /// https://docs.discord.food/resources/user-settings#partial-user-guild-settings-structure
-    public struct Partial: Sendable, Codable {
+    public struct Partial: Sendable, Decodable {
       public var channel_overrides: [ChannelOverride]?
       public var flags: IntBitField<Flag>?
       public var guild_id: GuildSnowflake?
@@ -805,7 +811,7 @@ extension Guild {
     }
 
     /// https://docs.discord.food/resources/user-settings#channel-override-structure
-    public struct ChannelOverride: Sendable, Codable {
+    public struct ChannelOverride: Sendable, Decodable {
       public var channel_id: ChannelSnowflake
       // category is collapsed
       public var collapsed: Bool
@@ -871,34 +877,34 @@ extension Guild {
       #endif
     }
 
-    public struct MuteConfig: Sendable, Codable {
+    public struct MuteConfig: Sendable, Decodable {
       public var selected_time_window: Int?
       public var end_time: DiscordTimestamp?
     }
   }
 
   /// https://docs.discord.food/resources/emoji#get-guild-top-emojis
-  public struct TopEmoji: Sendable, Codable {
+  public struct TopEmoji: Sendable, Decodable {
     public var emoji_id: EmojiSnowflake
     public var emoji_rank: Int
   }
 }
 
 /// https://discord.com/developers/docs/resources/guild#unavailable-guild-object
-public struct UnavailableGuild: Sendable, Codable {
+public struct UnavailableGuild: Sendable, Decodable {
   public var id: GuildSnowflake
   public var unavailable: Bool?
 }
 
 /// https://discord.com/developers/docs/resources/guild#integration-account-object
-public struct IntegrationAccount: Sendable, Codable {
+public struct IntegrationAccount: Sendable, Decodable {
   /// Not a snowflake.
   public var id: String
   public var name: String
 }
 
 /// https://discord.com/developers/docs/resources/guild#integration-application-object-integration-application-structure
-public struct IntegrationApplication: Sendable, Codable {
+public struct IntegrationApplication: Sendable, Decodable {
   public var id: ApplicationSnowflake
   public var name: String
   public var icon: String?

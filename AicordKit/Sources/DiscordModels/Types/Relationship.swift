@@ -8,7 +8,7 @@
 
 /// A relationship between the current user and another user.
 /// https://docs.discord.food/resources/relationships#relationship-object
-public struct DiscordRelationship: Sendable, Codable {
+public struct DiscordRelationship: Sendable, Decodable {
 
   #if Non64BitSystemsCompatibility
     @UnstableEnum<Int64>
@@ -58,11 +58,11 @@ public struct DiscordRelationship: Sendable, Codable {
 }
 
 /// https://docs.discord.food/resources/relationships#friend-suggestion-object
-public struct FriendSuggestion: Sendable, Codable {
+public struct FriendSuggestion: Sendable, Decodable {
   public var suggested_user: PartialUser
   public var reasons: [Reason]
 
-  public struct Reason: Sendable, Codable {
+  public struct Reason: Sendable, Decodable {
     public var type: Kind
     //		public var platform: // FIXME: Needs type (string enum of services)
     public var name: String
@@ -87,7 +87,7 @@ public struct FriendSuggestion: Sendable, Codable {
 public typealias FriendSuggestions = [FriendSuggestion]
 
 /// https://docs.discord.food/resources/relationships#bulk-add-relationships
-public struct BulkAddRelationshipsResult: Sendable, Codable {
+public struct BulkAddRelationshipsResult: Sendable, Decodable {
   public var failed_requests: [UserSnowflake]
   public var successful_requests: [UserSnowflake]
 }

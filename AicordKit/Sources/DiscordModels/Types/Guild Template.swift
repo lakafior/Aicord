@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/guild-template#guild-template-object-guild-template-structure
-public struct GuildTemplate: Codable, Sendable {
+public struct GuildTemplate: Decodable, Sendable {
 
   /// `GuildTemplate` has a weird look.
   /// The `serialized_source_guild` doesn't have an id,
@@ -8,7 +8,7 @@ public struct GuildTemplate: Codable, Sendable {
 
   /// https://discord.com/developers/docs/topics/permissions#role-object
   /// A role with integer id.
-  public struct Role: Sendable, Codable {
+  public struct Role: Sendable, Decodable {
     public var id: Int
     public var name: String
     public var description: String?
@@ -27,7 +27,7 @@ public struct GuildTemplate: Codable, Sendable {
   /// https://discord.com/developers/docs/resources/guild#guild-object-guild-structure
   /// A partial guild with probably no `id`.
   /// + `system_channel_id` of type integer.
-  public struct PartialGuild: Sendable, Codable {
+  public struct PartialGuild: Sendable, Decodable {
     public var id: GuildSnowflake?
     public var name: String?
     public var icon: String?
