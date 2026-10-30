@@ -204,6 +204,13 @@ struct EntityContextMenu<Entity>: ViewModifier {
             Label("Explain Slang and Terms", systemImage: "character.book.closed")
           }
         }
+        if message.attachments.contains(where: { $0.content_type?.hasPrefix("image") == true }) {
+          Button {
+            open(.images)
+          } label: {
+            Label("Describe Images", systemImage: "photo.badge.magnifyingglass")
+          }
+        }
         if message.thread != nil || message.message_reference?.message_id != nil {
           Button {
             open(.replies)
