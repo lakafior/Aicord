@@ -42,6 +42,10 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 
 ## New & fixed
 
+- **New** · Forward messages to up to five DMs, group chats or channels with an optional comment; forwarded messages show where they came from, and tapping the source opens the original
+- **New** · Message Requests and Spam folders in Messages (on Mac and iPad above the direct messages): accept, ignore or reject requests, move messages out of spam or delete them
+- **New** · Friend requests: Incoming and Sent tabs in Friends with accept, ignore and cancel, and a badge that updates live
+- **New** · Search opens a message result at the message and highlights it, and filters by date range and by a regular expression
 - **New** · Voice: join server voice channels and start or join DM and group calls, end-to-end encrypted with DAVE; a call panel with mute, deafen and disconnect (a tab bar accessory on iPhone), who is in each voice channel with speaking rings, push-to-talk, and Settings → Voice & Video for devices, volumes, input mode and voice processing
 - **New** · Rebuilt message menu: a row of quick reactions from your favourite and most used emoji, tidier groups, and a working Mark Unread; the empty Apps, Thread and Forward items are gone
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
