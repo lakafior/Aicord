@@ -34,6 +34,8 @@ enum IntelligencePreferences {
     static let importantTopics = "Intelligence.ImportantTopics"
     static let scamWarnings = "Intelligence.ScamWarnings"
     static let imageDescriptions = "Intelligence.ImageDescriptions"
+    static let voiceOverImages = "Intelligence.VoiceOverImages"
+    static let voiceOverImagesAPI = "Intelligence.VoiceOverImagesAPI"
   }
 
   static var defaults: UserDefaults { .standard }
@@ -43,6 +45,12 @@ enum IntelligencePreferences {
   }
 
   static var allowsDMs: Bool { defaults.bool(forKey: Key.allowsDMs) }
+
+  /// Reading text in images for VoiceOver, on this device. On unless turned off.
+  static var voiceOverImages: Bool { defaults.object(forKey: Key.voiceOverImages) as? Bool ?? true }
+
+  /// Sending images to the API model for VoiceOver descriptions. Off unless chosen.
+  static var voiceOverImagesAPI: Bool { defaults.bool(forKey: Key.voiceOverImagesAPI) }
 
   /// Context window of the API model, in tokens. 32k fits most hosted models;
   /// small local models can be set lower.

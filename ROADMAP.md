@@ -43,10 +43,9 @@ Szczegóły portu, decyzje i instrukcja testu: `docs/VOICE_NOTES.md`.
 ### 🧪 Etap 10: Intelligence — tłumaczenie i podsumowania
 Zrobione (szczegóły w SHIPPED i `docs/INTELLIGENCE_NOTES.md`): ustawienia, tłumaczenie, podsumowania, Catch Up, Explain Context, wyszukiwarka jako narzędzie modelu, pytanie do kanału, Wyjaśnij, podsumowanie wątku, Search with a Sentence, ważne powiadomienia, ostrzeżenie przed oszustwem, opisy obrazów. Zostało:
 1. **Weryfikacja:**
-   - [ ] Na urządzeniu: Show Conversation, Explain Slang, podsumowanie wątku i odpowiedzi, ważne powiadomienia z wyciszonych kanałów, baner oszustwa, Ask na urządzeniu z narzędziami Foundation Models (sprawdzone tylko przez API), arkusz pobierania języka i automatyczne tłumaczenie. Lista kroków: `docs/INTELLIGENCE_NOTES.md`.
+   - [ ] Na urządzeniu: opisy obrazów z VoiceOverem (etykieta z tekstem z Vision, opcjonalnie z API), Show Conversation, Explain Slang, podsumowanie wątku i odpowiedzi, ważne powiadomienia z wyciszonych kanałów, baner oszustwa, Ask na urządzeniu z narzędziami Foundation Models (sprawdzone tylko przez API), arkusz pobierania języka i automatyczne tłumaczenie. Lista kroków: `docs/INTELLIGENCE_NOTES.md`.
    - [ ] Komunikat „Apple Intelligence niedostępne” na urządzeniu bez modelu.
 2. **Dokończenia:**
-   - [ ] Automatyczne opisy obrazów dla VoiceOver (dziś OCR i opis przez API na żądanie z menu).
    - [ ] Lokalne serwery (Ollama, LM Studio): wyjątek ATS `NSAllowsLocalNetworking` dla `http://localhost` i sprawdzenie.
    - [ ] Okno 4 tys. tokenów na urządzeniu szybko się zapełnia przy narzędziach (wyniki przycięte do 6 po 220 znaków): sprawdzić jakość odpowiedzi i ewentualnie mniejsze schematy narzędzi.
 3. **Wyszukiwanie po sensie:**

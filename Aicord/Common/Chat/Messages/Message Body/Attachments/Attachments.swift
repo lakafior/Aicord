@@ -101,6 +101,7 @@ extension MessageCell {
       } else {
         AttachmentMosaic(
           items: previewableAttachments,
+          message: message,
           onTap: openViewer
         )
       }
@@ -121,6 +122,7 @@ extension MessageCell {
         }
         .buttonStyle(.borderless)
         .imageDescriptionBadge(attachment.description)
+        .voiceOverImageLabel(attachment, message: message)
       }
     }
 
@@ -170,6 +172,7 @@ extension MessageCell {
 
     struct AttachmentMosaic: View {
       let items: [DiscordChannel.Message.Attachment]
+      let message: DiscordChannel.PartialMessage
       var spacing: CGFloat = 4
       var maxWidth: CGFloat = 500
       var maxHeight: CGFloat = 350
@@ -296,6 +299,7 @@ extension MessageCell {
         }
         .buttonStyle(.borderless)
         .imageDescriptionBadge(attachment.description)
+        .voiceOverImageLabel(attachment, message: message)
       }
     }
 

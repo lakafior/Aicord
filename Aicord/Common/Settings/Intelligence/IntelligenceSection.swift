@@ -31,6 +31,8 @@ struct IntelligenceSettings: View {
   @AppStorage(Key.scamWarnings) private var scamWarnings = true
   @AppStorage(Key.importantMuted) private var importantMuted = false
   @AppStorage(Key.importantTopics) private var importantTopics = ""
+  @AppStorage(Key.voiceOverImages) private var voiceOverImages = true
+  @AppStorage(Key.voiceOverImagesAPI) private var voiceOverImagesAPI = false
 
   @State private var keyDraft = ""
   @State private var hasKey = IntelligenceKeychain.hasAPIKey
@@ -103,6 +105,22 @@ struct IntelligenceSettings: View {
     } footer: {
       Text(
         "In direct messages from people who aren't your friends, a warning shows when messages look like a known scam: free Nitro or Steam gifts through links, links imitating Discord, “I reported you by accident”, or requests for passwords and codes. Checked on this device without a language model."
+      )
+    }
+
+    Section {
+      Toggle("Describe Images for VoiceOver", isOn: $voiceOverImages)
+      if provider == .api {
+        Toggle("Describe with the API Model", isOn: $voiceOverImagesAPI)
+          .disabled(!voiceOverImages)
+      }
+    } header: {
+      Text("Accessibility")
+    } footer: {
+      Text(
+        provider == .api
+          ? "While VoiceOver is on, images without alt text are read with the text Vision finds in them on this device. With the API model, each image you reach is also sent to that server for a short description; images in direct messages only when Use in Direct Messages is on."
+          : "While VoiceOver is on, images without alt text are read with the text Vision finds in them, on this device. Spoilers and hidden sensitive media are never read."
       )
     }
 

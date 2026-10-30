@@ -113,6 +113,16 @@ Pomiar jak w `docs/SLIM_NOTES.md`: Release, `generic/platform=iOS`, mapa linkera
 - **Sprawdzone w symulatorze** (model na urządzeniu, bez kluczy API): „who posted the ipa file in NAScin” → token NAScin, słowo „ipa”, poszerzenie i ranking (2 wiadomości z Kite.ipa). Testy: 6 nowych, razem 149.
 - **Incydent bez skutków:** po jednym uruchomieniu aplikacja wystartowała w otwartym czacie FashionReps #lobby, a moje stuknięcia i wpisany tekst poszły „w ciemno”. Sprawdziłem drzewo dostępności: ten kanał nie ma pola wiadomości (tylko odczyt), więc nic nie zostało wpisane ani wysłane. Od tamtej pory po każdym starcie najpierw zrzut ekranu.
 
+### 3b. Opisy obrazów dla VoiceOver
+
+**Stan: zrobione w kodzie, niesprawdzone z VoiceOverem.** Commit: `feat: image labels for VoiceOver`.
+
+- `Aicord/Common/Intelligence/ImageDescriptions.swift`: modyfikator `voiceOverImageLabel` na obrazach w czacie (lista i mozaika w `Attachments.swift`).
+- Kolejność: alt text od nadawcy („Image: …”) → gdy VoiceOver działa (`accessibilityVoiceOverEnabled`): pobranie miniatury 1024 px z proxy Discorda i tekst z Vision (`RecognizeTextRequest`, to samo co w Describe Images) → „Image with the text: …” albo „Image, plik, no text in it”. Z modelem API i przełącznikiem „Describe with the API Model” opis od modelu (1–2 zdania).
+- **Decyzje:** nic nie działa bez VoiceOvera (zero kosztu dla innych). OCR domyślnie włączony, bo nic nie opuszcza urządzenia. API domyślnie wyłączone: automatyczne wysyłanie każdego mijanego obrazu na serwer to inna zgoda niż opis na żądanie; w DM dodatkowo wymaga „Use in Direct Messages”. Spoiler i media zasłonięte przez Content & Social → „Hidden image”, bez pobierania. Jeden opis na obraz na sesję (pamięć w `ImageDescriptions.shared`).
+- Ustawienia: Settings → Intelligence → Accessibility.
+- **Do sprawdzenia rano na iPhonie z VoiceOverem:** NAScin #ogólny, plakat „Twój plakat…” — po chwili VoiceOver powinien czytać tekst z plakatu; obraz ze spoilerem — „Hidden image”.
+
 ---
 
 ## Do sprawdzenia rano
