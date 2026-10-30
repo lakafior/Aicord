@@ -25,6 +25,8 @@ struct ChatSettings: View {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
 
+  @AppStorage(EmojiPicker.showsNitroEmojiKey) private var showsNitroEmoji = false
+
   var body: some View {
     Section {
       settingToggle("Show Reactions", isOn: gw.settings.rendersReactions) {
@@ -69,6 +71,21 @@ struct ChatSettings: View {
       Text("Writing")
     } footer: {
       Text("When you send, :) becomes 🙂 and <3 becomes ❤️. Code and links stay as typed.")
+    }
+
+    if gw.user.premiumKind == .none {
+      Section {
+        Toggle("Show Emoji That Need Nitro", isOn: $showsNitroEmoji)
+          #if os(macOS)
+            .toggleStyle(.switch)
+          #endif
+      } header: {
+        Text("Emoji")
+      } footer: {
+        Text(
+          "Without Nitro you can use standard emoji and the still emoji of the server you're in. Turn this on to also see other servers' and animated emoji, locked, in the emoji picker. Only on this device."
+        )
+      }
     }
   }
 

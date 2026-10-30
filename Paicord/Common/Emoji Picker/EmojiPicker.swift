@@ -246,12 +246,55 @@ struct EmojiPicker: View {
     var id: String { section.id }
   }
 
+  /// Why an emoji can't be sent or reacted with here.
+  enum EmojiLock {
+    /// Another server's emoji, or an animated one, without Nitro.
+    case nitro
+    /// Limited to roles the account doesn't have; Nitro doesn't help.
+    case roles
+  }
+
+  /// Chat setting: show the emoji that need Nitro, locked, instead of hiding them.
+  static let showsNitroEmojiKey = "Paicord.Chat.ShowsNitroEmoji"
+
   @MainActor
   struct SectionBuilder {
     let gw: GatewayStore
+    /// The server the picker was opened in, nil in direct messages.
+    var currentGuildID: GuildSnowflake? = nil
+    var showsNitroEmoji = false
+
+    var hasNitro: Bool {
+      if case .none = gw.user.premiumKind { return false }
+      return true
+    }
+
+    func lock(for item: PickerEmoji) -> EmojiLock? {
+      guard case .custom(let emoji, let guildID) = item else { return nil }
+      if let roles = emoji.roles, !roles.isEmpty {
+        let memberRoles = gw.user.guilds[guildID]?.members?
+          .first { $0.user?.id == gw.user.currentUser?.id }?.roles ?? []
+        if !roles.contains(where: memberRoles.contains) { return .roles }
+      }
+      if !hasNitro, guildID != currentGuildID || emoji.animated == true {
+        return .nitro
+      }
+      return nil
+    }
+
+    /// Role-limited emoji never show; Nitro ones only when asked for.
+    private func isListed(_ item: PickerEmoji) -> Bool {
+      switch lock(for: item) {
+      case nil: true
+      case .nitro: showsNitroEmoji
+      case .roles: false
+      }
+    }
 
     var orderedGuildIDs: [GuildSnowflake] {
       var guilds: [GuildSnowflake] = []
+      // the server you're in comes first, like in Discord
+      if let currentGuildID { guilds.append(currentGuildID) }
       if let userID = gw.user.currentUser?.id {
         let unlistedGuilds = gw.user.guilds.values.filter { guild in
           !gw.settings.userSettings.guildFolders.folders.contains { folder in
@@ -276,7 +319,8 @@ struct EmojiPicker: View {
           \.guildIds
         ).map { GuildSnowflake($0) }
       )
-      return guilds
+      var seen = Set<GuildSnowflake>()
+      return guilds.filter { seen.insert($0).inserted }
     }
 
     func guildSections() -> [(GuildSnowflake, [PickerEmoji])] {
@@ -289,6 +333,7 @@ struct EmojiPicker: View {
           .filter { $0.available ?? true }
           .sorted { ($0.name ?? "") < ($1.name ?? "") }
           .map { PickerEmoji.custom($0, guildID: guildID) }
+          .filter(isListed)
         return items.isEmpty ? nil : (guildID, items)
       }
     }
@@ -312,6 +357,7 @@ struct EmojiPicker: View {
       return gw.settings.frecencySettings.favoriteEmojis.emojis.compactMap {
         resolveFrecencyEmoji($0)
       }
+      .filter(isListed)
     }
 
     var frequentEmojis: [PickerEmoji] {
@@ -319,6 +365,7 @@ struct EmojiPicker: View {
       return gw.settings.frecencySettings.emojiFrecency.emojis
         .sorted { $0.value.score > $1.value.score }
         .compactMap { resolveFrecencyEmoji($0.key) }
+        .filter(isListed)
     }
 
     func resolveFrecencyEmoji(_ raw: String) -> PickerEmoji? {
@@ -393,8 +440,25 @@ struct EmojiPicker: View {
   struct EmojiCell: View {
     let item: PickerEmoji
     var pointSize: CGFloat = 30
+    var lock: EmojiLock? = nil
 
     var body: some View {
+      if lock != nil {
+        image
+          .opacity(0.35)
+          .overlay(alignment: .bottomTrailing) {
+            Image(systemName: "lock.fill")
+              .font(.system(size: pointSize * 0.35))
+              .foregroundStyle(.secondary)
+          }
+          .accessibilityLabel(Text("\(item.name), requires Nitro"))
+      } else {
+        image
+      }
+    }
+
+    @ViewBuilder
+    private var image: some View {
       switch item {
       case .custom(let emoji, _):
         if let url = Self.customEmojiURL(id: emoji.id, animated: emoji.animated)
@@ -490,7 +554,9 @@ struct EmojiPicker: View {
 
   struct EmojiGridView: View {
     @Environment(\.gateway) var gw
+    @Environment(\.appState) var appState
     @Environment(\.dismiss) var dismiss
+    @AppStorage(EmojiPicker.showsNitroEmojiKey) private var showsNitroEmoji = false
     var onEmojiPicked: ((DiscordModels.Emoji) -> Void)?
     var allowsShiftToKeepOpen: Bool = true
 
@@ -542,6 +608,7 @@ struct EmojiPicker: View {
       .onChange(of: gw.settings.frecencySettings) { _, _ in
         rebuildGridSections()
       }
+      .onChange(of: showsNitroEmoji) { _, _ in rebuildGridSections() }
       .onChange(of: searchText) { _, newValue in
         highlightedIndex = 0
         Task { await performSearch(newValue) }
@@ -646,7 +713,7 @@ struct EmojiPicker: View {
     }
 
     func emojiCell(_ item: PickerEmoji) -> some View {
-      EmojiCell(item: item)
+      EmojiCell(item: item, lock: builder.lock(for: item))
     }
 
     @ViewBuilder
@@ -661,7 +728,10 @@ struct EmojiPicker: View {
               .font(.title3.bold())
               .lineLimit(1)
 
-            if case .custom(_, let guild) = item,
+            if builder.lock(for: item) != nil {
+              Text("Requires Nitro")
+                .foregroundStyle(.secondary)
+            } else if case .custom(_, let guild) = item,
               let guild = gw.user.guilds[guild]
             {
               Text("from \(Text(verbatim: guild.name).bold())")
@@ -726,7 +796,13 @@ struct EmojiPicker: View {
       }
     }
 
-    private var builder: SectionBuilder { .init(gw: gw) }
+    private var builder: SectionBuilder {
+      .init(
+        gw: gw,
+        currentGuildID: appState.selectedGuild,
+        showsNitroEmoji: showsNitroEmoji
+      )
+    }
 
     func rebuildGridSections() {
       let sections = builder.buildSections()
@@ -765,6 +841,7 @@ struct EmojiPicker: View {
     // MARK: Selection
 
     func pick(_ item: PickerEmoji, shiftHeld: Bool) {
+      guard builder.lock(for: item) == nil else { return }
       onEmojiPicked?(item.toDiscordEmoji())
       if !(allowsShiftToKeepOpen && shiftHeld) {
         dismiss()
@@ -921,12 +998,19 @@ struct EmojiPicker: View {
       var variant: Variant = .inputBar
       var onEmojiPicked: (DiscordModels.Emoji) -> Void
 
+      @AppStorage(EmojiPicker.showsNitroEmojiKey) private var showsNitroEmoji = false
       @State private var searchText: String = ""
       @State private var searchResults: [PickerEmoji] = []
       @State private var cachedGridSections: [GridSection] = []
       @State private var scrollPosition: String?
 
-      private var builder: SectionBuilder { .init(gw: gw) }
+      private var builder: SectionBuilder {
+        .init(
+          gw: gw,
+          currentGuildID: appState.selectedGuild,
+          showsNitroEmoji: showsNitroEmoji
+        )
+      }
 
       private var bottomSafeAreaInset: CGFloat {
         UIApplication.shared.connectedScenes
@@ -964,6 +1048,7 @@ struct EmojiPicker: View {
         .onChange(of: gw.settings.frecencySettings) { _, _ in
           rebuildGridSections()
         }
+        .onChange(of: showsNitroEmoji) { _, _ in rebuildGridSections() }
         .onChange(of: searchText) { _, newValue in
           Task { await performSearch(newValue) }
         }
@@ -1001,14 +1086,16 @@ struct EmojiPicker: View {
 
       @ViewBuilder
       private func emojiButton(_ item: PickerEmoji) -> some View {
+        let lock = builder.lock(for: item)
         Button {
           onEmojiPicked(item.toDiscordEmoji())
         } label: {
-          EmojiCell(item: item)
+          EmojiCell(item: item, lock: lock)
             .frame(width: 38, height: 38)
             .padding(2)
         }
         .buttonStyle(.plain)
+        .disabled(lock != nil)
       }
 
       private func sectionHeader(_ section: EmojiPickerSection) -> some View {
