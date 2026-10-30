@@ -310,3 +310,39 @@ class ToolAgentTests: XCTestCase {
     XCTAssertTrue(toolMessage.contains(#""tool_call_id":"c1""#))
   }
 }
+
+class ContextRankerTests: XCTestCase {
+  typealias Candidate = ContextRanker.Candidate
+
+  func testMentionedQuestionOutranksNearbyChatter() {
+    let target = Candidate(
+      id: "t", authorID: "ania", mentionedIDs: ["tomek"], text: "InPost, around 15 zł", distance: 0)
+    let candidates = [
+      Candidate(id: "1", authorID: "bob", text: "lol", distance: 0),
+      Candidate(id: "2", authorID: "tomek", text: "How much is shipping with InPost?", distance: 5),
+      Candidate(id: "3", authorID: "ola", text: "nice jacket", distance: 1),
+    ]
+    let ranked = ContextRanker.rank(target: target, candidates: candidates)
+    XCTAssertEqual(ranked.first?.0.id, "2")
+  }
+
+  func testKeywordsSkipShortAndCommonWords() {
+    XCTAssertEqual(
+      ContextRanker.keywords("What is the shipping price, jest 2024?"), ["shipping", "price"])
+  }
+
+  func testVerdictParsing() {
+    let known = ContextVerdict.parse(
+      "KNOWN\n- This is Ania's reply to Tomek's question about shipping [2].", validRefs: 1...5)
+    XCTAssertTrue(known.known)
+    XCTAssertEqual(known.refs, [2])
+    XCTAssertEqual(known.explanation, "This is Ania's reply to Tomek's question about shipping.")
+
+    let unknown = ContextVerdict.parse("UNKNOWN\nNot enough context.")
+    XCTAssertFalse(unknown.known)
+
+    let bare = ContextVerdict.parse("It answers [1] and [3].", validRefs: 1...2)
+    XCTAssertTrue(bare.known)
+    XCTAssertEqual(bare.refs, [1])
+  }
+}

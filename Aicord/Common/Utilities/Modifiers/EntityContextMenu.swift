@@ -144,6 +144,8 @@ struct EntityContextMenu<Entity>: ViewModifier {
       }
     }
 
+    intelligenceSection(message)
+
     Section {
       Button {
         Task {
@@ -176,6 +178,43 @@ struct EntityContextMenu<Entity>: ViewModifier {
         #elseif os(macOS)
           deleteMessageButton(message)
         #endif
+      }
+    }
+  }
+
+  /// Read-only language model help for this message; in DMs only when allowed.
+  @ViewBuilder
+  func intelligenceSection(_ message: DiscordChannel.Message) -> some View {
+    let isDM = guild == nil
+    if !isDM || IntelligencePreferences.allowsDMs {
+      let open = { (kind: MessageIntelligenceTarget.Kind) in
+        appState.messageIntelligenceTarget = MessageIntelligenceTarget(
+          kind: kind, message: message, guildID: guild?.guildId)
+      }
+      Menu {
+        Button {
+          open(.context)
+        } label: {
+          Label("Explain Context", systemImage: "point.3.connected.trianglepath.dotted")
+        }
+        if !message.content.isEmpty {
+          Button {
+            open(.explain)
+          } label: {
+            Label("Explain Slang and Terms", systemImage: "character.book.closed")
+          }
+        }
+        if message.thread != nil || message.message_reference?.message_id != nil {
+          Button {
+            open(.replies)
+          } label: {
+            Label(
+              message.thread != nil ? "Summarize Thread" : "Summarize Replies",
+              systemImage: "text.line.first.and.arrowtriangle.forward")
+          }
+        }
+      } label: {
+        Label("Intelligence", systemImage: "sparkles")
       }
     }
   }

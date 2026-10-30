@@ -184,6 +184,7 @@
 		AE20AC89771EEC582C914D08 /* CatchUpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE47218BB51CFFA380642130 /* CatchUpSheet.swift */; };
 		AE604E11DEAF72F688E76E16 /* IntelligenceTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */; };
 		AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */; };
+		AEDA0F2608CBD5DF030505A5 /* MessageIntelligenceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -402,6 +403,7 @@
 		AE47218BB51CFFA380642130 /* CatchUpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatchUpSheet.swift; sourceTree = "<group>"; };
 		AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceTools.swift; sourceTree = "<group>"; };
 		AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskChannelSheet.swift; sourceTree = "<group>"; };
+		AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageIntelligenceSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1134,6 +1136,7 @@
 		AE00CD4D95B942E89273CB85 /* Intelligence */ = {
 			isa = PBXGroup;
 			children = (
+				AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */,
 				AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */,
 				AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */,
 				AE47218BB51CFFA380642130 /* CatchUpSheet.swift */,
@@ -1278,6 +1281,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AEDA0F2608CBD5DF030505A5 /* MessageIntelligenceSheet.swift in Sources */,
 				AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */,
 				AE604E11DEAF72F688E76E16 /* IntelligenceTools.swift in Sources */,
 				AE20AC89771EEC582C914D08 /* CatchUpSheet.swift in Sources */,

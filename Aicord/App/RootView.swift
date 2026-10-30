@@ -55,6 +55,7 @@ struct RootView: View {
         .attachmentViewer()
         .reactionPicker()
         .forwardSheet()
+        .messageIntelligenceSheet()
         .settingsSheet()
         .task {
           appState.loadPrevGuild()
