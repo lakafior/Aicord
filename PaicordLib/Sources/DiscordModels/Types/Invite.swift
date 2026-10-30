@@ -35,16 +35,16 @@ public struct Invite: Sendable, Codable {
 
   public var type: Kind
   public var code: String
-  public var guild: PartialGuild?
-  public var channel: DiscordChannel?
-  public var inviter: DiscordUser?
+  @Indirect public var guild: PartialGuild?
+  @Indirect public var channel: DiscordChannel?
+  @Indirect public var inviter: DiscordUser?
   public var target_type: TargetKind?
-  public var target_user: DiscordUser?
-  public var target_application: PartialApplication?
+  @Indirect public var target_user: DiscordUser?
+  @Indirect public var target_application: PartialApplication?
   public var approximate_presence_count: Int?
   public var approximate_member_count: Int?
   public var expires_at: DiscordTimestamp?
-  public var guild_scheduled_event: GuildScheduledEvent?
+  @Indirect public var guild_scheduled_event: GuildScheduledEvent?
 }
 
 /// https://discord.com/developers/docs/resources/invite#invite-object-invite-structure
@@ -52,16 +52,16 @@ public struct Invite: Sendable, Codable {
 public struct InviteWithMetadata: Sendable, Codable {
   public var type: Invite.Kind
   public var code: String
-  public var guild: PartialGuild?
-  public var channel: DiscordChannel?
-  public var inviter: DiscordUser?
+  @Indirect public var guild: PartialGuild?
+  @Indirect public var channel: DiscordChannel?
+  @Indirect public var inviter: DiscordUser?
   public var target_type: Invite.TargetKind?
-  public var target_user: DiscordUser?
-  public var target_application: PartialApplication?
+  @Indirect public var target_user: DiscordUser?
+  @Indirect public var target_application: PartialApplication?
   public var approximate_presence_count: Int?
   public var approximate_member_count: Int?
   public var expires_at: DiscordTimestamp?
-  public var guild_scheduled_event: GuildScheduledEvent?
+  @Indirect public var guild_scheduled_event: GuildScheduledEvent?
   public var uses: Int
   public var max_uses: Int
   public var max_age: Int
@@ -73,14 +73,14 @@ public struct InviteWithMetadata: Sendable, Codable {
 public struct PartialInvite: Sendable, Codable {
   public var type: Invite.Kind?
   public var code: String?
-  public var guild: PartialGuild?
-  public var channel: DiscordChannel?
-  public var inviter: DiscordUser?
+  @Indirect public var guild: PartialGuild?
+  @Indirect public var channel: DiscordChannel?
+  @Indirect public var inviter: DiscordUser?
   public var target_type: Invite.TargetKind?
-  public var target_user: DiscordUser?
-  public var target_application: PartialApplication?
+  @Indirect public var target_user: DiscordUser?
+  @Indirect public var target_application: PartialApplication?
   public var approximate_presence_count: Int?
   public var approximate_member_count: Int?
   public var expires_at: DiscordTimestamp?
-  public var guild_scheduled_event: GuildScheduledEvent?
+  @Indirect public var guild_scheduled_event: GuildScheduledEvent?
 }

@@ -714,6 +714,96 @@ public struct Secret:
   }
 }
 
+//MARK: - Indirect
+
+/// Stores a value out of line, behind a copy-on-write reference.
+///
+/// Large message-like structs hold many optional nested structs. Stored inline,
+/// every copy of such a struct copies each nested field one by one, and the
+/// compiler emits that copying code for every type that contains them. Behind
+/// `@Indirect` a copy is a single retain, while the value semantics stay the same.
+@propertyWrapper
+public struct Indirect<Value> {
+  @usableFromInline
+  final class Storage: @unchecked Sendable {
+    @usableFromInline var value: Value
+
+    @usableFromInline init(_ value: Value) {
+      self.value = value
+    }
+  }
+
+  @usableFromInline var storage: Storage
+
+  @inlinable
+  public init(wrappedValue: Value) {
+    self.storage = Storage(wrappedValue)
+  }
+
+  @inlinable
+  public var wrappedValue: Value {
+    get { storage.value }
+    set {
+      if isKnownUniquelyReferenced(&storage) {
+        storage.value = newValue
+      } else {
+        storage = Storage(newValue)
+      }
+    }
+  }
+}
+
+extension Indirect: Sendable where Value: Sendable {}
+
+extension Indirect: Equatable where Value: Equatable {
+  @inlinable
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.storage === rhs.storage || lhs.wrappedValue == rhs.wrappedValue
+  }
+}
+
+extension Indirect: Hashable where Value: Hashable {
+  @inlinable
+  public func hash(into hasher: inout Hasher) {
+    wrappedValue.hash(into: &hasher)
+  }
+}
+
+extension Indirect: Decodable where Value: Decodable {
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    self.init(wrappedValue: try container.decode(Value.self))
+  }
+}
+
+extension Indirect: Encodable where Value: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(wrappedValue)
+  }
+}
+
+/// Synthesized `Codable` treats a wrapped optional like a required key.
+/// These overloads keep the usual optional behaviour: a missing key or `null`
+/// decodes to `nil`, and `nil` is not encoded.
+extension KeyedDecodingContainer {
+  public func decode<T: Decodable>(
+    _ type: Indirect<T?>.Type,
+    forKey key: Key
+  ) throws -> Indirect<T?> {
+    Indirect(wrappedValue: try decodeIfPresent(T.self, forKey: key))
+  }
+}
+
+extension KeyedEncodingContainer {
+  public mutating func encode<T: Encodable>(
+    _ value: Indirect<T?>,
+    forKey key: Key
+  ) throws {
+    try encodeIfPresent(value.wrappedValue, forKey: key)
+  }
+}
+
 //MARK: - DereferenceBox
 
 /// A class so we can use the same type recursively in itself.

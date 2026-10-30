@@ -124,9 +124,9 @@ public struct DiscordUser: Sendable, Codable, Equatable, Hashable {
   public var public_flags: IntBitField<Flag>?
   @available(*, deprecated, renamed: "avatar_decoration_data")
   public var avatar_decoration: String?
-  public var collectibles: Collectibles?
-  public var avatar_decoration_data: AvatarDecoration?
-  public var primary_guild: PrimaryGuild?
+  @Indirect public var collectibles: Collectibles?
+  @Indirect public var avatar_decoration_data: AvatarDecoration?
+  @Indirect public var primary_guild: PrimaryGuild?
 
   /// https://docs.discord.food/resources/user#collectibles-structure
   public struct Collectibles: Sendable, Codable, Equatable, Hashable {
@@ -179,12 +179,12 @@ public struct DiscordUser: Sendable, Codable, Equatable, Hashable {
 
   /// https://docs.discord.food/resources/user#get-user-profile
   public struct Profile: Sendable, Codable, Equatable, Hashable {
-    public var application: ProfileApplication?
+    @Indirect public var application: ProfileApplication?
     public var user: PartialUser
-    public var user_profile: Metadata?
+    @Indirect public var user_profile: Metadata?
     public var badges: [Badge]?
-    public var guild_member: Guild.Member?
-    public var guild_member_profile: Metadata?
+    @Indirect public var guild_member: Guild.Member?
+    @Indirect public var guild_member_profile: Metadata?
     public var guild_badges: [Badge]?
     public var legacy_username: String?
     public var mutual_guilds: [MutualGuild]?
@@ -357,9 +357,9 @@ public struct PartialUser: Sendable, Codable, Equatable, Hashable {
   public var avatar: String?
   public var banner: String?
   public var pronouns: String?
-  public var avatar_decoration_data: DiscordUser.AvatarDecoration?
-  public var collectibles: DiscordUser.Collectibles?
-  public var primary_guild: DiscordUser.PrimaryGuild?
+  @Indirect public var avatar_decoration_data: DiscordUser.AvatarDecoration?
+  @Indirect public var collectibles: DiscordUser.Collectibles?
+  @Indirect public var primary_guild: DiscordUser.PrimaryGuild?
   public var bot: Bool?
   public var system: Bool?
   public var accent_color: DiscordColor?
@@ -421,9 +421,9 @@ public struct MentionUser: Sendable, Codable, Equatable, Hashable {
   public var public_flags: IntBitField<DiscordUser.Flag>?
   @available(*, deprecated, renamed: "avatar_decoration_data")
   public var avatar_decoration: String?
-  public var avatar_decoration_data: DiscordUser.AvatarDecoration?
-  public var collectibles: DiscordUser.Collectibles?
-  public var primary_guild: DiscordUser.PrimaryGuild?
+  @Indirect public var avatar_decoration_data: DiscordUser.AvatarDecoration?
+  @Indirect public var collectibles: DiscordUser.Collectibles?
+  @Indirect public var primary_guild: DiscordUser.PrimaryGuild?
   public var member: Guild.PartialMember?
 }
 

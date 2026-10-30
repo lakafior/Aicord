@@ -789,12 +789,12 @@ extension Gateway {
     public var code: String
     public var created_at: DiscordTimestamp
     public var guild_id: GuildSnowflake?
-    public var inviter: DiscordUser?
+    @Indirect public var inviter: DiscordUser?
     public var max_age: Int
     public var max_uses: Int
     public var target_type: Invite.TargetKind?
-    public var target_user: DiscordUser?
-    public var target_application: PartialApplication?
+    @Indirect public var target_user: DiscordUser?
+    @Indirect public var target_application: PartialApplication?
     public var temporary: Bool
     public var uses: Int
   }
@@ -812,7 +812,7 @@ extension Gateway {
   public struct MessageCreate: Sendable, Codable {
     public var id: MessageSnowflake
     public var channel_id: ChannelSnowflake
-    public var author: DiscordUser?
+    @Indirect public var author: DiscordUser?
     public var content: String
     public var timestamp: DiscordTimestamp
     public var edited_timestamp: DiscordTimestamp?
@@ -828,27 +828,27 @@ extension Gateway {
     public var pinned: Bool
     public var webhook_id: WebhookSnowflake?
     public var type: DiscordChannel.Message.Kind
-    public var activity: DiscordChannel.Message.Activity?
-    public var application: PartialApplication?
+    @Indirect public var activity: DiscordChannel.Message.Activity?
+    @Indirect public var application: PartialApplication?
     public var application_id: ApplicationSnowflake?
-    public var message_reference: DiscordChannel.Message.MessageReference?
+    @Indirect public var message_reference: DiscordChannel.Message.MessageReference?
     public var flags: IntBitField<DiscordChannel.Message.Flag>?
     public var referenced_message: DereferenceBox<MessageCreate>?
     public var message_snapshots: [DiscordChannel.MessageSnapshot]?
-    public var interaction_metadata: DiscordChannel.Message.InteractionMetadata?
-    public var interaction: MessageInteraction?
-    public var thread: DiscordChannel?
-    public var components: Interaction.ComponentSwitch?
+    @Indirect public var interaction_metadata: DiscordChannel.Message.InteractionMetadata?
+    @Indirect public var interaction: MessageInteraction?
+    @Indirect public var thread: DiscordChannel?
+    @Indirect public var components: Interaction.ComponentSwitch?
     public var sticker_items: [StickerItem]?
     public var stickers: [Sticker]?
     public var position: Int?
-    public var role_subscription_data: RoleSubscriptionData?
-    public var resolved: Interaction.ResolvedData?
-    public var poll: Poll?
-    public var call: DiscordChannel.Message.Call?
+    @Indirect public var role_subscription_data: RoleSubscriptionData?
+    @Indirect public var resolved: Interaction.ResolvedData?
+    @Indirect public var poll: Poll?
+    @Indirect public var call: DiscordChannel.Message.Call?
     /// Extra fields:
     public var guild_id: GuildSnowflake?
-    public var member: Guild.PartialMember?
+    @Indirect public var member: Guild.PartialMember?
 
     public mutating func update(
       with partialMessage: DiscordChannel.PartialMessage

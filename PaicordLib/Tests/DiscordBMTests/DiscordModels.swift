@@ -56,6 +56,41 @@ class DiscordModelsTests: XCTestCase {
     XCTAssertFalse(Payloads.CreateMessage().validate().isEmpty)
   }
 
+  func testIndirectFieldsKeepOptionalCodingAndValueSemantics() throws {
+    let json = #"""
+      {"id":"10","channel_id":"20","content":"hi","timestamp":"2024-01-01T00:00:00.000000+00:00",
+       "edited_timestamp":null,"tts":false,"mention_everyone":false,"mentions":[],"mention_roles":[],
+       "attachments":[],"embeds":[],"pinned":false,"type":0,"poll":null,
+       "author":{"id":"30","username":"a","discriminator":"0","global_name":null,"avatar":null}}
+      """#
+    var message = try JSONDecoder().decode(
+      DiscordChannel.Message.self,
+      from: Data(json.utf8)
+    )
+    /// Missing and `null` keys decode to `nil`.
+    XCTAssertNil(message.thread)
+    XCTAssertNil(message.poll)
+    XCTAssertEqual(message.author?.id, "30")
+
+    /// `nil` fields are not encoded at all.
+    let encoded = try JSONEncoder().encode(message)
+    let object = try XCTUnwrap(
+      JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+    )
+    XCTAssertNil(object["thread"])
+    XCTAssertNil(object["poll"])
+    XCTAssertNotNil(object["author"])
+
+    /// Copies stay independent after a mutation.
+    let copy = message
+    message.author?.username = "b"
+    XCTAssertEqual(copy.author?.username, "a")
+    XCTAssertEqual(message.author?.username, "b")
+    XCTAssertNotEqual(copy, message)
+    message.author?.username = "a"
+    XCTAssertEqual(copy, message)
+  }
+
   func testChannelDecodesAppliedTagsAndMessageRequestState() throws {
     let data = Data(
       #"{"id":"1","type":1,"applied_tags":["2"],"is_message_request":true,"is_spam":false}"#.utf8

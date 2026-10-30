@@ -693,7 +693,7 @@ extension DiscordChannel {
 
     public var id: MessageSnowflake
     public var channel_id: ChannelSnowflake
-    public var author: DiscordUser?
+    @Indirect public var author: DiscordUser?
     public var content: String
     public var timestamp: DiscordTimestamp
     public var edited_timestamp: DiscordTimestamp?
@@ -709,27 +709,27 @@ extension DiscordChannel {
     public var pinned: Bool
     public var webhook_id: WebhookSnowflake?
     public var type: Kind
-    public var activity: Activity?
-    public var application: PartialApplication?
+    @Indirect public var activity: Activity?
+    @Indirect public var application: PartialApplication?
     public var application_id: ApplicationSnowflake?
-    public var message_reference: MessageReference?
+    @Indirect public var message_reference: MessageReference?
     public var message_snapshots: [MessageSnapshot]?
     public var flags: IntBitField<Flag>?
     public var referenced_message: DereferenceBox<Message>?
-    public var interaction_metadata: InteractionMetadata?
-    public var interaction: MessageInteraction?
-    public var thread: DiscordChannel?
-    public var components: Interaction.ComponentSwitch?
+    @Indirect public var interaction_metadata: InteractionMetadata?
+    @Indirect public var interaction: MessageInteraction?
+    @Indirect public var thread: DiscordChannel?
+    @Indirect public var components: Interaction.ComponentSwitch?
     public var sticker_items: [StickerItem]?
     public var stickers: [Sticker]?
     public var position: Int?
-    public var role_subscription_data: RoleSubscriptionData?
-    public var resolved: Interaction.ResolvedData?
-    public var poll: Poll?
-    public var call: Call?
+    @Indirect public var role_subscription_data: RoleSubscriptionData?
+    @Indirect public var resolved: Interaction.ResolvedData?
+    @Indirect public var poll: Poll?
+    @Indirect public var call: Call?
     /// Extra fields, not sure why I've added them to this specific type:
     public var guild_id: GuildSnowflake?
-    public var member: Guild.PartialMember?
+    @Indirect public var member: Guild.PartialMember?
   }
 
   public struct MessageSnapshot: Sendable, Codable, Equatable, Hashable {
@@ -837,7 +837,7 @@ extension DiscordChannel {
 
     public var id: MessageSnowflake
     public var channel_id: ChannelSnowflake
-    public var author: DiscordUser?
+    @Indirect public var author: DiscordUser?
     public var content: String?
     public var timestamp: DiscordTimestamp?
     public var edited_timestamp: DiscordTimestamp?
@@ -853,26 +853,26 @@ extension DiscordChannel {
     public var pinned: Bool?
     public var webhook_id: WebhookSnowflake?
     public var type: DiscordChannel.Message.Kind?
-    public var activity: DiscordChannel.Message.Activity?
-    public var application: PartialApplication?
+    @Indirect public var activity: DiscordChannel.Message.Activity?
+    @Indirect public var application: PartialApplication?
     public var application_id: ApplicationSnowflake?
-    public var message_reference: DiscordChannel.Message.MessageReference?
+    @Indirect public var message_reference: DiscordChannel.Message.MessageReference?
     public var flags: IntBitField<DiscordChannel.Message.Flag>?
     public var referenced_message: DereferenceBox<PartialMessage>?
     public var message_snapshots: [DiscordChannel.MessageSnapshot]?
-    public var interaction_metadata: DiscordChannel.Message.InteractionMetadata?
-    public var interaction: MessageInteraction?
-    public var thread: DiscordChannel?
-    public var components: Interaction.ComponentSwitch?
+    @Indirect public var interaction_metadata: DiscordChannel.Message.InteractionMetadata?
+    @Indirect public var interaction: MessageInteraction?
+    @Indirect public var thread: DiscordChannel?
+    @Indirect public var components: Interaction.ComponentSwitch?
     public var sticker_items: [StickerItem]?
     public var stickers: [Sticker]?
     public var position: Int?
-    public var role_subscription_data: RoleSubscriptionData?
-    public var resolved: Interaction.ResolvedData?
-    public var poll: Poll?
-    public var call: DiscordChannel.Message.Call?
+    @Indirect public var role_subscription_data: RoleSubscriptionData?
+    @Indirect public var resolved: Interaction.ResolvedData?
+    @Indirect public var poll: Poll?
+    @Indirect public var call: DiscordChannel.Message.Call?
     /// Extra fields:
-    public var member: Guild.PartialMember?
+    @Indirect public var member: Guild.PartialMember?
     public var guild_id: GuildSnowflake?
   }
 }

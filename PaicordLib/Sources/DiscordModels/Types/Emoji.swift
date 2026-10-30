@@ -7,7 +7,7 @@ public struct Emoji: Sendable, Codable, Equatable, Hashable {
   public var id: EmojiSnowflake?
   public var name: String?
   public var roles: [RoleSnowflake]?
-  public var user: DiscordUser?
+  @Indirect public var user: DiscordUser?
   public var require_colons: Bool?
   public var managed: Bool?
   public var animated: Bool?
