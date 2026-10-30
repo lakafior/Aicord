@@ -40,6 +40,9 @@ final class VoiceAudioEngine: @unchecked Sendable {
     interleaved: false
   )!
   private let logger = Logger(subsystem: "Paicord", category: "VoiceAudio")
+  /// Starting, stopping and reconfiguring run here, in order: activating the
+  /// audio session blocks, so it must stay off the main thread.
+  private let queue = DispatchQueue(label: "Aicord.VoiceAudio", qos: .userInitiated)
   private let gate = OSAllocatedUnfairLock(initialState: Gate())
   /// Buffers handed to the player and not played yet.
   private let scheduled = OSAllocatedUnfairLock(initialState: 0)
@@ -65,7 +68,21 @@ final class VoiceAudioEngine: @unchecked Sendable {
     playback: AsyncStream<[Float]>?,
     send: (@Sendable ([Float]) async -> Void)?
   ) {
-    stop()
+    queue.async { [self] in
+      startOnQueue(capture: capture, playback: playback, send: send)
+    }
+  }
+
+  func stop() {
+    queue.async { [self] in stopOnQueue() }
+  }
+
+  private func startOnQueue(
+    capture: Bool,
+    playback: AsyncStream<[Float]>?,
+    send: (@Sendable ([Float]) async -> Void)?
+  ) {
+    stopOnQueue()
     loadPreferences()
     #if os(iOS)
       configureSession()
@@ -129,11 +146,12 @@ final class VoiceAudioEngine: @unchecked Sendable {
       queue: nil
     ) { [weak self] _ in
       // A device came or went: restart the graph keeping the same streams.
-      self?.restartAfterConfigurationChange()
+      guard let self else { return }
+      queue.async { self.restartAfterConfigurationChange() }
     }
   }
 
-  func stop() {
+  private func stopOnQueue() {
     if let configurationObserver {
       NotificationCenter.default.removeObserver(configurationObserver)
     }
@@ -182,7 +200,9 @@ final class VoiceAudioEngine: @unchecked Sendable {
   }
 
   func setDeafened(_ deafened: Bool) {
-    engine.mainMixerNode.outputVolume = deafened ? 0 : VoicePreferences.outputVolume
+    queue.async { [self] in
+      engine.mainMixerNode.outputVolume = deafened ? 0 : VoicePreferences.outputVolume
+    }
   }
 
   /// Picks up changes made in Settings while running.
@@ -193,8 +213,10 @@ final class VoiceAudioEngine: @unchecked Sendable {
       $0.sensitivity = VoicePreferences.sensitivity
       $0.pushToTalk = VoicePreferences.inputMode == .pushToTalk
     }
-    if isRunning {
-      engine.mainMixerNode.outputVolume = VoicePreferences.outputVolume
+    queue.async { [self] in
+      if isRunning {
+        engine.mainMixerNode.outputVolume = VoicePreferences.outputVolume
+      }
     }
   }
 

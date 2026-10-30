@@ -380,14 +380,6 @@ extension ChatView {
             } label: {
               Label("Upload Files", systemImage: "doc.on.doc")
             }
-            Menu {
-              Button {
-              } label: {
-                Text("1")
-              }
-            } label: {
-              Label("Apps", systemImage: "puzzlepiece.fill")
-            }
           } label: {
             Image(systemName: "plus")
               .imageScale(.large)
@@ -400,15 +392,6 @@ extension ChatView {
         }
       #else
         Menu {
-          Menu {
-            Button {
-            } label: {
-              Text(verbatim: "1")
-            }
-          } label: {
-            Label("Apps", systemImage: "puzzlepiece.fill")
-          }
-
           Button {
             self.fileImporterPresented = true
           } label: {

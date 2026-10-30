@@ -173,7 +173,7 @@ struct ServerSettingsSheet: View {
   }
 
   private func toggle(
-    _ title: LocalizedStringKey, isOn: Bool, set: @escaping (Bool) -> Void
+    _ title: LocalizedStringKey, isOn: Bool, set: @escaping @MainActor @Sendable (Bool) -> Void
   ) -> some View {
     Toggle(title, isOn: Binding(get: { isOn }, set: set))
     #if os(macOS)
