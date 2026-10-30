@@ -28,6 +28,7 @@ struct IntelligenceSettings: View {
   @AppStorage(Key.apiContext) private var apiContext = 32_000
   @AppStorage(Key.allowsDMs) private var allowsDMs = false
   @AppStorage(Key.summaryLanguage) private var summaryLanguage = ""
+  @AppStorage(Key.scamWarnings) private var scamWarnings = true
 
   @State private var keyDraft = ""
   @State private var hasKey = IntelligenceKeychain.hasAPIKey
@@ -75,6 +76,16 @@ struct IntelligenceSettings: View {
     } footer: {
       Text(
         "Off: summaries and catch-up skip direct messages and group chats. Messages hidden by your word filter, from blocked people, under spoilers or blocked by your sensitive media settings are never given to the model."
+      )
+    }
+
+    Section {
+      Toggle("Warn About Scams", isOn: $scamWarnings)
+    } header: {
+      Text("Safety")
+    } footer: {
+      Text(
+        "In direct messages from people who aren't your friends, a warning shows when messages look like a known scam: free Nitro or Steam gifts through links, links imitating Discord, “I reported you by accident”, or requests for passwords and codes. Checked on this device without a language model."
       )
     }
 

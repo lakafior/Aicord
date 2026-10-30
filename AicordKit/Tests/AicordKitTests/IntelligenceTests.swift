@@ -374,3 +374,29 @@ class SearchIntentTests: XCTestCase {
     XCTAssertTrue(SearchIntent.instructions(today: date).contains("2026-10-30"))
   }
 }
+
+class ScamSignalsTests: XCTestCase {
+  func testFakeNitroWithLookalikeLink() {
+    let kinds = ScamSignals.check("Free Nitro for 3 months! Claim here: https://dlscord.gift/abc123")
+    XCTAssertEqual(kinds, [.lookalikeLink, .fakeNitro])
+  }
+
+  func testAccidentalReportInPolish() {
+    XCTAssertEqual(
+      ScamSignals.check("Hej, przypadkowo zgłosiłem twoje konto, napisz do admina"),
+      [.accidentalReport])
+  }
+
+  func testRealLinksAreFine() {
+    XCTAssertTrue(ScamSignals.check("Join us https://discord.gg/abc and https://discord.com/x").isEmpty)
+    XCTAssertTrue(ScamSignals.check("I got Nitro for my birthday, it's great").isEmpty)
+    XCTAssertFalse(ScamSignals.isLookalike("cdn.discordapp.com"))
+    XCTAssertFalse(ScamSignals.isLookalike("github.com"))
+  }
+
+  func testLookalikes() {
+    XCTAssertTrue(ScamSignals.isLookalike("steamcommunlty.com"))
+    XCTAssertTrue(ScamSignals.isLookalike("discord-nitro.com"))
+    XCTAssertTrue(ScamSignals.isLookalike("disocrd.gift"))
+  }
+}

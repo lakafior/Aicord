@@ -110,6 +110,9 @@ struct ChatView: View {
       }
       // macos 26/27 bug workaround
       .safeAreaPadding(.top, 1)
+      .safeAreaInset(edge: .top, spacing: 0) {
+        ScamWarningBanner(vm: vm)
+      }
       #if os(macOS)
         // esc to scroll to bottom of chat, its a little jank
         .focusable()

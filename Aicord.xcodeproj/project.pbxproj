@@ -186,6 +186,7 @@
 		AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */; };
 		AEDA0F2608CBD5DF030505A5 /* MessageIntelligenceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */; };
 		AE5EA7C4000000000000F002 /* SearchSentence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5EA7C4000000000000F001 /* SearchSentence.swift */; };
+		AEA0F807B973625EA9F2D537 /* ScamWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -406,6 +407,7 @@
 		AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskChannelSheet.swift; sourceTree = "<group>"; };
 		AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageIntelligenceSheet.swift; sourceTree = "<group>"; };
 		AE5EA7C4000000000000F001 /* SearchSentence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchSentence.swift; path = Search/SearchSentence.swift; sourceTree = "<group>"; };
+		AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScamWarning.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1139,6 +1141,7 @@
 		AE00CD4D95B942E89273CB85 /* Intelligence */ = {
 			isa = PBXGroup;
 			children = (
+				AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */,
 				AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */,
 				AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */,
 				AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */,
@@ -1284,6 +1287,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AEA0F807B973625EA9F2D537 /* ScamWarning.swift in Sources */,
 				AE5EA7C4000000000000F002 /* SearchSentence.swift in Sources */,
 				AEDA0F2608CBD5DF030505A5 /* MessageIntelligenceSheet.swift in Sources */,
 				AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */,
