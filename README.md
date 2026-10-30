@@ -42,6 +42,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 
 ## New & fixed
 
+- **New** · Voice: join server voice channels and start or join DM and group calls, end-to-end encrypted with DAVE; a call panel with mute, deafen and disconnect (a tab bar accessory on iPhone), who is in each voice channel with speaking rings, push-to-talk, and Settings → Voice & Video for devices, volumes, input mode and voice processing
 - **New** · Rebuilt message menu: a row of quick reactions from your favourite and most used emoji, tidier groups, and a working Mark Unread; the empty Apps, Thread and Forward items are gone
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
 - **New** · iOS draws the app with Liquid Glass: the compatibility flag that kept the old look is gone, the tab bar is the system glass one and lists scroll underneath it
