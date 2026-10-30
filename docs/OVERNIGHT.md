@@ -9,7 +9,7 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 | 1 | Etap 8: Leave Server, Invites, instrukcja Safari, link na Macu | zrobione (Mac do sprawdzenia rano) |
 | 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | zrobione: −0,67 MB, 187 testów Textual (i naprawione przepełnienie stosu) |
 | 3 | Etap 10: dokończenia i wyszukiwanie po sensie | zrobione (ranking, VoiceOver, lokalne serwery, okno 4K, Index Channel) |
-| 4 | Etap 12: przygotowanie wydań | czeka |
+| 4 | Etap 12: przygotowanie wydań | zrobione (pliki gotowe, nic nie uruchomione) |
 | 5 | Etap 11: interfejs Maca, serwer MCP | czeka |
 | 6 | Language | czeka |
 
@@ -153,6 +153,45 @@ Pomiar jak w `docs/SLIM_NOTES.md`: Release, `generic/platform=iOS`, mapa linkera
 - **Decyzja (bez nowych paczek):** wektory z `NLContextualEmbedding` (średnia tokenów). Model Core ML byłby lepszy, ale to kilkadziesiąt–sto MB w aplikacji; zostawione jako opcja w ROADMAP.
 - **Sprawdzone w symulatorze na NAScin #ogólny:** budowa 1000 → 925 wiadomości (od 13.09.2023), plik 173 kB; wyszukiwanie „kite ipa” → „Lakafi: [file: Kite.ipa]”; „Delete Index” z potwierdzeniem usuwa plik. **W symulatorze `NLContextualEmbedding` nie ma zasobów**, więc indeks był tylko słowny (arkusz to mówi). Na Macu model jest (sprawdzone w 3a), na iPhonie do sprawdzenia rano.
 - Naprawione w trakcie: rozmiar „Zero kB”, bo `URL.path()` koduje spacje w „Application Support”; teraz `path(percentEncoded: false)`.
+
+## 4. Etap 12: przygotowanie wydań
+
+**Stan: zrobione (tylko pliki).** Commit: `ci: release workflows for iOS (AltStore) and a signed Mac draft`. Nic nie uruchomiłem na GitHubie ani nie wypchnąłem.
+
+### Pliki
+- `.github/workflows/release.yml` — tag `v*` (albo ręcznie z `workflow_dispatch`, wtedy wersja `0.0.0-<sha>` i bez wydania):
+  1. `ios` (macos-26): build Release bez podpisu, `Aicord-<wersja>.ipa`, artefakt.
+  2. `release` (ubuntu): `gh release create` z notatkami z najnowszej sekcji `SHIPPED.md` + link do źródła, `gh release upload` `.ipa`.
+  3. `altstore-source` (ubuntu): `gh api …/releases --paginate | python3 scripts/altstore_source.py` → `site/altstore.json` + prosta `index.html`, wdrożenie na GitHub Pages (`actions/deploy-pages`).
+- `.github/workflows/release_macos.yml` — szkic podpisu i notaryzacji (opis kroków w samym pliku); bez sekretu `MACOS_CERTIFICATE_P12` zadanie wypisuje notkę i nic nie robi.
+- `scripts/altstore_source.py` — źródło w formacie AltStore 2 (działa też w SideStore): nazwa, ikona, opis z zastrzeżeniem o nieoficjalnym kliencie, `appPermissions.privacy` (te same opisy co w `Info.plist`, także nowe `NSLocalNetworkUsageDescription`), wersje z rozmiarem, datą, opisem i `minOSVersion` 26.0.
+
+### Co trzeba zrobić przed pierwszym tagiem (iOS)
+1. GitHub → Settings → Pages → Source: **GitHub Actions**.
+2. Settings → Actions → General → Workflow permissions: „Read and write” (albo zostawić, bo workflow sam deklaruje `contents: write`, `pages: write`, `id-token: write`).
+3. `git tag v0.1.0 && git push origin v0.1.0`. Źródło będzie pod `https://lakafior.github.io/Aicord/altstore.json`.
+4. W AltStore/SideStore: Browse → Sources → + → ten adres.
+
+### Sekrety dla Maca (gdy będzie płatne konto Apple Developer)
+| Sekret | Skąd |
+|---|---|
+| `MACOS_CERTIFICATE_P12` | Pęk kluczy → certyfikat „Developer ID Application” z kluczem → eksport .p12 → `base64 -i cert.p12 \| pbcopy` |
+| `MACOS_CERTIFICATE_PASSWORD` | hasło nadane przy eksporcie |
+| `MACOS_TEAM_ID` | developer.apple.com → Membership |
+| `NOTARY_KEY_P8` | App Store Connect → Users and Access → Integrations → Keys → nowy klucz (rola Developer) → `base64 -i AuthKey_XXX.p8` |
+| `NOTARY_KEY_ID`, `NOTARY_ISSUER_ID` | z tej samej strony |
+
+Uwaga: rozszerzenie Safari na Macu też musi być podpisane Developer ID i dostać hardened runtime; eksport `developer-id` robi to dla osadzonych rozszerzeń, ale do sprawdzenia przy pierwszym przebiegu. `DEVELOPMENT_TEAM` w projekcie to dziś `5TA8RF548P`; workflow go nadpisuje sekretem.
+
+### Mechanizm aktualizacji: API GitHuba, nie Sparkle
+- **Wybór:** lekkie sprawdzanie `GET /repos/lakafior/Aicord/releases/latest` (bez tokenu, limit 60/h na IP wystarcza przy sprawdzaniu raz dziennie), porównanie z `CFBundleShortVersionString`, baner „Aicord X.Y is available” z linkiem do wydania, wyłącznik w Settings → Advanced.
+- **Dlaczego:** bez nowej paczki (Sparkle to framework z XPC, własnym appcastem i kluczem EdDSA w sekretach); działa tak samo na iOS (gdzie Sparkle nie istnieje, a aktualizację i tak robi AltStore) i na Macu; nie wymaga podpisu, więc można to dodać od razu. Wada: na Macu użytkownik pobiera i podmienia aplikację sam. Jeśli Mac dostanie Developer ID i będzie dużo użytkowników, Sparkle można dodać później tylko dla macOS.
+- Nie zaimplementowane tej nocy (punkt w ROADMAP).
+
+### Ryzyka
+- Workflowy nie były uruchomione; sprawdziłem tylko składnię YAML (Ruby), skrypt Pythona na danych testowych i lokalnie te same polecenia budowania (Release, `CODE_SIGNING_ALLOWED=NO`) i pakowania.
+- Pierwszy build w CI bez cache potrwa (SwiftPM, DaveKit z libdave w C++); w `build_pr.yml` jest ten sam problem.
+- Ikona źródła 128 px (z rozszerzenia Safari); eksport większej z `AppIcon.icon` przez Icon Composer przekroczył limit czasu.
 
 ---
 

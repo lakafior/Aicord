@@ -81,6 +81,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 - **New** · The Discord library is now Aicord's own `AicordKit`: bot-only endpoints, sharding and bot authentication are gone, and large message and user models are stored more compactly, so the compiled code is 42% smaller and the Mac app went from 60.9 MB to 51.5 MB
 - **New** · The Mac app is called Aicord in the menu bar and the Dock
+- **New** · Release workflows (not yet run): a `v*` tag builds an unsigned iOS app for AltStore and SideStore, attaches it to a GitHub release and publishes an AltStore source on GitHub Pages; a signed and notarized Mac build waits for its secrets
 - **New** · Discord data that Aicord only receives is decode-only, so the iOS app is 0.7 MB smaller (44.9 → 44.2 MB) and the Discord models 7% smaller
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
 
@@ -360,6 +361,17 @@ Szczegóły, decyzje i pomiary: `docs/SLIM_NOTES.md`. Binarka iOS (Release, arm6
 4. **Dalej (noc 30/31.10, `docs/OVERNIGHT.md`):**
    - [x] Typy tylko odbierane od Discorda (wiadomości, kanały, serwery, członkowie, komponenty, zdarzenia gatewaya…) są `Decodable` zamiast `Codable`, więc znikają ich `encode(to:)` i metadane. `Codable` zostaje dla tego, co się wysyła (payloady, gateway, aktywność) i co aplikacja zapisuje (`DiscordUser` w pęku kluczy); `Emoji` ma własne, małe kodowanie (`id`, `name`, `animated`). Z payloadów wiadomości zniknęło pole `components`, a z `CreateGuild` pola `roles` i `channels` (konto użytkownika ich nie wysyła). Binarka iOS (Release, arm64) 44,87 → 44,20 MB, `__text` 12,45 → 12,20 MB, `DiscordModels` 4,46 → 4,15 MB.
    - [x] `Textual/Tests`: target `TextualTests` z testami logiki (parser i rozszerzenia Discorda, tokenizery, formatery, model zaznaczania z nagranymi układami), 187 testów. Testy snapshotowe z PNG usunięte: wymagały swift-snapshot-testing, a wzorce nagrano dla stylów, których już nie ma. Test na 2500 fragmentów wykrył przepełnienie stosu w `TextBuilder` (sklejanie `Text` w łańcuch głębokości N); teraz sklejanie zrównoważone. Oczekiwania tokenizera i adresu emoji dopasowane do obecnego kodu (natywny tokenizer zamiast Prism.js, `.webp?size=44`).
+
+---
+
+### ⏳ Etap 12: Wydania (przygotowanie, noc 30/31.10)
+Szczegóły, sekrety i kroki: `docs/OVERNIGHT.md`, punkt 4. Nic nie zostało uruchomione na GitHubie.
+1. **iOS:**
+   - [x] `.github/workflows/release.yml`: tag `v*` → build Release `generic/platform=iOS` bez podpisu (`MARKETING_VERSION` z tagu, `CURRENT_PROJECT_VERSION` = numer przebiegu), `Payload/Aicord.app` w `Aicord-<wersja>.ipa`, wydanie na GitHubie z notatkami z najnowszej sekcji `SHIPPED.md` i linkiem do źródła.
+   - [x] Źródło AltStore/SideStore (`scripts/altstore_source.py`, tylko biblioteka standardowa): wszystkie wydania z `.ipa` jako wersje, uprawnienia prywatności z `Info.plist`, publikacja `altstore.json` na GitHub Pages. Sprawdzone lokalnie na przykładowych danych (paginacja, szkice pomijane) i pakowanie `.ipa` na lokalnym buildzie Release (17 MB, z rozszerzeniem Safari).
+2. **macOS:**
+   - [x] Szkic `.github/workflows/release_macos.yml`: tymczasowy pęk kluczy z certyfikatem Developer ID, archiwum z hardened runtime, eksport `developer-id`, `notarytool` z kluczem API, `stapler`, `.zip` do tego samego wydania. Bez sekretów zadanie się pomija.
+   - [x] Wybór mechanizmu aktualizacji: sprawdzanie API GitHuba zamiast Sparkle 2 (bez nowej paczki, działa też dla iOS z AltStore).
 
 ---
 

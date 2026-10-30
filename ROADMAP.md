@@ -65,13 +65,13 @@ Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI,
 ---
 
 ### 🔜 Etap 12: Wydania — macOS i iOS w GitHub Releases
-Na końcu, gdy aplikacja jest stabilna. Wydanie budowane przez GitHub Actions z tagu `v*` (dziś jest tylko `build_pr.yml`, bez podpisu).
+Na końcu, gdy aplikacja jest stabilna. Przygotowane w nocy 30/31.10 (niczego nie uruchomiono na GitHubie): `release.yml` (iOS, `.ipa`, Release, źródło AltStore na Pages), `release_macos.yml` (szkic podpisu i notaryzacji) i `scripts/altstore_source.py`. Kroki i sekrety: `docs/OVERNIGHT.md`, punkt 4.
 1. **macOS: podpisana aplikacja z aktualizacjami:**
-   - [ ] Podpis Developer ID i notaryzacja (wymaga płatnego konta Apple Developer). Certyfikat i klucz API App Store Connect jako sekrety repozytorium, `.app` w `.zip` albo `.dmg` w Releases.
-   - [ ] Powiadomienie o aktualizacji. Do wyboru: Sparkle 2 z własnym appcastem i kluczem EdDSA (w Etapie 1 usunięty razem z kanałem llsc12; pobiera i instaluje sam) albo lekkie sprawdzanie najnowszego wydania przez API GitHuba z linkiem do pobrania. Wyłącznik w Settings → Advanced.
+   - [ ] Dodać sekrety (certyfikat Developer ID jako .p12, klucz API App Store Connect) i sprawdzić `release_macos.yml` na pierwszym tagu (wymaga płatnego konta Apple Developer).
+   - [ ] Powiadomienie o aktualizacji przez API GitHuba (wybrane zamiast Sparkle, uzasadnienie w `docs/OVERNIGHT.md`): sprawdzanie najnowszego wydania przy starcie najwyżej raz dziennie, baner z linkiem do pobrania, wyłącznik w Settings → Advanced.
 2. **iOS: niepodpisana `.ipa` i źródło AltStore:**
-   - [ ] Build bez podpisu (`CODE_SIGNING_ALLOWED=NO`), `Payload/Aicord.app` spakowane do `.ipa` w Releases.
-   - [ ] Repozytorium AltStore (działa też w SideStore): plik źródła JSON (nazwa, ikona, opis, wersje z linkami do `.ipa`, uprawnienia) generowany przez workflow przy każdym wydaniu i publikowany np. na GitHub Pages.
+   - [ ] Włączyć GitHub Pages (Source: GitHub Actions) i wypchnąć pierwszy tag `v*`; sprawdzić, że AltStore i SideStore przyjmują źródło i instalują `.ipa`.
+   - [ ] Ikona źródła w większym rozmiarze (dziś 128 px z rozszerzenia Safari) i zrzuty ekranu w źródle.
    - [ ] Sprawdzić uprawnienia i rozszerzenia pod darmowe konto: AltStore podpisuje kontem użytkownika, a darmowe konto ma limit 3 App ID, więc każde rozszerzenie (np. Safari z Etapu 8) zjada jedno miejsce. Push i inne uprawnienia płatnego konta nie zadziałają.
 3. **Opis wydań:**
-   - [ ] Notatki do wydania z `SHIPPED.md` (Etap 6.4), link do źródła AltStore i instrukcja instalacji w README.
+   - [ ] Instrukcja instalacji w README (link do źródła AltStore). Notatki do wydania są brane z najnowszej sekcji `SHIPPED.md` automatycznie.

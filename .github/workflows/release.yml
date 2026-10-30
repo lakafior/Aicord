@@ -1,0 +1,136 @@
+name: Release
+
+# A tag like v0.2.0 builds an unsigned iOS app (.ipa) for AltStore and
+# SideStore, attaches it to a GitHub release and publishes the AltStore source
+# on GitHub Pages. The signed Mac app is in release_macos.yml.
+#
+# Before the first tag: Settings → Pages → Source: GitHub Actions.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ios:
+    name: Unsigned iOS app
+    runs-on: macos-26
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Disable Swift macro plugin consent prompt
+        run: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
+      - name: Version from the tag
+        id: version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          # workflow_dispatch from a branch: a version that can't be mistaken for a release
+          [[ "$GITHUB_REF_TYPE" == "tag" ]] || version="0.0.0-${GITHUB_SHA::7}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild -workspace Aicord.xcworkspace \
+            -scheme Aicord \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            -skipMacroValidation -skipPackagePluginValidation \
+            MARKETING_VERSION='${{ steps.version.outputs.version }}' \
+            CURRENT_PROJECT_VERSION='${{ github.run_number }}' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build-ios.log | grep -E '(error|warning: .*deprecated)|BUILD' || true
+          test -d build/Build/Products/Release-iphoneos/Aicord.app
+
+      - name: Package .ipa
+        run: |
+          mkdir -p ipa/Payload
+          cp -R build/Build/Products/Release-iphoneos/Aicord.app ipa/Payload/
+          (cd ipa && zip -qry "../Aicord-${{ steps.version.outputs.version }}.ipa" Payload)
+          ls -l Aicord-*.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ipa
+          path: Aicord-*.ipa
+
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-ios-log
+          path: build-ios.log
+
+  release:
+    name: GitHub release
+    needs: ios
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ipa
+
+      - name: Release notes from SHIPPED.md
+        run: |
+          # the changelog's newest section, up to the next "## " heading
+          awk '/^## /{n++} n==1' SHIPPED.md > notes.md
+          {
+            echo
+            echo "**Install on iPhone:** add the AltStore or SideStore source"
+            echo "https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/altstore.json"
+          } >> notes.md
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --title "Aicord ${{ needs.ios.outputs.version }}" --notes-file notes.md
+          gh release upload "$GITHUB_REF_NAME" Aicord-*.ipa --clobber
+
+  altstore-source:
+    name: AltStore source on Pages
+    needs: release
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the source from all releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p site
+          gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            | python3 scripts/altstore_source.py > site/altstore.json
+          python3 -m json.tool site/altstore.json > /dev/null
+          cat > site/index.html <<'HTML'
+          <!doctype html><meta charset="utf-8"><title>Aicord</title>
+          <p>Add <code>altstore.json</code> from this address to AltStore or SideStore.
+          <p><a href="https://github.com/lakafior/Aicord">github.com/lakafior/Aicord</a>
+          HTML
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
