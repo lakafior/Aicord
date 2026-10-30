@@ -230,11 +230,24 @@ struct IntelligenceModel: Sendable {
     }
   }
 
+  /// Gives up after a while: the system model sometimes never answers.
+  static let onDeviceTimeout: Duration = .seconds(90)
+
   private static func onDeviceRespond(instructions: String, prompt: String) async throws -> String {
-    let session = LanguageModelSession(instructions: instructions)
-    let response = try await session.respond(
-      to: prompt, options: GenerationOptions(temperature: 0.3))
-    return response.content
+    try await withThrowingTaskGroup(of: String.self) { group in
+      group.addTask {
+        let session = LanguageModelSession(instructions: instructions)
+        let response = try await session.respond(
+          to: prompt, options: GenerationOptions(temperature: 0.3))
+        return response.content
+      }
+      group.addTask {
+        try await Task.sleep(for: onDeviceTimeout)
+        throw IntelligenceError("Apple Intelligence took too long to answer. Try again.")
+      }
+      defer { group.cancelAll() }
+      return try await group.next() ?? ""
+    }
   }
 
   private static func isContextOverflow(_ error: any Error) -> Bool {

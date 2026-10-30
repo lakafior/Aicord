@@ -71,6 +71,7 @@ struct CatchUpSheet: View {
               Text(
                 "Up to \(Self.channelLimit) unread channels, newest first, the last 100 unread messages of each. Muted channels are skipped."
               )
+              .lineLimit(nil)
               .fixedSize(horizontal: false, vertical: true)
               if skipped > 0 {
                 Text("\(skipped) more unread channels weren't included.")
