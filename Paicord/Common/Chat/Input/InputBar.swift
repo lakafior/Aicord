@@ -16,6 +16,11 @@ extension ChatView {
     @Environment(\.appState) var appState
     @Environment(\.gateway) var gw
     @Environment(\.theme) var theme
+
+    /// The accent when it also colours icons, otherwise `fallback`.
+    private func iconTint(_ fallback: Color) -> Color {
+      Theming.shared.accentTintsChrome ? theme.common.accent : fallback
+    }
     var vm: ChannelStore
     @State var inputVM: InputVM
     @State private var isManualUpdate = false
@@ -350,7 +355,7 @@ extension ChatView {
               .rotationEffect(.degrees(45))
           }
           .buttonStyle(.borderless)
-          .tint(.primary)
+          .tint(iconTint(.primary))
         } else {
           Menu {
             Button {
@@ -391,7 +396,7 @@ extension ChatView {
               .clipShape(.circle)
           }
           .buttonStyle(.borderless)
-          .tint(.primary)
+          .tint(iconTint(.primary))
         }
       #else
         Menu {
@@ -464,7 +469,7 @@ extension ChatView {
             .padding(.trailing, 6)
         }
         .buttonStyle(.borderless)
-        .tint(.secondary)
+        .tint(iconTint(.secondary))
         .padding(.vertical, 6)
         #if !os(iOS)
           .popover(isPresented: $showingEmojiPicker, arrowEdge: .bottom) {

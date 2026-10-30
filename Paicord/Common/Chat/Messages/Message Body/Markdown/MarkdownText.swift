@@ -17,6 +17,7 @@ struct MarkdownText: View {
   var allowsJumboEmoji: Bool
 
   @Environment(\.theme) var theme
+  @Environment(\.gateway) var gw
   @State private var revealedSpoilers: Set<String> = []
   @State private var userPopover: PartialUser?
   @State private var emojiPopover: DiscordModels.Emoji?
@@ -409,11 +410,12 @@ struct MarkdownText: View {
       guildStore: guildStore,
       theme: theme
     )
+    let animatesEmoji = gw.settings.animatesEmoji
     extensions.append(
       .discordEmoji(jumbo: isJumboEmoji) { id, animated, jumbo in
         DiscordImageURL.customEmoji(
           id: EmojiSnowflake(id),
-          animated: animated,
+          animated: animated && animatesEmoji,
           size: jumbo ? 96 : 44
         )!
       }

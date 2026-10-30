@@ -76,7 +76,7 @@
 		AA47AF212EDEF070008A50C9 /* DevicesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF202EDEF06C008A50C9 /* DevicesSection.swift */; };
 		AA47AF242EDEF139008A50C9 /* ConnectionsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF232EDEF134008A50C9 /* ConnectionsSection.swift */; };
 		AA47AF282EDEF158008A50C9 /* AppearanceSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF272EDEF158008A50C9 /* AppearanceSection.swift */; };
-		AA47AF2A2EDEF164008A50C9 /* AccessibilitySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF292EDEF164008A50C9 /* AccessibilitySection.swift */; };
+		AA47AF2A2EDEF164008A50C9 /* AppearancePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF292EDEF164008A50C9 /* AppearancePreferences.swift */; };
 		AA47AF2C2EDEF1BA008A50C9 /* VoiceVideoSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF2B2EDEF1BA008A50C9 /* VoiceVideoSection.swift */; };
 		AA47AF2E2EDEF1C7008A50C9 /* ChatSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF2D2EDEF1C7008A50C9 /* ChatSection.swift */; };
 		AA47AF302EDEF1CC008A50C9 /* NotificationsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF2F2EDEF1CC008A50C9 /* NotificationsSection.swift */; };
@@ -226,7 +226,7 @@
 		AA47AF202EDEF06C008A50C9 /* DevicesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesSection.swift; sourceTree = "<group>"; };
 		AA47AF232EDEF134008A50C9 /* ConnectionsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsSection.swift; sourceTree = "<group>"; };
 		AA47AF272EDEF158008A50C9 /* AppearanceSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSection.swift; sourceTree = "<group>"; };
-		AA47AF292EDEF164008A50C9 /* AccessibilitySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilitySection.swift; sourceTree = "<group>"; };
+		AA47AF292EDEF164008A50C9 /* AppearancePreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearancePreferences.swift; sourceTree = "<group>"; };
 		AA47AF2B2EDEF1BA008A50C9 /* VoiceVideoSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceVideoSection.swift; sourceTree = "<group>"; };
 		AA47AF2D2EDEF1C7008A50C9 /* ChatSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatSection.swift; sourceTree = "<group>"; };
 		AA47AF2F2EDEF1CC008A50C9 /* NotificationsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsSection.swift; sourceTree = "<group>"; };
@@ -431,7 +431,6 @@
 				AA47AF0E2EDEEB75008A50C9 /* Connections */,
 				AAA9EEF82F22FD0D00770CAD /* ScanQR */,
 				AA47AF102EDEEBB1008A50C9 /* Appearance */,
-				AA47AF112EDEEBBF008A50C9 /* Accessibility */,
 				AA47AF122EDEEBD6008A50C9 /* VoiceVideo */,
 				AA47AF132EDEEBE1008A50C9 /* Chat */,
 				AA47AF142EDEEEDB008A50C9 /* Notifications */,
@@ -634,6 +633,7 @@
 			children = (
 				AA409ABB2EC6909300848045 /* Theming.swift */,
 				AA409ABE2EC74F5E00848045 /* ThemingSupport.swift */,
+				AA47AF292EDEF164008A50C9 /* AppearancePreferences.swift */,
 			);
 			path = Theming;
 			sourceTree = "<group>";
@@ -693,14 +693,6 @@
 				AA47AF272EDEF158008A50C9 /* AppearanceSection.swift */,
 			);
 			path = Appearance;
-			sourceTree = "<group>";
-		};
-		AA47AF112EDEEBBF008A50C9 /* Accessibility */ = {
-			isa = PBXGroup;
-			children = (
-				AA47AF292EDEF164008A50C9 /* AccessibilitySection.swift */,
-			);
-			path = Accessibility;
 			sourceTree = "<group>";
 		};
 		AA47AF122EDEEBD6008A50C9 /* VoiceVideo */ = {
@@ -1105,7 +1097,7 @@
 				5724CD6F2E733D0E00931FEF /* MFASheet.swift in Sources */,
 				AA47AF1B2EDEEFF9008A50C9 /* DataPrivacySection.swift in Sources */,
 				AA078FC72EC80D3C00EDFFA8 /* LocalConsoleManager.swift in Sources */,
-				AA47AF2A2EDEF164008A50C9 /* AccessibilitySection.swift in Sources */,
+				AA47AF2A2EDEF164008A50C9 /* AppearancePreferences.swift in Sources */,
 				AAB50A542E9AD4470048E8B0 /* MessageBody.swift in Sources */,
 				57E05C592E6C6AE400B81AA7 /* Design Constants.swift in Sources */,
 				AAFC9DDA2EB7DAE300BB8028 /* VariableBlurView.swift in Sources */,

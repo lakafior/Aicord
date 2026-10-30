@@ -39,8 +39,62 @@ class Theming {
     }
   }
 
-  var currentTheme: Theme {
+  /// Replaces the theme's accent, `nil` keeps the theme's own.
+  var accentOverride: Color? = Theming.loadAccentOverride() {
+    didSet {
+      let data = accentOverride.flatMap { try? JSONEncoder().encode($0) }
+      UserDefaults.standard.set(data, forKey: Theming.accentOverrideKey)
+      setupAppearance()
+    }
+  }
+
+  /// Also colours the tab bar, toolbar buttons and input bar icons with the accent.
+  var accentTintsChrome: Bool =
+    UserDefaults.standard.bool(forKey: "Paicord.Appearance.AccentTintsChrome")
+  {
+    didSet {
+      UserDefaults.standard.set(
+        accentTintsChrome,
+        forKey: "Paicord.Appearance.AccentTintsChrome"
+      )
+    }
+  }
+
+  var selectedTheme: Theme {
     themes.first(where: { $0.id == currentThemeID }) ?? Theming.defaultThemes[0]
+  }
+
+  /// The selected theme with the accent settings applied.
+  var currentTheme: Theme {
+    let theme = selectedTheme
+    let accent = accentOverride ?? theme.common.accent
+    guard accentOverride != nil || accentTintsChrome else { return theme }
+    let common = theme.common
+    return Theme(
+      id: theme.id,
+      metadata: theme.metadata,
+      common: .init(
+        accent: accent,
+        colorScheme: common.colorScheme,
+        hyperlink: common.hyperlink,
+        primaryButton: accentOverride ?? common.primaryButton,
+        primaryButtonBackground: common.primaryButtonBackground,
+        tertiaryButton: accentTintsChrome ? accent : common.tertiaryButton,
+        primaryBackground: common.primaryBackground,
+        secondaryBackground: common.secondaryBackground,
+        tertiaryBackground: common.tertiaryBackground
+      ),
+      markdown: theme.markdown
+    )
+  }
+
+  private static let accentOverrideKey = "Paicord.Appearance.AccentColor"
+
+  private static func loadAccentOverride() -> Color? {
+    guard let data = UserDefaults.standard.data(forKey: accentOverrideKey) else {
+      return nil
+    }
+    return try? JSONDecoder().decode(Color.self, from: data)
   }
 
   private init() {
@@ -70,8 +124,22 @@ class Theming {
             window.tintColor = UIColor(
               self.currentTheme.common.accent
             )
+            // preferredColorScheme(nil) doesn't always undo a forced scheme
+            window.overrideUserInterfaceStyle =
+              switch self.currentTheme.common.colorScheme {
+              case .light: .light
+              case .dark: .dark
+              default: .unspecified
+              }
           }
       }
+    #elseif canImport(AppKit)
+      NSApplication.shared.appearance =
+        switch currentTheme.common.colorScheme {
+        case .light: NSAppearance(named: .aqua)
+        case .dark: NSAppearance(named: .darkAqua)
+        default: nil
+        }
     #endif
   }
 

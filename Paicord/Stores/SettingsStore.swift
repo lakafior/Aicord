@@ -347,3 +347,34 @@ class SettingsStore: DiscordDataStore {
     hasPendingFrecencySettings = false
   }
 }
+
+// MARK: - Text & Images
+
+extension SettingsStore {
+  /// Discord's sticker setting, 0 when it was never changed.
+  enum StickerAnimation: UInt32 {
+    case always = 0
+    case onInteraction = 1
+    case never = 2
+  }
+
+  private var textAndImages: DiscordProtos_DiscordUsers_V1_PreloadedUserSettings.TextAndImagesSettings {
+    userSettings.textAndImages
+  }
+
+  var animatesEmoji: Bool {
+    textAndImages.hasAnimateEmoji ? textAndImages.animateEmoji.value : true
+  }
+
+  var autoplaysGIFs: Bool {
+    textAndImages.hasGifAutoPlay ? textAndImages.gifAutoPlay.value : true
+  }
+
+  var stickerAnimation: StickerAnimation {
+    StickerAnimation(rawValue: textAndImages.animateStickers.value) ?? .always
+  }
+
+  var showsImageDescriptions: Bool {
+    textAndImages.viewImageDescriptions.value
+  }
+}

@@ -45,14 +45,12 @@ struct PaicordApp: App {
     PaicordImagePipeline.configure()
   }
 
-  @Environment(\.theme) var theme
-
   var body: some Scene {
     WindowGroup {
       RootView(
         gatewayStore: gatewayStore
       )
-      .preferredColorScheme(theme.common.colorScheme)
+      .appAppearance()
     }
     #if os(macOS)
       .defaultSize(width: 1280, height: 800)
@@ -70,6 +68,7 @@ struct PaicordApp: App {
       // use a normal window instead of Settings
       Window("Settings", id: "settings") {
         SettingsView()
+          .appAppearance()
       }
       .defaultSize(width: 860, height: 620)
       .restorationBehavior(.disabled)

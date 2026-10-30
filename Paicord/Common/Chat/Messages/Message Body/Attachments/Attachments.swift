@@ -113,6 +113,7 @@ extension MessageCell {
           }
         }
         .buttonStyle(.borderless)
+        .imageDescriptionBadge(attachment.description)
       }
     }
 
@@ -287,6 +288,7 @@ extension MessageCell {
           .clipped()
         }
         .buttonStyle(.borderless)
+        .imageDescriptionBadge(attachment.description)
       }
     }
 
@@ -323,7 +325,24 @@ extension MessageCell {
       struct ImageView: View {
         var attachment: DiscordMedia
         var needsPoster: Bool = false
+        @Environment(\.gateway) var gw
+        @State private var isHovering = false
+
+        /// GIFs follow Discord's autoplay setting, or play while hovered.
+        private var isGIF: Bool { !needsPoster && attachment.type == .gif }
+        private var playsGIF: Bool { gw.settings.autoplaysGIFs || isHovering }
+
         var body: some View {
+          image
+            .overlay(alignment: .bottomLeading) {
+              if isGIF && !playsGIF {
+                GIFBadge()
+              }
+            }
+            .onHover { isHovering = $0 }
+        }
+
+        private var image: some View {
           let url: URL? = {
             if needsPoster {
               var components = URLComponents(string: attachment.proxyurl)!
@@ -336,7 +355,7 @@ extension MessageCell {
               return URL(string: attachment.proxyurl)
             }
           }()
-          NukeImage(url: url) {
+          return NukeImage(animation: .enabled(playsGIF), url: { _ in url }) {
             if let placeholder = attachment.placeholder,
               let data = Data(base64Encoded: placeholder)
             {
@@ -1029,6 +1048,19 @@ extension MessageCell {
       #endif
     }
 
+    /// Marks a GIF that waits to be played.
+    struct GIFBadge: View {
+      var body: some View {
+        Text(verbatim: "GIF")
+          .font(.caption.bold())
+          .foregroundStyle(.white)
+          .padding(.horizontal, 6)
+          .padding(.vertical, 2)
+          .background(.black.opacity(0.6), in: .capsule)
+          .padding(6)
+      }
+    }
+
     struct GifvView: View {
       @State private var controller: PlayerController
       private let media: Embed.Media
@@ -1043,13 +1075,27 @@ extension MessageCell {
         _controller = State(initialValue: PlayerController(media: media))
       }
 
+      @Environment(\.gateway) private var gw
+      @State private var isHovering = false
+
+      private var plays: Bool { gw.settings.autoplaysGIFs || isHovering }
+
       var body: some View {
         AVPlayerLayerContainer(player: controller.player)
           .aspectRatio(media.aspectRatio, contentMode: .fit)
+          .overlay(alignment: .bottomLeading) {
+            if !plays {
+              GIFBadge()
+            }
+          }
           .clipShape(.rounded)
           .frame(maxWidth: maxWidth, maxHeight: maxHeight, alignment: .leading)
-          .onAppear { controller.play() }
+          .onAppear { if plays { controller.play() } }
           .onDisappear { controller.pauseAndReset() }
+          .onHover { isHovering = $0 }
+          .onChange(of: plays) { _, plays in
+            if plays { controller.play() } else { controller.pauseAndReset() }
+          }
       }
 
       @MainActor
@@ -1303,5 +1349,46 @@ extension SFSpeechRecognizer {
         continuation.resume(returning: result.bestTranscription.formattedString)
       }
     }
+  }
+}
+
+/// An ALT badge on images with a description, when Discord's
+/// "Show image descriptions" is on. Tapping it shows the text.
+private struct ImageDescriptionBadge: ViewModifier {
+  let text: String?
+  @Environment(\.gateway) private var gw
+  @State private var isShowing = false
+
+  func body(content: Content) -> some View {
+    content.overlay(alignment: .bottomTrailing) {
+      if gw.settings.showsImageDescriptions, let text, !text.isEmpty {
+        Button {
+          isShowing = true
+        } label: {
+          Text(verbatim: "ALT")
+            .font(.caption.bold())
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(.black.opacity(0.6), in: .capsule)
+            .padding(6)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Image Description")
+        .popover(isPresented: $isShowing) {
+          Text(text)
+            .padding()
+            .frame(maxWidth: 320)
+            .fixedSize(horizontal: false, vertical: true)
+            .presentationCompactAdaptation(.popover)
+        }
+      }
+    }
+  }
+}
+
+extension View {
+  fileprivate func imageDescriptionBadge(_ text: String?) -> some View {
+    modifier(ImageDescriptionBadge(text: text))
   }
 }

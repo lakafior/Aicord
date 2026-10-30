@@ -58,11 +58,13 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **New** · Settings → Authorised Apps: the bots and sites you signed in to with Discord, what each may do in plain words, and deauthorising one after a confirmation
 - **New** · Settings → Devices: where your account is logged in (system, client, approximate location, last used), with this device marked, and logging out one device or all others after a confirmation
 - **New** · Settings → Connections: your linked accounts (Spotify, Steam, GitHub…) with toggles for showing each on your profile, its details and its activity as your status, removing one after a confirmation, and a link to add new ones on discord.com
+- **New** · Settings → Appearance: Light, Dark or Automatic, an accent colour that can also tint the tab bar and icons, text size and font (System, Rounded, Serif, Monospaced), Reduce Motion, and Discord's animated emoji, GIF autoplay, sticker animation and image description settings, saved to your account
 - **New** · Scan QR Code on iPhone uses the whole screen for the camera, starts over after a code that isn't a Discord login, and explains how to allow camera access when it's off
 - **New** · Media Discord flags as sensitive is blurred or blocked in chats according to those settings, and an optional word filter hides matching messages behind a tap (also in reply quotes, mentions and search results), using the community LDNOOBW lists (CC BY 4.0) plus your own words
 - **New** · About Aicord in Settings with version, licence and a link to this repository
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
+- **Fixed** · Colours in imported JSON themes are read correctly instead of coming out transparent
 - **Fixed** · The macOS app no longer crashes a few seconds after loading: the chat and the member list stopped fighting over column widths, and the window now opens at a sensible size
 - **Fixed** · The member list no longer scrolls itself out of view when it opens
 - **Fixed** · Channel names in the title bar show in full instead of being cut off inside a glass pill

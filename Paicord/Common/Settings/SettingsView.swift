@@ -13,9 +13,6 @@ struct SettingsView: View {
   @Environment(\.openURL) var openURL
   @Environment(\.dismiss) var dismiss
 
-  @AppStorage("Paicord.Appearance.ChatMessagesAnimated")
-  var chatMessagesAnimated: Bool = false
-
   @State private var selectedTab: SettingsTab?
   @State private var searchText: String = ""
   private let showsDoneButton: Bool
@@ -46,9 +43,7 @@ struct SettingsView: View {
     #if os(iOS)
       case scanQR
     #endif
-    case theming
     case appearance
-    case accessibility
     case voiceVideo
     case chat
     case notifications
@@ -74,9 +69,7 @@ struct SettingsView: View {
       #if os(iOS)
         case .scanQR: "Scan QR Code"
       #endif
-      case .theming: "Theming"
       case .appearance: "Appearance"
-      case .accessibility: "Accessibility"
       case .voiceVideo: "Voice & Video"
       case .chat: "Chat"
       case .notifications: "Notifications"
@@ -101,9 +94,7 @@ struct SettingsView: View {
       #if os(iOS)
         case .scanQR: "qrcode"
       #endif
-      case .theming: "paintbrush"
-      case .appearance: "display"
-      case .accessibility: "accessibility.fill"
+      case .appearance: "paintbrush"
       case .voiceVideo: "mic.fill"
       case .chat: "message"
       case .notifications: "bell.fill"
@@ -125,7 +116,7 @@ struct SettingsView: View {
         case .scanQR:
           .user
       #endif
-      case .theming, .appearance, .accessibility, .voiceVideo, .chat,
+      case .appearance, .voiceVideo, .chat,
         .notifications, .keybinds, .language, .advanced, .about:
         .app
       case .debug:
@@ -235,12 +226,8 @@ struct SettingsView: View {
       case .scanQR:
         scanQRSection
     #endif
-    case .theming:
-      themingSection
     case .appearance:
       appearanceSection
-    case .accessibility:
-      accessibilitySection
     case .voiceVideo:
       voiceVideoSection
     case .chat:

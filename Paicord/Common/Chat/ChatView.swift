@@ -23,8 +23,10 @@ struct ChatView: View {
 
   var drain: MessageDrainStore { gw.messageDrain }
 
-  @AppStorage("Paicord.Appearance.ChatMessagesAnimated")
-  var chatAnimatesMessages: Bool = false
+  @AppStorage(AppearancePreferences.Key.chatMessagesAnimated)
+  var animatesMessagesSetting: Bool = false
+  @Environment(\.reducesMotion) var reducesMotion
+  var chatAnimatesMessages: Bool { animatesMessagesSetting && !reducesMotion }
 
   init(vm: ChannelStore) { self._vm = .init(initialValue: vm) }
 

@@ -133,7 +133,7 @@ struct ReactionsView: View {
       guard let id else { return nil }
       return DiscordImageURL.customEmoji(
         id: id,
-        animated: animated ?? false,
+        animated: (animated ?? false) && gw.settings.animatesEmoji,
         size: 64
       )
     }

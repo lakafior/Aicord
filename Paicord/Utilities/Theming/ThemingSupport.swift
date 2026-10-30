@@ -211,6 +211,8 @@ extension Color: @retroactive Codable {
     var cgColor: CGColor {
       let scanner = Scanner(string: hexString)
       scanner.currentIndex = hexString.startIndex
+      // the scanner stops at the leading "#" and would read 0 (clear)
+      _ = scanner.scanString("#")
 
       var hexNumber: UInt64 = 0
       scanner.scanHexInt64(&hexNumber)

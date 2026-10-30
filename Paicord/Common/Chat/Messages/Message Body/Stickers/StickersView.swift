@@ -15,23 +15,51 @@ extension MessageCell {
     var body: some View {
       VStack {
         ForEach(stickers) { sticker in
-          let url = URL(
-            string: CDNEndpoint.sticker(
-              stickerId: sticker.id,
-              format: sticker.format_type
-            ).url + "?size=320"
-          )
-          if case .lottie = sticker.format_type, let url {
-            NativeLottieStickerView(url: url, name: sticker.name)
-              .frame(maxWidth: 160, maxHeight: 160)
-          } else {
-            NukeImage(url: url)
-              .resizable()
-              .scaledToFit()
-              .frame(maxWidth: 160, maxHeight: 160)
-          }
+          StickerView(sticker: sticker)
         }
       }
+    }
+  }
+
+  /// Follows Discord's sticker animation setting and Reduce Motion.
+  private struct StickerView: View {
+    var sticker: StickerItem
+    @Environment(\.gateway) var gw
+    @Environment(\.reducesMotion) var reducesMotion
+    @State private var isInteracting = false
+
+    private var animates: Bool {
+      guard !reducesMotion else { return false }
+      switch gw.settings.stickerAnimation {
+      case .always: return true
+      case .onInteraction: return isInteracting
+      case .never: return false
+      }
+    }
+
+    var body: some View {
+      let url = URL(
+        string: CDNEndpoint.sticker(
+          stickerId: sticker.id,
+          format: sticker.format_type
+        ).url + "?size=320"
+      )
+      Group {
+        if case .lottie = sticker.format_type, let url {
+          NativeLottieStickerView(url: url, name: sticker.name, animates: animates)
+        } else {
+          NukeImage(animation: .enabled(animates)) { _ in url }
+            .resizable()
+            .scaledToFit()
+        }
+      }
+      .frame(maxWidth: 160, maxHeight: 160)
+      .onHover { isInteracting = $0 }
+      #if os(iOS)
+        .onTapGesture {
+          if gw.settings.stickerAnimation == .onInteraction { isInteracting.toggle() }
+        }
+      #endif
     }
   }
 }
@@ -68,14 +96,14 @@ private actor LottieStickerCache {
 private struct NativeLottieStickerView: View {
   let url: URL
   let name: String
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  var animates: Bool = true
   @State private var document: LottieDocument?
   @State private var failed = false
 
   var body: some View {
     Group {
       if let document {
-        if reduceMotion {
+        if !animates {
           LottieCanvasView(document: document, frame: document.ip)
         } else {
           TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
