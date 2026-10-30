@@ -432,38 +432,39 @@ extension DiscordUser {
   /// https://docs.discord.food/resources/connected-accounts#connection-structure
   public struct Connection: Sendable, Codable {
 
-    /// https://discord.com/developers/docs/resources/user#connection-object-services
-    ///
-    /// FIXME: I'm not sure, maybe the values of cases are wrong?
-    /// E.g.: `case epicGames`'s value should be just `epicgames` like in the docs?
+    /// https://docs.discord.food/resources/connected-accounts#connection-type
     @UnstableEnum<String>
     public enum Service: Sendable, Codable {
-      case amazonMusic  // "Amazon Music"
-      case battleNet  // "Battle.net"
-      case bungie  // "Bungie.net"
-      case bluesky  // "Bluesky"
-      case crunchyroll  // "Crunchyroll"
-      case domain  // Domain
-      case ebay  // "eBay"
-      case epicGames  // "Epic Games"
-      case facebook  // "Facebook"
-      case github  // "GitHub"
-      case instagram  // "Instagram"
-      case leagueOfLegends  // "League of Legends"
-      case mastodon  // "Mastodon"
-      case paypal  // "PayPal"
-      case playstation  // "PlayStation Network"
-      case reddit  // "Reddit"
-      case riotGames  // "Riot Games"
-      case roblox  // "Roblox"
-      case spotify  // "Spotify"
-      case skype  // "Skype"
-      case steam  // "Steam"
-      case tikTok  // "TikTok"
-      case twitch  // "Twitch"
-      case twitter  // "Twitter"
-      case xbox  // "Xbox"
-      case youtube  // "YouTube"
+      case amazonMusic  // "amazon-music"
+      case battleNet  // "battlenet"
+      case bungie  // "bungie"
+      case bluesky  // "bluesky"
+      case contacts  // "contacts"
+      case crunchyroll  // "crunchyroll"
+      case domain  // "domain"
+      case ebay  // "ebay"
+      case epicGames  // "epicgames"
+      case facebook  // "facebook"
+      case github  // "github"
+      case instagram  // "instagram"
+      case leagueOfLegends  // "leagueoflegends"
+      case mastodon  // "mastodon"
+      case paypal  // "paypal"
+      case playstation  // "playstation"
+      case playstationStaging  // "playstation-stg"
+      case reddit  // "reddit"
+      case riotGames  // "riotgames"
+      case roblox  // "roblox"
+      case samsung  // "samsung"
+      case soundcloud  // "soundcloud"
+      case spotify  // "spotify"
+      case skype  // "skype"
+      case steam  // "steam"
+      case tikTok  // "tiktok"
+      case twitch  // "twitch"
+      case twitter  // "twitter"
+      case xbox  // "xbox"
+      case youtube  // "youtube"
       case __undocumented(String)
     }
 
@@ -483,6 +484,30 @@ extension DiscordUser {
       #endif
     }
 
+    /// A metadata value. Discord sends most of them as strings, some as
+    /// numbers or booleans; anything else decodes as an empty string.
+    public struct MetadataValue: Sendable, Codable, Hashable {
+      public var value: String
+
+      public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let string = try? container.decode(String.self) {
+          value = string
+        } else if let bool = try? container.decode(Bool.self) {
+          value = bool ? "true" : "false"
+        } else if let number = try? container.decode(Double.self) {
+          value = number.formatted()
+        } else {
+          value = ""
+        }
+      }
+
+      public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
+      }
+    }
+
     public var id: String
     public var name: String?
     public var type: Service
@@ -493,6 +518,8 @@ extension DiscordUser {
     public var show_activity: Bool
     public var two_way_link: Bool
     public var visibility: VisibilityKind
+    public var metadata: [String: MetadataValue]?
+    public var metadata_visibility: VisibilityKind?
   }
 
   /// https://docs.discord.food/resources/connected-accounts#partial-connection-structure

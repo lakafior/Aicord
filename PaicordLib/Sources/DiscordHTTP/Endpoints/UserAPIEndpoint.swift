@@ -38,6 +38,8 @@ public enum UserAPIEndpoint: Endpoint {
   // MARK: - Components
 
   // MARK: - Connected Accounts
+  case modifyOwnConnection(type: DiscordUser.Connection.Service, id: String)
+  case deleteOwnConnection(type: DiscordUser.Connection.Service, id: String)
 
   // MARK: - Directory Entries
 
@@ -331,6 +333,9 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "oauth2/tokens"
     case .revokeOAuth2Token(let tokenId):
       suffix = "oauth2/tokens/\(tokenId.rawValue)"
+    case .modifyOwnConnection(let type, let id),
+      .deleteOwnConnection(let type, let id):
+      suffix = "users/@me/connections/\(type.rawValue)/\(id)"
 
     // MARK: - Remote Authentication
     case .createRemoteAuthSession:
@@ -498,6 +503,9 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "oauth2/tokens"
     case .revokeOAuth2Token(let tokenId):
       suffix = "oauth2/tokens/\(tokenId.rawValue)"
+    case .modifyOwnConnection(let type, let id),
+      .deleteOwnConnection(let type, let id):
+      suffix = "users/@me/connections/\(type.rawValue)/\(id)"
     case .createRemoteAuthSession:
       suffix = "users/@me/remote-auth"
     case .finishRemoteAuthSession:
@@ -576,6 +584,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .createUserHarvest: return .POST
     case .listOAuth2Tokens: return .GET
     case .revokeOAuth2Token: return .DELETE
+    case .modifyOwnConnection: return .PATCH
+    case .deleteOwnConnection: return .DELETE
     case .createRemoteAuthSession: return .POST
     case .finishRemoteAuthSession: return .POST
     case .cancelRemoteAuthSession: return .POST
@@ -645,6 +655,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserConsents, .modifyUserConsents: return true
     case .getUserHarvest, .createUserHarvest: return true
     case .listOAuth2Tokens, .revokeOAuth2Token: return true
+    case .modifyOwnConnection, .deleteOwnConnection: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -714,6 +725,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserConsents, .modifyUserConsents: return true
     case .getUserHarvest, .createUserHarvest: return true
     case .listOAuth2Tokens, .revokeOAuth2Token: return true
+    case .modifyOwnConnection, .deleteOwnConnection: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -812,6 +824,9 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserHarvest, .createUserHarvest: return []
     case .listOAuth2Tokens: return []
     case .revokeOAuth2Token(let tokenId): return [tokenId.rawValue]
+    case .modifyOwnConnection(let type, let id),
+      .deleteOwnConnection(let type, let id):
+      return [type.rawValue, id]
     case .createRemoteAuthSession: return []
     case .finishRemoteAuthSession: return []
     case .cancelRemoteAuthSession: return []
@@ -891,6 +906,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .createUserHarvest: return 132
     case .listOAuth2Tokens: return 133
     case .revokeOAuth2Token: return 134
+    case .modifyOwnConnection: return 135
+    case .deleteOwnConnection: return 136
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -1013,6 +1030,10 @@ public enum UserAPIEndpoint: Endpoint {
     case .listOAuth2Tokens: return "listOAuth2Tokens"
     case .revokeOAuth2Token(let tokenId):
       return "revokeOAuth2Token(tokenId: \(tokenId))"
+    case .modifyOwnConnection(let type, let id):
+      return "modifyOwnConnection(type: \(type), id: \(id))"
+    case .deleteOwnConnection(let type, let id):
+      return "deleteOwnConnection(type: \(type), id: \(id))"
     case .createRemoteAuthSession: return "createRemoteAuthSession"
     case .finishRemoteAuthSession: return "finishRemoteAuthSession"
     case .cancelRemoteAuthSession: return "cancelRemoteAuthSession"

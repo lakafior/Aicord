@@ -745,6 +745,29 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint))
   }
 
+  /// Changes how a connected account shows, e.g. on the profile or as activity.
+  /// https://docs.discord.food/resources/connected-accounts#modify-user-connection
+  @inlinable
+  public func modifyOwnConnection(
+    type: DiscordUser.Connection.Service,
+    id: String,
+    payload: Payloads.ModifyConnection
+  ) async throws -> DiscordClientResponse<DiscordUser.Connection> {
+    let endpoint = UserAPIEndpoint.modifyOwnConnection(type: type, id: id)
+    return try await self.send(request: .init(to: endpoint), payload: payload)
+  }
+
+  /// Removes a connected account. Returns a 204 empty response on success.
+  /// https://docs.discord.food/resources/connected-accounts#delete-user-connection
+  @inlinable
+  public func deleteOwnConnection(
+    type: DiscordUser.Connection.Service,
+    id: String
+  ) async throws -> DiscordHTTPResponse {
+    let endpoint = UserAPIEndpoint.deleteOwnConnection(type: type, id: id)
+    return try await self.send(request: .init(to: endpoint))
+  }
+
   /// Proxies external image URLs through Discord's media proxy so they can be used as rich presence assets.
   /// Each result's `external_asset_path` is used as `mp:<path>` in the activity assets.
   /// https://docs.discord.food/resources/application#create-application-external-assets

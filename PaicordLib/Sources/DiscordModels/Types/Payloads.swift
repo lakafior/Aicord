@@ -3045,6 +3045,29 @@ public enum Payloads {
     public func validate() -> [ValidationFailure] {}
   }
 
+  /// Only the fields that are set are changed. Not every service supports all of them.
+  /// https://docs.discord.food/resources/connected-accounts#modify-user-connection
+  public struct ModifyConnection: Sendable, Encodable, ValidatablePayload {
+    public var show_activity: Bool?
+    public var friend_sync: Bool?
+    public var visibility: DiscordUser.Connection.VisibilityKind?
+    public var metadata_visibility: DiscordUser.Connection.VisibilityKind?
+
+    public init(
+      show_activity: Bool? = nil,
+      friend_sync: Bool? = nil,
+      visibility: DiscordUser.Connection.VisibilityKind? = nil,
+      metadata_visibility: DiscordUser.Connection.VisibilityKind? = nil
+    ) {
+      self.show_activity = show_activity
+      self.friend_sync = friend_sync
+      self.visibility = visibility
+      self.metadata_visibility = metadata_visibility
+    }
+
+    public func validate() -> [ValidationFailure] {}
+  }
+
   /// https://docs.discord.food/resources/relationships#modify-relationship
   public struct ModifyRelationship: Sendable, Encodable, ValidatablePayload {
     public var nickname: String?
