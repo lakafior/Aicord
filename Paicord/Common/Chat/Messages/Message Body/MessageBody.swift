@@ -162,6 +162,10 @@ extension MessageCell {
               message: msgSnapshot,
               channelStore: channelStore
             )
+
+            if let reference = message.message_reference {
+              ForwardSource(reference: reference, timestamp: msgSnapshot.timestamp)
+            }
           }
           .padding(.leading, 12)
           .overlay(
@@ -220,4 +224,65 @@ extension MessageCell {
     .onAppear {
       yea = true
     }
+}
+
+/// Where a forwarded message came from: the channel (or DM) and when it was
+/// written. Tapping it opens the original, when you can still see it.
+private struct ForwardSource: View {
+  @Environment(\.gateway) var gw
+  @Environment(\.appState) var appState
+  let reference: DiscordChannel.Message.MessageReference
+  let timestamp: DiscordTimestamp?
+
+  var place: String? {
+    guard let channelID = reference.channel_id else { return nil }
+    if let guildID = reference.guild_id {
+      guard let guild = gw.user.guilds[guildID] else {
+        return String(localized: "Another server")
+      }
+      let channel = guild.channels?.first { $0.id == channelID }?.name
+      return [channel.map { "#\($0)" }, guild.name].compactMap { $0 }.joined(separator: " · ")
+    }
+    if let dm = gw.user.privateChannels[channelID] {
+      return MessagesView.title(of: dm)
+    }
+    return String(localized: "Direct Message")
+  }
+
+  /// Only places you are in can be opened.
+  var canOpen: Bool {
+    guard let channelID = reference.channel_id, reference.message_id != nil else { return false }
+    if let guildID = reference.guild_id {
+      return gw.user.guilds[guildID]?.channels?.contains { $0.id == channelID } == true
+    }
+    return gw.user.privateChannels[channelID] != nil
+  }
+
+  var body: some View {
+    let label = HStack(spacing: 4) {
+      if let place { Text(place).lineLimit(1) }
+      if let date = timestamp?.date {
+        Text("·")
+        Text(date, format: .dateTime.day().month().year().hour().minute())
+      }
+      if canOpen {
+        Image(systemName: "chevron.right")
+          .imageScale(.small)
+      }
+    }
+    .font(.caption)
+    .foregroundStyle(.secondary)
+
+    if canOpen, let channelID = reference.channel_id, let messageID = reference.message_id {
+      Button {
+        appState.open(guild: reference.guild_id, channel: channelID, message: messageID)
+      } label: {
+        label
+      }
+      .buttonStyle(.plain)
+      .accessibilityLabel(Text("Open the original message"))
+    } else {
+      label
+    }
+  }
 }

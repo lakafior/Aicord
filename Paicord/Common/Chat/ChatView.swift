@@ -130,11 +130,15 @@ struct ChatView: View {
       .frame(maxHeight: .infinity)
       .overlay(alignment: .bottomTrailing) {
         let lastMessages = orderedMessages.suffix(10).map { $0.id }
-        if let current = currentScrollPosition,
-          !lastMessages.contains(current)
+        if !vm.hasLatestMessages
+          || currentScrollPosition.map({ !lastMessages.contains($0) }) == true
         {
           Button(action: {
-            vm.requestScrollToBottom(immediate: true)
+            if vm.hasLatestMessages {
+              vm.requestScrollToBottom(immediate: true)
+            } else {
+              vm.returnToLatest()
+            }
           }) {
             Image(systemName: "arrow.down")
               .tint(.primary)
@@ -214,6 +218,12 @@ struct ChatView: View {
       }
     }
     .onChange(of: currentScrollPosition) { acknowledgeLatestIfVisible() }
+    // a jump from Search or a forward's source, for this channel
+    .task(id: appState.pendingJump) {
+      guard let jump = appState.pendingJump, jump.channelID == vm.channelId else { return }
+      appState.pendingJump = nil
+      await vm.jump(to: jump.messageID)
+    }
     .onChange(of: scenePhase) { acknowledgeLatestIfVisible() }
   }
 

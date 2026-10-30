@@ -53,6 +53,7 @@ struct RootView: View {
         .quickSwitcher()
         .attachmentViewer()
         .reactionPicker()
+        .forwardSheet()
         .settingsSheet()
         .task {
           appState.loadPrevGuild()

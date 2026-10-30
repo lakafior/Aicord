@@ -111,6 +111,7 @@ struct MessageCell: View {
     .background(Color.almostClear)
     .padding(.horizontal, 10)
     .padding(.vertical, 2)
+    .background(Color.accentColor.opacity(channelStore.highlightedMessageID == message.id ? 0.18 : 0))
     .background(Color(hexadecimal6: 0xcc8735).opacity(userMentioned && !isDeleted ? 0.05 : 0))
     .background(alignment: .leading) {
       Color(hexadecimal6: 0xce9c5c).opacity(userMentioned && !isDeleted ? 1 : 0)

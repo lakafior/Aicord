@@ -98,6 +98,13 @@ struct EntityContextMenu<Entity>: ViewModifier {
           Label("Mention", systemImage: "at")
         }
       }
+      if ForwardTarget.canForward(message) {
+        Button {
+          appState.forwardTarget = ForwardTarget(message: message, guildID: guild?.guildId)
+        } label: {
+          Label("Forward", systemImage: "arrowshape.turn.up.right")
+        }
+      }
     }
 
     Section {

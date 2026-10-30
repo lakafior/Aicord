@@ -52,6 +52,31 @@ final class PaicordAppState {
   /// The message an emoji picker is currently open for, if any.
   var reactionPickerTarget: ReactionPickerTarget? = nil
 
+  // MARK: - Forward
+  /// The message the forward sheet is open for, if any.
+  var forwardTarget: ForwardTarget? = nil
+
+  // MARK: - Jump to Message
+  /// A message the chat should scroll to and highlight once its channel is open,
+  /// from Search or a forwarded message's source.
+  var pendingJump: MessageJump? = nil
+
+  struct MessageJump: Equatable {
+    let id = UUID()
+    let channelID: ChannelSnowflake
+    let messageID: MessageSnowflake
+  }
+
+  /// Opens a channel and scrolls to one of its messages.
+  func open(
+    guild: GuildSnowflake?, channel: ChannelSnowflake, message: MessageSnowflake
+  ) {
+    pendingJump = MessageJump(channelID: channel, messageID: message)
+    if selectedGuild != guild { selectedGuild = guild }
+    selectedChannel = channel
+    chatOpen = true
+  }
+
   // MARK: - Attachment Viewer
   var showingAttachmentViewer: Bool = false
   var attachmentViewerAttachments: [DiscordMedia] = []

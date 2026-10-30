@@ -32,6 +32,61 @@ class ChannelStore: DiscordDataStore {
     scrollRequest = ScrollRequest(kind: .message(messageId))
   }
 
+  /// The message a jump landed on, tinted for a moment so it stands out.
+  var highlightedMessageID: MessageSnowflake?
+  @ObservationIgnored private var highlightTask: Task<Void, Never>?
+
+  /// Shows a message from Search or a forward's source: scrolls to it when it is
+  /// loaded, otherwise swaps the loaded messages for the ones around it. The
+  /// newest messages come back with `returnToLatest()`.
+  func jump(to messageId: MessageSnowflake) async {
+    // let the first load finish so its scroll to the bottom doesn't win
+    _ = try? await loadingMessagesTask?.value
+    if messages[messageId] == nil {
+      let task = Task {
+        let previous = messages
+        messages = [:]
+        try await fetchMessages(around: messageId, limit: 50)
+        if messages.isEmpty {
+          messages = previous  // the message is gone or unreadable, stay put
+          return
+        }
+        hasMoreHistory = true
+        let newest = channel?.last_message_id
+        hasLatestMessages = newest.map { messages[$0] != nil } ?? false
+      }
+      loadingMessagesTask = task
+      _ = try? await task.value
+      loadingMessagesTask = nil
+    }
+    guard messages[messageId] != nil else { return }
+    requestScrollToMessage(messageId)
+    highlightedMessageID = messageId
+    highlightTask?.cancel()
+    highlightTask = Task {
+      try? await Task.sleep(for: .seconds(2.5))
+      guard !Task.isCancelled else { return }
+      withAnimation(.easeOut(duration: 0.6)) { highlightedMessageID = nil }
+    }
+  }
+
+  /// Reloads the newest messages after a jump into older history.
+  func returnToLatest() {
+    guard loadingMessagesTask == nil else { return }
+    loadingMessagesTask = Task {
+      defer { requestScrollToBottom(immediate: true) }
+      messages = [:]
+      hasMoreHistory = true
+      do {
+        try await fetchMessages()
+      } catch {
+        PaicordAppState.instances.first?.value.error = error
+      }
+      hasLatestMessages = true
+      loadingMessagesTask = nil
+    }
+  }
+
   @ObservationIgnored
   let guildStore: GuildStore?
 

@@ -14,6 +14,7 @@
 		9E08D02F0DF3EA41E426DA50 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E84D65FC5165C77155CF85BB /* AppIcon.icon */; };
 		571AE5B12FFD7726006D609C /* ObservableBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571AE5B02FFD7726006D609C /* ObservableBox.swift */; };
 		5724CD6F2E733D0E00931FEF /* MFASheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5724CD6E2E733D0900931FEF /* MFASheet.swift */; };
+		B363BCCEEF122D13EC022FEF /* ForwardSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6D627868A1A7E6B57B5774 /* ForwardSheet.swift */; };
 		575DA6A030006C3D00CBA394 /* MentionCountBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575DA69F30006C3D00CBA394 /* MentionCountBadge.swift */; };
 		5783AA942E6B8FD100F73F6D /* MeshGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5783AA932E6B8FCD00F73F6D /* MeshGradient.swift */; };
 		578E1CE12E67781700C6DEA3 /* GradientText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578E1CE02E67780B00C6DEA3 /* GradientText.swift */; };
@@ -175,6 +176,7 @@
 		E84D65FC5165C77155CF85BB /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		571AE5B02FFD7726006D609C /* ObservableBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableBox.swift; sourceTree = "<group>"; };
 		5724CD6E2E733D0900931FEF /* MFASheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFASheet.swift; sourceTree = "<group>"; };
+		7B6D627868A1A7E6B57B5774 /* ForwardSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardSheet.swift; sourceTree = "<group>"; };
 		575DA69F30006C3D00CBA394 /* MentionCountBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MentionCountBadge.swift; sourceTree = "<group>"; };
 		5783AA932E6B8FCD00F73F6D /* MeshGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshGradient.swift; sourceTree = "<group>"; };
 		578E1CE02E67780B00C6DEA3 /* GradientText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientText.swift; sourceTree = "<group>"; };
@@ -404,6 +406,7 @@
 			children = (
 				A2C21A1D2FA8150000B0F069 /* SettingsSheet.swift */,
 				5724CD6E2E733D0900931FEF /* MFASheet.swift */,
+				7B6D627868A1A7E6B57B5774 /* ForwardSheet.swift */,
 				57CDD8802E71FF7600022203 /* CaptchaSheet.swift */,
 			);
 			path = Sheets;
@@ -1148,6 +1151,7 @@
 				AADE433C2F32B91900353084 /* GroupDMsMemberList.swift in Sources */,
 				AAB905382E845A7300EA171B /* ChannelButton.swift in Sources */,
 				5724CD6F2E733D0E00931FEF /* MFASheet.swift in Sources */,
+				B363BCCEEF122D13EC022FEF /* ForwardSheet.swift in Sources */,
 				AA47AF1B2EDEEFF9008A50C9 /* DataPrivacySection.swift in Sources */,
 				AA078FC72EC80D3C00EDFFA8 /* LocalConsoleManager.swift in Sources */,
 				AA47AF2A2EDEF164008A50C9 /* AppearancePreferences.swift in Sources */,
