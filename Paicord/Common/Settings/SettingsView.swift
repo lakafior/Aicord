@@ -28,6 +28,7 @@ struct SettingsView: View {
   }
 
   enum SettingsGroupCategory: String, CaseIterable {
+    case you = ""
     case about = "Aicord"
     case user = "User Settings"
     case app = "App Settings"
@@ -35,6 +36,7 @@ struct SettingsView: View {
   }
 
   enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
+    case you
     case about
     case account
     case profiles
@@ -63,6 +65,7 @@ struct SettingsView: View {
 
     var title: String {
       switch self {
+      case .you: "Profile & Status"
       case .about: "About Aicord"
       case .account: "My Account"
       case .profiles: "Profiles"
@@ -91,6 +94,7 @@ struct SettingsView: View {
 
     var systemImage: String {
       switch self {
+      case .you: "person.crop.circle"
       case .about: "info.circle"
       case .account: "person.crop.circle"
       case .profiles: "person.3.fill"
@@ -119,6 +123,8 @@ struct SettingsView: View {
 
     var category: SettingsGroupCategory {
       switch self {
+      case .you:
+        .you
       case .about:
         .about
       case .account, .profiles, .contentSocial, .dataPrivacy, .familyCentre,
@@ -151,10 +157,18 @@ struct SettingsView: View {
         ForEach(SettingsGroupCategory.allCases, id: \.self) { category in
           let items = tabs(for: category)
           if !items.isEmpty {
-            Section(category.rawValue) {
-              ForEach(items) { tab in
-                NavigationLink(value: tab) {
-                  Label(tab.title, systemImage: tab.systemImage)
+            if category == .you {
+              Section {
+                NavigationLink(value: SettingsTab.you) {
+                  SettingsProfileCard()
+                }
+              }
+            } else {
+              Section(category.rawValue) {
+                ForEach(items) { tab in
+                  NavigationLink(value: tab) {
+                    Label(tab.title, systemImage: tab.systemImage)
+                  }
                 }
               }
             }
@@ -193,6 +207,8 @@ struct SettingsView: View {
   @ViewBuilder
   private func detailContent(for tab: SettingsTab) -> some View {
     switch tab {
+    case .you:
+      yourProfileSection
     case .about:
       aboutSection
     case .account:
@@ -238,5 +254,37 @@ struct SettingsView: View {
     case .debug:
       debugSection
     }
+  }
+}
+
+/// Like the Apple Account card in the Settings app: who you are and your status.
+struct SettingsProfileCard: View {
+  @Environment(\.gateway) var gw
+
+  var body: some View {
+    HStack(spacing: 12) {
+      if let user = gw.user.currentUser {
+        Profile.AvatarWithPresence(member: nil, user: user)
+          .profileAnimated(false)
+          .profileShowsAvatarDecoration()
+          .frame(width: 52, height: 52)
+      }
+      VStack(alignment: .leading, spacing: 2) {
+        Text(gw.user.currentUser?.global_name ?? gw.user.currentUser?.username ?? "")
+          .font(.title3.weight(.semibold))
+          .lineLimit(1)
+        Group {
+          if let status = gw.presence.currentClientStatusActivity?.state, !status.isEmpty {
+            Text(status)
+          } else {
+            Text("Status, activity and profile")
+          }
+        }
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+      }
+    }
+    .padding(.vertical, 4)
   }
 }

@@ -1,19 +1,24 @@
 //
-//  ProfileView.swift
-//  PaiCord
+//  YourProfileSection.swift
+//  Aicord
 //
-// Created by Lakhan Lothiyi on 31/08/2025.
-// Copyright © 2025 Lakhan Lothiyi.
+//  The profile card at the top of Settings: status, custom status and activity.
+//  Banner and header layout come from the former iPhone Profile tab by Lakhan Lothiyi.
 //
 
 import PaicordLib
 import SwiftUI
 
-struct ProfileView: View {
+extension SettingsView {
+  @ViewBuilder
+  var yourProfileSection: some View {
+    YourProfilePage()
+  }
+}
+
+struct YourProfilePage: View {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
-  @Environment(\.colorScheme) var systemColorScheme
-  @State var colorScheme: ColorScheme? = nil
 
   var user: PartialUser? {
     gw.user.currentUser?.toPartialUser()
@@ -26,46 +31,30 @@ struct ProfileView: View {
     return (meta?.isEmpty ?? true) ? nil : meta
   }
 
-  var hasThemeColors: Bool {
-    profile?.user_profile?.theme_colors?.isEmpty == false
-  }
-
   var body: some View {
-    NavigationStack {
-      List {
-        Section {
-          VStack(alignment: .leading, spacing: 0) {
-            bannerView
-            profileBody
-              .padding()
-          }
-          .listRowInsets(EdgeInsets())
-
-          ProfileBar.CustomStatusRow()
-        }
-
-        ProfileBar.StatusSection()
-
-        if let bio {
-          Section("About Me") {
-            MarkdownText(content: bio)
-          }
-        }
-
-        ProfileBar.ActivitySection()
-        ProfileBar.AccountInfoSection()
-        ProfileBar.AccountsSection()
+    Section {
+      VStack(alignment: .leading, spacing: 0) {
+        bannerView
+        profileBody
+          .padding()
       }
-      .task(fetchProfile)
-      .task(grabColor)  // way faster than profile fetch
-      .scrollContentBackground(hasThemeColors ? .hidden : .automatic)
-      .background(
-        Profile.ThemeColorsBackground(
-          colors: profile?.user_profile?.theme_colors
-        )
-      )
-      .environment(\.colorScheme, colorScheme ?? systemColorScheme)
+      .listRowInsets(EdgeInsets())
+
+      ProfileBar.CustomStatusRow()
     }
+    .task(fetchProfile)
+    .task(grabColor)
+
+    ProfileBar.StatusSection()
+
+    if let bio {
+      Section("About Me") {
+        MarkdownText(content: bio)
+      }
+    }
+
+    ProfileBar.ActivitySection()
+    ProfileBar.AccountInfoSection()
   }
 
   @ViewBuilder

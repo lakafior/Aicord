@@ -19,8 +19,11 @@ struct SmallBaseplate: View {
   @State var currentChannelStore: ChannelStore? = nil
 
   @State private var currentTab: CurrentTab = .home
+  @State private var searchText = ""
+  /// The server Home showed last, so opening a DM from Messages doesn't empty Home.
+  @State private var lastHomeGuild: GuildSnowflake? = nil
   var disableSlideover: Bool {
-    self.currentTab != .home
+    self.currentTab != .home && self.currentTab != .messages
   }
 
   var body: some View {
@@ -33,15 +36,34 @@ struct SmallBaseplate: View {
               .background(theme.common.primaryBackground)
           }
         }
-        Tab("Profile", systemImage: "person.circle", value: CurrentTab.profile) {
-          ProfileView()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(theme.common.primaryBackground)
+        Tab("Messages", systemImage: "bubble.left.and.bubble.right", value: CurrentTab.messages) {
+          MessagesView()
             .tint(nil)
+        }
+        Tab("Inbox", systemImage: "tray", value: CurrentTab.inbox) {
+          NavigationStack {
+            ContentUnavailableView(
+              "Inbox",
+              systemImage: "tray",
+              description: Text("Mentions and replies will collect here.")
+            )
+            .navigationTitle("Inbox")
+          }
         }
         Tab("Settings", systemImage: "gearshape", value: CurrentTab.settings) {
           SettingsView(initialTab: nil, showsDoneButton: false)
             .tint(nil)
+        }
+        Tab(value: CurrentTab.search, role: .search) {
+          NavigationStack {
+            ContentUnavailableView(
+              "Search",
+              systemImage: "magnifyingglass",
+              description: Text("Search messages across servers and conversations.")
+            )
+            .navigationTitle("Search")
+          }
+          .searchable(text: $searchText, prompt: "Search messages")
         }
       }
       .tint(theme.common.tertiaryButton)
@@ -82,7 +104,10 @@ struct SmallBaseplate: View {
       }
     }
     .slideoverDisabled(disableSlideover)
+    .onChange(of: currentTab) { _, _ in showServerOnHome() }
+    .onAppear { showServerOnHome() }
     .task(id: appState.selectedGuild) {
+      if let selected = appState.selectedGuild { lastHomeGuild = selected }
       if let selected = appState.selectedGuild {
         self.currentGuildStore = gw.getGuildStore(for: selected)
       } else {
@@ -103,7 +128,18 @@ struct SmallBaseplate: View {
     }
   }
 
+  /// Home lists servers only; with no server chosen it falls back to the last one.
+  func showServerOnHome() {
+    guard currentTab == .home, appState.selectedGuild == nil else { return }
+    let fallback = gw.user.guilds.values.min {
+      $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+    }?.id
+    if let guild = lastHomeGuild ?? fallback {
+      appState.selectedGuild = guild
+    }
+  }
+
   enum CurrentTab {
-    case home, profile, settings
+    case home, messages, inbox, settings, search
   }
 }

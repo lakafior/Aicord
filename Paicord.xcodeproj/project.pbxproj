@@ -37,6 +37,7 @@
 		808EAC80F2D12DA38A52AB16 /* DiscordEmojiNames.json in Resources */ = {isa = PBXBuildFile; fileRef = CD0FCDF43CEB925D98D9DEB7 /* DiscordEmojiNames.json */; };
 		8702A5382EAA6753008DD55A /* MemberRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702A5372EAA6751008DD55A /* MemberRowView.swift */; };
 		93F6E65657BE21186C1C19E6 /* PaicordLib in Frameworks */ = {isa = PBXBuildFile; productRef = 9E27420250444A05FCADE929 /* PaicordLib */; };
+		9EA9411B5E2FD7A36E4B4ABE /* YourProfileSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1BB0BEFE1B9D49733BD5EED /* YourProfileSection.swift */; };
 		A20BAF032FA751E000B337A6 /* ProfileBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20BAF022FA751DA00B337A6 /* ProfileBannerView.swift */; };
 		A2C21A1E2FA8150200B0F069 /* SettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C21A1D2FA8150000B0F069 /* SettingsSheet.swift */; };
 		A2C21A202FA816C200B0F069 /* GuildMemberJoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C21A1F2FA816BD00B0F069 /* GuildMemberJoin.swift */; };
@@ -50,7 +51,7 @@
 		AA1097152E64C181005BC3D2 /* LargeBaseplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097042E64C181005BC3D2 /* LargeBaseplate.swift */; };
 		AA1097172E64C181005BC3D2 /* SmallBaseplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */; };
 		AA1097182E64C181005BC3D2 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097092E64C181005BC3D2 /* HomeView.swift */; };
-		AA10971A2E64C181005BC3D2 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10970D2E64C181005BC3D2 /* ProfileView.swift */; };
+		AA10971A2E64C181005BC3D2 /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10970D2E64C181005BC3D2 /* MessagesView.swift */; };
 		AA10971B2E64C181005BC3D2 /* PaicordApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097122E64C181005BC3D2 /* PaicordApp.swift */; };
 		AA10971D2E64C18C005BC3D2 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10971C2E64C189005BC3D2 /* ChatView.swift */; };
 		AA1378062E967A4A00100969 /* ProcessInfo+previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1378042E96798000100969 /* ProcessInfo+previews.swift */; };
@@ -157,6 +158,7 @@
 /* Begin PBXFileReference section */
 		5E38A72AC89724C88BEE5FB9 /* RichPresenceEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RichPresenceEditor.swift; path = RichPresenceEditor.swift; sourceTree = "<group>"; };
 		92981EF5B411046392600481 /* RichPresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RichPresence.swift; path = RichPresence.swift; sourceTree = "<group>"; };
+		C1BB0BEFE1B9D49733BD5EED /* YourProfileSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = YourProfileSection.swift; path = YourProfileSection.swift; sourceTree = "<group>"; };
 		E84D65FC5165C77155CF85BB /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		571AE5B02FFD7726006D609C /* ObservableBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableBox.swift; sourceTree = "<group>"; };
 		5724CD6E2E733D0900931FEF /* MFASheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFASheet.swift; sourceTree = "<group>"; };
@@ -197,7 +199,7 @@
 		AA1097042E64C181005BC3D2 /* LargeBaseplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeBaseplate.swift; sourceTree = "<group>"; };
 		AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallBaseplate.swift; sourceTree = "<group>"; };
 		AA1097092E64C181005BC3D2 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		AA10970D2E64C181005BC3D2 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		AA10970D2E64C181005BC3D2 /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
 		AA1097102E64C181005BC3D2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA1097112E64C181005BC3D2 /* Paicord.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Paicord.entitlements; sourceTree = "<group>"; };
 		AA1097122E64C181005BC3D2 /* PaicordApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaicordApp.swift; sourceTree = "<group>"; };
@@ -543,19 +545,19 @@
 			path = Home;
 			sourceTree = "<group>";
 		};
-		AA10970E2E64C181005BC3D2 /* Profile */ = {
+		AA10970E2E64C181005BC3D2 /* Messages */ = {
 			isa = PBXGroup;
 			children = (
-				AA10970D2E64C181005BC3D2 /* ProfileView.swift */,
+				AA10970D2E64C181005BC3D2 /* MessagesView.swift */,
 			);
-			path = Profile;
+			path = Messages;
 			sourceTree = "<group>";
 		};
 		AA10970F2E64C181005BC3D2 /* Tabs */ = {
 			isa = PBXGroup;
 			children = (
 				AA10970A2E64C181005BC3D2 /* Home */,
-				AA10970E2E64C181005BC3D2 /* Profile */,
+				AA10970E2E64C181005BC3D2 /* Messages */,
 			);
 			path = Tabs;
 			sourceTree = "<group>";
@@ -767,6 +769,7 @@
 			isa = PBXGroup;
 			children = (
 				AA47AF3A2EDEF98D008A50C9 /* ProfilesSection.swift */,
+				C1BB0BEFE1B9D49733BD5EED /* YourProfileSection.swift */,
 			);
 			path = Profiles;
 			sourceTree = "<group>";
@@ -1197,7 +1200,7 @@
 				AA74E43F2EBE26E30031B285 /* PlaceholderMessageCell.swift in Sources */,
 				AACADCBA2F3372060007F705 /* TextView.swift in Sources */,
 				AA74E43B2EBCA9010031B285 /* Environment.swift in Sources */,
-				AA10971A2E64C181005BC3D2 /* ProfileView.swift in Sources */,
+				AA10971A2E64C181005BC3D2 /* MessagesView.swift in Sources */,
 				AAD4469D2ECFBC1A006CB07C /* UserGuildSettingsStore.swift in Sources */,
 				AA47AF2E2EDEF1C7008A50C9 /* ChatSection.swift in Sources */,
 				AA10971B2E64C181005BC3D2 /* PaicordApp.swift in Sources */,
@@ -1209,6 +1212,7 @@
 				57DA042F2E79DC4C00DB4C7C /* SettingsView.swift in Sources */,
 				0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */,
 				B41F5C64A11572B4B480A74E /* RichPresenceEditor.swift in Sources */,
+				9EA9411B5E2FD7A36E4B4ABE /* YourProfileSection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

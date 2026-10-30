@@ -11,6 +11,7 @@ import SwiftUI
 
 struct GuildScrollBar: View {
   @Environment(\.gateway) var gw
+  @Environment(\.userInterfaceIdiom) var idiom
 
   var body: some View {
     #if os(iOS)
@@ -24,10 +25,13 @@ struct GuildScrollBar: View {
 
   private var guildList: some View {
     LazyVStack {
-      GuildButton(guild: nil)  // becomes dms "guild"
+      // on iPhone direct messages have their own tab
+      if idiom != .phone {
+        GuildButton(guild: nil)  // becomes dms "guild"
 
-      Divider()
-        .padding(.horizontal, 8)
+        Divider()
+          .padding(.horizontal, 8)
+      }
 
       // the usersettings guild folders can sometimes not cover all guilds
       // in this case, we need to find the unlisted guilds, and order by join date, newest first
