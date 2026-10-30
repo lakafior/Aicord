@@ -1,4 +1,3 @@
-import DiscordModels
 import Foundation
 
 /// Utilities for writing Discord messages.

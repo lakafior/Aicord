@@ -2064,13 +2064,6 @@ extension DiscordClient {
 //MARK: - Internal +DiscordClient
 extension DiscordClient {
 
-  /// For compiler warnings
-  @available(
-    *,
-    deprecated,
-    message: "App id must be optional otherwise there is no point"
-  )
-
   @usableFromInline
   func checkMutuallyExclusive(queries: [(String, String?)]) throws {
     let notNil = queries.filter { $0.1 != nil }
