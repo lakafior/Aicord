@@ -840,6 +840,56 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint), payload: payload)
   }
 
+  /// Accepts a message request; it moves out of Requests (or Spam) into your DMs.
+  /// Fires a Channel Update Gateway event.
+  /// https://docs.discord.food/resources/channel#update-message-request
+  @inlinable
+  public func acceptMessageRequest(
+    channelId: ChannelSnowflake
+  ) async throws -> DiscordClientResponse<DiscordChannel> {
+    let endpoint = UserAPIEndpoint.updateMessageRequest(channelId: channelId)
+    return try await self.send(
+      request: .init(to: endpoint),
+      payload: Payloads.UpdateMessageRequest(consent_status: .accepted)
+    )
+  }
+
+  /// Rejects and deletes a pending message request. Fires Channel Update, Message Ack
+  /// and Channel Delete Gateway events.
+  /// https://docs.discord.food/resources/channel#reject-message-request
+  @inlinable
+  public func rejectMessageRequest(
+    channelId: ChannelSnowflake
+  ) async throws -> DiscordClientResponse<DiscordChannel> {
+    let endpoint = UserAPIEndpoint.rejectMessageRequest(channelId: channelId)
+    return try await self.send(request: .init(to: endpoint))
+  }
+
+  /// Rejects up to 50 message requests at once.
+  /// https://docs.discord.food/resources/channel#batch-reject-message-requests
+  @inlinable
+  public func batchRejectMessageRequests(
+    payload: Payloads.BatchRejectMessageRequests
+  ) async throws -> DiscordClientResponse<[DiscordChannel]> {
+    let endpoint = UserAPIEndpoint.batchRejectMessageRequests
+    return try await self.send(request: .init(to: endpoint), payload: payload)
+  }
+
+  /// The message that started each request, 1 to 25 channels per call.
+  /// https://docs.discord.food/resources/channel#get-supplemental-message-request-data
+  @inlinable
+  public func getMessageRequestSupplementalData(
+    channelIds: [ChannelSnowflake]
+  ) async throws -> DiscordClientResponse<[SupplementalMessageRequest]> {
+    let endpoint = UserAPIEndpoint.getMessageRequestSupplementalData
+    return try await self.send(
+      request: .init(
+        to: endpoint,
+        queries: channelIds.prefix(25).map { ("channel_ids", $0.rawValue) }
+      )
+    )
+  }
+
   /// Proxies external image URLs through Discord's media proxy so they can be used as rich presence assets.
   /// Each result's `external_asset_path` is used as `mp:<path>` in the activity assets.
   /// https://docs.discord.food/resources/application#create-application-external-assets
