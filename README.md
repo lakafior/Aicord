@@ -44,7 +44,9 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory
+- **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
 - **Fixed** · Opening a channel or scrolling to the bottom now marks it as read
+- **Fixed** · Incoming messages keep their slash command info, and a message reference without a type no longer breaks decoding
 - **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file
 - **Removed** · Third-party sponsor badges and the telemetry requests behind them
 
