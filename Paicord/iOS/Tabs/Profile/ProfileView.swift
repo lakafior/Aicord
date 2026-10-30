@@ -19,7 +19,6 @@ struct ProfileView: View {
     gw.user.currentUser?.toPartialUser()
   }
 
-  @State var settingsSheetPresented = false
   @State var statusSheetPresented = false
 
   @State var profile: DiscordUser.Profile? = nil
@@ -43,19 +42,6 @@ struct ProfileView: View {
                   .sheet(isPresented: $statusSheetPresented) {
                     ProfileBar.ProfileButtonPopout()
                       .presentationDetents([.medium])
-                  }
-
-                  Button {
-                    settingsSheetPresented = true
-                  } label: {
-                    Image(systemName: "gearshape.fill")
-                      .padding(8)
-                      .glassEffect(.regular.interactive(), in: .circle)
-                  }
-                  .buttonStyle(.borderless)
-                  .tint(.primary)
-                  .sheet(isPresented: $settingsSheetPresented) {
-                    SettingsView()
                   }
                 }
               }

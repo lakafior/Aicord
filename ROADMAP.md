@@ -137,8 +137,9 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [x] fix: lista członków startowała z pozycją przewinięcia 0 przy kotwicy `.bottom`, więc mogła uciec poza widok.
    - [x] Nagłówek kanału bez szklanej pigułki: na iOS strzałka wstecz zostaje sama, a ikona i nazwa kanału są tytułem na środku paska (skracane wielokropkiem, gdy brakuje miejsca). Na macOS nazwa serwera i kanału to zwykłe tytuły paska okna. Do sprawdzenia zrzutem na iOS.
 2. **Nawigacja na iPhonie:**
-   - [ ] Usunięcie zakładki Powiadomienia (pokazuje tylko napis zastępczy, nie pobiera danych).
-   - [ ] Ustawienia jako zakładka skrajnie po prawej (bez przycisku „Done”); zębatka znika z Profilu.
+   - [x] Usunięcie zakładki Powiadomienia (pokazuje tylko napis zastępczy, nie pobiera danych).
+   - [x] Ustawienia jako zakładka skrajnie po prawej (bez przycisku „Done”, start na liście kategorii); zębatka znika z Profilu.
+   - [x] Zakładki na nowym API `Tab` bez wymuszonego tła paska, więc pasek zakładek jest systemowym Liquid Glass; `TabView` nie siedzi już w `NavigationStack` (Home ma własny).
 3. **Profil:**
    - [ ] Działający wybór statusu (online, zaraz wracam, nie przeszkadzać, niewidoczny) przez `setPresence` i `modifyUserSettingsProto`; dziś przyciski w `ProfileButtonPopout` są puste. Ten sam wybór w popoverze `ProfileBar` na macOS.
    - [ ] Podgląd i edycja custom statusu (emoji i tekst).

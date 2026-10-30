@@ -16,8 +16,16 @@ struct SettingsView: View {
   @AppStorage("Paicord.Appearance.ChatMessagesAnimated")
   var chatMessagesAnimated: Bool = false
 
-  @State private var selectedTab: SettingsTab? = .about
+  @State private var selectedTab: SettingsTab?
   @State private var searchText: String = ""
+  private let showsDoneButton: Bool
+
+  /// Pass `initialTab: nil` where the split view collapses (the iPhone tab),
+  /// so it opens on the category list instead of pushing a page.
+  init(initialTab: SettingsTab? = .about, showsDoneButton: Bool = true) {
+    _selectedTab = State(initialValue: initialTab)
+    self.showsDoneButton = showsDoneButton
+  }
 
   enum SettingsGroupCategory: String, CaseIterable {
     case about = "Aicord"
@@ -157,9 +165,11 @@ struct SettingsView: View {
       .searchable(text: $searchText, prompt: "Search")
       #if os(iOS)
         .toolbar {
-          ToolbarItem(placement: .topBarTrailing) {
-            Button("Done") {
-              dismiss()
+          if showsDoneButton {
+            ToolbarItem(placement: .topBarTrailing) {
+              Button("Done") {
+                dismiss()
+              }
             }
           }
         }

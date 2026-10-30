@@ -49,7 +49,6 @@
 		AA1097152E64C181005BC3D2 /* LargeBaseplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097042E64C181005BC3D2 /* LargeBaseplate.swift */; };
 		AA1097172E64C181005BC3D2 /* SmallBaseplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */; };
 		AA1097182E64C181005BC3D2 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097092E64C181005BC3D2 /* HomeView.swift */; };
-		AA1097192E64C181005BC3D2 /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10970B2E64C181005BC3D2 /* NotificationsView.swift */; };
 		AA10971A2E64C181005BC3D2 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10970D2E64C181005BC3D2 /* ProfileView.swift */; };
 		AA10971B2E64C181005BC3D2 /* PaicordApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097122E64C181005BC3D2 /* PaicordApp.swift */; };
 		AA10971D2E64C18C005BC3D2 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10971C2E64C189005BC3D2 /* ChatView.swift */; };
@@ -194,7 +193,6 @@
 		AA1097042E64C181005BC3D2 /* LargeBaseplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeBaseplate.swift; sourceTree = "<group>"; };
 		AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallBaseplate.swift; sourceTree = "<group>"; };
 		AA1097092E64C181005BC3D2 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		AA10970B2E64C181005BC3D2 /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
 		AA10970D2E64C181005BC3D2 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		AA1097102E64C181005BC3D2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA1097112E64C181005BC3D2 /* Paicord.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Paicord.entitlements; sourceTree = "<group>"; };
@@ -541,14 +539,6 @@
 			path = Home;
 			sourceTree = "<group>";
 		};
-		AA10970C2E64C181005BC3D2 /* Notifications */ = {
-			isa = PBXGroup;
-			children = (
-				AA10970B2E64C181005BC3D2 /* NotificationsView.swift */,
-			);
-			path = Notifications;
-			sourceTree = "<group>";
-		};
 		AA10970E2E64C181005BC3D2 /* Profile */ = {
 			isa = PBXGroup;
 			children = (
@@ -561,7 +551,6 @@
 			isa = PBXGroup;
 			children = (
 				AA10970A2E64C181005BC3D2 /* Home */,
-				AA10970C2E64C181005BC3D2 /* Notifications */,
 				AA10970E2E64C181005BC3D2 /* Profile */,
 			);
 			path = Tabs;
@@ -1160,7 +1149,6 @@
 				AA67FD152EF4A7F4004676A1 /* CameraPicker.swift in Sources */,
 				AA9D26B32EC97721006071FE /* ViewUtils.swift in Sources */,
 				AA078FC42EC809D600EDFFA8 /* AccountSection.swift in Sources */,
-				AA1097192E64C181005BC3D2 /* NotificationsView.swift in Sources */,
 				57F5AF472E7CAD2500AD5674 /* Challenges.swift in Sources */,
 				AA47AF242EDEF139008A50C9 /* ConnectionsSection.swift in Sources */,
 				AADE433E2F32B93E00353084 /* DMProfilePanel.swift in Sources */,

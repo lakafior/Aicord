@@ -25,34 +25,26 @@ struct SmallBaseplate: View {
 
   var body: some View {
     SlideoverDoubleView(swap: $appState.chatOpen) {
-      NavigationStack {
-        TabView(selection: $currentTab) {
-          HomeView(guild: currentGuildStore)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(theme.common.primaryBackground)
-            .toolbarBackground(theme.common.tertiaryBackground, for: .tabBar)
-            .toolbarBackground(.visible, for: .tabBar)
-            .tabItem { Label("Home", systemImage: "house") }
-            .tag(CurrentTab.home)
-          NotificationsView()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(theme.common.primaryBackground)
-            .toolbarBackground(theme.common.tertiaryBackground, for: .tabBar)
-            .toolbarBackground(.visible, for: .tabBar)
-            .tabItem { Label("Notifications", systemImage: "bell") }
-            .tag(CurrentTab.notifications)
-            .tint(nil)
+      TabView(selection: $currentTab) {
+        Tab("Home", systemImage: "house", value: CurrentTab.home) {
+          NavigationStack {
+            HomeView(guild: currentGuildStore)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .background(theme.common.primaryBackground)
+          }
+        }
+        Tab("Profile", systemImage: "person.circle", value: CurrentTab.profile) {
           ProfileView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(theme.common.primaryBackground)
-            .toolbarBackground(theme.common.tertiaryBackground, for: .tabBar)
-            .toolbarBackground(.visible, for: .tabBar)
-            .tabItem { Label("Profile", systemImage: "person.circle") }
-            .tag(CurrentTab.profile)
             .tint(nil)
         }
-        .tint(theme.common.tertiaryButton)
+        Tab("Settings", systemImage: "gearshape", value: CurrentTab.settings) {
+          SettingsView(initialTab: nil, showsDoneButton: false)
+            .tint(nil)
+        }
       }
+      .tint(theme.common.tertiaryButton)
       .environment(\.guildStore, currentGuildStore)
       .environment(\.channelStore, currentChannelStore)
     } secondary: {
@@ -112,6 +104,6 @@ struct SmallBaseplate: View {
   }
 
   enum CurrentTab {
-    case home, notifications, profile
+    case home, profile, settings
   }
 }
