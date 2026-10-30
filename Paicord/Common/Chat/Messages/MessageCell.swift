@@ -69,6 +69,7 @@ struct MessageCell: View {
       && message.type == .default
       && priorMessage?.type != .guildMemberJoin
 
+    let compact = GatewayStore.shared.settings.displaysCompactMessages
     let isDeleted = channelStore.deletedMessageIDs.contains(message.id)
     let previousVersions = channelStore.previousVersions[message.id] ?? []
 
@@ -79,7 +80,8 @@ struct MessageCell: View {
         DefaultMessage(
           message: message,
           channelStore: channelStore,
-          inline: inline
+          inline: inline,
+          compact: compact
         )
         .equatable()
       case .chatInputCommand:
@@ -129,7 +131,7 @@ struct MessageCell: View {
     .modifier(DeletedAwareContextMenu(message: message, isDeleted: isDeleted) {
       withAnimation { channelStore.hideDeletedMessage(message.id) }
     })
-    .padding(.top, inline ? 0 : 15)  // adds space between message groups
+    .padding(.top, inline ? 0 : compact ? 6 : 15)  // adds space between message groups
   }
 
   /// What an edited message said before, kept by the Chat setting.

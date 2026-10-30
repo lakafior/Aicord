@@ -32,6 +32,10 @@ struct ChatSettings: View {
 
   var body: some View {
     Section {
+      Picker("Message Display", selection: compactDisplay) {
+        Text("Cozy").tag(false)
+        Text("Compact").tag(true)
+      }
       settingToggle("Show Reactions", isOn: gw.settings.rendersReactions) {
         $0.textAndImages.renderReactions = .init($1)
       }
@@ -48,7 +52,7 @@ struct ChatSettings: View {
       Text("Messages")
     } footer: {
       Text(
-        "Saved to your Discord account. With uploads off, images and videos show as files that open when tapped. With media from links off, links to images, GIFs and videos stay plain links."
+        "Saved to your Discord account. Compact leaves out avatars and puts the time and name on the message's line. With uploads off, images and videos show as files that open when tapped. With media from links off, links to images, GIFs and videos stay plain links."
       )
     }
 
@@ -126,6 +130,13 @@ struct ChatSettings: View {
         )
       }
     }
+  }
+
+  private var compactDisplay: Binding<Bool> {
+    Binding(
+      get: { gw.settings.displaysCompactMessages },
+      set: { value in patch { $0.textAndImages.messageDisplayCompact = .init(value) } }
+    )
   }
 
   private var spoilerReveal: Binding<SpoilerReveal> {

@@ -14,6 +14,8 @@ extension MessageCell {
     let message: DiscordChannel.Message
     let channelStore: ChannelStore
     let inline: Bool
+    /// Discord's Compact display: the time in the avatar's column, the name before the text.
+    var compact = false
 
     @State private var editedPopover = false
     @State private var profileOpen = false
@@ -72,10 +74,13 @@ extension MessageCell {
       lhs.message.id == rhs.message.id
         && lhs.message.edited_timestamp == rhs.message.edited_timestamp
         && lhs.message.embeds == rhs.message.embeds
+        && lhs.compact == rhs.compact
     }
 
     var body: some View {
-      if inline {
+      if compact {
+        compactBody
+      } else if inline {
         HStack(alignment: .top, spacing: 8) {
           AvatarBalancing()
             #if os(macOS)
@@ -98,6 +103,42 @@ extension MessageCell {
             #endif
 
             userAndMessage
+          }
+        }
+      }
+    }
+
+    @ViewBuilder
+    private var compactBody: some View {
+      VStack(alignment: .leading, spacing: 2) {
+        if !inline { replyView }
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+          // the column the avatar takes otherwise, so grouped lines line up
+          Text(Self.timeFormatter.string(from: message.timestamp.date))
+            .font(.caption2.monospacedDigit())
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(width: avatarSize, alignment: .trailing)
+            .opacity(inline ? 0 : 1)
+            .help(Self.fullDateTimeFormatter.string(from: message.timestamp.date))
+            #if os(macOS)
+              .padding(.trailing, 4)  // balancing
+            #endif
+          if !inline {
+            MessageAuthor.Username(
+              message: message,
+              guildStore: channelStore.guildStore,
+              profileOpen: $profileOpen
+            )
+            .lineLimit(1)
+            .fixedSize()
+          }
+          VStack(alignment: .leading, spacing: 2) {
+            MessageBody(message: message, channelStore: channelStore)
+            if let editedText {
+              EditStamp(editedText: editedText)
+            }
           }
         }
       }

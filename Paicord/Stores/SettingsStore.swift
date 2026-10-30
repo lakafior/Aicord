@@ -426,6 +426,11 @@ extension SettingsStore {
     }
   }
 
+  /// Discord's Compact message display: no avatars, time and name on the text's line.
+  var displaysCompactMessages: Bool {
+    textAndImages.messageDisplayCompact.value
+  }
+
   var convertsEmoticons: Bool {
     textAndImages.hasConvertEmoticons ? textAndImages.convertEmoticons.value : true
   }
