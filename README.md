@@ -51,7 +51,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **New** · Settings → My Account shows your account details and accounts, and Keybinds lists the shortcuts
 - **New** · One search for servers, channels, people and messages: pick a server, channel or person and the next results narrow to it
 - **New** · Edit your profile in the app: display name, pronouns, about me and avatar, plus a nickname and pronouns per server
-- **New** · iPhone tabs are Home, Messages, Inbox, Search and Settings; Messages holds direct messages, group chats and friends, and your status and activity sit behind a profile card at the top of Settings
+- **New** · iPhone tabs are Home, Messages, Search and Settings; Messages holds direct messages, group chats, mentions and friends, and your status and activity sit behind a profile card at the top of Settings
 - **New** · Custom rich presence ("Playing …", "Listening to …") with images, timers, party size and buttons, a live preview, and a "Share my activity" switch; your Discord application ID lives in Settings → My Account and is checked before saving
 - **New** · About Aicord in Settings with version, licence and a link to this repository
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory

@@ -22,7 +22,7 @@ struct SmallBaseplate: View {
   /// The server Home showed last, so opening a DM from Messages doesn't empty Home.
   @State private var lastHomeGuild: GuildSnowflake? = nil
   var disableSlideover: Bool {
-    self.currentTab == .inbox || self.currentTab == .settings
+    self.currentTab == .settings
   }
 
   var body: some View {
@@ -39,16 +39,7 @@ struct SmallBaseplate: View {
           MessagesView()
             .tint(nil)
         }
-        Tab("Inbox", systemImage: "tray", value: CurrentTab.inbox) {
-          NavigationStack {
-            ContentUnavailableView(
-              "Inbox",
-              systemImage: "tray",
-              description: Text("Mentions and replies will collect here.")
-            )
-            .navigationTitle("Inbox")
-          }
-        }
+        .badge(messagesBadge)
         Tab("Search", systemImage: "magnifyingglass", value: CurrentTab.search) {
           SearchView {
             withAnimation { appState.chatOpen = true }
@@ -122,6 +113,14 @@ struct SmallBaseplate: View {
     }
   }
 
+  /// Unread direct messages, like Discord's own badge. Server mentions are counted
+  /// per channel and can pile up into thousands, so they stay in the Mentions list.
+  var messagesBadge: Int {
+    gw.user.privateChannels.values.reduce(0) { total, channel in
+      total + gw.readStates.mentionCount(channelId: channel.id)
+    }
+  }
+
   /// Home lists servers only; with no server chosen it falls back to the last one.
   func showServerOnHome() {
     guard currentTab == .home, appState.selectedGuild == nil else { return }
@@ -134,6 +133,6 @@ struct SmallBaseplate: View {
   }
 
   enum CurrentTab {
-    case home, messages, inbox, settings, search
+    case home, messages, search, settings
   }
 }

@@ -13,17 +13,18 @@ struct MessagesView: View {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
 
-  enum Page: Hashable { case messages, friends }
+  enum Page: Hashable { case messages, mentions }
   @State var page: Page = .messages
   @State var searchText = ""
   @State var composing = false
+  @State var showingFriends = false
 
   var body: some View {
     NavigationStack {
       List {
         Picker("Show", selection: $page) {
           Text("Messages").tag(Page.messages)
-          Text("Friends").tag(Page.friends)
+          Text("Mentions").tag(Page.mentions)
         }
         .pickerStyle(.segmented)
         .labelsHidden()
@@ -32,12 +33,20 @@ struct MessagesView: View {
 
         switch page {
         case .messages: conversations
-        case .friends: FriendsList(searchText: searchText, open: open(user:))
+        case .mentions: MentionsList(searchText: searchText, open: open(guild:channel:))
         }
       }
       .navigationTitle("Messages")
-      .searchable(text: $searchText, prompt: page == .messages ? "Find a conversation" : "Find a friend")
+      .searchable(text: $searchText, prompt: page == .messages ? "Find a conversation" : "Filter mentions")
       .toolbar {
+        ToolbarItem(placement: .primaryAction) {
+          Button {
+            showingFriends = true
+          } label: {
+            Label("Friends", systemImage: "person.2")
+          }
+          .badge(pendingRequests)
+        }
         ToolbarItem(placement: .primaryAction) {
           Button {
             composing = true
@@ -48,6 +57,9 @@ struct MessagesView: View {
       }
       .sheet(isPresented: $composing) {
         NewMessageSheet(open: open(user:))
+      }
+      .sheet(isPresented: $showingFriends) {
+        FriendsSheet(open: open(user:))
       }
     }
   }
@@ -92,7 +104,17 @@ struct MessagesView: View {
       ?? String(localized: "Unknown Conversation")
   }
 
+  var pendingRequests: Int {
+    gw.user.relationships.values.filter { $0.type == .incomingRequest }.count
+  }
+
   // MARK: Opening
+
+  func open(guild: GuildSnowflake?, channel: ChannelSnowflake) {
+    appState.selectedGuild = guild
+    appState.selectedChannel = channel
+    withAnimation { appState.chatOpen = true }
+  }
 
   func open(channel: ChannelSnowflake) {
     // direct messages live under the "no server" selection
@@ -295,6 +317,218 @@ struct FriendRow: View {
           .lineLimit(1)
       }
       Spacer(minLength: 0)
+    }
+    .contentShape(.rect)
+  }
+}
+
+/// Friends in a sheet, opened from the toolbar.
+struct FriendsSheet: View {
+  @Environment(\.dismiss) var dismiss
+  var open: (UserSnowflake) -> Void
+  @State var searchText = ""
+
+  var body: some View {
+    NavigationStack {
+      List {
+        FriendsList(searchText: searchText) { user in
+          dismiss()
+          open(user)
+        }
+      }
+      .navigationTitle("Friends")
+      #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+      #endif
+      .searchable(text: $searchText, prompt: "Find a friend")
+      .toolbar {
+        ToolbarItem(placement: .confirmationAction) {
+          Button("Done") { dismiss() }
+        }
+      }
+    }
+  }
+}
+
+// MARK: - Mentions
+
+struct MentionsList: View {
+  @Environment(\.gateway) var gw
+  @Environment(\.appState) var appState
+  var searchText: String
+  var open: (GuildSnowflake?, ChannelSnowflake) -> Void
+
+  @AppStorage("Aicord.Mentions.OnlyReplies") var onlyReplies = false
+  @AppStorage("Aicord.Mentions.IncludeEveryone") var includeEveryone = true
+
+  @State var mentions: [DiscordChannel.Message] = []
+  @State var loading = false
+  @State var reachedEnd = false
+  @State var failed = false
+
+  var me: UserSnowflake? { gw.user.currentUser?.id }
+
+  var visible: [DiscordChannel.Message] {
+    mentions.filter { message in
+      if onlyReplies, message.referenced_message?.value.author?.id != me { return false }
+      guard !searchText.isEmpty else { return true }
+      return message.content.localizedCaseInsensitiveContains(searchText)
+        || (message.author?.username ?? "").localizedCaseInsensitiveContains(searchText)
+        || (message.author?.global_name ?? "").localizedCaseInsensitiveContains(searchText)
+    }
+  }
+
+  var body: some View {
+    Section {
+      Toggle("Only Replies to Me", isOn: $onlyReplies)
+      Toggle("Include @everyone and @here", isOn: $includeEveryone)
+    }
+    .onChange(of: includeEveryone) { _, _ in Task { await reload() } }
+
+    Section {
+      if visible.isEmpty && !loading {
+        ContentUnavailableView(
+          failed ? "Couldn't Load Mentions" : "No Mentions",
+          systemImage: failed ? "exclamationmark.triangle" : "at",
+          description: failed ? nil : Text("When someone mentions or replies to you, it shows up here.")
+        )
+      }
+      ForEach(visible, id: \.id) { message in
+        Button {
+          open(guildID(for: message), message.channel_id)
+        } label: {
+          MentionRow(message: message)
+        }
+        .tint(.primary)
+      }
+      if loading {
+        HStack { Spacer(); ProgressView(); Spacer() }
+      } else if !reachedEnd && !mentions.isEmpty {
+        Button("Show Older") { Task { await loadMore() } }
+      }
+    } header: {
+      HStack {
+        Text("Recent")
+        Spacer()
+        if hasUnread {
+          Button("Mark All as Read") { Task { await markAllRead() } }
+            .font(.caption.weight(.semibold))
+            .textCase(nil)
+        }
+      }
+    }
+    .task { if mentions.isEmpty { await reload() } }
+    .refreshable { await reload() }
+  }
+
+  func guildID(for message: DiscordChannel.Message) -> GuildSnowflake? {
+    message.guild_id
+      ?? gw.user.guilds.values.first { $0.channels?.contains { $0.id == message.channel_id } == true }?.id
+  }
+
+  var hasUnread: Bool {
+    Set(mentions.map(\.channel_id)).contains { gw.readStates.mentionCount(channelId: $0) > 0 }
+  }
+
+  func reload() async {
+    mentions = []
+    reachedEnd = false
+    await loadMore()
+  }
+
+  func loadMore() async {
+    guard !loading else { return }
+    loading = true
+    failed = false
+    defer { loading = false }
+    do {
+      let res = try await gw.client.getRecentMentions(
+        before: mentions.last?.id,
+        includeEveryone: includeEveryone
+      )
+      try res.guardSuccess()
+      let page = try res.decode()
+      mentions += page
+      reachedEnd = page.count < 25
+    } catch {
+      failed = true
+    }
+  }
+
+  /// Acks the newest mention in each channel that still has unread mentions.
+  func markAllRead() async {
+    var newest: [ChannelSnowflake: MessageSnowflake] = [:]
+    for message in mentions where newest[message.channel_id] == nil {
+      newest[message.channel_id] = message.id
+    }
+    for (channel, message) in newest where gw.readStates.mentionCount(channelId: channel) > 0 {
+      do {
+        try await gw.client.acknowledgeMessage(
+          channelId: channel, messageId: message, payload: Payloads.AcknowledgeMessage()
+        ).guardSuccess()
+        gw.readStates.applyAck(channelId: channel, messageId: message)
+      } catch {
+        appState.error = error
+        return
+      }
+    }
+  }
+}
+
+struct MentionRow: View {
+  @Environment(\.gateway) var gw
+  var message: DiscordChannel.Message
+
+  /// The server, from the message or by finding which server owns the channel.
+  var guild: Guild? {
+    if let id = message.guild_id, let guild = gw.user.guilds[id] { return guild }
+    return gw.user.guilds.values.first { $0.channels?.contains { $0.id == message.channel_id } == true }
+  }
+
+  var place: String {
+    if let guild {
+      let channel = guild.channels?.first { $0.id == message.channel_id }?.name
+      return [guild.name, channel.map { "#\($0)" }].compactMap { $0 }.joined(separator: " · ")
+    }
+    if let dm = gw.user.privateChannels[message.channel_id] {
+      return MessagesView.title(of: dm)
+    }
+    return ""
+  }
+
+  var isUnread: Bool {
+    gw.readStates.isUnread(channelId: message.channel_id, lastMessageId: message.id)
+  }
+
+  var body: some View {
+    HStack(alignment: .top, spacing: 10) {
+      if let author = message.author {
+        Profile.Avatar(member: nil, user: author.toPartialUser())
+          .frame(width: 36, height: 36)
+      }
+      VStack(alignment: .leading, spacing: 3) {
+        HStack(spacing: 6) {
+          Text(message.author?.global_name ?? message.author?.username ?? "")
+            .font(.subheadline.weight(.semibold))
+            .lineLimit(1)
+          Spacer(minLength: 4)
+          Text(message.timestamp.date, format: .relative(presentation: .numeric))
+            .font(.caption)
+            .foregroundStyle(.secondary)
+          if isUnread {
+            Circle().fill(.tint).frame(width: 8, height: 8)
+          }
+        }
+        if !place.isEmpty {
+          Text(place)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+        }
+        Text(message.content.isEmpty ? String(localized: "Attachment") : message.content)
+          .font(.subheadline)
+          .lineLimit(3)
+      }
     }
     .contentShape(.rect)
   }

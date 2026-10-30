@@ -222,6 +222,31 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint))
   }
 
+  /// Messages that mentioned the current user, newest first.
+  /// https://docs.discord.food/resources/message#get-recent-mentions
+  @inlinable
+  public func getRecentMentions(
+    before: MessageSnowflake? = nil,
+    limit: Int = 25,
+    includeRoles: Bool = true,
+    includeEveryone: Bool = true,
+    guildID: GuildSnowflake? = nil
+  ) async throws -> DiscordClientResponse<[DiscordChannel.Message]> {
+    let endpoint = UserAPIEndpoint.getRecentMentions
+    return try await self.send(
+      request: .init(
+        to: endpoint,
+        queries: [
+          ("before", before?.rawValue),
+          ("limit", String(limit)),
+          ("roles", String(includeRoles)),
+          ("everyone", String(includeEveryone)),
+          ("guild_id", guildID?.rawValue),
+        ]
+      )
+    )
+  }
+
   /// Searches messages in a guild. A 202 response means the guild is still being indexed.
   /// https://docs.discord.food/resources/message#search-guild-messages
   @inlinable
