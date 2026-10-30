@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 
 struct RichPresence: Codable, Equatable {
   enum Kind: String, Codable, CaseIterable, Identifiable {

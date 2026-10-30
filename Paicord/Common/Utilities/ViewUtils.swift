@@ -8,7 +8,7 @@
 
 // big fuckoff collection of tools for use in views
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 enum Utils {

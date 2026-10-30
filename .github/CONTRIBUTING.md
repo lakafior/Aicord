@@ -17,7 +17,7 @@ Before your pull request can be merged, please follow these guidelines:
    project. If the work is naturally large in scope, keep the commits
    well-named for review.
 4. Include screenshots when the change is visible, for instance a UI
-   redesign. Document `PaicordLib` changes thoroughly.
+   redesign. Document `AicordKit` changes thoroughly.
 5. Split unrelated contributions into separate pull requests, one branch per
    feature. That makes them easier to review and quicker to merge.
 6. Bigger user-visible changes should also get a line in the README's

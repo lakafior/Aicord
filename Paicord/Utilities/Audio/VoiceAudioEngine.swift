@@ -13,7 +13,7 @@
 
 import AVFoundation
 import Foundation
-import PaicordLib
+import AicordKit
 import os
 
 #if os(macOS)

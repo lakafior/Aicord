@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 
 // middleman cdn url builder helper
 enum DiscordImageURL {

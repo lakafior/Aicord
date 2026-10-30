@@ -40,7 +40,7 @@
 		608EDA4BB4D7C45A5BC93CFA /* Textual in Frameworks */ = {isa = PBXBuildFile; productRef = 6EFB9068924331EC09343396 /* Textual */; };
 		808EAC80F2D12DA38A52AB16 /* DiscordEmojiNames.json in Resources */ = {isa = PBXBuildFile; fileRef = CD0FCDF43CEB925D98D9DEB7 /* DiscordEmojiNames.json */; };
 		8702A5382EAA6753008DD55A /* MemberRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8702A5372EAA6751008DD55A /* MemberRowView.swift */; };
-		93F6E65657BE21186C1C19E6 /* PaicordLib in Frameworks */ = {isa = PBXBuildFile; productRef = 9E27420250444A05FCADE929 /* PaicordLib */; };
+		93F6E65657BE21186C1C19E6 /* AicordKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9E27420250444A05FCADE929 /* AicordKit */; };
 		9EA9411B5E2FD7A36E4B4ABE /* YourProfileSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1BB0BEFE1B9D49733BD5EED /* YourProfileSection.swift */; };
 		A20BAF032FA751E000B337A6 /* ProfileBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20BAF022FA751DA00B337A6 /* ProfileBannerView.swift */; };
 		A2C21A1E2FA8150200B0F069 /* SettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C21A1D2FA8150000B0F069 /* SettingsSheet.swift */; };
@@ -336,7 +336,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				93F6E65657BE21186C1C19E6 /* PaicordLib in Frameworks */,
+				93F6E65657BE21186C1C19E6 /* AicordKit in Frameworks */,
 				608EDA4BB4D7C45A5BC93CFA /* Textual in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -378,7 +378,7 @@
 				AA2F51C22EE4ABCA00F18DB7 /* Storage.swift */,
 				AA078FC52EC80D2100EDFFA8 /* LocalConsoleManager */,
 				AA409ABD2EC74F3100848045 /* Theming */,
-				AABED5A72E7FF970005BDD63 /* PaicordLib++ */,
+				AABED5A72E7FF970005BDD63 /* AicordKit++ */,
 				57A4E7132E6B44BC00470131 /* Extensions */,
 				AA7B38F12EB37F9500CA4A3C /* PermsHelper.swift */,
 				AAB50A5D2E9B21AE0048E8B0 /* Thumbhash.swift */,
@@ -929,7 +929,7 @@
 			path = Attachments;
 			sourceTree = "<group>";
 		};
-		AABED5A72E7FF970005BDD63 /* PaicordLib++ */ = {
+		AABED5A72E7FF970005BDD63 /* AicordKit++ */ = {
 			isa = PBXGroup;
 			children = (
 				AA49F5162EF2CF6E00C46339 /* NitroHelper.swift */,
@@ -938,7 +938,7 @@
 				AABED5A82E7FF979005BDD63 /* Merging.swift */,
 				AAB9052F2E82FD8E00EA171B /* Conformances.swift */,
 			);
-			path = "PaicordLib++";
+			path = "AicordKit++";
 			sourceTree = "<group>";
 		};
 		AACADCB32F336EE60007F705 /* iOS */ = {
@@ -1039,7 +1039,7 @@
 			);
 			name = Paicord;
 			packageProductDependencies = (
-				9E27420250444A05FCADE929 /* PaicordLib */,
+				9E27420250444A05FCADE929 /* AicordKit */,
 				6EFB9068924331EC09343396 /* Textual */,
 			);
 			productName = Aicord;
@@ -1072,7 +1072,7 @@
 			mainGroup = AA1096D22E63BE84005BC3D2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A7A8FDAA28C8D8576D77D9DF /* XCLocalSwiftPackageReference "PaicordLib" */,
+				A7A8FDAA28C8D8576D77D9DF /* XCLocalSwiftPackageReference "AicordKit" */,
 				96E1E9909CA7AFE9B89478C2 /* XCLocalSwiftPackageReference "Textual" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -1548,9 +1548,9 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Textual;
 		};
-		A7A8FDAA28C8D8576D77D9DF /* XCLocalSwiftPackageReference "PaicordLib" */ = {
+		A7A8FDAA28C8D8576D77D9DF /* XCLocalSwiftPackageReference "AicordKit" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = PaicordLib;
+			relativePath = AicordKit;
 			traits = (
 			);
 		};
@@ -1561,9 +1561,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Textual;
 		};
-		9E27420250444A05FCADE929 /* PaicordLib */ = {
+		9E27420250444A05FCADE929 /* AicordKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = PaicordLib;
+			productName = AicordKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

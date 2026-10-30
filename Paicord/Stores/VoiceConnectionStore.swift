@@ -12,7 +12,7 @@
 
 import AVFoundation
 import Foundation
-import PaicordLib
+import AicordKit
 import os
 
 @MainActor

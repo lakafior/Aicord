@@ -7,7 +7,7 @@
 //  without forcing you to start from the server.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 struct SearchView: View {

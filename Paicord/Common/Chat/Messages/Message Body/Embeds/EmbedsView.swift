@@ -8,7 +8,7 @@
 
 import AVKit
 import Foundation
-import PaicordLib
+import AicordKit
 import SwiftUI
 import WebKit
 

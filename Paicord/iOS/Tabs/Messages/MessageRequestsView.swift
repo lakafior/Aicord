@@ -9,7 +9,7 @@
 //  through Channel Update and Channel Delete.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 enum MessageFolder: Hashable, CaseIterable, Identifiable {

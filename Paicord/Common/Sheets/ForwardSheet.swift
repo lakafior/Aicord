@@ -8,7 +8,7 @@
 //  is edited or deleted later.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 /// The message a forward is being picked for.

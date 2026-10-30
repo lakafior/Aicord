@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 /// Sheet on iOS, else its the popover on macOS/ipadOS.

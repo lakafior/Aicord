@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 import Security
 
 @MainActor

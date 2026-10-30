@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 import SwiftUI
 @preconcurrency import UserNotifications
 

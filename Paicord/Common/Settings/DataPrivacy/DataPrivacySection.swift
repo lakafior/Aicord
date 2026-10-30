@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftProtobuf
 import SwiftUI
 

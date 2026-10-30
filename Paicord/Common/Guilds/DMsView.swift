@@ -14,7 +14,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 struct DMsView: View {

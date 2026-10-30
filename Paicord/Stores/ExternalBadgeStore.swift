@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 
 /// External badge store (no third-party telemetry or sponsor badge endpoints).
 @MainActor

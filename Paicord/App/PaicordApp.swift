@@ -7,7 +7,7 @@
 //
 
 import Logging
-import PaicordLib
+import AicordKit
 import SwiftUI
 import UserNotifications
 

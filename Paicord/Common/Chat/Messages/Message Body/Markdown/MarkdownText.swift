@@ -5,7 +5,7 @@
 //  Created by Lakhan Lothiyi on 13/09/2025.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 import Textual
 

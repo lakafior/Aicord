@@ -6,7 +6,7 @@
 //  iPhone): where the call is, its state, and mute, deafen, leave.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 #if os(macOS)

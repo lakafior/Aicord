@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 
 /// Servers and channels pinned to the top of their lists. Discord has no
 /// pinning, so this lives in Aicord only, on this device.

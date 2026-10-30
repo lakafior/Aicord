@@ -5,7 +5,7 @@
 //  Copyright © 2026 Lakhan Lothiyi.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 /// Your own settings for one server: notifications, and the per-server

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 
 // https://docs.discord.food/topics/read-state#how-unreads-work
 

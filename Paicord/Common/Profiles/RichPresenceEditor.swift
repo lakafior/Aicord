@@ -3,7 +3,7 @@
 //  Aicord
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 /// Form for the user's own rich presence. Edits stay a draft until Apply.

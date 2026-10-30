@@ -6,7 +6,7 @@
 //  Copyright © 2025 Lakhan Lothiyi.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 /// Intended for desktop sheet with full profile details, activities etc.

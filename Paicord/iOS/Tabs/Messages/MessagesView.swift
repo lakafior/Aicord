@@ -6,7 +6,7 @@
 //  kept apart from the server list on the Home tab.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 struct MessagesView: View {

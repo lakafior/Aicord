@@ -7,7 +7,7 @@
 //
 
 import AVKit
-import PaicordLib
+import AicordKit
 import Speech
 import SwiftUI
 import Synchronization

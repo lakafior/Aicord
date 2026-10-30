@@ -8,7 +8,7 @@
 
 import CoreImage
 import CoreImage.CIFilterBuiltins
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 struct LoginView: View {

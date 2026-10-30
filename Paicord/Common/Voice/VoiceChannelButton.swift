@@ -6,7 +6,7 @@
 //  who is connected, with speaking rings for the channel we are in.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 struct VoiceChannelButton: View {

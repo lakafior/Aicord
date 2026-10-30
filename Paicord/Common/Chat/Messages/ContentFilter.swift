@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 /// Where a message came from; Discord's content settings differ per origin.

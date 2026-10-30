@@ -7,7 +7,7 @@
 //
 
 import DiscordModels
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 struct MemberSidebarView: View {

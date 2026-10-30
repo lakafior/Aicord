@@ -8,7 +8,7 @@
 
 import AVFoundation
 import ImageIO
-import PaicordLib
+import AicordKit
 import PhotosUI
 import QuickLookThumbnailing
 import SwiftUI

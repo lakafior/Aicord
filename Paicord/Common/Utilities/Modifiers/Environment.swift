@@ -8,7 +8,7 @@
 
 // Some new environment values for storing things like the gateway, app state, and optional values like the current guild or channel stores.
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 extension EnvironmentValues {

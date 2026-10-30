@@ -9,7 +9,7 @@
 // Presents the emoji picker for adding a reaction to a message. Lives at the
 // root so the picker survives the message cell that asked for it going away.
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 /// Identifies the message a reaction is being picked for.

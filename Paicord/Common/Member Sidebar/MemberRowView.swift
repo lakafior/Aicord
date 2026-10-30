@@ -5,7 +5,7 @@
 //  Created by plzdonthaxme on 23/10/2025.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 extension MemberSidebarView {

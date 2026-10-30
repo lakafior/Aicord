@@ -8,7 +8,7 @@
 
 import AVFoundation
 import AVKit
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 #if os(macOS)

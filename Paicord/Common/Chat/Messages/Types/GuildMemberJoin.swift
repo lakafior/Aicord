@@ -5,7 +5,7 @@
 //  Created by tiramisu on 2026.05.04.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 extension MessageCell {

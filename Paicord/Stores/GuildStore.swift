@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import PaicordLib
+import AicordKit
 
 typealias MemberBox = ObservableBox<Guild.PartialMember>
 typealias RoleBox = ObservableBox<Role>

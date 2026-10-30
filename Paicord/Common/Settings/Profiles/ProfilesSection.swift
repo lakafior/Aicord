@@ -7,7 +7,7 @@
 //
 
 import ImageIO
-import PaicordLib
+import AicordKit
 import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers

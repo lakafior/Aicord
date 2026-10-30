@@ -6,7 +6,7 @@
 //  Banner and header layout come from the former iPhone Profile tab by Lakhan Lothiyi.
 //
 
-import PaicordLib
+import AicordKit
 import SwiftUI
 
 extension SettingsView {
