@@ -182,6 +182,8 @@
 		AE631BFE6FB4E0651689C95A /* ChannelSummarySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6C4BDABF659803E2DC6E50 /* ChannelSummarySheet.swift */; };
 		AEC984EA59058671A6BA298E /* IntelligenceSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2197ABABD1CA24257CB695 /* IntelligenceSection.swift */; };
 		AE20AC89771EEC582C914D08 /* CatchUpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE47218BB51CFFA380642130 /* CatchUpSheet.swift */; };
+		AE604E11DEAF72F688E76E16 /* IntelligenceTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */; };
+		AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -398,6 +400,8 @@
 		AE6C4BDABF659803E2DC6E50 /* ChannelSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSummarySheet.swift; sourceTree = "<group>"; };
 		AE2197ABABD1CA24257CB695 /* IntelligenceSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceSection.swift; sourceTree = "<group>"; };
 		AE47218BB51CFFA380642130 /* CatchUpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatchUpSheet.swift; sourceTree = "<group>"; };
+		AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceTools.swift; sourceTree = "<group>"; };
+		AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskChannelSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1130,6 +1134,8 @@
 		AE00CD4D95B942E89273CB85 /* Intelligence */ = {
 			isa = PBXGroup;
 			children = (
+				AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */,
+				AE7E16B0D44CDBECA95ECA5C /* IntelligenceTools.swift */,
 				AE47218BB51CFFA380642130 /* CatchUpSheet.swift */,
 				AE6C4BDABF659803E2DC6E50 /* ChannelSummarySheet.swift */,
 				AEB938C308AE9F2BC13D2598 /* MessageTranslation.swift */,
@@ -1272,6 +1278,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */,
+				AE604E11DEAF72F688E76E16 /* IntelligenceTools.swift in Sources */,
 				AE20AC89771EEC582C914D08 /* CatchUpSheet.swift in Sources */,
 				AEC984EA59058671A6BA298E /* IntelligenceSection.swift in Sources */,
 				AE631BFE6FB4E0651689C95A /* ChannelSummarySheet.swift in Sources */,

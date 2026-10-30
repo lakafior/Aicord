@@ -223,3 +223,90 @@ class IntelligenceTests: XCTestCase {
     XCTAssertEqual(list.data?.map(\.id), ["b", "a"])
   }
 }
+
+class ToolAgentTests: XCTestCase {
+  typealias Message = OpenAICompatibleClient.Message
+
+  actor Log {
+    var toolCounts: [Int] = []
+    var runs: [String] = []
+    func turn(_ count: Int) { toolCounts.append(count) }
+    func run(_ args: String) { runs.append(args) }
+  }
+
+  func testAgentCallsToolsThenAnswers() async throws {
+    let log = Log()
+    let search = ToolAgent.Tool(
+      name: "search", description: "Search", parameters: .objectSchema([("text", "string", "Words")])
+    ) { args in
+      await log.run(args)
+      return "[1] Ola: the auction ends Friday"
+    }
+    let agent = ToolAgent(tools: [search], maxCalls: 3) { messages, tools in
+      await log.turn(tools.count)
+      if messages.contains(where: { $0.role == "tool" }) {
+        return Message(role: "assistant", content: .text("- It ends Friday [1]"))
+      }
+      return Message(
+        role: "assistant", content: .text(""),
+        tool_calls: [.init(id: "a", name: "search", arguments: #"{"text":"auction"}"#)])
+    }
+    let answer = try await agent.answer(instructions: "i", prompt: "When does the auction end?")
+    XCTAssertEqual(answer, "- It ends Friday [1]")
+    let runs = await log.runs
+    XCTAssertEqual(runs, [#"{"text":"auction"}"#])
+  }
+
+  func testAgentStopsOfferingToolsAtTheLimit() async throws {
+    let log = Log()
+    let search = ToolAgent.Tool(name: "search", description: "", parameters: .objectSchema([])) { _ in
+      "nothing"
+    }
+    let agent = ToolAgent(tools: [search], maxCalls: 2) { _, tools in
+      await log.turn(tools.count)
+      if tools.isEmpty { return Message(role: "assistant", content: .text("gave up")) }
+      return Message(
+        role: "assistant", content: .text(""),
+        tool_calls: [.init(id: UUID().uuidString, name: "search", arguments: "{}")])
+    }
+    let answer = try await agent.answer(instructions: "", prompt: "")
+    XCTAssertEqual(answer, "gave up")
+    let counts = await log.toolCounts
+    XCTAssertEqual(counts, [1, 1, 0])
+  }
+
+  func testUnknownToolAndExtraCallsGetAnExplanation() async throws {
+    let agent = ToolAgent(tools: [], maxCalls: 0) { messages, _ in
+      if let last = messages.last, last.role == "tool" {
+        return Message(role: "assistant", content: .text(last.content.text))
+      }
+      return Message(
+        role: "assistant", content: .text(""),
+        tool_calls: [.init(id: "x", name: "deleteEverything", arguments: "{}")])
+    }
+    let answer = try await agent.answer(instructions: "", prompt: "")
+    XCTAssertEqual(answer, ToolAgent.limitReached)
+  }
+
+  func testToolCallsRoundTripThroughJSON() throws {
+    let reply = """
+      {"choices":[{"message":{"role":"assistant","content":null,"tool_calls":[{"id":"c1","type":"function","function":{"name":"search","arguments":"{\\"text\\":\\"agent\\"}"}}]}}]}
+      """
+    let decoded = try JSONDecoder().decode(
+      OpenAICompatibleClient.ChatResponse.self, from: Data(reply.utf8))
+    let call = decoded.choices?.first?.message?.tool_calls?.first
+    XCTAssertEqual(call?.function.name, "search")
+    XCTAssertEqual(call?.function.arguments, #"{"text":"agent"}"#)
+
+    let definition = OpenAICompatibleClient.ToolDefinition(
+      name: "search", description: "Find messages",
+      parameters: .objectSchema([("text", "string", "Words")], required: ["text"]))
+    let json = String(decoding: try JSONEncoder().encode(definition), as: UTF8.self)
+    XCTAssertTrue(json.contains(#""type":"function""#))
+    XCTAssertTrue(json.contains(#""required":["text"]"#))
+
+    let toolMessage = String(
+      decoding: try JSONEncoder().encode(Message.tool("ok", callID: "c1")), as: UTF8.self)
+    XCTAssertTrue(toolMessage.contains(#""tool_call_id":"c1""#))
+  }
+}

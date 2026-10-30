@@ -37,6 +37,7 @@ struct ChannelIntelligenceMenu: View {
   @Environment(\.gateway) var gw
   let channelId: ChannelSnowflake
   @Binding var summary: SummaryRange?
+  @Binding var asking: Bool
 
   var body: some View {
     Menu {
@@ -53,6 +54,13 @@ struct ChannelIntelligenceMenu: View {
           } label: {
             Label("Last \(count) Messages", systemImage: "text.line.first.and.arrowtriangle.forward")
           }
+        }
+      }
+      Section {
+        Button {
+          asking = true
+        } label: {
+          Label("Ask About This Channel", systemImage: "questionmark.bubble")
         }
       }
     } label: {

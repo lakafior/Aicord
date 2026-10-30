@@ -48,10 +48,22 @@ public struct OpenAICompatibleClient: Sendable {
   public struct Message: Codable, Sendable, Equatable {
     public var role: String
     public var content: Content
+    /// Functions the model wants called, on an assistant message.
+    public var tool_calls: [ToolCall]?
+    /// The call a `tool` message answers.
+    public var tool_call_id: String?
 
-    public init(role: String, content: Content) {
+    public init(
+      role: String, content: Content, tool_calls: [ToolCall]? = nil, tool_call_id: String? = nil
+    ) {
       self.role = role
       self.content = content
+      self.tool_calls = tool_calls
+      self.tool_call_id = tool_call_id
+    }
+
+    public static func tool(_ text: String, callID: String) -> Self {
+      .init(role: "tool", content: .text(text), tool_call_id: callID)
     }
 
     public static func system(_ text: String) -> Self { .init(role: "system", content: .text(text)) }
@@ -111,6 +123,41 @@ public struct OpenAICompatibleClient: Sendable {
     var messages: [Message]
     var temperature: Double
     var max_tokens: Int?
+    var tools: [ToolDefinition]?
+  }
+
+  /// A function the model may call, described by a JSON schema.
+  public struct ToolDefinition: Encodable, Sendable, Equatable {
+    public var type = "function"
+    public var function: Function
+
+    public struct Function: Encodable, Sendable, Equatable {
+      public var name: String
+      public var description: String
+      public var parameters: JSONValue
+    }
+
+    public init(name: String, description: String, parameters: JSONValue) {
+      function = .init(name: name, description: description, parameters: parameters)
+    }
+  }
+
+  public struct ToolCall: Codable, Sendable, Equatable {
+    public var id: String
+    public var type: String?
+    public var function: Function
+
+    public struct Function: Codable, Sendable, Equatable {
+      public var name: String
+      /// JSON text, as the model wrote it.
+      public var arguments: String
+    }
+
+    public init(id: String, name: String, arguments: String) {
+      self.id = id
+      self.type = "function"
+      self.function = .init(name: name, arguments: arguments)
+    }
   }
 
   struct ChatResponse: Decodable {
@@ -179,6 +226,27 @@ public struct OpenAICompatibleClient: Sendable {
     let trimmed = Self.strippingReasoning(text).trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { throw ClientError.emptyReply }
     return trimmed
+  }
+
+  /// One turn with functions on offer: the reply is either text or calls to make.
+  public func turn(_ messages: [Message], tools: [ToolDefinition]) async throws -> Message {
+    let body = try JSONEncoder().encode(
+      ChatRequest(
+        model: model, messages: messages, temperature: 0.2, max_tokens: nil,
+        tools: tools.isEmpty ? nil : tools)
+    )
+    let data = try await send(request(path: "chat/completions", body: body))
+    guard let response = try? JSONDecoder().decode(ChatResponse.self, from: data),
+      var message = response.choices?.first?.message
+    else { throw ClientError.badResponse }
+    if message.tool_calls?.isEmpty == true { message.tool_calls = nil }
+    if message.tool_calls == nil {
+      let text = Self.strippingReasoning(message.content.text)
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+      guard !text.isEmpty else { throw ClientError.emptyReply }
+      message.content = .text(text)
+    }
+    return message
   }
 
   public func complete(instructions: String, prompt: String, maxTokens: Int? = nil) async throws

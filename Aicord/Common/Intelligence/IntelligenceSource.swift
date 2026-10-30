@@ -58,9 +58,12 @@ enum IntelligenceSource {
     of messages: [DiscordChannel.Message],
     guildId: GuildSnowflake?,
     gw: GatewayStore,
-    maxCharacters: Int = 600
+    maxCharacters: Int = 600,
+    into existing: IntelligenceTranscript = IntelligenceTranscript(),
+    describesPlace: Bool = false
   ) -> IntelligenceTranscript {
-    var transcript = IntelligenceTranscript()
+    var transcript = existing
+    let known = Set(existing.messages.map(\.id))
     let inServer = guildId != nil
     let guildChannels = guildId.flatMap { gw.user.guilds[$0]?.channels } ?? []
     let channelNames = Dictionary(
@@ -70,7 +73,7 @@ enum IntelligenceSource {
       (guildId.flatMap { gw.user.guilds[$0]?.roles } ?? []).map { ($0.id.rawValue, $0.name) },
       uniquingKeysWith: { first, _ in first })
 
-    for message in messages {
+    for message in messages where !known.contains(message.id) {
       guard let author = message.author else { continue }
       if let relationship = gw.user.relationships[author.id],
         relationship.type == .blocked || relationship.user_ignored
@@ -122,7 +125,13 @@ enum IntelligenceSource {
       if let reply = message.referenced_message?.value, let replyAuthor = reply.author {
         text = "(replying to \(replyAuthor.global_name ?? replyAuthor.username)) " + text
       }
-      let name = message.member?.nick ?? author.global_name ?? author.username
+      var name = message.member?.nick ?? author.global_name ?? author.username
+      if describesPlace {
+        // search results come from anywhere and any time
+        let date = message.timestamp.date.formatted(.iso8601.year().month().day())
+        let channel = channelNames[message.channel_id.rawValue].map { " #\($0)" } ?? ""
+        name += " (\(date)\(channel))"
+      }
       transcript.messages.append(message)
       transcript.lines.append(
         IntelligenceText.line(

@@ -20,6 +20,7 @@ struct ChatView: View {
 
   @State private var currentScrollPosition: MessageSnowflake?
   @State private var summaryRange: SummaryRange?
+  @State private var askingChannel = false
   @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
 
@@ -192,7 +193,8 @@ struct ChatView: View {
       // read-only summaries; in DMs only when allowed in Settings → Intelligence
       if !isPrivateChannel || intelligenceInDMs {
         ToolbarItem(placement: .primaryAction) {
-          ChannelIntelligenceMenu(channelId: vm.channelId, summary: $summaryRange)
+          ChannelIntelligenceMenu(
+            channelId: vm.channelId, summary: $summaryRange, asking: $askingChannel)
         }
       }
       // no calls before a request is accepted
@@ -212,6 +214,10 @@ struct ChatView: View {
         channelName: channelTitle,
         range: range
       )
+    }
+    .sheet(isPresented: $askingChannel) {
+      AskChannelSheet(
+        channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
     }
     .onChange(of: vm.scrollRequest) { _, request in
       guard let request else { return }
