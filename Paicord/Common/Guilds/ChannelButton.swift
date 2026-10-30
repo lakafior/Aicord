@@ -319,17 +319,18 @@ struct ChannelButton: View {
   }
 
   struct CategoryButton: View {
-    @Environment(\.userInterfaceIdiom) var idiom
+    @Environment(\.isFirstInChannelList) var isFirst
     @Environment(\.guildStore) var guild
     var channelIDs: [ChannelSnowflake]
     var channels: [ChannelSnowflake: DiscordChannel]
     var channel: DiscordChannel
 
+    /// Categories start expanded; only the ones the user collapses are remembered.
     @State private var isExpanded: Bool {
       didSet {
         UserDefaults.standard.set(
-          isExpanded,
-          forKey: "GuildCategory.\(channel.id).Expanded"
+          !isExpanded,
+          forKey: "GuildCategory.\(channel.id).Collapsed"
         )
       }
     }
@@ -355,8 +356,8 @@ struct ChannelButton: View {
       self.channels = channels
       self.channel = channel
       self._isExpanded = .init(
-        initialValue: UserDefaults.standard.bool(
-          forKey: "GuildCategory.\(channel.id).Expanded"
+        initialValue: !UserDefaults.standard.bool(
+          forKey: "GuildCategory.\(channel.id).Collapsed"
         )
       )
     }
@@ -364,36 +365,39 @@ struct ChannelButton: View {
     var body: some View {
       if !shouldHide {
         VStack(spacing: 1) {
+          // a hairline between categories, not above the first item
+          if !isFirst {
+            Divider()
+              .padding(.horizontal, 10)
+              .padding(.bottom, 4)
+          }
           Button {
             withAnimation(.smooth(duration: 0.2)) {
               isExpanded.toggle()
             }
           } label: {
-            HStack {
-              if idiom == .phone || idiom == .pad {
-                Image(systemName: "chevron.down")
-                  .imageScale(.small)
-                  .rotationEffect(.degrees(isExpanded ? 0 : -90))
-              }
+            HStack(spacing: 6) {
               Text(channel.name ?? "Unknown Category")
-                .font(.subheadline)
-                .fontWeight(.semibold)
+                .font(.footnote.weight(.semibold))
+                .textCase(.uppercase)
+                .tracking(0.4)
+                .foregroundStyle(.secondary)
 
-              Spacer()
+              Spacer(minLength: 4)
 
-              if idiom == .mac {
-                Image(systemName: "chevron.down")
-                  .imageScale(.small)
-                  .fontWeight(.semibold)
-                  .rotationEffect(.degrees(isExpanded ? 0 : -90))
-              }
-
+              Image(systemName: "chevron.right")
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.tertiary)
+                .rotationEffect(.degrees(isExpanded ? 90 : 0))
             }
-            .foregroundStyle(.secondary)
             .lineLimit(1)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .contentShape(.rect)
           }
-          .padding(.horizontal, 4)
           .buttonStyle(.borderless)
+          .accessibilityAddTraits(.isHeader)
+          .accessibilityValue(isExpanded ? Text("Expanded") : Text("Collapsed"))
 
           if isExpanded {
             ForEach(channelIDs, id: \.self) { channelId in
@@ -416,6 +420,11 @@ struct ChannelButton: View {
       channels: channels,
       channel: channel
     )
-    .padding(.top, 10)
+    .padding(.top, 4)
   }
+}
+
+extension EnvironmentValues {
+  /// Whether a channel list row is the first one, so it can skip its separator.
+  @Entry var isFirstInChannelList: Bool = false
 }

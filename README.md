@@ -45,6 +45,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
 - **New** · iOS draws the app with Liquid Glass: the compatibility flag that kept the old look is gone, the tab bar is the system glass one and lists scroll underneath it
 - **New** · Settings is a tab on iPhone; the empty Notifications tab is gone
+- **New** · Channel categories start expanded and have cleaner headers with a hairline between them
 - **New** · Working status picker (online, idle, do not disturb, invisible) and a custom status editor with emoji and "clear after", saved to your account so other clients see it
 - **New** · "Member since" on your profile, and Log Out next to account switching
 - **New** · The iPhone Profile tab is a native list: header, custom status, status, about me, activity and accounts in one place

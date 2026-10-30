@@ -61,11 +61,23 @@ struct GuildView: View {
             }
           }
 
+        // hidden channels render nothing, so the separator skips the first one that shows
+        let firstVisibleID = uncategorizedChannels.first { channel in
+          if channel.type == .guildCategory {
+            let categoryID = AnySnowflake(channel.id)
+            return guild.channels.values.contains {
+              $0.parent_id == categoryID && guild.hasPermission(channel: $0, .viewChannel)
+            }
+          }
+          return guild.hasPermission(channel: channel, .viewChannel)
+        }?.id
+
         VStack(spacing: 1) {
           ForEach(uncategorizedChannels) { channel in
             ChannelButton(channels: guild.channels, channel: channel)
               .padding(.horizontal, 4)
               .frame(maxWidth: .infinity, alignment: .leading)
+              .environment(\.isFirstInChannelList, channel.id == firstVisibleID)
           }
         }
         .padding(.vertical, 4)
