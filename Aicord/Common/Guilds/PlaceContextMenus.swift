@@ -29,6 +29,7 @@ struct GuildContextMenu: ViewModifier {
   @State private var showsSettings = false
   @State private var showsInvite = false
   @State private var showsCatchUp = false
+  @State private var showsLeave = false
   @State private var error: String?
 
   func body(content: Content) -> some View {
@@ -73,7 +74,15 @@ struct GuildContextMenu: ViewModifier {
             copyToPasteboard(guild.id.rawValue)
           }
         }
+
+        if LeaveServer.canLeave(guild, gw: gw) {
+          Divider()
+          Button("Leave Server", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
+            showsLeave = true
+          }
+        }
       }
+      .leaveServerConfirmation(isPresented: $showsLeave, guild: guild)
       .sheet(isPresented: $showsSettings) {
         ServerSettingsSheet(guildId: guild.id)
       }

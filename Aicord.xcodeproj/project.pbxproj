@@ -15,6 +15,8 @@
 		5AFEF657D454654A8F2C4082 /* AicordSafari.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5AFEDA6B3775552587C1C25A /* AicordSafari.appex */; platformFilters = (ios, macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1A7F501E161E4DAD6C94F7C8 /* InvitePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */; };
 		1A7F4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift */; };
+		BDE5D9945DEAF7729CD99416 /* SafariExtensionGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = F34F85AD5CC5B7FA6C495015 /* SafariExtensionGuide.swift */; };
+		3755AD1F15283F948096ABD1 /* ServerInvitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4A4EB17D56C7699B48F04A8 /* ServerInvitesView.swift */; };
 		1A7FB8862910F45731B26854 /* AddFriend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7EB8862910F45731B26854 /* AddFriend.swift */; };
 		1A7F7D8F22A9583785112D86 /* VideoEmbedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E7D8F22A9583785112D86 /* VideoEmbedView.swift */; };
 		0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92981EF5B411046392600481 /* RichPresence.swift */; };
@@ -235,6 +237,8 @@
 		5AFEC16865E4689658CF58E7 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; path = _locales; sourceTree = "<group>"; };
 		1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InvitePreview.swift"; sourceTree = "<group>"; };
 		1A7E4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InvitePeopleSheet.swift"; sourceTree = "<group>"; };
+		F34F85AD5CC5B7FA6C495015 /* SafariExtensionGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SafariExtensionGuide.swift"; sourceTree = "<group>"; };
+		E4A4EB17D56C7699B48F04A8 /* ServerInvitesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ServerInvitesView.swift"; sourceTree = "<group>"; };
 		1A7EB8862910F45731B26854 /* AddFriend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddFriend.swift"; sourceTree = "<group>"; };
 		1A7E7D8F22A9583785112D86 /* VideoEmbedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VideoEmbedView.swift"; sourceTree = "<group>"; };
 		571AE5B02FFD7726006D609C /* ObservableBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableBox.swift; sourceTree = "<group>"; };
@@ -532,6 +536,8 @@
 				C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */,
 				1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */,
 				1A7E4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift */,
+				F34F85AD5CC5B7FA6C495015 /* SafariExtensionGuide.swift */,
+				E4A4EB17D56C7699B48F04A8 /* ServerInvitesView.swift */,
 				C0FFEE012F00000000000001 /* PlaceContextMenus.swift */,
 			);
 			path = Guilds;
@@ -1338,6 +1344,8 @@
 				C0FFEE012F00000000000004 /* ServerSettingsSheet.swift in Sources */,
 				1A7F501E161E4DAD6C94F7C8 /* InvitePreview.swift in Sources */,
 				1A7F4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift in Sources */,
+				BDE5D9945DEAF7729CD99416 /* SafariExtensionGuide.swift in Sources */,
+				3755AD1F15283F948096ABD1 /* ServerInvitesView.swift in Sources */,
 				C0FFEE012F00000000000002 /* PlaceContextMenus.swift in Sources */,
 				AA4207CF2F2D1170006B8227 /* EmojiPicker.swift in Sources */,
 				AA2F51C32EE4ABCE00F18DB7 /* Storage.swift in Sources */,

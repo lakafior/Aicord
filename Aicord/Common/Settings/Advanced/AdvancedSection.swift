@@ -52,6 +52,16 @@ struct AdvancedSettings: View {
     }
 
     Section {
+      NavigationLink {
+        SafariExtensionGuide()
+      } label: {
+        Label("Safari Extension", systemImage: "safari")
+      }
+    } footer: {
+      Text("Open discord.gg and discord.com/invite links from Safari in Aicord.")
+    }
+
+    Section {
       LabeledContent("Image Cache") {
         if let cacheSize {
           Text(cacheSize.formatted(.byteCount(style: .file)))

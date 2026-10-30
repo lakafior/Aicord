@@ -25,6 +25,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · YouTube and other video links show a card with the channel, title and a thumbnail with a play button; tapping opens the video in its app or the browser. Poll results and AutoMod alerts get cards too, so no more “Unsupported embed type”
 - **New** · Add Friend by username from Messages → Friends, with clear errors, and from people's profiles
 - **New** · Invite People from the server menu and Server Settings: pick the channel, expiry and use limit, then copy or share the link
+- **New** · Server Settings → Invites lists the server's invite links with their channel, who made them, uses and expiry, and revokes one after a confirmation
+- **New** · Leave Server in a server's menu and in Server Settings, after a confirmation; it isn't offered to the server's owner
 - **New** · Server invite links in chat show the server with a Join button, or Open if you're already in it; tapped invite links open the same preview
 - **New** · Forward messages to up to five DMs, group chats or channels with an optional comment; forwarded messages show where they came from, and tapping the source opens the original
 - **New** · Message Requests and Spam folders in Messages (on Mac and iPad above the direct messages): accept, ignore or reject requests, move messages out of spam or delete them
@@ -63,7 +65,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 ### App and design
 
 - **New** · Home and the member list are native lists: channels are a sidebar on Mac and iPad and an Apple Music–style plain list on iPhone, with collapsible categories that remember their state, system selection, and corners and backgrounds that match in light and dark
-- **New** · A Safari extension (iOS and macOS) opens discord.gg and discord.com/invite links in Aicord instead of the website
+- **New** · A Safari extension (iOS and macOS) opens discord.gg and discord.com/invite links in Aicord instead of the website; Settings → Advanced → Safari Extension explains how to turn it on, and the first invite preview offers to show you
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
 - **New** · iOS draws the app with Liquid Glass: the compatibility flag that kept the old look is gone, the tab bar is the system glass one and lists scroll underneath it
 - **New** · iPhone tabs are Home, Messages, Search and Settings; Messages holds direct messages, group chats, mentions and friends, and your status and activity sit behind a profile card at the top of Settings
@@ -93,6 +95,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **Fixed** · Changing account settings actually reaches Discord (the request went out empty), and settings changed on another device are merged in
 - **Fixed** · Incoming messages keep their slash command info, and a message reference without a type no longer breaks decoding
 - **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file
+- **Fixed** · Clicking a link in a message on the Mac opens it again, and invite links open their preview; a click handler on the whole chat swallowed the clicks
+- **Fixed** · Counts like “1 use” and “2 attachments” read properly instead of showing “^[2 use](inflect: true)”
 
 ### Removed
 
@@ -300,6 +304,11 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [x] Invite People w menu serwera i w Server Settings: kanał, czas ważności (30 min do „nigdy”), limit użyć, kopiowanie i `ShareLink`. Sprawdzone na NAScin.
    - [x] Join: karta zaproszenia w czacie i podgląd po otwarciu linku (`resolveInvite`: ikona, nazwa, liczba członków), Join albo Open, gdy już jesteś na serwerze; parsowanie linków zaproszeń w AicordKit.
    - [x] Rozszerzenie Safari „Aicord Invites” (iOS i macOS): linki `discord.gg/…` i `discord.com/invite/…` otwierane w Aicord przez `aicord://invite/…`. Przekazanie linku sprawdzone na obu systemach; włączenie w Safari do zrobienia przez użytkownika. Przy AltStore z darmowym kontem zajmuje jedno z 3 App ID. Szczegóły: `docs/INVITES_NOTES.md`.
+   - [x] Leave Server w menu serwera i w Server Settings (`DELETE /users/@me/guilds/{id}`), za alertem z Cancel; ukryte dla właściciela. Po wyjściu z otwartego serwera wraca na Home. Sprawdzone w symulatorze tylko do alertu i Cancel (Sciwand), na NAScin opcji nie ma.
+   - [x] Server Settings → Invites: lista zaproszeń serwera (kanał, kto utworzył, użycia, ważność), Revoke za potwierdzeniem, kopiowanie linku, przesunięcie na iOS. Pokazywane przy Manage Server. Na NAScin unieważnione stare `EdxGVcWd` (noc 30/31.10).
+   - [x] Ekran z instrukcją włączenia rozszerzenia Safari (Settings → Advanced → Safari Extension), na macOS ze stanem rozszerzenia i przyciskiem do ustawień Safari; przy pierwszym podglądzie zaproszenia otwartym w aplikacji jednorazowa podpowiedź (znika po „Not Now”, obejrzeniu instrukcji albo pierwszym linku z rozszerzenia).
+   - [x] fix(macOS): kliknięcie linku w treści wiadomości nic nie robiło. Cała lista czatu miała `.onTapGesture` (focus pod Esc), który zjadał kliknięcia, zanim dotarły do `NSTextInteractionView` z Textual. Focus ustawia się teraz przy przewijaniu. Do sprawdzenia na Macu.
+   - [x] fix: liczniki z `^[…](inflect: true)` w zwykłym `String` (użycia zaproszeń, załączniki w Forward) pokazywały surowy zapis; teraz przez `AttributedString(localized:)`.
 
 ---
 

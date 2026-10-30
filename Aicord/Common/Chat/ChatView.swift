@@ -117,7 +117,9 @@ struct ChatView: View {
         // esc to scroll to bottom of chat, its a little jank
         .focusable()
         .focusEffectDisabled()
-        .onTapGesture { isChatFocused = true }
+        // no tap gesture here: on macOS a click recogniser on the whole list
+        // swallowed mouse-downs before Textual's text view saw them, so links
+        // in messages (invite links among them) did nothing when clicked
         .focused($isChatFocused)
         .onKeyPress(.escape, phases: .down) { _ in
           vm.requestScrollToBottom(immediate: true)
@@ -127,6 +129,10 @@ struct ChatView: View {
       #endif
       .onScrollPhaseChange { _, newPhase in
         isScrolling = newPhase.isScrolling
+        #if os(macOS)
+          // scrolling the chat is what makes Esc jump back to the bottom
+          if newPhase == .interacting { isChatFocused = true }
+        #endif
       }
       .scrollPosition(id: $currentScrollPosition, anchor: .bottom)  // causes issues with input bar height changes:
       // currently, the input bar changing size can cause the scrollview position to jump unexpectedly.

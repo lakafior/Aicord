@@ -82,6 +82,7 @@ struct RootView: View {
       guard gatewayStore.accounts.currentAccountID != nil,
         let code = InviteLink.code(from: url)
       else { return }
+      SafariExtensionGuide.markWorking()
       appState.invitePreviewCode = code
     }
     #if os(macOS)
