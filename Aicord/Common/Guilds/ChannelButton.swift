@@ -83,7 +83,7 @@ struct ChannelButton: View {
         hiddenRow
       } else {
         serverChannelLabel
-          .foregroundStyle(.tertiary)
+          .opacity(0.5)
           .selectionDisabled()
           .modifier(OptionalChannelContextMenu(channel: channel, guildId: guild?.guildId))
       }
