@@ -54,6 +54,24 @@ struct SearchView: View {
         if query.isEmpty && tokens.isEmpty {
           tips
         } else {
+          if looksLikeSentence {
+            Section {
+              Button {
+                searchWithSentence()
+              } label: {
+                HStack {
+                  Label("Search with a Sentence", systemImage: "sparkles")
+                  if interpreting {
+                    Spacer()
+                    ProgressView()
+                  }
+                }
+              }
+              .disabled(interpreting)
+            } footer: {
+              Text("Turns what you wrote into a server, channel, person, dates and keywords. Only the sentence goes to the language model.")
+            }
+          }
           serverResults
           channelResults
           peopleResults
@@ -504,6 +522,7 @@ struct SearchView: View {
       // each inner array holds the match first; extra entries are context
       result.items += page.messages.compactMap(\.first)
     } catch {
+      if !Task.isCancelled { print("[Search] Message search failed:", error) }
       result.failed = !Task.isCancelled
     }
     return result

@@ -44,24 +44,33 @@ extension SearchView {
     }
   }
 
+  /// A text channel you can read, the exact name first.
+  func readableChannel(named name: String, in guild: GuildSnowflake) -> DiscordChannel? {
+    let store = gw.existingGuildStore(for: guild)
+    let channels = (gw.user.guilds[guild]?.channels ?? []).filter {
+      [.guildText, .guildAnnouncement, .guildForum].contains($0.type)
+        && store?.hasPermission(channel: $0, .viewChannel) != false
+        && store?.hasPermission(channel: $0, .readMessageHistory) != false
+    }
+    return channels.first { ($0.name ?? "").caseInsensitiveCompare(name) == .orderedSame }
+      ?? channels.first { ($0.name ?? "").localizedCaseInsensitiveContains(name) }
+  }
+
   /// Sets tokens, has-filters and dates from what the model understood.
   func apply(_ intent: SearchIntent) {
     var newTokens = tokens
     var guild = serverID
     if let name = intent.server,
       let match = gw.user.guilds.values.first(where: {
-        $0.name.localizedCaseInsensitiveContains(name)
+        $0.name.caseInsensitiveCompare(name) == .orderedSame
       })
+        ?? gw.user.guilds.values.first(where: { $0.name.localizedCaseInsensitiveContains(name) })
     {
       guild = match.id
       newTokens.removeAll { $0.kind == .server || $0.kind == .channel }
       newTokens.append(.server(match.id))
     }
-    if let name = intent.channel, let guild,
-      let channel = (gw.user.guilds[guild]?.channels ?? []).first(where: {
-        ($0.name ?? "").localizedCaseInsensitiveContains(name)
-      })
-    {
+    if let name = intent.channel, let guild, let channel = readableChannel(named: name, in: guild) {
       newTokens.removeAll { $0.kind == .server || $0.kind == .channel }
       newTokens.append(.channel(guild, channel.id))
     }
@@ -85,7 +94,12 @@ extension SearchView {
     if let after = intent.after.flatMap(day.date(from:)) { filters.from = after }
     if let before = intent.before.flatMap(day.date(from:)) { filters.to = before }
     tokens = newTokens
-    text = intent.keywords ?? ""
+    // names that became tokens aren't words to look for
+    var keywords = intent.keywords ?? ""
+    for name in [intent.server, intent.channel, intent.author].compactMap({ $0 }) {
+      keywords = keywords.replacingOccurrences(of: name, with: "", options: .caseInsensitive)
+    }
+    text = keywords.split(separator: " ").joined(separator: " ")
     runMessageSearch(debounce: false)
   }
 }
