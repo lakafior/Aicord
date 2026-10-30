@@ -58,6 +58,7 @@ Po Etapie 7 (odchudzenie biblioteki) i po scaleniu zestawu Messages (Forward zmi
 4. **Czytanie i nadrabianie:**
    - [ ] „Co mnie ominęło”: wszystkie nieprzeczytane kanały naraz jako jedna lista (serwer → kanał → 2–3 punkty).
    - [ ] Podsumowanie wątku albo łańcucha odpowiedzi od wybranej wiadomości w górę.
+   - [ ] „Explain Context” po przytrzymaniu wiadomości: najpierw twarde powiązania bez modelu (łańcuch odpowiedzi do początku, wzmianki, cytaty, forwardy), potem okolica w rosnących oknach (20 → 50 → 150…) z wagą dla tych samych autorów, wspomnianych osób i wspólnych słów; model po każdej rundzie ocenia, czy już wie, do czego odnosi się wiadomość, z twardym limitem rund i wiadomości. Wynik: jedno-dwa zdania („odpowiedź Ani na pytanie Tomka o wysyłkę z 14:02”), linki do kluczowych wiadomości i „Show Conversation”, czyli widok tylko tej jednej rozmowy wyłuskanej z kanału.
    - [ ] „Wyjaśnij”: slang, skróty i żargon serwera (np. W2C, QC) z kontekstem kilku wcześniejszych wiadomości.
 5. **Wyszukiwanie:**
    - [ ] Wyszukiwanie w języku naturalnym w Search: zdanie („kto polecał agenta do wysyłki w zeszłym tygodniu”) zamienione na filtry (autor, kanał, daty, „zawiera link”), wyniki ułożone od najtrafniejszych.
