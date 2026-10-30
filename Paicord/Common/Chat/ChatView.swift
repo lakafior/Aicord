@@ -152,7 +152,12 @@ struct ChatView: View {
         }
       }
 
-      if vm.hasPermission(.sendMessages) {
+      if let channel = gw.user.privateChannels[vm.channelId],
+        channel.isPendingMessageRequest || channel.isSpam
+      {
+        // replying would accept the request, so ask first
+        MessageRequestBar(channel: channel)
+      } else if vm.hasPermission(.sendMessages) {
         InputBar(vm: vm)
           .id(vm.channelId)
       } else {

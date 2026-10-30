@@ -55,6 +55,7 @@
 		AA1097172E64C181005BC3D2 /* SmallBaseplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */; };
 		AA1097182E64C181005BC3D2 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097092E64C181005BC3D2 /* HomeView.swift */; };
 		AA10971A2E64C181005BC3D2 /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10970D2E64C181005BC3D2 /* MessagesView.swift */; };
+		FFF120AE8D0339D38072C91F /* MessageRequestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4FFA92C2DFA47F205C9009 /* MessageRequestsView.swift */; };
 		AA10971B2E64C181005BC3D2 /* PaicordApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1097122E64C181005BC3D2 /* PaicordApp.swift */; };
 		AA10971D2E64C18C005BC3D2 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA10971C2E64C189005BC3D2 /* ChatView.swift */; };
 		AA1378062E967A4A00100969 /* ProcessInfo+previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1378042E96798000100969 /* ProcessInfo+previews.swift */; };
@@ -214,6 +215,7 @@
 		AA1097062E64C181005BC3D2 /* SmallBaseplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallBaseplate.swift; sourceTree = "<group>"; };
 		AA1097092E64C181005BC3D2 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		AA10970D2E64C181005BC3D2 /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
+		CD4FFA92C2DFA47F205C9009 /* MessageRequestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRequestsView.swift; sourceTree = "<group>"; };
 		AA1097102E64C181005BC3D2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA1097112E64C181005BC3D2 /* Paicord.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Paicord.entitlements; sourceTree = "<group>"; };
 		AA1097122E64C181005BC3D2 /* PaicordApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaicordApp.swift; sourceTree = "<group>"; };
@@ -573,6 +575,7 @@
 			isa = PBXGroup;
 			children = (
 				AA10970D2E64C181005BC3D2 /* MessagesView.swift */,
+				CD4FFA92C2DFA47F205C9009 /* MessageRequestsView.swift */,
 			);
 			path = Messages;
 			sourceTree = "<group>";
@@ -1240,6 +1243,7 @@
 				AACADCBA2F3372060007F705 /* TextView.swift in Sources */,
 				AA74E43B2EBCA9010031B285 /* Environment.swift in Sources */,
 				AA10971A2E64C181005BC3D2 /* MessagesView.swift in Sources */,
+				FFF120AE8D0339D38072C91F /* MessageRequestsView.swift in Sources */,
 				AAD4469D2ECFBC1A006CB07C /* UserGuildSettingsStore.swift in Sources */,
 				AA47AF2E2EDEF1C7008A50C9 /* ChatSection.swift in Sources */,
 				AA10971B2E64C181005BC3D2 /* PaicordApp.swift in Sources */,
