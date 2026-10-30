@@ -58,8 +58,8 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 Requires **Xcode 26** on macOS 26.
 
 ```bash
-git clone https://github.com/lakafior/Paicord.git
-open Paicord/Paicord.xcworkspace
+git clone https://github.com/lakafior/Aicord.git
+open Aicord/Paicord.xcworkspace
 ```
 
 Pick the **Paicord** scheme, choose a Mac or an iOS 26 device or simulator, and run. The macOS app is built for Apple silicon only. There are no prebuilt releases of Aicord yet.

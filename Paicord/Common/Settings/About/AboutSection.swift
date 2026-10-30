@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension SettingsView {
-  static let repositoryURL = URL(string: "https://github.com/lakafior/Paicord")!
+  static let repositoryURL = URL(string: "https://github.com/lakafior/Aicord")!
   static let licenseURL = URL(string: "https://www.gnu.org/licenses/gpl-3.0.html")!
   static let upstreamURL = URL(string: "https://github.com/llsc12/Paicord")!
 
