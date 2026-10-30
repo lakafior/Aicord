@@ -26,5 +26,16 @@ let package = Package(
           .when(platforms: [.macOS, .macCatalyst, .iOS, .visionOS])),
       ]
     ),
+    // Logic tests only. The upstream snapshot tests (and their recorded PNGs)
+    // needed swift-snapshot-testing and matched styles Aicord removed.
+    .testTarget(
+      name: "TextualTests",
+      dependencies: ["Textual"],
+      resources: [.copy("Fixtures")],
+      swiftSettings: [
+        .define("TEXTUAL_ENABLE_LINKS", .when(platforms: [.macOS, .iOS])),
+        .define("TEXTUAL_ENABLE_TEXT_SELECTION", .when(platforms: [.macOS, .iOS])),
+      ]
+    ),
   ]
 )

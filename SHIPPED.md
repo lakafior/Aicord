@@ -98,6 +98,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file
 - **Fixed** · Clicking a link in a message on the Mac opens it again, and invite links open their preview; a click handler on the whole chat swallowed the clicks
 - **Fixed** · Counts like “1 use” and “2 attachments” read properly instead of showing “^[2 use](inflect: true)”
+- **Fixed** · Messages with thousands of formatted pieces no longer risk running out of stack while they're drawn
 
 ### Removed
 
@@ -354,6 +355,7 @@ Szczegóły, decyzje i pomiary: `docs/SLIM_NOTES.md`. Binarka iOS (Release, arm6
    - [x] Usunięty styl GitHub, przestarzałe API i renderowanie tabel, których aplikacja nie używa.
 4. **Dalej (noc 30/31.10, `docs/OVERNIGHT.md`):**
    - [x] Typy tylko odbierane od Discorda (wiadomości, kanały, serwery, członkowie, komponenty, zdarzenia gatewaya…) są `Decodable` zamiast `Codable`, więc znikają ich `encode(to:)` i metadane. `Codable` zostaje dla tego, co się wysyła (payloady, gateway, aktywność) i co aplikacja zapisuje (`DiscordUser` w pęku kluczy); `Emoji` ma własne, małe kodowanie (`id`, `name`, `animated`). Z payloadów wiadomości zniknęło pole `components`, a z `CreateGuild` pola `roles` i `channels` (konto użytkownika ich nie wysyła). Binarka iOS (Release, arm64) 44,87 → 44,20 MB, `__text` 12,45 → 12,20 MB, `DiscordModels` 4,46 → 4,15 MB.
+   - [x] `Textual/Tests`: target `TextualTests` z testami logiki (parser i rozszerzenia Discorda, tokenizery, formatery, model zaznaczania z nagranymi układami), 187 testów. Testy snapshotowe z PNG usunięte: wymagały swift-snapshot-testing, a wzorce nagrano dla stylów, których już nie ma. Test na 2500 fragmentów wykrył przepełnienie stosu w `TextBuilder` (sklejanie `Text` w łańcuch głębokości N); teraz sklejanie zrównoważone. Oczekiwania tokenizera i adresu emoji dopasowane do obecnego kodu (natywny tokenizer zamiast Prism.js, `.webp?size=44`).
 
 ---
 

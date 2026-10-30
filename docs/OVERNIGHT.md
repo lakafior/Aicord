@@ -7,7 +7,7 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 | # | Punkt | Stan |
 |---|---|---|
 | 1 | Etap 8: Leave Server, Invites, instrukcja Safari, link na Macu | zrobione (Mac do sprawdzenia rano) |
-| 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | odchudzanie zrobione (−0,67 MB), testy Textual w toku |
+| 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | zrobione: −0,67 MB, 187 testów Textual (i naprawione przepełnienie stosu) |
 | 3 | Etap 10: dokończenia i wyszukiwanie po sensie | czeka |
 | 4 | Etap 12: przygotowanie wydań | czeka |
 | 5 | Etap 11: interfejs Maca, serwer MCP | czeka |
@@ -84,6 +84,16 @@ Pomiar jak w `docs/SLIM_NOTES.md`: Release, `generic/platform=iOS`, mapa linkera
 **Dlaczego nie CodingKeys:** 0,92 MB to prawie same metadane: każdy z 385 enumów `CodingKeys` ma 5 konformancji (`CodingKey`, `Hashable`, `Equatable`, `CustomStringConvertible`, `CustomDebugStringConvertible`), a do tego cache instancjacji, deskryptory i akcesory (~250 + 100 + 100 KB). Pozbyć się ich można tylko dekodując bez osobnych enumów, np. makrem generującym `init(from:)` ze wspólnym typem klucza. To przepisanie dekodowania ~400 typów naraz; za duże ryzyko na noc bez możliwości przeklikania wszystkiego. Zostawione w ROADMAP z liczbami.
 
 **Ryzyko:** gdyby gdzieś w aplikacji model był kodowany dynamicznie (`as? Encodable`), kompilator by tego nie złapał; przeszukałem `Aicord/` i `AicordKit/`, takich miejsc nie ma.
+
+### 2b. `Textual/Tests`
+
+**Stan: zrobione.** Commit: `test(textual): run the logic tests; fix stack overflow on many runs`.
+
+- **Decyzja:** target `TextualTests` z testami logiki, bez snapshotów. Snapshoty (`StructuredText/*Tests`, `TextLayoutCollectionTests`, pomocniki `Snapshotting+…`, ~2,3 MB PNG i JSON) usunięte: wymagałyby nowej paczki (swift-snapshot-testing), a wzorce nagrano w upstreamie dla stylów, które Etap 7 usunął, więc i tak by nie pasowały. Nagrane układy w `Fixtures/TextSelectionModel` zostały (zasób targetu), pomocnik `TextSelectionModel(fixtureName:)` bez części nagrywającej.
+- Wynik: **187 testów w 19 zestawach** przechodzi (`swift test` w `Textual/`).
+- **Znaleziony błąd:** `renderingManyAttributedRunsDoesNotOverflowStack` padał na SIGSEGV. `TextBuilder` sklejał `Text` przez `reduce`, co daje łańcuch zagnieżdżenia o głębokości liczby fragmentów; przy ~2500 fragmentach przepełniał stos. Na iOS główny wątek ma 1 MB stosu, więc bardzo długa, mocno sformatowana wiadomość mogła wywrócić aplikację. Teraz sklejanie zrównoważone (głębokość log₂n).
+- Oczekiwania dopasowane do obecnego kodu: tokenizer kodu jest natywny (zastąpił Prism.js w Etapie 2), `=` zostaje zwykłym tekstem, a nieznane języki dostają ogólne reguły; adres emoji to `.webp?size=44&animated=false`.
+- Testy Textual nie są w CI (`build_pr.yml` tylko buduje). Do rozważenia w Etapie 12.
 
 ---
 

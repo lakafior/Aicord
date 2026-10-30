@@ -118,8 +118,21 @@ extension Text {
       return text
     }
 
-    self = textValues.reduce(Text(verbatim: "")) { partialResult, text in
-      Text("\(partialResult)\(text)")
+    self = Self.concatenated(textValues[...])
+  }
+
+  /// Joins halves recursively, so the nested `Text` is log₂(n) deep instead of
+  /// n deep: a left fold over thousands of runs overflowed the stack when
+  /// SwiftUI walked it (the main thread on iOS has 1 MB).
+  private static func concatenated(_ texts: ArraySlice<Text>) -> Text {
+    switch texts.count {
+    case 0:
+      return Text(verbatim: "")
+    case 1:
+      return texts[texts.startIndex]
+    default:
+      let middle = texts.startIndex + texts.count / 2
+      return Text("\(concatenated(texts[..<middle]))\(concatenated(texts[middle...]))")
     }
   }
 
