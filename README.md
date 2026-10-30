@@ -43,15 +43,22 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 ## New & fixed
 
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
+- **New** · iOS draws the app with Liquid Glass: the compatibility flag that kept the old look is gone, the tab bar is the system glass one and lists scroll underneath it
+- **New** · Settings is a tab on iPhone; the empty Notifications tab is gone
+- **New** · Working status picker (online, idle, do not disturb, invisible) and a custom status editor with emoji and "clear after", saved to your account so other clients see it
+- **New** · "Member since" on your profile, and Log Out next to account switching
+- **New** · About Aicord in Settings with version, licence and a link to this repository
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
 - **Fixed** · The macOS app no longer crashes a few seconds after loading: the chat and the member list stopped fighting over column widths, and the window now opens at a sensible size
 - **Fixed** · The member list no longer scrolls itself out of view when it opens
 - **Fixed** · Channel names in the title bar show in full instead of being cut off inside a glass pill
 - **Fixed** · Opening a channel or scrolling to the bottom now marks it as read
+- **Fixed** · Changing account settings actually reaches Discord (the request went out empty), and settings changed on another device are merged in
 - **Fixed** · Incoming messages keep their slash command info, and a message reference without a type no longer breaks decoding
 - **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file
 - **Removed** · Third-party sponsor badges and the telemetry requests behind them
+- **Removed** · Donate buttons, the sponsor pop-up and the update check, all of which pointed at the upstream app
 
 ## Building
 

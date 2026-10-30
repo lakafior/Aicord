@@ -147,6 +147,12 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [x] „Konto od” (data z identyfikatora użytkownika) w zakładce Profil i w okienku profilu.
    - [x] Konta: lista z przełączaniem, „Dodaj konto”, „Wyloguj” (z potwierdzeniem; usuwa konto z pęku kluczy, token po stronie Discorda zostaje ważny).
    - [x] „Edytuj profil” jako link do `discord.com/settings/profiles` zamiast wyłączonego przycisku. Do sprawdzenia, czy Discord otwiera pod tym adresem właściwą stronę.
+   - [ ] Zakładka Profil jako natywna lista zamiast pustego ekranu: nagłówek (baner, awatar, nazwa, zaimki, odznaki) z dymkiem custom statusu, pod nim wybór statusu, „O mnie”, aktywność, połączone konta, „Konto od” i konta. Arkusz pod przyciskiem w rogu przestaje być potrzebny na iOS; popover na macOS zostaje.
+   - [ ] Własna aktywność (rich presence) jak w Serein `custom-rpc` / Vencord CustomRPC: typ (gra, słucha, ogląda, transmituje, rywalizuje), nazwa, dwie linie tekstu, ID aplikacji Discorda i obrazki (klucze zasobów albo adresy HTTPS), czas (od startu, odliczanie, od północy), rozmiar drużyny, dwa przyciski z linkami. Podgląd karty przed zastosowaniem, „Zastosuj” i „Zatrzymaj”. Aktywność idzie obok custom statusu w `setPresence` (gateway op 3) i wraca po ponownym połączeniu. Na iOS działa tylko, gdy aplikacja jest otwarta (w tle gateway się rozłącza); na macOS bez ograniczeń. Embedded App SDK z dokumentacji Discorda dotyczy aplikacji uruchamianych wewnątrz Discorda, więc tu się nie przyda.
+   - [ ] Przełącznik „Udostępniaj moją aktywność” (`status.showCurrentGame` w ustawieniach proto).
+   - [ ] Natywna edycja profilu zamiast linku do przeglądarki: nazwa wyświetlana, zaimki, „O mnie”, awatar (`PhotosPicker`); kolor akcentu i baner tylko z Nitro. Wymaga dodania do PaicordLib `PATCH /users/@me` i `PATCH /users/@me/profile`.
+   - [ ] Połączone konta (Spotify, GitHub, Steam itd.) na profilu: `GET /users/@me/connections`, do dodania w PaicordLib.
+   - [ ] Profile per serwer (pseudonim, awatar serwera) — później, po edycji profilu.
 4. **Ustawienia:**
    - [x] Sekcja „Paicord” → „O Aicord”: wersja, build, licencja GPL-3, link do repozytorium; bez „Made with ❤️ by llsc12”, naklejki z CDN Discorda i przycisku Donate. Na dole dopisek, że to fork Paicorda od llsc12.
    - [ ] Moje konto: dane konta, przełączanie kont, wylogowanie (Scan QR na iOS zostaje).
