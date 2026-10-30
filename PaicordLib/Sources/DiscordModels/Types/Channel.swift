@@ -520,8 +520,18 @@ extension DiscordChannel {
       #else
         @UnstableEnum<UInt>
       #endif
+      /// https://docs.discord.food/resources/message#attachment-flags
       public enum Flag: Sendable {
+        case isClip  // 0
+        case isThumbnail  // 1
         case isRemix  // 2
+        case isSpoiler  // 3
+        /// Discord's scan flagged this as explicit.
+        case containsExplicitMedia  // 4
+        case isAnimated  // 5
+        /// Discord's scan flagged this as gore.
+        case containsGoreContent  // 6
+        case containsSelfHarmContent  // 7
 
         #if Non64BitSystemsCompatibility
           case __undocumented(UInt64)
@@ -1130,6 +1140,29 @@ public struct Embed: Sendable, Codable, Equatable, Hashable, ValidatablePayload 
   public var provider: Provider?
   public var author: Author?
   public var fields: [Field]?
+  /// Received only.
+  public var flags: IntBitField<Flag>?
+
+  /// https://docs.discord.food/resources/message#embed-flags
+  #if Non64BitSystemsCompatibility
+    @UnstableEnum<UInt64>
+  #else
+    @UnstableEnum<UInt>
+  #endif
+  public enum Flag: Sendable {
+    /// Discord's scan flagged the embed's media as explicit.
+    case containsExplicitMedia  // 4
+    case contentInventoryEntry  // 5
+    /// Discord's scan flagged the embed's media as gore.
+    case containsGoreContent  // 6
+    case containsSelfHarmContent  // 7
+
+    #if Non64BitSystemsCompatibility
+      case __undocumented(UInt64)
+    #else
+      case __undocumented(UInt)
+    #endif
+  }
 
   /// The length that matters towards the Discord limit (currently 6000 across all embeds).
   public var contentLength: Int {

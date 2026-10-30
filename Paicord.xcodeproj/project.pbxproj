@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AB0C0A110000000000000004 /* ContentFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0C0A110000000000000003 /* ContentFilter.swift */; };
+		AB0C0A110000000000000002 /* WordLists in Resources */ = {isa = PBXBuildFile; fileRef = AB0C0A110000000000000001 /* WordLists */; };
 		0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92981EF5B411046392600481 /* RichPresence.swift */; };
 		3D58D54EDDCE8486AAB0AA73 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB88FC1D519531963FD04B31 /* SearchView.swift */; };
 		9E08D02F0DF3EA41E426DA50 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E84D65FC5165C77155CF85BB /* AppIcon.icon */; };
@@ -157,6 +159,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AB0C0A110000000000000003 /* ContentFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFilter.swift; sourceTree = "<group>"; };
+		AB0C0A110000000000000001 /* WordLists */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WordLists; sourceTree = "<group>"; };
 		5E38A72AC89724C88BEE5FB9 /* RichPresenceEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RichPresenceEditor.swift; path = RichPresenceEditor.swift; sourceTree = "<group>"; };
 		92981EF5B411046392600481 /* RichPresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RichPresence.swift; path = RichPresence.swift; sourceTree = "<group>"; };
 		C1BB0BEFE1B9D49733BD5EED /* YourProfileSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = YourProfileSection.swift; path = YourProfileSection.swift; sourceTree = "<group>"; };
@@ -588,6 +592,7 @@
 				E84D65FC5165C77155CF85BB /* AppIcon.icon */,
 				AA1097102E64C181005BC3D2 /* Assets.xcassets */,
 				AA1579352F3220D50097C0FA /* Localizable.xcstrings */,
+				AB0C0A110000000000000001 /* WordLists */,
 				CD0FCDF43CEB925D98D9DEB7 /* DiscordEmojiNames.json */,
 			);
 			path = Resources;
@@ -795,6 +800,7 @@
 			isa = PBXGroup;
 			children = (
 				AAEEF4FF2E9900E00034FA04 /* Types */,
+				AB0C0A110000000000000003 /* ContentFilter.swift */,
 				AA5DC5592E9482ED00D81EB5 /* MessageCell.swift */,
 				AA74E43E2EBE26DD0031B285 /* PlaceholderMessageCell.swift */,
 				AAB50A592E9AD5750048E8B0 /* MessageAuthor.swift */,
@@ -1063,6 +1069,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA1579362F3220D50097C0FA /* Localizable.xcstrings in Resources */,
+				AB0C0A110000000000000002 /* WordLists in Resources */,
 				9E08D02F0DF3EA41E426DA50 /* AppIcon.icon in Resources */,
 				AA1097142E64C181005BC3D2 /* Assets.xcassets in Resources */,
 				808EAC80F2D12DA38A52AB16 /* DiscordEmojiNames.json in Resources */,
@@ -1189,6 +1196,7 @@
 				AAFACE2100000000000000C2 /* NukeImage.swift in Sources */,
 				AAFACE2200000000000000C3 /* PaicordImagePipeline.swift in Sources */,
 				AA7B0B6A2EE5D809003F0CE9 /* ChatHeaders.swift in Sources */,
+				AB0C0A110000000000000004 /* ContentFilter.swift in Sources */,
 				AA5DC55A2E9482ED00D81EB5 /* MessageCell.swift in Sources */,
 				57F5AF532E7CBDD000AD5674 /* AccountPicker.swift in Sources */,
 				AAB50A5A2E9AD5790048E8B0 /* MessageAuthor.swift in Sources */,

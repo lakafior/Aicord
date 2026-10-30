@@ -138,21 +138,61 @@ class SettingsStore: DiscordDataStore {
 
   // MARK: - Public Settings Update Methods
 
-  /// Sends only the given fields to Discord and merges them locally right away.
+  /// Merges the given fields into our settings and sends the groups they touch.
   func patchUserSettings(
     _ partial: DiscordProtos_DiscordUsers_V1_PreloadedUserSettings
   ) async throws {
+    let bytes: [UInt8] = try partial.serializedBytes()
+    try await patchUserSettings { try? $0.merge(serializedBytes: bytes) }
+  }
+
+  /// Applies `change` to our settings and sends every top-level group it
+  /// changed (privacy, status, text and images…) in full. Discord replaces each
+  /// group it receives as a whole, so sending only the changed fields would
+  /// reset the rest of the group. Fields set back to `false` or zero work too.
+  func patchUserSettings(
+    _ change: (inout DiscordProtos_DiscordUsers_V1_PreloadedUserSettings) -> Void
+  ) async throws {
     guard let gateway else { return }
-    mergeUserSettings(with: partial)
+    var updated = userSettings
+    change(&updated)
+    var payload = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings()
+    for group in Self.settingsGroups where group.differs(userSettings, updated) {
+      group.copy(&payload, updated)
+    }
+    guard payload != .init() else { return }
+    userSettings = updated
     let res = try await gateway.client.modifyUserSettingsProto(
       type: .preloaded,
-      payload: .init(settings: .preloaded(partial))
+      payload: .init(settings: .preloaded(payload))
     )
     try res.guardSuccess()
     if case .preloaded(let proto) = try res.decode().settings {
       userSettings = proto
     }
   }
+
+  private struct SettingsGroup {
+    typealias Settings = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings
+    let differs: (Settings, Settings) -> Bool
+    let copy: (inout Settings, Settings) -> Void
+
+    init<T: Equatable>(_ field: WritableKeyPath<Settings, T>) {
+      differs = { $0[keyPath: field] != $1[keyPath: field] }
+      copy = { $0[keyPath: field] = $1[keyPath: field] }
+    }
+  }
+
+  private static let settingsGroups: [SettingsGroup] = [
+    .init(\.versions), .init(\.inbox), .init(\.guilds), .init(\.userContent),
+    .init(\.voiceAndVideo), .init(\.textAndImages), .init(\.notifications),
+    .init(\.privacy), .init(\.debug), .init(\.gameLibrary), .init(\.status),
+    .init(\.localization), .init(\.appearance), .init(\.guildFolders),
+    .init(\.favorites), .init(\.audioContextSettings), .init(\.communities),
+    .init(\.broadcast), .init(\.clips), .init(\.forLater), .init(\.safetySettings),
+    .init(\.icymiSettings), .init(\.applications), .init(\.ads),
+    .init(\.inAppFeedbackSettings),
+  ]
 
   /// Request user settings modification with appropriate batching delay
   /// - Parameters:

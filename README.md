@@ -53,6 +53,8 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **New** · Edit your profile in the app: display name, pronouns, about me and avatar, plus a nickname and pronouns per server
 - **New** · iPhone tabs are Home, Messages, Search and Settings; Messages holds direct messages, group chats, mentions and friends, and your status and activity sit behind a profile card at the top of Settings
 - **New** · Custom rich presence ("Playing …", "Listening to …") with images, timers, party size and buttons, a live preview, and a "Share my activity" switch; your Discord application ID lives in Settings → My Account and is checked before saving
+- **New** · Settings → Content & Social: sensitive and graphic media (show, blur or block), keyword filters, DM spam filter, message requests and who can send you friend requests, saved to your Discord account
+- **New** · Media Discord flags as sensitive is blurred or blocked in chats according to those settings, and an optional word filter hides matching messages behind a tap, using the community LDNOOBW lists (CC BY 4.0) plus your own words
 - **New** · About Aicord in Settings with version, licence and a link to this repository
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
@@ -62,6 +64,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 - **Fixed** · Opening a channel or scrolling to the bottom now marks it as read
 - **Fixed** · Forum and media channels show an icon instead of a raw type name, and the macOS Settings window no longer cuts off section names
 - **Fixed** · Requests that Discord answers with a captcha or a 2FA prompt go through once you solve it, instead of failing with 403
+- **Fixed** · Changing one account setting no longer resets the others in the same group (for example "Share my activity" clearing your custom status)
 - **Fixed** · Changing account settings actually reaches Discord (the request went out empty), and settings changed on another device are merged in
 - **Fixed** · Incoming messages keep their slash command info, and a message reference without a type no longer breaks decoding
 - **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file

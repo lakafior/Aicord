@@ -31,7 +31,48 @@ extension MessageCell {
 
     let channelStore: ChannelStore
 
+    @AppStorage(WordFilter.Key.enabled) private var wordFilterEnabled = false
+    @AppStorage(WordFilter.Key.languages) private var wordFilterLanguages =
+      WordFilter.defaultLanguages
+    @AppStorage(WordFilter.Key.customWords) private var wordFilterCustomWords = ""
+    @AppStorage(WordFilter.Key.scope) private var wordFilterScope = WordFilter.Scope
+      .nonFriendDMs
+    @State private var revealsFilteredMessage = false
+
     var body: some View {
+      if hiddenByWordFilter {
+        HiddenContentNote(text: "Hidden by your word filter") {
+          revealsFilteredMessage = true
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+      } else {
+        content
+      }
+    }
+
+    /// The community word list from Settings → Content & Social.
+    private var hiddenByWordFilter: Bool {
+      guard wordFilterEnabled, !revealsFilteredMessage,
+        let origin = channelStore.origin(of: message),
+        wordFilterScope == .everywhere || origin == .otherDM
+      else { return false }
+      return WordFilter.shared.matches(
+        message.content ?? "",
+        languages: wordFilterLanguages,
+        customWords: wordFilterCustomWords
+      )
+    }
+
+    private var mediaFilter: MediaFilter {
+      MediaFilter(
+        origin: channelStore.origin(of: message),
+        settings: channelStore.gateway?.settings.userSettings ?? .init()
+      )
+    }
+
+    @ViewBuilder
+    private var content: some View {
+      let mediaFilter = mediaFilter
       VStack(alignment: .leading, spacing: 4) {
         // Content
         Group {
@@ -50,16 +91,37 @@ extension MessageCell {
           }
         }
 
-        // Attachments
-        let attachments = message.attachments ?? []
-        if !attachments.isEmpty {
-          AttachmentsView(message: message, attachments: attachments)
+        // Attachments, flagged ones blurred or left out per Content & Social
+        let attachments = Dictionary(
+          grouping: message.attachments ?? [],
+          by: mediaFilter.redaction(for:)
+        )
+        if let shown = attachments[.show] {
+          AttachmentsView(message: message, attachments: shown)
+        }
+        if let blurred = attachments[.blur] {
+          SensitiveMediaCover {
+            AttachmentsView(message: message, attachments: blurred)
+          }
         }
 
         // Embeds
-        let embeds = message.embeds ?? []
-        if !embeds.isEmpty {
-          EmbedsView(embeds: embeds, message: message)
+        let embeds = Dictionary(
+          grouping: message.embeds ?? [],
+          by: mediaFilter.redaction(for:)
+        )
+        if let shown = embeds[.show] {
+          EmbedsView(embeds: shown, message: message)
+        }
+        if let blurred = embeds[.blur] {
+          SensitiveMediaCover {
+            EmbedsView(embeds: blurred, message: message)
+          }
+        }
+
+        let blocked = (attachments[.block]?.count ?? 0) + (embeds[.block]?.count ?? 0)
+        if blocked > 0 {
+          HiddenContentNote(text: "^[\(blocked) item](inflect: true) blocked by your content settings")
         }
 
         // Stickers

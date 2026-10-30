@@ -55,5 +55,20 @@ extension SettingsView {
     } footer: {
       Text("Aicord is a fork of [Paicord](\(Self.upstreamURL.absoluteString)) by llsc12.")
     }
+
+    Section("Acknowledgements") {
+      Link(destination: Self.wordListURL) {
+        LabeledContent {
+          Text(verbatim: "CC BY 4.0")
+        } label: {
+          Text(
+            verbatim: "List of Dirty, Naughty, Obscene, and Otherwise Bad Words — Shutterstock and contributors"
+          )
+        }
+      }
+    }
   }
+
+  static let wordListURL = URL(
+    string: "https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words")!
 }
