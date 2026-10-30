@@ -42,6 +42,7 @@ The full history is in [ROADMAP.md](ROADMAP.md).
 
 ## New & fixed
 
+- **New** · Rebuilt message menu: a row of quick reactions from your favourite and most used emoji, tidier groups, and a working Mark Unread; the empty Apps, Thread and Forward items are gone
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
 - **New** · iOS draws the app with Liquid Glass: the compatibility flag that kept the old look is gone, the tab bar is the system glass one and lists scroll underneath it
 - **New** · Settings is a tab on iPhone; the empty Notifications tab is gone

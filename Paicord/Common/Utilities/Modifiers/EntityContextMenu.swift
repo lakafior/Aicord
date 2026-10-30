@@ -52,65 +52,32 @@ struct EntityContextMenu<Entity>: ViewModifier {
   @ViewBuilder
   func messageContextMenu(message: DiscordChannel.Message) -> some View {
     if hasPermission(.addReactions) {
-      Button {
-        appState.reactionPickerTarget = .init(
-          message: message,
-          guildID: guild?.guildId
-        )
-      } label: {
-        Label("Add Reaction", systemImage: "face.smiling.inverse")
+      let target = ReactionPickerTarget(message: message, guildID: guild?.guildId)
+      ControlGroup {
+        ForEach(quickReactions, id: \.self) { character in
+          Button {
+            target.react(with: .init(name: character), gw: gw, appState: appState)
+          } label: {
+            Text(verbatim: character)
+          }
+        }
+        Button {
+          appState.reactionPickerTarget = target
+        } label: {
+          Label("Add Reaction", systemImage: "face.smiling")
+        }
       }
+      .controlGroupStyle(.palette)
     }
 
-    #if os(iOS)
-      ControlGroup {
-        if hasPermission(.createPublicThreads) {
-          Button {
-          } label: {
-            Label("Thread", systemImage: "option")
-          }
-        }
-        Button {
-        } label: {
-          Label("Forward", systemImage: "arrowshape.turn.up.right.fill")
-        }
-        if hasPermission(.sendMessages) {
-          Button {
-            guard let channel else { return }
-            let vm = ChatView.InputBar.vm(for: channel)
-            vm.messageAction = .reply(message: message, mention: true)
-          } label: {
-            Label("Reply", systemImage: "arrowshape.turn.up.left.fill")
-          }
-        }
-        if messageIsFromSelf(message) {
-          Button {
-            guard let channel else { return }
-            let vm = ChatView.InputBar.vm(for: channel)
-            vm.messageAction = .edit(message: message)
-          } label: {
-            Label("Edit Message", systemImage: "pencil")
-          }
-        }
-      }
-    #elseif os(macOS)
-      if hasPermission(.createPublicThreads) {
-        Button {
-        } label: {
-          Label("Create Thread", systemImage: "option")
-        }
-      }
-      Button {
-      } label: {
-        Label("Forward", systemImage: "arrowshape.turn.up.right.fill")
-      }
+    Section {
       if hasPermission(.sendMessages) {
         Button {
           guard let channel else { return }
           let vm = ChatView.InputBar.vm(for: channel)
           vm.messageAction = .reply(message: message, mention: true)
         } label: {
-          Label("Reply", systemImage: "arrowshape.turn.up.left.fill")
+          Label("Reply", systemImage: "arrowshape.turn.up.left")
         }
       }
       if messageIsFromSelf(message) {
@@ -122,55 +89,24 @@ struct EntityContextMenu<Entity>: ViewModifier {
           Label("Edit Message", systemImage: "pencil")
         }
       }
-    #endif
+      if let authorID = message.author?.id {
+        Button {
+          guard let channel else { return }
+          let vm = ChatView.InputBar.vm(for: channel)
+          vm.content += "<@\(authorID.rawValue)> "
+        } label: {
+          Label("Mention", systemImage: "at")
+        }
+      }
+    }
 
-    Divider()
-
-    #if os(iOS)
-      Menu {
+    Section {
+      if !message.content.isEmpty {
         Button {
           copyText(message.content)
         } label: {
-          Label("Copy Text", systemImage: "document.on.document.fill")
+          Label("Copy Text", systemImage: "doc.on.doc")
         }
-        Button {
-          let guildID = appState.selectedGuild?.rawValue ?? "@me"
-          let channelID = message.channel_id.rawValue
-          let messageID = message.id.rawValue
-          copyText(
-            "https://discord.com/channels/\(guildID)/\(channelID)/\(messageID)"
-          )
-        } label: {
-          Label("Copy Message Link", systemImage: "link")
-        }
-        if isDeveloperModeEnabled() {
-          Button {
-            copyText(message.id.rawValue)
-          } label: {
-            Label(
-              "Copy Message ID",
-              systemImage: "circle.grid.2x1.right.filled"
-            )
-          }
-          if let authorID = message.author?.id.rawValue {
-            Button {
-              copyText(authorID)
-            } label: {
-              Label(
-                "Copy Author ID",
-                systemImage: "circle.grid.2x1.right.filled"
-              )
-            }
-          }
-        }
-      } label: {
-        Label("Copy", systemImage: "doc.on.doc.fill")
-      }
-    #elseif os(macOS)
-      Button {
-        copyText(message.content)
-      } label: {
-        Label("Copy Text", systemImage: "document.on.document.fill")
       }
       Button {
         let guildID = appState.selectedGuild?.rawValue ?? "@me"
@@ -196,89 +132,97 @@ struct EntityContextMenu<Entity>: ViewModifier {
           }
         }
       }
-    #endif
-
-    Button {
-    } label: {
-      Label("Mark Unread", systemImage: "envelope.badge.fill")
-    }
-    //    Button {
-    //    } label: {
-    //      Label("Save Message", systemImage: "bookmark")
-    //    }
-
-    Menu {
-      Button("1", action: {})
-      Button("2", action: {})
-      Button("3", action: {})
-    } label: {
-      Label("Apps", systemImage: "puzzlepiece.fill")
     }
 
-    Button {
-      guard let channel else { return }
-      let vm = ChatView.InputBar.vm(for: channel)
-      vm.content += "<@\(message.author?.id.rawValue ?? "")> "
-    } label: {
-      Label("Mention", systemImage: "at")
+    Section {
+      Button {
+        Task {
+          do {
+            try await gw.readStates.markUnread(
+              channelId: message.channel_id,
+              from: message.id
+            )
+          } catch {
+            appState.error = error
+          }
+        }
+      } label: {
+        Label("Mark Unread", systemImage: "envelope.badge")
+      }
     }
-
-    Divider()
 
     if messageIsFromSelf(message) || hasPermission(.manageMessages) {
-      #if os(iOS)
-        Menu {
-          Section {
-            Button(role: .destructive) {
-              Task {
-                var res: DiscordHTTPResponse?
-                do {
-                  res = try await gw.client.deleteMessage(
-                    channelId: message.channel_id,
-                    messageId: message.id
-                  )
-                  try res?.guardSuccess()
-                } catch {
-                  if let error = res?.asError() {
-                    appState.error = error
-                  } else {
-                    appState.error = error
-                  }
-                }
-              }
-            } label: {
-              Label("Delete", systemImage: "trash")
+      Section {
+        #if os(iOS)
+          Menu {
+            Section {
+              deleteMessageButton(message)
+            } header: {
+              Text("Are you sure?")
             }
-          } header: {
-            Text("Are you sure?")
+          } label: {
+            Label("Delete Message", systemImage: "trash")
           }
-        } label: {
-          Label("Delete Message", systemImage: "trash")
-        }
-      #elseif os(macOS)
-        Button(role: .destructive) {
-          Task {
-            var res: DiscordHTTPResponse?
-            do {
-              res = try await gw.client.deleteMessage(
-                channelId: message.channel_id,
-                messageId: message.id
-              )
-              try res?.guardSuccess()
-            } catch {
-              if let error = res?.asError() {
-                appState.error = error
-              } else {
-                appState.error = error
-              }
-            }
-          }
-        } label: {
-          Label("Delete", systemImage: "trash")
-        }
-      #endif
-
+        #elseif os(macOS)
+          deleteMessageButton(message)
+        #endif
+      }
     }
+  }
+
+  func deleteMessageButton(_ message: DiscordChannel.Message) -> some View {
+    Button(role: .destructive) {
+      Task {
+        var res: DiscordHTTPResponse?
+        do {
+          res = try await gw.client.deleteMessage(
+            channelId: message.channel_id,
+            messageId: message.id
+          )
+          try res?.guardSuccess()
+        } catch {
+          if let error = res?.asError() {
+            appState.error = error
+          } else {
+            appState.error = error
+          }
+        }
+      }
+    } label: {
+      Label("Delete Message", systemImage: "trash")
+    }
+  }
+
+  /// Unicode emoji for the quick reaction row: favourites, then the most used,
+  /// topped up with defaults. Custom emoji are left to the picker, since a menu
+  /// can't load their images.
+  var quickReactions: [String] {
+    let frecency = gw.settings.frecencySettings
+    var names: [String] = []
+    if frecency.hasFavoriteEmojis {
+      names += frecency.favoriteEmojis.emojis
+    }
+    if frecency.hasEmojiReactionFrecency {
+      names += frecency.emojiReactionFrecency.emojis
+        .sorted { $0.value.score > $1.value.score }
+        .map(\.key)
+    }
+    if frecency.hasEmojiFrecency {
+      names += frecency.emojiFrecency.emojis
+        .sorted { $0.value.score > $1.value.score }
+        .map(\.key)
+    }
+    var characters: [String] = []
+    for name in names {
+      guard let character = DiscordEmojiNameIndex.character(forName: name),
+        !characters.contains(character)
+      else { continue }
+      characters.append(character)
+    }
+    for fallback in ["👍", "❤️", "😂", "😮", "😢"] where !characters.contains(fallback) {
+      characters.append(fallback)
+    }
+    return Array(characters.prefix(5))
   }
 
   @ViewBuilder

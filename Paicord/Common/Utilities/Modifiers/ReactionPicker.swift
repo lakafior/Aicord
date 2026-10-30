@@ -78,7 +78,7 @@ private struct ReactionPickerModifier: ViewModifier {
         .allowsShiftToKeepOpen(false)
         .onPickedEmoji { emoji in
           appState.reactionPickerTarget = nil
-          addReaction(emoji, to: target)
+          target.react(with: emoji, gw: gw, appState: appState)
         }
         .presentationDetents([.medium, .large], selection: $detent)
     #else
@@ -87,11 +87,13 @@ private struct ReactionPickerModifier: ViewModifier {
         .allowsShiftToKeepOpen(false)
         .onPickedEmoji { emoji in
           appState.reactionPickerTarget = nil
-          addReaction(emoji, to: target)
+          target.react(with: emoji, gw: gw, appState: appState)
         }
     #endif
   }
+}
 
+extension ReactionPickerTarget {
   /// Why this custom emoji can't be reacted with here, or nil if it can.
   ///
   /// Discord answers a reaction with an emoji the account isn't entitled to use
@@ -102,7 +104,7 @@ private struct ReactionPickerModifier: ViewModifier {
   @MainActor
   private func customEmojiUnavailableReason(
     _ emoji: DiscordModels.Emoji,
-    in target: ReactionPickerTarget
+    gw: GatewayStore
   ) -> String? {
     guard let id = emoji.id else { return nil }  // unicode, nothing to check
     let label = emoji.name.map { ":\($0):" } ?? "That emoji"
@@ -114,7 +116,7 @@ private struct ReactionPickerModifier: ViewModifier {
     if custom.available == false {
       return "\(label) is currently unavailable on its server."
     }
-    guard sourceGuildID != target.guildID else { return nil }  // same server: fine
+    guard sourceGuildID != guildID else { return nil }  // same server: fine
 
     // Emoji from another server (or used in a DM) need Nitro.
     guard gw.user.premiumKind == .none else { return nil }
@@ -123,15 +125,20 @@ private struct ReactionPickerModifier: ViewModifier {
       "\(label) is from \(sourceName). Reacting with emoji from another server requires Nitro."
   }
 
-  private func addReaction(
-    _ emoji: DiscordModels.Emoji,
-    to target: ReactionPickerTarget
+  /// Adds a reaction to the message, reporting why through `appState.error`
+  /// when Discord would refuse it. Shared by the picker and the context menu's
+  /// quick reactions.
+  @MainActor
+  func react(
+    with emoji: DiscordModels.Emoji,
+    gw: GatewayStore,
+    appState: PaicordAppState
   ) {
     ImpactGenerator.impact(style: .light)
     // The grid is built from SwiftEmojiIndex, which spells some sequences
     // differently to Discord; send Discord's spelling or it rejects the
     // reaction with "Unknown Emoji".
-    if let reason = customEmojiUnavailableReason(emoji, in: target) {
+    if let reason = customEmojiUnavailableReason(emoji, gw: gw) {
       appState.error = reason
       return
     }
@@ -148,8 +155,8 @@ private struct ReactionPickerModifier: ViewModifier {
       do {
         let reaction = try Reaction(emoji: emoji)
         try await gw.client.addMessageReaction(
-          channelId: target.channelID,
-          messageId: target.messageID,
+          channelId: channelID,
+          messageId: messageID,
           emoji: reaction,
           type: .normal
         )

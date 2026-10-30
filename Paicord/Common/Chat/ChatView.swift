@@ -197,6 +197,17 @@ struct ChatView: View {
     }
     // opening a channel whose messages are already loaded doesn't produce a scroll request
     .onAppear { acknowledgeLatestIfVisible() }
+    // a channel marked unread goes back to normal once the user leaves it
+    .onDisappear { gw.readStates.manuallyUnread.remove(vm.channelId) }
+    .onChange(of: vm.channelId) { old, _ in gw.readStates.manuallyUnread.remove(old) }
+    // on iPhone the chat only slides away, so closing it counts as leaving
+    .onChange(of: appState.chatOpen) { _, open in
+      if open {
+        acknowledgeLatestIfVisible()
+      } else {
+        gw.readStates.manuallyUnread.remove(vm.channelId)
+      }
+    }
     .onChange(of: currentScrollPosition) { acknowledgeLatestIfVisible() }
     .onChange(of: scenePhase) { acknowledgeLatestIfVisible() }
   }
@@ -247,6 +258,7 @@ struct ChatView: View {
   /// the app is active, the newest messages are loaded, and the chat is scrolled to the bottom.
   private func acknowledgeLatestIfVisible() {
     guard scenePhase == .active, vm.hasLatestMessages, isNearBottom,
+      !gw.readStates.manuallyUnread.contains(vm.channelId),
       let messageId = vm.messages.values.last?.id,
       gw.readStates.isUnread(channelId: vm.channelId, lastMessageId: messageId)
     else { return }

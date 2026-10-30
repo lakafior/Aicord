@@ -57,6 +57,23 @@ class ReadStateStore: DiscordDataStore {
     )
   }
 
+  /// Channels the user marked unread while looking at them. The chat skips its
+  /// automatic ack for these until the user leaves the channel, as Discord does.
+  var manuallyUnread: Set<ChannelSnowflake> = []
+
+  /// Marks a channel unread from a message onwards by acking the id just before it.
+  func markUnread(channelId: ChannelSnowflake, from messageId: MessageSnowflake) async throws {
+    guard let gateway, let raw = UInt64(messageId.rawValue), raw > 0 else { return }
+    let previous = MessageSnowflake(raw - 1)
+    manuallyUnread.insert(channelId)
+    try await gateway.client.acknowledgeMessage(
+      channelId: channelId,
+      messageId: previous,
+      payload: Payloads.AcknowledgeMessage(manual: true)
+    ).guardSuccess()
+    applyAck(channelId: channelId, messageId: previous)
+  }
+
   /// Marks a channel as read up to a given message. Called after we send an ack
   /// ourselves, and when a `MESSAGE_ACK` event arrives from another client.
   func applyAck(channelId: ChannelSnowflake, messageId: MessageSnowflake, mentionCount: Int = 0) {
