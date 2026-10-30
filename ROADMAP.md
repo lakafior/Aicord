@@ -210,6 +210,14 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [x] Build macOS (arm64) i iOS bez nowych ostrzeżeń, zrzuty ekranu z obu platform.
    - [x] Poprawki po przeglądzie macOS: okno Ustawień startuje w rozmiarze 860×620, a pasek boczny ma co najmniej 210 pt (nazwy sekcji nie są ucinane; `navigationSplitViewColumnWidth` musi stać za `.searchable`); popover profilu ma 340×560 pt, przełącznik „Share My Activity” jako switch, „Log Out” na czerwono.
 
+8. **Poprawki interfejsu (po Ustawieniach):**
+   - [x] iPhone startuje na Home zamiast na pustym ekranie czatu „:3 Select a channel to start chatting” (`chatOpen` domyślnie `false`); dopóki nie wybrano kanału, czatu nie da się wysunąć gestem.
+   - [x] Kontener kanałów na Home: tło kończyło się nad paskiem zakładek (widać to było tylko w ciemnym motywie), teraz sięga pod pasek jak lista.
+   - [ ] Menu wiadomości od nowa: szybkie reakcje w rzędzie na górze zamiast „Add Reaction” nad Forward/Reply, bez pustego „Apps”, działające albo usunięte „Thread”, „Forward” i „Mark Unread”.
+   - [ ] Menu serwera i kanału (przytrzymanie, prawy przycisk na Macu): „Pin to Top” (lokalnie w Aicord, kanał przypinany w obrębie serwera) oraz Mute i powiadomienia, na kodzie z sekcji Notifications.
+   - [ ] Purge: usuwanie własnych wiadomości z czatu (z ostatnich X minut albo wszystkich), powoli, z potwierdzeniem i postępem. Cudzych wiadomości w DM API Discorda nie pozwala usunąć, a masowe usuwanie z konta użytkownika to ryzyko blokady.
+   - [ ] Rozszerzenie Safari: linki zaproszeń `discord.gg/…` i `discord.com/invite/…` otwierane w Aicord przez własny schemat URL (Universal Links dla discord.com należą do Discorda). Osobny target, włączany przez użytkownika w ustawieniach Safari.
+
 ---
 
 ### 🔜 Etap 9: Voice — kanały głosowe i rozmowy w DM

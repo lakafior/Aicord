@@ -22,7 +22,7 @@ struct SmallBaseplate: View {
   /// The server Home showed last, so opening a DM from Messages doesn't empty Home.
   @State private var lastHomeGuild: GuildSnowflake? = nil
   var disableSlideover: Bool {
-    self.currentTab == .settings
+    self.currentTab == .settings || currentChannelStore == nil
   }
 
   var body: some View {
@@ -76,15 +76,8 @@ struct SmallBaseplate: View {
               }
             #endif
         } else {
-          VStack {
-            Text(":3")
-              .font(.largeTitle)
-              .foregroundStyle(.secondary)
-
-            Text("Select a channel to start chatting")
-              .foregroundStyle(.secondary)
-              .font(.title2)
-          }
+          // never shown: the slideover stays shut until a channel is picked
+          Color.clear
         }
       }
     }

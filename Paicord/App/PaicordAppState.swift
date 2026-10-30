@@ -39,7 +39,8 @@ final class PaicordAppState {
   let id = UUID()
 
   // MARK: - iOS Specific
-  var chatOpen: Bool = true
+  /// iPhone opens on Home; the chat slides over once a channel is picked.
+  var chatOpen: Bool = false
 
   // MARK: - General
   var showingQuickSwitcher: Bool = false

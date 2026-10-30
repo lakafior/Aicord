@@ -31,10 +31,11 @@ struct HomeView: View {
         }
       }
       // the shape runs past the bottom safe area so the list scrolls under the tab bar
-      .background(
-        theme.common.secondaryBackground,
-        in: UnevenRoundedRectangle(topLeadingRadius: 25, style: .continuous)
-      )
+      .background {
+        UnevenRoundedRectangle(topLeadingRadius: 25, style: .continuous)
+          .fill(theme.common.secondaryBackground)
+          .ignoresSafeArea(edges: .bottom)
+      }
       .mask {
         UnevenRoundedRectangle(topLeadingRadius: 25, style: .continuous)
           .ignoresSafeArea(edges: .bottom)
