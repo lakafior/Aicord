@@ -16,12 +16,16 @@ struct SearchView: View {
 
   /// Called after a channel is selected, so the tab bar can show the chat.
   var onOpen: () -> Void
+  /// Shows a Done button, for Search in a sheet on Mac and iPad.
+  var onClose: (() -> Void)? = nil
 
   @State var text = ""
   @State var tokens: [SearchToken] = []
   @State var has: Set<HasFilter> = []
   @State var messages = MessageResults()
   @State var searchTask: Task<Void, Never>? = nil
+  @State var filters = MessageFilters()
+  @State var showingFilters = false
 
   var serverID: GuildSnowflake? {
     for token in tokens {
@@ -51,6 +55,7 @@ struct SearchView: View {
           serverResults
           channelResults
           peopleResults
+          activeFilters
           messageResults
         }
       }
@@ -63,10 +68,29 @@ struct SearchView: View {
       .onChange(of: text) { _, _ in runMessageSearch(debounce: true); requestMembers() }
       .onChange(of: tokens) { _, _ in runMessageSearch(debounce: false) }
       .onChange(of: has) { _, _ in runMessageSearch(debounce: false) }
+      .onChange(of: filters.dateRange) { _, _ in runMessageSearch(debounce: false) }
+      .onChange(of: filters.pattern) { old, new in
+        // the pattern filters loaded results; only starting or clearing it refetches
+        if old.isEmpty != new.isEmpty { runMessageSearch(debounce: true) }
+      }
+      .sheet(isPresented: $showingFilters) {
+        MessageFiltersSheet(filters: $filters)
+      }
       .toolbar {
+        if let onClose {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Done", action: onClose)
+          }
+        }
         ToolbarItem(placement: .primaryAction) {
           Menu {
-            ForEach(HasFilter.allCases) { filter in
+            Button {
+            showingFilters = true
+          } label: {
+            Label("Dates and Regex…", systemImage: "calendar.badge.clock")
+          }
+          Divider()
+          ForEach(HasFilter.allCases) { filter in
               Toggle(isOn: Binding(
                 get: { has.contains(filter) },
                 set: { on in if on { has.insert(filter) } else { has.remove(filter) } }
@@ -75,7 +99,7 @@ struct SearchView: View {
               }
             }
           } label: {
-            Label("Filters", systemImage: has.isEmpty
+            Label("Filters", systemImage: has.isEmpty && !filters.isActive
               ? "line.3.horizontal.decrease.circle"
               : "line.3.horizontal.decrease.circle.fill")
           }
@@ -275,7 +299,58 @@ struct SearchView: View {
   }
 
   var hasMessageCriteria: Bool {
-    !query.isEmpty || userID != nil || channelID != nil || !has.isEmpty
+    !query.isEmpty || userID != nil || channelID != nil || !has.isEmpty || filters.isActive
+  }
+
+  /// Dates and regex in use, each with a way to clear it.
+  @ViewBuilder
+  var activeFilters: some View {
+    if filters.isActive {
+      Section {
+        if let range = filters.dateRangeDescription {
+          HStack {
+            Label(range, systemImage: "calendar")
+            Spacer()
+            Button("Clear", role: .destructive) {
+              filters.from = nil
+              filters.to = nil
+            }
+            .buttonStyle(.borderless)
+          }
+        }
+        if !filters.pattern.isEmpty {
+          HStack {
+            Label {
+              Text(verbatim: "/\(filters.pattern)/" + (filters.ignoresCase ? "i" : ""))
+                .monospaced()
+                .lineLimit(1)
+            } icon: {
+              Image(systemName: "chevron.left.forwardslash.chevron.right")
+            }
+            Spacer()
+            Button("Clear", role: .destructive) { filters.pattern = "" }
+              .buttonStyle(.borderless)
+          }
+          if filters.regex == nil {
+            Label("This isn't a valid regular expression.", systemImage: "exclamationmark.triangle")
+              .foregroundStyle(.red)
+          }
+        }
+      } header: {
+        Text("Filters")
+      } footer: {
+        if !filters.pattern.isEmpty {
+          Text("Regex runs in Aicord on the results Discord sends, so “Show More” may be needed to find older matches.")
+        }
+      }
+    }
+  }
+
+  /// Results after the app-side regex.
+  var visibleMessages: [DiscordChannel.Message] {
+    guard !filters.pattern.isEmpty else { return messages.items }
+    guard let regex = filters.regex else { return [] }
+    return messages.items.filter { $0.content.contains(regex) }
   }
 
   @ViewBuilder
@@ -298,13 +373,17 @@ struct SearchView: View {
             .foregroundStyle(.secondary)
         } else if messages.loading && messages.items.isEmpty {
           HStack { Spacer(); ProgressView(); Spacer() }
-        } else if messages.items.isEmpty {
+        } else if visibleMessages.isEmpty && !(messages.items.count < messages.total) {
           Text("No messages found.")
             .foregroundStyle(.secondary)
         } else {
-          ForEach(messages.items, id: \.id) { message in
+          if visibleMessages.isEmpty {
+            Text("No matches in the \(messages.items.count) messages loaded so far.")
+              .foregroundStyle(.secondary)
+          }
+          ForEach(visibleMessages, id: \.id) { message in
             Button {
-              open(guild: message.guild_id ?? serverID, channel: message.channel_id)
+              open(guild: message.guild_id ?? serverID, channel: message.channel_id, message: message.id)
             } label: {
               MessageResultRow(message: message, channelName: channelName(for: message))
             }
@@ -316,7 +395,9 @@ struct SearchView: View {
           }
         }
       } header: {
-        if messageScope != nil, messages.total > 0 {
+        if messageScope != nil, messages.total > 0, !filters.pattern.isEmpty {
+          Text("Messages — \(visibleMessages.count) of \(messages.items.count) loaded")
+        } else if messageScope != nil, messages.total > 0 {
           Text("Messages — \(messages.total)")
         } else {
           Text("Messages")
@@ -338,7 +419,9 @@ struct SearchView: View {
       channelIDs: channelID.map { [$0] } ?? [],
       authorIDs: userID.map { [$0] } ?? [],
       has: has.map(\.rawValue).sorted(),
-      offset: offset
+      offset: offset,
+      minID: filters.minID,
+      maxID: filters.maxID
     )
   }
 
@@ -411,6 +494,12 @@ struct SearchView: View {
     onOpen()
   }
 
+  /// Opens the channel scrolled to the message, which is briefly highlighted.
+  func open(guild: GuildSnowflake?, channel: ChannelSnowflake, message: MessageSnowflake) {
+    appState.open(guild: guild, channel: channel, message: message)
+    onOpen()
+  }
+
   func openDM(with user: UserSnowflake) {
     if let dm = gw.user.privateChannels.values.first(where: {
       $0.type == .dm && $0.recipients?.first?.id == user
@@ -433,6 +522,121 @@ struct SearchView: View {
 }
 
 // MARK: - Tokens and filters
+
+/// Message filters Discord's search doesn't take as text: a date range (sent as
+/// `min_id`/`max_id`) and a regular expression applied in the app.
+struct MessageFilters: Equatable {
+  var from: Date?
+  var to: Date?
+  var pattern = ""
+  var ignoresCase = true
+
+  var isActive: Bool { from != nil || to != nil || !pattern.isEmpty }
+
+  struct DateRange: Equatable { var from: Date?; var to: Date? }
+  var dateRange: DateRange { DateRange(from: from, to: to) }
+
+  /// From the start of the first day.
+  var minID: MessageSnowflake? {
+    from.flatMap { MessageSearchQuery.boundary(for: Calendar.current.startOfDay(for: $0)) }
+  }
+
+  /// Up to the end of the last day.
+  var maxID: MessageSnowflake? {
+    to.flatMap {
+      Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: $0))
+    }
+    .flatMap(MessageSearchQuery.boundary(for:))
+  }
+
+  var regex: Regex<AnyRegexOutput>? {
+    guard let regex = try? Regex(pattern) else { return nil }
+    return ignoresCase ? regex.ignoresCase() : regex
+  }
+
+  var dateRangeDescription: String? {
+    let style = Date.FormatStyle(date: .abbreviated, time: .omitted)
+    switch (from, to) {
+    case let (from?, to?): return "\(from.formatted(style)) – \(to.formatted(style))"
+    case let (from?, nil): return String(localized: "From \(from.formatted(style))")
+    case let (nil, to?): return String(localized: "Until \(to.formatted(style))")
+    default: return nil
+    }
+  }
+}
+
+struct MessageFiltersSheet: View {
+  @Environment(\.dismiss) var dismiss
+  @Binding var filters: MessageFilters
+
+  var body: some View {
+    NavigationStack {
+      Form {
+        Section {
+          Toggle("From", isOn: Binding(
+            get: { filters.from != nil },
+            set: { filters.from = $0 ? (filters.to ?? .now).addingTimeInterval(-7 * 86_400) : nil }
+          ))
+          if let from = filters.from {
+            DatePicker(
+              "From", selection: Binding(get: { from }, set: { filters.from = $0 }),
+              in: ...(filters.to ?? .now), displayedComponents: .date
+            )
+          }
+          Toggle("To", isOn: Binding(
+            get: { filters.to != nil },
+            set: { filters.to = $0 ? .now : nil }
+          ))
+          if let to = filters.to {
+            DatePicker(
+              "To", selection: Binding(get: { to }, set: { filters.to = $0 }),
+              in: (filters.from ?? .distantPast)...Date.now, displayedComponents: .date
+            )
+          }
+        } header: {
+          Text("Dates")
+        } footer: {
+          Text("Both days are included.")
+        }
+
+        Section {
+          TextField("Regular expression", text: $filters.pattern)
+            .monospaced()
+            .autocorrectionDisabled()
+            #if os(iOS)
+              .textInputAutocapitalization(.never)
+            #endif
+          Toggle("Ignore Case", isOn: $filters.ignoresCase)
+          if !filters.pattern.isEmpty && filters.regex == nil {
+            Label("This isn't a valid regular expression.", systemImage: "exclamationmark.triangle")
+              .foregroundStyle(.red)
+          }
+        } header: {
+          Text("Regex")
+        } footer: {
+          Text("Matched against message text in Aicord, after Discord's search. For example, \\bv\\d+\\.\\d+ finds version numbers.")
+        }
+      }
+      .formStyle(.grouped)
+      .navigationTitle("Dates and Regex")
+      #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+      #endif
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Reset", role: .destructive) { filters = MessageFilters() }
+            .disabled(!filters.isActive)
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button("Done") { dismiss() }
+        }
+      }
+    }
+    #if os(macOS)
+      .frame(width: 400, height: 460)
+    #endif
+  }
+}
 
 enum SearchToken: Identifiable, Hashable {
   case server(GuildSnowflake)

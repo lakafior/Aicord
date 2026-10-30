@@ -102,3 +102,26 @@ class MessageRequestsAndForwardsTests: XCTestCase {
     XCTAssertNil(decoded.first?.message_preview)
   }
 }
+
+class MessageSearchDateRangeTests: XCTestCase {
+
+  func testDateBoundsBecomeMinAndMaxIDs() throws {
+    let from = Date(timeIntervalSince1970: 1_767_225_600)  // 2026-01-01 00:00 UTC
+    let to = from.addingTimeInterval(86_400)
+    let minID = try XCTUnwrap(MessageSearchQuery.boundary(for: from))
+    let maxID = try XCTUnwrap(MessageSearchQuery.boundary(for: to))
+    XCTAssertEqual(minID.parse()?.date, from)
+    XCTAssertLessThan(UInt64(minID.rawValue)!, UInt64(maxID.rawValue)!)
+
+    let query = MessageSearchQuery(content: "hi", minID: minID, maxID: maxID)
+    let items = Dictionary(query.queries.map { ($0.0, $0.1) }, uniquingKeysWith: { a, _ in a })
+    XCTAssertEqual(items["min_id"] ?? nil, minID.rawValue)
+    XCTAssertEqual(items["max_id"] ?? nil, maxID.rawValue)
+  }
+
+  func testNoDatesSendsNoBounds() {
+    let names = MessageSearchQuery(content: "hi").queries.map(\.0)
+    XCTAssertFalse(names.contains("min_id"))
+    XCTAssertFalse(names.contains("max_id"))
+  }
+}
