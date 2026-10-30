@@ -47,7 +47,7 @@ Zrobione (szczegóły w SHIPPED i `docs/INTELLIGENCE_NOTES.md`): ustawienia, tł
    - [ ] Komunikat „Apple Intelligence niedostępne” na urządzeniu bez modelu.
 2. **Dokończenia:**
 3. **Wyszukiwanie po sensie:**
-   - [ ] „Index Channel” dla wybranych kanałów: lokalny indeks wektorowy ostatnich N wiadomości (pobieranie historii po 100 na zapytanie, z limitami, więc z paskiem postępu), aktualizowany o nowe wiadomości, z rozmiarem na dysku i „Delete Index”. Foundation Models nie daje wektorów; opcjonalnie mały wielojęzyczny model embeddingowy w Core ML (lepsza jakość, aplikacja większa o kilkadziesiąt–sto MB).
+   - [ ] Index Channel: aktualizacja indeksu o nowe wiadomości z gatewaya w tle (dziś przycisk „Add New Messages”) i, opcjonalnie, mały wielojęzyczny model embeddingowy w Core ML zamiast średniej z `NLContextualEmbedding` (lepsza jakość, aplikacja większa o kilkadziesiąt–sto MB). Sprawdzić wyszukiwanie po sensie na urządzeniu z modelem (w symulatorze modelu nie ma, działało tylko po słowach).
 4. **Granice:**
    - Nie robimy: pomocy w pisaniu (poprawianie, ton, tłumaczenie szkicu), bo daje ją już system (Writing Tools w iOS i macOS).
 

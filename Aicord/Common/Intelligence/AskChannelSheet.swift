@@ -166,6 +166,10 @@ struct AskChannelSheet: View {
       }
       let pinnedLines = toolbox.add(Array(pinned.prefix(model.isOnDevice ? 5 : 25)))
       let recentLines = toolbox.add(recent)
+      let indexedLines = toolbox.add(
+        await Self.indexed(
+          channelId: channelId, question: question, skipping: Set(recent.map(\.id)),
+          limit: model.isOnDevice ? 4 : 10, gw: gw))
       phase = .thinking
       let prompt = """
         Channel: \(channelName)\(guildId.flatMap { gw.user.guilds[$0]?.name }.map { " on \($0)" } ?? "")
@@ -173,6 +177,7 @@ struct AskChannelSheet: View {
         \(pinnedLines.isEmpty ? "(none)" : pinnedLines.joined(separator: "\n"))
         Recent messages:
         \(recentLines.joined(separator: "\n"))
+        \(indexedLines.isEmpty ? "" : "Older messages from the channel index that may help:\n" + indexedLines.joined(separator: "\n"))
 
         Question: \(question)
         """
@@ -189,6 +194,26 @@ struct AskChannelSheet: View {
       if Task.isCancelled { return }
       phase = .failed(error.localizedDescription)
     }
+  }
+
+  /// Older messages the channel's index on this device matches with the
+  /// question, fetched again so they can be cited and opened.
+  static func indexed(
+    channelId: ChannelSnowflake, question: String, skipping: Set<MessageSnowflake>, limit: Int,
+    gw: GatewayStore
+  ) async -> [DiscordChannel.Message] {
+    guard let index = ChannelIndexFiles.load(channelId) else { return [] }
+    var found: [DiscordChannel.Message] = []
+    for entry in await index.matches(for: question, limit: limit * 2) {
+      guard found.count < limit else { break }
+      let id = MessageSnowflake(entry.id)
+      guard !skipping.contains(id),
+        let res = try? await gw.client.listMessages(channelId: channelId, around: id, limit: 1),
+        let message = (try? res.decode())?.first(where: { $0.id == id })
+      else { continue }
+      found.append(message)
+    }
+    return found.sorted { $0.id < $1.id }
   }
 
   /// The 5 newest and the 15 others that match the question best, in order.

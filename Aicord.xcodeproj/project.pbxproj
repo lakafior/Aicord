@@ -189,6 +189,7 @@
 		AEDA0F2608CBD5DF030505A5 /* MessageIntelligenceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */; };
 		AE5EA7C4000000000000F002 /* SearchSentence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5EA7C4000000000000F001 /* SearchSentence.swift */; };
 		AEA0F807B973625EA9F2D537 /* ScamWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */; };
+		044C78D9083D40903B75814E /* ChannelIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99786A66C75D3846203C309A /* ChannelIndex.swift */; };
 		0AFD5990586C92D6CFD99C40 /* ImageDescriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5544B514A0125B34B4F88B6B /* ImageDescriptions.swift */; };
 /* End PBXBuildFile section */
 
@@ -413,6 +414,7 @@
 		AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageIntelligenceSheet.swift; sourceTree = "<group>"; };
 		AE5EA7C4000000000000F001 /* SearchSentence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchSentence.swift; path = Search/SearchSentence.swift; sourceTree = "<group>"; };
 		AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScamWarning.swift; sourceTree = "<group>"; };
+		99786A66C75D3846203C309A /* ChannelIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelIndex.swift; sourceTree = "<group>"; };
 		5544B514A0125B34B4F88B6B /* ImageDescriptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDescriptions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1150,6 +1152,7 @@
 			isa = PBXGroup;
 			children = (
 				AE75A1D340E73FC7AA430D8D /* ScamWarning.swift */,
+				99786A66C75D3846203C309A /* ChannelIndex.swift */,
 				5544B514A0125B34B4F88B6B /* ImageDescriptions.swift */,
 				AED4DBDA48D5758AEA039092 /* MessageIntelligenceSheet.swift */,
 				AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */,
@@ -1297,6 +1300,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AEA0F807B973625EA9F2D537 /* ScamWarning.swift in Sources */,
+				044C78D9083D40903B75814E /* ChannelIndex.swift in Sources */,
 				0AFD5990586C92D6CFD99C40 /* ImageDescriptions.swift in Sources */,
 				AE5EA7C4000000000000F002 /* SearchSentence.swift in Sources */,
 				AEDA0F2608CBD5DF030505A5 /* MessageIntelligenceSheet.swift in Sources */,

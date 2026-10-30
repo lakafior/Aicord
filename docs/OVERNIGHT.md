@@ -8,7 +8,7 @@ Gałąź `claude/overnight-3dc9d9`, jedna sesja, symulator iPhone 18 Pro (`10C26
 |---|---|---|
 | 1 | Etap 8: Leave Server, Invites, instrukcja Safari, link na Macu | zrobione (Mac do sprawdzenia rano) |
 | 2 | Etap 7: odchudzanie `DiscordModels`, testy `Textual` | zrobione: −0,67 MB, 187 testów Textual (i naprawione przepełnienie stosu) |
-| 3 | Etap 10: dokończenia i wyszukiwanie po sensie | ranking i rerankowanie zrobione, reszta w toku |
+| 3 | Etap 10: dokończenia i wyszukiwanie po sensie | zrobione (ranking, VoiceOver, lokalne serwery, okno 4K, Index Channel) |
 | 4 | Etap 12: przygotowanie wydań | czeka |
 | 5 | Etap 11: interfejs Maca, serwer MCP | czeka |
 | 6 | Language | czeka |
@@ -141,6 +141,18 @@ Pomiar jak w `docs/SLIM_NOTES.md`: Release, `generic/platform=iOS`, mapa linkera
 - `IntelligenceModel.answer(…toolbox:)` na urządzeniu nie miał tego, co ma zwykłe `respond`: limitu czasu (90 s), przyjaznych komunikatów i reakcji na przepełnienie okna. Teraz ma; przy przepełnieniu (zwykle po wynikach narzędzi) druga próba bez narzędzi na ostatnich 60% promptu (pytanie jest na końcu, więc zostaje).
 - **Decyzja:** nie skracałem schematów narzędzi. Opisy i parametry już są krótkie (5 pól w `searchMessages`), a test pokazał poprawną odpowiedź; zysk z wycinania parametrów byłby mały, a model traciłby filtry.
 - **Sprawdzone:** Ask w NAScin #ogólny na urządzeniu (symulator, Apple Intelligence): poprawna odpowiedź o Kite.ipa z linkiem. Ścieżki przepełnienia nie da się łatwo wywołać na tak małym kanale.
+
+### 3e. Index Channel
+
+**Stan: zrobione.** Commit: `feat: Index Channel, a meaning index of a channel on the device`.
+
+- `Aicord/Common/Intelligence/ChannelIndex.swift`: `ChannelIndex` (wpisy: id, data, „Nazwa: tekst” po filtrach, wektor Float32 jako `Data`), `ChannelIndexFiles` (JSON w `Application Support/ChannelIndexes/<id>.json`), `ChannelIndexSheet`.
+- Budowa: wybór 500/1000/2000/5000, pobieranie po 100 z przerwą 350 ms (bezpiecznie dla limitów Discorda), postęp „Reading messages… N of M”, potem „Indexing…” (wektory), anulowanie. Tekst przez `IntelligenceSource.transcript`, więc zablokowani, filtr słów, spoilery i ukryte media nie trafiają do indeksu.
+- „Add New Messages”: pobiera tylko nowsze od najnowszego w indeksie. **Decyzja:** bez automatycznej aktualizacji z gatewaya w tle w tej nocy (wymagałaby obserwatora wiadomości przy kanałach z indeksem i ostrożności z wydajnością); zapisane w ROADMAP.
+- Ask About This Channel: gdy kanał ma indeks, dokłada najlepiej pasujące starsze wiadomości (pobrane ponownie przez `around`, żeby dało się je cytować i otwierać).
+- **Decyzja (bez nowych paczek):** wektory z `NLContextualEmbedding` (średnia tokenów). Model Core ML byłby lepszy, ale to kilkadziesiąt–sto MB w aplikacji; zostawione jako opcja w ROADMAP.
+- **Sprawdzone w symulatorze na NAScin #ogólny:** budowa 1000 → 925 wiadomości (od 13.09.2023), plik 173 kB; wyszukiwanie „kite ipa” → „Lakafi: [file: Kite.ipa]”; „Delete Index” z potwierdzeniem usuwa plik. **W symulatorze `NLContextualEmbedding` nie ma zasobów**, więc indeks był tylko słowny (arkusz to mówi). Na Macu model jest (sprawdzone w 3a), na iPhonie do sprawdzenia rano.
+- Naprawione w trakcie: rozmiar „Zero kB”, bo `URL.path()` koduje spacje w „Application Support”; teraz `path(percentEncoded: false)`.
 
 ---
 

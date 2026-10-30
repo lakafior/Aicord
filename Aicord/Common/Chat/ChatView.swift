@@ -21,6 +21,7 @@ struct ChatView: View {
   @State private var currentScrollPosition: MessageSnowflake?
   @State private var summaryRange: SummaryRange?
   @State private var askingChannel = false
+  @State private var indexingChannel = false
   @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
 
@@ -203,7 +204,8 @@ struct ChatView: View {
       if !isPrivateChannel || intelligenceInDMs {
         ToolbarItem(placement: .primaryAction) {
           ChannelIntelligenceMenu(
-            channelId: vm.channelId, summary: $summaryRange, asking: $askingChannel)
+            channelId: vm.channelId, summary: $summaryRange, asking: $askingChannel,
+            indexing: $indexingChannel)
         }
       }
       // no calls before a request is accepted
@@ -226,6 +228,10 @@ struct ChatView: View {
     }
     .sheet(isPresented: $askingChannel) {
       AskChannelSheet(
+        channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
+    }
+    .sheet(isPresented: $indexingChannel) {
+      ChannelIndexSheet(
         channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
     }
     .onChange(of: vm.scrollRequest) { _, request in
