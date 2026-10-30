@@ -157,8 +157,12 @@ struct ProfileBar: View {
         AccountInfoSection()
         AccountsSection()
       }
-      .frame(minWidth: 280)
-      .frame(minHeight: 420)
+      #if os(macOS)
+        .frame(width: 340, height: 560)
+      #else
+        .frame(minWidth: 280)
+        .frame(minHeight: 420)
+      #endif
     }
 
     static let statuses: [Gateway.Status] = [
@@ -317,6 +321,9 @@ struct ProfileBar: View {
             }
           )
         )
+        #if os(macOS)
+          .toggleStyle(.switch)
+        #endif
       } header: {
         Text("Activity")
       } footer: {
@@ -407,11 +414,13 @@ struct ProfileBar: View {
           Label("Add Account", systemImage: "person.crop.circle.badge.plus")
         }
         .buttonStyle(.borderless)
+        .tint(.primary)
 
         Button(role: .destructive) {
           confirmingLogOut = true
         } label: {
           Label("Log Out", systemImage: "rectangle.portrait.and.arrow.right")
+            .foregroundStyle(.red)
         }
         .buttonStyle(.borderless)
         .confirmationDialog(

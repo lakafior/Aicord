@@ -173,8 +173,10 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
 6. **Lista kanałów:**
    - [x] Kategorie domyślnie rozwinięte; zapamiętywane są tylko te zwinięte przez użytkownika (nowy klucz `GuildCategory.<id>.Collapsed`, więc stare stany „zwinięte” się nie przenoszą).
    - [x] Nagłówek kategorii w stylu nagłówków list Apple: wersaliki, `footnote` semibold, szewron po prawej obracany przy zwijaniu, cienka linia między kategoriami (bez linii nad pierwszą widoczną pozycją). Czcionka w całej aplikacji to systemowy SF Pro.
+   - [x] Kanały forum, multimediów i sceny z własną ikoną zamiast surowej nazwy typu („guildForum”) pod nazwą kanału.
 7. **Weryfikacja:**
-   - [ ] Build macOS (arm64) i iOS bez nowych ostrzeżeń, zrzuty ekranu z obu platform.
+   - [x] Build macOS (arm64) i iOS bez nowych ostrzeżeń, zrzuty ekranu z obu platform.
+   - [x] Poprawki po przeglądzie macOS: okno Ustawień startuje w rozmiarze 860×620, a pasek boczny ma co najmniej 210 pt (nazwy sekcji nie są ucinane; `navigationSplitViewColumnWidth` musi stać za `.searchable`); popover profilu ma 340×560 pt, przełącznik „Share My Activity” jako switch, „Log Out” na czerwono.
 
 ---
 

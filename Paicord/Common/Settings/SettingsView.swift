@@ -174,6 +174,7 @@ struct SettingsView: View {
           }
         }
       #endif
+      .navigationSplitViewColumnWidth(min: 210, ideal: 230)
     } detail: {
       NavigationStack {
         if let selectedTab {

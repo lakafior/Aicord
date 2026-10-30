@@ -71,6 +71,7 @@ struct PaicordApp: App {
       Window("Settings", id: "settings") {
         SettingsView()
       }
+      .defaultSize(width: 860, height: 620)
       .restorationBehavior(.disabled)
     #endif
   }

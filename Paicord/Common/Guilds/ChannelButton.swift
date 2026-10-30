@@ -222,12 +222,9 @@ struct ChannelButton: View {
     default:
       textChannelButton { _ in
         HStack {
-          Image(systemName: "number")
+          Image(systemName: Self.symbol(for: channel.type))
             .imageScale(.medium)
-          VStack(alignment: .leading) {
-            Text(channel.name ?? "unknown")
-            Text(verbatim: "\(channel.type!)")
-          }
+          Text(channel.name ?? "unknown")
         }
         .foregroundStyle(isUnread || selected ? .primary : .secondary)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -315,6 +312,16 @@ struct ChannelButton: View {
           }
           .clipShape(.rounded)
         )
+    }
+  }
+
+  /// Icon for channel types that don't have their own row style yet.
+  static func symbol(for type: DiscordChannel.Kind?) -> String {
+    switch type {
+    case .guildForum: "bubble.left.and.text.bubble.right"
+    case .guildMedia: "photo.on.rectangle"
+    case .guildStageVoice: "person.wave.2"
+    default: "number"
     }
   }
 
