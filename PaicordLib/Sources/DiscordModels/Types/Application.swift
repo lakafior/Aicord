@@ -236,3 +236,9 @@ public struct EmbeddedActivities: Sendable, Codable, Equatable, Hashable {
     }
   }
 }
+
+/// https://docs.discord.food/resources/application#external-asset-object
+public struct ApplicationExternalAsset: Sendable, Codable {
+  public var url: String
+  public var external_asset_path: String
+}

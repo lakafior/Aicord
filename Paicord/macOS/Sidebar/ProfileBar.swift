@@ -121,17 +121,6 @@ struct ProfileBar: View {
 
   struct ProfileButtonPopout: View {
     @Environment(\.gateway) var gw
-    @Environment(\.appState) var appState
-    @Environment(\.openURL) var openURL
-    @State var editingCustomStatus = false
-    @State var confirmingLogOut = false
-
-    static let statuses: [Gateway.Status] = [
-      .online,
-      .afk,
-      .doNotDisturb,
-      .invisible,
-    ]
 
     var body: some View {
       List {
@@ -160,157 +149,24 @@ struct ProfileBar: View {
           }
           .padding(.vertical, 5)
 
-          Button {
-            editingCustomStatus = true
-          } label: {
-            customStatusRow
-          }
-          .buttonStyle(.borderless)
-          .tint(.primary)
+          CustomStatusRow()
         }
 
-        Section("Status") {
-          ForEach(Self.statuses, id: \.self) { status in
-            AsyncButton {
-              try await gw.presence.changeStatus(status)
-            } catch: { error in
-              appState.error = error
-            } label: {
-              HStack {
-                Self.statusItem(status)
-                Spacer()
-                if gw.presence.currentClientStatus == status {
-                  Image(systemName: "checkmark")
-                    .foregroundStyle(.tint)
-                }
-              }
-              .contentShape(.rect)
-            }
-            .buttonStyle(.borderless)
-            .tint(.primary)
-          }
-        }
-
-        Section {
-          if let created = gw.user.currentUser?.id.parse()?.date {
-            LabeledContent("Member Since") {
-              Text(created, format: .dateTime.day().month(.wide).year())
-            }
-          }
-          Link(destination: Self.editProfileURL) {
-            Label("Edit Profile", systemImage: "pencil")
-          }
-        }
-
-        Section("Accounts") {
-          ForEach(gw.accounts.accounts, id: \.id) { account in
-            let isSignedInAccount = account.id == gw.accounts.currentAccountID
-            AsyncButton {
-              gw.accounts.currentAccountID = nil
-              await gw.disconnectIfNeeded()
-              gw.resetStores()
-              gw.accounts.currentAccountID = account.id
-            } catch: { error in
-              appState.error = error
-            } label: {
-              HStack {
-                Profile.AvatarWithPresence(
-                  member: nil,
-                  user: account.user
-                )
-                .frame(maxWidth: 25)
-                .frame(maxHeight: 25)
-                .profileAnimated(false)
-                .profileShowsAvatarDecoration()
-
-                VStack(alignment: .leading) {
-                  Text(
-                    account.user.global_name
-                      ?? account.user.username
-                  )
-                  .lineSpacing(1)
-                  .bold()
-                  Text(verbatim: "@\(account.user.username)")
-                    .lineSpacing(1)
-                    .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                if isSignedInAccount {
-                  Image(systemName: "checkmark")
-                    .foregroundStyle(.tint)
-                }
-              }
-              .padding(.vertical, 2)
-              .contentShape(.rect)
-            }
-            .buttonStyle(.borderless)
-            .tint(.primary)
-            .disabled(isSignedInAccount)
-          }
-
-          AsyncButton {
-            gw.accounts.currentAccountID = nil
-            await gw.disconnectIfNeeded()
-            gw.resetStores()
-          } catch: { error in
-            appState.error = error
-          } label: {
-            Label("Add Account", systemImage: "person.crop.circle.badge.plus")
-          }
-          .buttonStyle(.borderless)
-
-          Button(role: .destructive) {
-            confirmingLogOut = true
-          } label: {
-            Label("Log Out", systemImage: "rectangle.portrait.and.arrow.right")
-          }
-          .buttonStyle(.borderless)
-          .confirmationDialog(
-            "Log out of this account?",
-            isPresented: $confirmingLogOut
-          ) {
-            Button("Log Out", role: .destructive) {
-              guard
-                let id = gw.accounts.currentAccountID,
-                let account = gw.accounts.account(for: id)
-              else { return }
-              Task {
-                await gw.disconnectIfNeeded()
-                gw.resetStores()
-                gw.accounts.removeAccount(account)
-              }
-            }
-          }
-        }
+        StatusSection()
+        ActivitySection()
+        AccountInfoSection()
+        AccountsSection()
       }
       .frame(minWidth: 280)
       .frame(minHeight: 420)
-      .sheet(isPresented: $editingCustomStatus) {
-        CustomStatusEditor()
-      }
     }
 
-    @ViewBuilder
-    var customStatusRow: some View {
-      if let activity = gw.presence.currentClientStatusActivity {
-        HStack(spacing: 6) {
-          if let emoji = activity.emoji {
-            CustomStatusEmoji(emoji: emoji)
-          }
-          Text(activity.state ?? "")
-            .lineLimit(2)
-          Spacer()
-          Image(systemName: "pencil")
-            .foregroundStyle(.secondary)
-        }
-        .contentShape(.rect)
-      } else {
-        Label("Set Custom Status", systemImage: "face.smiling")
-          .contentShape(.rect)
-      }
-    }
+    static let statuses: [Gateway.Status] = [
+      .online,
+      .afk,
+      .doNotDisturb,
+      .invisible,
+    ]
 
     /// Discord's own profile editor, until profile editing is built in.
     static let editProfileURL = URL(string: "https://discord.com/settings/profiles")!
@@ -348,6 +204,231 @@ struct ProfileBar: View {
         }
         .foregroundStyle(color)
         .frame(width: 15, height: 15)
+      }
+    }
+  }
+
+  // MARK: - Profile sections
+  // Shared by the macOS popover and the iPhone Profile tab.
+
+  struct CustomStatusRow: View {
+    @Environment(\.gateway) var gw
+    @State var editing = false
+
+    var body: some View {
+      Button {
+        editing = true
+      } label: {
+        if let activity = gw.presence.currentClientStatusActivity {
+          HStack(spacing: 6) {
+            if let emoji = activity.emoji {
+              CustomStatusEmoji(emoji: emoji)
+            }
+            Text(activity.state ?? "")
+              .lineLimit(2)
+            Spacer()
+            Image(systemName: "pencil")
+              .foregroundStyle(.secondary)
+          }
+          .contentShape(.rect)
+        } else {
+          Label("Set Custom Status", systemImage: "face.smiling")
+            .contentShape(.rect)
+        }
+      }
+      .buttonStyle(.borderless)
+      .tint(.primary)
+      .sheet(isPresented: $editing) {
+        CustomStatusEditor()
+      }
+    }
+  }
+
+  struct StatusSection: View {
+    @Environment(\.gateway) var gw
+    @Environment(\.appState) var appState
+
+    var body: some View {
+      Section("Status") {
+        ForEach(ProfileButtonPopout.statuses, id: \.self) { status in
+          AsyncButton {
+            try await gw.presence.changeStatus(status)
+          } catch: { error in
+            appState.error = error
+          } label: {
+            HStack {
+              ProfileButtonPopout.statusItem(status)
+              Spacer()
+              if gw.presence.currentClientStatus == status {
+                Image(systemName: "checkmark")
+                  .foregroundStyle(.tint)
+              }
+            }
+            .contentShape(.rect)
+          }
+          .buttonStyle(.borderless)
+          .tint(.primary)
+        }
+      }
+    }
+  }
+
+  struct ActivitySection: View {
+    @Environment(\.gateway) var gw
+    @Environment(\.appState) var appState
+    @State var editing = false
+
+    var body: some View {
+      Section {
+        if gw.presence.richPresenceActivity != nil,
+          let id = gw.accounts.currentAccountID,
+          let fields = RichPresence.saved(for: id)
+        {
+          RichPresenceCard(fields: fields)
+            .padding(.vertical, 4)
+        }
+        Button {
+          editing = true
+        } label: {
+          Label(
+            gw.presence.richPresenceActivity == nil
+              ? "Set Rich Presence" : "Edit Rich Presence",
+            systemImage: "gamecontroller"
+          )
+          .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
+        .tint(.primary)
+        .sheet(isPresented: $editing) {
+          RichPresenceEditor()
+        }
+        Toggle(
+          "Share My Activity",
+          isOn: Binding(
+            get: { gw.presence.sharesActivity },
+            set: { newValue in
+              Task {
+                do {
+                  try await gw.presence.setSharesActivity(newValue)
+                } catch {
+                  appState.error = error
+                }
+              }
+            }
+          )
+        )
+      } header: {
+        Text("Activity")
+      } footer: {
+        Text("Rich presence shows while Aicord is connected.")
+      }
+    }
+  }
+
+  struct AccountInfoSection: View {
+    @Environment(\.gateway) var gw
+
+    var body: some View {
+      Section {
+        if let created = gw.user.currentUser?.id.parse()?.date {
+          LabeledContent("Member Since") {
+            Text(created, format: .dateTime.day().month(.wide).year())
+          }
+        }
+        Link(destination: ProfileButtonPopout.editProfileURL) {
+          Label("Edit Profile", systemImage: "pencil")
+        }
+      }
+    }
+  }
+
+  struct AccountsSection: View {
+    @Environment(\.gateway) var gw
+    @Environment(\.appState) var appState
+    @State var confirmingLogOut = false
+
+    var body: some View {
+      Section("Accounts") {
+        ForEach(gw.accounts.accounts, id: \.id) { account in
+          let isSignedInAccount = account.id == gw.accounts.currentAccountID
+          AsyncButton {
+            gw.accounts.currentAccountID = nil
+            await gw.disconnectIfNeeded()
+            gw.resetStores()
+            gw.accounts.currentAccountID = account.id
+          } catch: { error in
+            appState.error = error
+          } label: {
+            HStack {
+              Profile.AvatarWithPresence(
+                member: nil,
+                user: account.user
+              )
+              .frame(maxWidth: 25)
+              .frame(maxHeight: 25)
+              .profileAnimated(false)
+              .profileShowsAvatarDecoration()
+
+              VStack(alignment: .leading) {
+                Text(
+                  account.user.global_name
+                    ?? account.user.username
+                )
+                .lineSpacing(1)
+                .bold()
+                Text(verbatim: "@\(account.user.username)")
+                  .lineSpacing(1)
+                  .foregroundStyle(.secondary)
+              }
+
+              Spacer()
+
+              if isSignedInAccount {
+                Image(systemName: "checkmark")
+                  .foregroundStyle(.tint)
+              }
+            }
+            .padding(.vertical, 2)
+            .contentShape(.rect)
+          }
+          .buttonStyle(.borderless)
+          .tint(.primary)
+          .disabled(isSignedInAccount)
+        }
+
+        AsyncButton {
+          gw.accounts.currentAccountID = nil
+          await gw.disconnectIfNeeded()
+          gw.resetStores()
+        } catch: { error in
+          appState.error = error
+        } label: {
+          Label("Add Account", systemImage: "person.crop.circle.badge.plus")
+        }
+        .buttonStyle(.borderless)
+
+        Button(role: .destructive) {
+          confirmingLogOut = true
+        } label: {
+          Label("Log Out", systemImage: "rectangle.portrait.and.arrow.right")
+        }
+        .buttonStyle(.borderless)
+        .confirmationDialog(
+          "Log out of this account?",
+          isPresented: $confirmingLogOut
+        ) {
+          Button("Log Out", role: .destructive) {
+            guard
+              let id = gw.accounts.currentAccountID,
+              let account = gw.accounts.account(for: id)
+            else { return }
+            Task {
+              await gw.disconnectIfNeeded()
+              gw.resetStores()
+              gw.accounts.removeAccount(account)
+            }
+          }
+        }
       }
     }
   }

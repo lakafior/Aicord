@@ -70,6 +70,14 @@ class PresenceStore: DiscordDataStore {
 
   var sessions: [Gateway.Session] = []
 
+  /// The user's own rich presence, ready to send (images already resolved).
+  var richPresenceActivity: Gateway.Activity? = nil
+
+  /// Everything this client shows: the custom status first, then the rich presence.
+  var ourActivities: [Gateway.Activity] {
+    [currentClientStatusActivity, richPresenceActivity].compactMap { $0 }
+  }
+
   private func handleReady(_ data: Gateway.Ready) {
     self.sessions = data.sessions
 
@@ -95,13 +103,10 @@ class PresenceStore: DiscordDataStore {
     }
     // use stored presence if any to update our presence
     Task {
-      var activities: [Gateway.Activity] = []
-      if let activity = self.currentClientStatusActivity {
-        activities.append(activity)
-      }
+      await self.restoreRichPresence()
       await self.setPresence(
         status: self.currentClientStatus,
-        activities: activities
+        activities: self.ourActivities
       )
     }
   }
@@ -140,13 +145,9 @@ class PresenceStore: DiscordDataStore {
         || oldStatusActivity != self.currentClientStatusActivity
       {
         // presence changed, update our presence to match
-        var activities: [Gateway.Activity] = []
-        if let activity = self.currentClientStatusActivity {
-          activities.append(activity)
-        }
         await self.setPresence(
           status: self.currentClientStatus,
-          activities: activities
+          activities: self.ourActivities
         )
       }
     }
@@ -196,7 +197,7 @@ class PresenceStore: DiscordDataStore {
       custom.createdAtMs = nowMs
       custom.expiresAtMs = expiresAt.map { UInt64($0.timeIntervalSince1970 * 1_000) } ?? 0
     }
-    await setPresence(activities: currentClientStatusActivity.map { [$0] } ?? [])
+    await setPresence(activities: ourActivities)
 
     var partial = DiscordProtos_DiscordUsers_V1_PreloadedUserSettings()
     partial.status.customStatus = custom
@@ -212,7 +213,7 @@ class PresenceStore: DiscordDataStore {
       return
     }
     let status = status ?? currentClientStatus
-    let activities = activities ?? self.currentClientStatusActivity.map { [$0] } ?? []
+    let activities = activities ?? ourActivities
     await gateway.updatePresence(
       payload: .init(
         activities: activities,

@@ -3151,6 +3151,16 @@ public enum Payloads {
   }
 
   /// https://docs.discord.food/resources/message#create-attachments
+  public struct CreateApplicationExternalAssets: Sendable, Encodable, ValidatablePayload {
+    public var urls: [String]
+
+    public init(urls: [String]) {
+      self.urls = urls
+    }
+
+    public func validate() -> [ValidationFailure] {}
+  }
+
   public struct CreateAttachments: Sendable, Encodable, ValidatablePayload {
     public var files: [UploadAttachment]
 

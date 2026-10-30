@@ -67,6 +67,7 @@ public enum UserAPIEndpoint: Endpoint {
 
   // MARK: - Messages
   case createAttachments(channelId: ChannelSnowflake)
+  case createApplicationExternalAssets(applicationId: ApplicationSnowflake)
   case deleteAttachment(uploadFilename: String)
 
   // MARK: - Payments
@@ -213,6 +214,8 @@ public enum UserAPIEndpoint: Endpoint {
     // MARK: - Messages
     case .createAttachments(let channelId):
       suffix = "channels/\(channelId.rawValue)/attachments"
+    case .createApplicationExternalAssets(let applicationId):
+      suffix = "applications/\(applicationId.rawValue)/external-assets"
     case .deleteAttachment(let filename):
       suffix = "attachments/\(filename)"
 
@@ -372,6 +375,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "users/@me/invites"
     case .createAttachments(let channelId):
       suffix = "channels/\(channelId.rawValue)/attachments"
+    case .createApplicationExternalAssets(let applicationId):
+      suffix = "applications/\(applicationId.rawValue)/external-assets"
     case .deleteAttachment(let filename):
       suffix = "attachments/\(filename)"
     case .getRelationships:
@@ -491,6 +496,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .createUserInvite: return .POST
     case .revokeUserInvites: return .DELETE
     case .createAttachments: return .POST
+    case .createApplicationExternalAssets: return .POST
     case .deleteAttachment: return .DELETE
     case .getRelationships: return .GET
     case .sendFriendRequest: return .POST
@@ -553,6 +559,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .createUserInvite: return true
     case .revokeUserInvites: return true
     case .createAttachments: return true
+    case .createApplicationExternalAssets: return true
     case .deleteAttachment: return true
     case .getRelationships: return true
     case .sendFriendRequest: return true
@@ -615,6 +622,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .createUserInvite: return true
     case .revokeUserInvites: return true
     case .createAttachments: return true
+    case .createApplicationExternalAssets: return true
     case .deleteAttachment: return true
     case .getRelationships: return true
     case .sendFriendRequest: return true
@@ -678,6 +686,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .createUserInvite: return []
     case .revokeUserInvites: return []
     case .createAttachments(let channelId): return [channelId.rawValue]
+    case .createApplicationExternalAssets(let applicationId): return [applicationId.rawValue]
     case .deleteAttachment(let uploadFilename): return [uploadFilename]
     case .getRelationships: return []
     case .sendFriendRequest: return []
@@ -798,6 +807,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .finishRemoteAuthSession: return 121
     case .cancelRemoteAuthSession: return 122
     case .exchangeRemoteAuthTicket: return 123
+    case .createApplicationExternalAssets: return 124
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -846,6 +856,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .revokeUserInvites: return "revokeUserInvites"
     case .createAttachments(let channelId):
       return "createAttachments(channelId: \(channelId.rawValue))"
+    case .createApplicationExternalAssets(let applicationId):
+      return "createApplicationExternalAssets(applicationId: \(applicationId.rawValue))"
     case .deleteAttachment(let filename):
       return "deleteAttachment(filename: \(filename))"
     case .getRelationships: return "getRelationships"

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92981EF5B411046392600481 /* RichPresence.swift */; };
 		9E08D02F0DF3EA41E426DA50 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E84D65FC5165C77155CF85BB /* AppIcon.icon */; };
 		571AE5B12FFD7726006D609C /* ObservableBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571AE5B02FFD7726006D609C /* ObservableBox.swift */; };
 		5724CD6F2E733D0E00931FEF /* MFASheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5724CD6E2E733D0900931FEF /* MFASheet.swift */; };
@@ -150,9 +151,12 @@
 		AAFC9DDA2EB7DAE300BB8028 /* VariableBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFC9DD92EB7DAE200BB8028 /* VariableBlurView.swift */; };
 		AAFD41382E92FA43002BC9BE /* Array+safe.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFD41372E92FA42002BC9BE /* Array+safe.swift */; };
 		B0664996F9A32151DFDE9092 /* DiscordEmojiNameIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8C74A1FC4BEBBF1319A625 /* DiscordEmojiNameIndex.swift */; };
+		B41F5C64A11572B4B480A74E /* RichPresenceEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E38A72AC89724C88BEE5FB9 /* RichPresenceEditor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5E38A72AC89724C88BEE5FB9 /* RichPresenceEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RichPresenceEditor.swift; path = RichPresenceEditor.swift; sourceTree = "<group>"; };
+		92981EF5B411046392600481 /* RichPresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RichPresence.swift; path = RichPresence.swift; sourceTree = "<group>"; };
 		E84D65FC5165C77155CF85BB /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		571AE5B02FFD7726006D609C /* ObservableBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableBox.swift; sourceTree = "<group>"; };
 		5724CD6E2E733D0900931FEF /* MFASheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFASheet.swift; sourceTree = "<group>"; };
@@ -602,6 +606,7 @@
 				A20BAF022FA751DA00B337A6 /* ProfileBannerView.swift */,
 				AA2278C42EA4481F002C335F /* ProfilePopoutView.swift */,
 				AA21D27D2EA8ED3E00C75093 /* ProfileFullSheetView.swift */,
+				5E38A72AC89724C88BEE5FB9 /* RichPresenceEditor.swift */,
 			);
 			path = Profiles;
 			sourceTree = "<group>";
@@ -957,6 +962,7 @@
 				AAAF797F2ED1E9ED004B5B3F /* ExternalBadgeStore.swift */,
 				AA79479D2EDC7B9400B7A1EE /* PresenceStore.swift */,
 				AA5F76EA2F3E5E1900A7A003 /* QuickSwitcherProviderStore.swift */,
+				92981EF5B411046392600481 /* RichPresence.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -1201,6 +1207,8 @@
 				AAAF79802ED1E9F7004B5B3F /* ExternalBadgeStore.swift in Sources */,
 				AA5F76EB2F3E5E2100A7A003 /* QuickSwitcherProviderStore.swift in Sources */,
 				57DA042F2E79DC4C00DB4C7C /* SettingsView.swift in Sources */,
+				0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */,
+				B41F5C64A11572B4B480A74E /* RichPresenceEditor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

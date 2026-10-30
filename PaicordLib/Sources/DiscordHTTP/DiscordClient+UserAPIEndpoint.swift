@@ -635,6 +635,20 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint), payload: payload)
   }
 
+  /// Proxies external image URLs through Discord's media proxy so they can be used as rich presence assets.
+  /// Each result's `external_asset_path` is used as `mp:<path>` in the activity assets.
+  /// https://docs.discord.food/resources/application#create-application-external-assets
+  @inlinable
+  public func createApplicationExternalAssets(
+    applicationID: ApplicationSnowflake,
+    payload: Payloads.CreateApplicationExternalAssets
+  ) async throws -> DiscordClientResponse<[ApplicationExternalAsset]> {
+    let endpoint = UserAPIEndpoint.createApplicationExternalAssets(
+      applicationId: applicationID
+    )
+    return try await self.send(request: .init(to: endpoint), payload: payload)
+  }
+
   /// Creates attachment URLs to upload the intended attachments directly to Discord's GCP storage bucket.
   /// https://docs.discord.food/resources/message#create-attachments
   @inlinable

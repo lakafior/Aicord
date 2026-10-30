@@ -1449,6 +1449,42 @@ extension Gateway {
       }
     }
 
+    enum CodingKeys: String, CodingKey {
+      case name, type, url, created_at, timestamps, application_id, details, state
+      case emoji, party, assets, secrets, instance, flags, buttons, metadata
+    }
+
+    private struct Metadata: Encodable {
+      var button_urls: [String]
+    }
+
+    /// User accounts send button labels in `buttons` and their links in
+    /// `metadata.button_urls`, which is the shape the gateway accepts in presence updates.
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encodeIfPresent(name, forKey: .name)
+      try container.encodeIfPresent(type, forKey: .type)
+      try container.encodeIfPresent(url, forKey: .url)
+      try container.encodeIfPresent(created_at, forKey: .created_at)
+      try container.encodeIfPresent(timestamps, forKey: .timestamps)
+      try container.encodeIfPresent(application_id, forKey: .application_id)
+      try container.encodeIfPresent(details, forKey: .details)
+      try container.encodeIfPresent(state, forKey: .state)
+      try container.encodeIfPresent(emoji, forKey: .emoji)
+      try container.encodeIfPresent(party, forKey: .party)
+      try container.encodeIfPresent(assets, forKey: .assets)
+      try container.encodeIfPresent(secrets, forKey: .secrets)
+      try container.encodeIfPresent(instance, forKey: .instance)
+      try container.encodeIfPresent(flags, forKey: .flags)
+      if let buttons, !buttons.isEmpty {
+        try container.encode(buttons.map(\.label), forKey: .buttons)
+        try container.encode(
+          Metadata(button_urls: buttons.map(\.url)),
+          forKey: .metadata
+        )
+      }
+    }
+
     /// Bot users are only able to set `name`, `state`, `type`, and `url`.
     public init(
       name: String,

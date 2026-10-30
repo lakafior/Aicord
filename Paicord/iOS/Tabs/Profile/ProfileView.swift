@@ -19,42 +19,46 @@ struct ProfileView: View {
     gw.user.currentUser?.toPartialUser()
   }
 
-  @State var statusSheetPresented = false
-
   @State var profile: DiscordUser.Profile? = nil
+
+  var bio: String? {
+    let meta = profile?.user_profile?.bio
+    return (meta?.isEmpty ?? true) ? nil : meta
+  }
+
+  var hasThemeColors: Bool {
+    profile?.user_profile?.theme_colors?.isEmpty == false
+  }
+
   var body: some View {
     NavigationStack {
-      ScrollView {
-        LazyVStack(alignment: .leading) {
-          bannerView
-            .overlay(alignment: .topTrailing) {
-              GlassEffectContainer(spacing: 10) {
-                HStack(spacing: 8) {
-                  Button {
-                    statusSheetPresented = true
-                  } label: {
-                    Image(systemName: "person.badge.key.fill")
-                      .padding(8)
-                      .glassEffect(.regular.interactive(), in: .circle)
-                  }
-                  .buttonStyle(.borderless)
-                  .tint(.primary)
-                  .sheet(isPresented: $statusSheetPresented) {
-                    ProfileBar.ProfileButtonPopout()
-                      .presentationDetents([.medium, .large])
-                  }
-                }
-              }
-              .padding(8)
-            }
+      List {
+        Section {
+          VStack(alignment: .leading, spacing: 0) {
+            bannerView
+            profileBody
+              .padding()
+          }
+          .listRowInsets(EdgeInsets())
 
-          profileBody
-            .padding()
+          ProfileBar.CustomStatusRow()
         }
-        .task(fetchProfile)
-        .task(grabColor)  // way faster than profile fetch
+
+        ProfileBar.StatusSection()
+
+        if let bio {
+          Section("About Me") {
+            MarkdownText(content: bio)
+          }
+        }
+
+        ProfileBar.ActivitySection()
+        ProfileBar.AccountInfoSection()
+        ProfileBar.AccountsSection()
       }
-      .scrollClipDisabled()
+      .task(fetchProfile)
+      .task(grabColor)  // way faster than profile fetch
+      .scrollContentBackground(hasThemeColors ? .hidden : .automatic)
       .background(
         Profile.ThemeColorsBackground(
           colors: profile?.user_profile?.theme_colors
@@ -112,7 +116,7 @@ struct ProfileView: View {
 
   @ViewBuilder
   var profileBody: some View {
-    LazyVStack(alignment: .leading, spacing: 4) {
+    VStack(alignment: .leading, spacing: 4) {
       let profileMeta: DiscordUser.Profile.Metadata? = profile?.user_profile
       Text(
         user?.global_name ?? user?.username ?? "Unknown User"
@@ -145,24 +149,6 @@ struct ProfileView: View {
         .frame(maxHeight: 16)
       }
 
-      if let bio =
-        (profileMeta?.bio ?? profile?.user_profile?.bio)?.isEmpty ?? true
-        ? profile?.user_profile?.bio
-        : profileMeta?.bio ?? profile?.user_profile?.bio
-      {
-        MarkdownText(content: bio)
-      }
-
-      if let created = user?.id.parse()?.date {
-        VStack(alignment: .leading, spacing: 2) {
-          Text("Member Since")
-            .font(.subheadline)
-            .bold()
-          Text(created, format: .dateTime.day().month(.wide).year())
-            .foregroundStyle(.secondary)
-        }
-        .padding(.top, 8)
-      }
     }
   }
 
