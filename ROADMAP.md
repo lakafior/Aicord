@@ -44,35 +44,20 @@ Szczegóły portu, decyzje i instrukcja testu: `docs/VOICE_NOTES.md`.
 
 ---
 
-### 🔜 Etap 10: Intelligence — tłumaczenie i podsumowania
-Po Etapie 7 (odchudzenie biblioteki) i po scaleniu zestawu Messages (Forward zmienia to samo menu wiadomości). Działa na iOS i macOS, na obecnym targecie.
-1. **Sekcja ustawień „Intelligence” (Aicord Settings):**
-   - [ ] Dostawca: na urządzeniu (Foundation Models / Apple Intelligence, z kontrolą dostępności urządzenia i regionu) albo API zgodne z OpenAI (adres, klucz w pęku kluczy, model, „Test Connection”). Pasuje też lokalny serwer (Ollama, LM Studio).
-   - [ ] Prywatność: domyślnie tylko na urządzeniu; zewnętrzne API wyłączone, dopóki ktoś go nie skonfiguruje; przy każdej funkcji informacja, dokąd idą dane; osobny przełącznik dla DM, domyślnie wyłączony.
-2. **Tłumaczenie:**
-   - [ ] Framework Translation zamiast modelu językowego (na urządzeniu, bez klucza). „Translate” w menu wiadomości, tłumaczenie pod treścią z możliwością cofnięcia.
-   - [ ] Język docelowy i automatyczne tłumaczenie wybranych języków.
-3. **Podsumowania kanału:**
-   - [ ] „Summarize” w nagłówku kanału: nieprzeczytane albo ostatnie 100 / 500 / 1000 wiadomości. Wynik w arkuszu, punkty z linkami do wiadomości.
-   - [ ] Na urządzeniu okno kontekstu to ok. 4 tys. tokenów: podsumowanie etapami (kawałki, potem podsumowanie podsumowań), z postępem. Przez API całość jednym zapytaniem, gdy się mieści.
-4. **Czytanie i nadrabianie:**
-   - [ ] „Co mnie ominęło”: wszystkie nieprzeczytane kanały naraz jako jedna lista (serwer → kanał → 2–3 punkty).
-   - [ ] Podsumowanie wątku albo łańcucha odpowiedzi od wybranej wiadomości w górę.
-   - [ ] „Explain Context” po przytrzymaniu wiadomości: najpierw twarde powiązania bez modelu (łańcuch odpowiedzi do początku, wzmianki, cytaty, forwardy), potem okolica w rosnących oknach (20 → 50 → 150…) z wagą dla tych samych autorów, wspomnianych osób i wspólnych słów; model po każdej rundzie ocenia, czy już wie, do czego odnosi się wiadomość, z twardym limitem rund i wiadomości. Wynik: jedno-dwa zdania („odpowiedź Ani na pytanie Tomka o wysyłkę z 14:02”), linki do kluczowych wiadomości i „Show Conversation”, czyli widok tylko tej jednej rozmowy wyłuskanej z kanału.
-   - [ ] „Wyjaśnij”: slang, skróty i żargon serwera (np. W2C, QC) z kontekstem kilku wcześniejszych wiadomości.
-5. **Wyszukiwanie:**
-   - [ ] Wyszukiwarka jako narzędzie modelu (tool calling: `Tool` w Foundation Models, function calling w API zgodnym z OpenAI), wspólny fundament dla wyszukiwania w języku naturalnym, pytań do kanału i Explain Context. Narzędzia tylko do odczytu: `search` (tekst, autor, serwer lub kanał, daty, „zawiera…”, regex po stronie aplikacji), `messagesAround`, `replyChain`. Model szuka, czyta i poprawia zapytania, aż ma odpowiedź. Bezpieczniki: limit wywołań na pytanie (wyszukiwanie Discorda ma surowe limity zapytań), zakres jak w ustawieniach prywatności, w arkuszu widać, czego szukał.
-   - [ ] Wyszukiwanie w języku naturalnym w Search: zdanie („kto polecał agenta do wysyłki w zeszłym tygodniu”) zamienione na filtry (autor, kanał, daty, „zawiera link”), wyniki ułożone od najtrafniejszych.
-   - [ ] Pytanie do kanału („jaki jest regulamin aukcji?”): odpowiedź z linkami do wiadomości źródłowych, na przypiętych i ostatnich wiadomościach.
-5b. **Wyszukiwanie po sensie (po fazie 2, osobno):**
+### 🧪 Etap 10: Intelligence — tłumaczenie i podsumowania
+Zrobione (szczegóły w SHIPPED i `docs/INTELLIGENCE_NOTES.md`): ustawienia, tłumaczenie, podsumowania, Catch Up, Explain Context, wyszukiwarka jako narzędzie modelu, pytanie do kanału, Wyjaśnij, podsumowanie wątku, Search with a Sentence, ważne powiadomienia, ostrzeżenie przed oszustwem, opisy obrazów. Zostało:
+1. **Weryfikacja:**
+   - [ ] Na urządzeniu: Show Conversation, Explain Slang, podsumowanie wątku i odpowiedzi, ważne powiadomienia z wyciszonych kanałów, baner oszustwa, Ask na urządzeniu z narzędziami Foundation Models (sprawdzone tylko przez API), arkusz pobierania języka i automatyczne tłumaczenie. Lista kroków: `docs/INTELLIGENCE_NOTES.md`.
+   - [ ] Komunikat „Apple Intelligence niedostępne” na urządzeniu bez modelu.
+2. **Dokończenia:**
+   - [ ] Search with a Sentence: ranking wyników od najtrafniejszych (dziś tylko zdanie → filtry). Łączy się z rerankowaniem z punktu 3.
+   - [ ] Automatyczne opisy obrazów dla VoiceOver (dziś OCR i opis przez API na żądanie z menu).
+   - [ ] Lokalne serwery (Ollama, LM Studio): wyjątek ATS `NSAllowsLocalNetworking` dla `http://localhost` i sprawdzenie.
+   - [ ] Okno 4 tys. tokenów na urządzeniu szybko się zapełnia przy narzędziach (wyniki przycięte do 6 po 220 znaków): sprawdzić jakość odpowiedzi i ewentualnie mniejsze schematy narzędzi.
+3. **Wyszukiwanie po sensie:**
    - [ ] Rerankowanie wyników wyszukiwania Discorda bez indeksu: słowa kluczowe dają kandydatów, a wektory (`NLContextualEmbedding` na urządzeniu albo `/embeddings` przez API, np. `mistral-embed`) lub model jako reranker (ocena trafności 20–30 kandydatów) ustawiają je według sensu. Siada na narzędziu `search`.
    - [ ] „Index Channel” dla wybranych kanałów: lokalny indeks wektorowy ostatnich N wiadomości (pobieranie historii po 100 na zapytanie, z limitami, więc z paskiem postępu), aktualizowany o nowe wiadomości, z rozmiarem na dysku i „Delete Index”. Foundation Models nie daje wektorów; opcjonalnie mały wielojęzyczny model embeddingowy w Core ML (lepsza jakość, aplikacja większa o kilkadziesiąt–sto MB).
-6. **Porządek i bezpieczeństwo:**
-   - [ ] Inteligentne powiadomienia: lokalny model ocenia, czy wiadomość z wyciszonego kanału jest dla Ciebie ważna (pytanie do Ciebie, Twoje tematy), i wtedy powiadamia mimo wyciszenia. Rozszerza sekcję Notifications.
-   - [ ] Ostrzeżenie przed oszustwem w DM od nieznajomych: fałszywe Nitro, „przypadkowe zgłoszenie konta”, linki phishingowe. Na urządzeniu, uzupełnia filtr spamu z Content & Social.
-   - [ ] Opisy obrazów bez tekstu alternatywnego (także dla VoiceOver): tekst z obrazka przez Vision (OCR) na urządzeniu, pełny opis przez API, jeśli model widzi obrazy (Foundation Models ich nie obsługuje).
-7. **Granice:**
-   - [ ] Tylko czytanie: Intelligence niczego nie wysyła do Discorda (bez automatycznych odpowiedzi), więc nie jest automatyzacją konta.
+4. **Granice:**
    - Nie robimy: pomocy w pisaniu (poprawianie, ton, tłumaczenie szkicu), bo daje ją już system (Writing Tools w iOS i macOS).
 
 ---

@@ -8,6 +8,18 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 - **New** · Voice: join server voice channels and start or join DM and group calls, end-to-end encrypted with DAVE; a call panel with mute, deafen and disconnect (a tab bar accessory on iPhone), who is in each voice channel with speaking rings, push-to-talk, and Settings → Voice & Video for devices, volumes, input mode and voice processing
 
+### Intelligence
+
+- **New** · Intelligence settings: Apple Intelligence on device or any OpenAI-compatible API (key in the keychain, model list, Test Connection), with direct messages off by default and a note on every feature saying where messages go
+- **New** · Translate in the message menu and automatic translation of chosen languages, with Apple's Translation on device; Show Original takes it away
+- **New** · Summarize a channel's unread or last 100, 500 or 1000 messages, in stages on device, with links back to each point's messages
+- **New** · Catch Up in a server's or channel's menu: a few points per unread channel
+- **New** · Explain Context: what a message in a busy channel answers, from its replies and the messages around it, with Show Conversation
+- **New** · Ask About This Channel, Explain Slang and Terms, thread and reply summaries; the model can search Discord, read around a message and follow replies, within a fixed number of lookups
+- **New** · Search with a Sentence turns a request into Search's server, channel, person, date and has filters
+- **New** · Important messages from muted channels, judged by the on-device model; scam warnings in DMs from strangers; text and descriptions of images
+- **New** · Filtered words, blocked people, spoilers and hidden sensitive media never reach a language model
+
 ### Messages, search and chat
 
 - **New** · YouTube and other video links show a card with the channel, title and a thumbnail with a play button; tapping opens the video in its app or the browser. Poll results and AutoMod alerts get cards too, so no more “Unsupported embed type”
@@ -330,4 +342,28 @@ Szczegóły, decyzje i pomiary: `docs/SLIM_NOTES.md`. Binarka iOS (Release, arm6
    - [x] Scalenie prawie pustych modułów i nazwa `AicordKit`, bez pozostałości DiscordBM.
 3. **`Textual`:**
    - [x] Usunięty styl GitHub, przestarzałe API i renderowanie tabel, których aplikacja nie używa.
+
+---
+
+### ✅ Etap 10: Intelligence (faza 1 i 2)
+Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tylko do odczytu; przez zewnętrzne API testowane wyłącznie na treści z NAScin.
+1. **Ustawienia:**
+   - [x] Settings → Intelligence: Apple Intelligence na urządzeniu (z mapowaniem powodów niedostępności) albo API zgodne z OpenAI (klucz w pęku kluczy, lista modeli z `/models`, Test Connection), prywatność z notką „dokąd idą wiadomości”, DM domyślnie wyłączone.
+2. **Tłumaczenie:**
+   - [x] Framework Translation: „Translate” w menu wiadomości, tłumaczenie pod treścią z „Show Original”, język docelowy i automatyczne tłumaczenie wybranych języków.
+3. **Podsumowania:**
+   - [x] Summarize w czacie: nieprzeczytane / 100 / 500 / 1000, na urządzeniu etapami z postępem i anulowaniem, punkty z linkami do wiadomości.
+   - [x] Catch Up z menu serwera i kanału.
+4. **Czytanie i nadrabianie:**
+   - [x] Explain Context: łańcuch odpowiedzi, wzmianki i okolica w rosnących oknach, ranking (`ContextRanker`), model ocenia po każdej rundzie, „Show Conversation”.
+   - [x] Explain Slang and Terms, podsumowanie wątku i łańcucha odpowiedzi.
+5. **Wyszukiwanie:**
+   - [x] Wyszukiwarka jako narzędzie modelu (`search`, `messagesAround`, `replyChain`; `Tool` w Foundation Models i function calling przez API), z limitem wywołań i widocznym „czego szukał”.
+   - [x] Ask About This Channel z linkami do źródeł.
+   - [x] Search with a Sentence: zdanie → filtry Search (serwer, kanał, osoba, daty, „zawiera”).
+6. **Porządek i bezpieczeństwo:**
+   - [x] Ważne wiadomości z wyciszonych kanałów oceniane lokalnym modelem.
+   - [x] Ostrzeżenie przed oszustwem w DM od nieznajomych (na urządzeniu).
+   - [x] Describe Images: tekst z obrazka przez Vision na urządzeniu, opis przez model API.
+   - [x] Filtr słów, zablokowani, spoilery i ukryte media wrażliwe nigdy nie trafiają do modelu.
 
