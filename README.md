@@ -29,9 +29,10 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 - **Nearly all of Discord's settings** — privacy, content filters, devices, connections, appearance, chat and notifications, saved to your account so the official apps see them too
 - **One search for everything** — servers, channels, people and messages, with date and regex filters, opening a result right at the message
 - **Notifications that follow your Discord rules** — per server and channel, quiet hours, keywords, Reply and Mark as Read, without a push server
-- **Messages done properly** — forwards, message requests and a spam folder, friend requests, a long-press menu with quick reactions
+- **Messages done properly** — forwards, message requests and a spam folder, friend requests and Add Friend, a long-press menu with quick reactions
+- **Invites that open in the app** — create invite links, preview a server before joining, and a Safari extension that sends discord.gg links straight to Aicord
 - **Things the official app doesn't do** — keep deleted messages and edit history in memory, see hidden channels and who can view them, a local word filter, pinned servers and channels
-- **Native on iPhone and Mac** — Liquid Glass throughout, Swift 6 with strict concurrency, iOS 26 and macOS 26, and almost only Apple's own frameworks
+- **Native on iPhone and Mac** — system lists and Liquid Glass throughout, Swift 6 with strict concurrency, iOS 26 and macOS 26, and almost only Apple's own frameworks
 - **Swapped for system APIs or removed** — SwiftUIX, Nuke, Sparkle, Lottie, SettingsKit, SwiftUIIntrospect, HCaptcha, KeychainAccess, CodeScanner, MijickCamera, MeshGradient, ColorCube, SwiftEmoji, FLEX, Loupe, Conditionals, SwiftPrettyPrint, UInt128, Yams, swift-crypto, multipart-kit and the whole SwiftNIO stack. What's left: swift-log, swift-protobuf, zstd, swift-syntax (build-time macros only), and for voice DaveKit (end-to-end encryption, which brings OpenSSL) and swift-opus.
 
 Everything else that's new or fixed is in **[SHIPPED.md](SHIPPED.md)**, and what's next in the [roadmap](ROADMAP.md).
