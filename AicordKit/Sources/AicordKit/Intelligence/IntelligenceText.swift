@@ -124,7 +124,10 @@ public enum SummaryParser {
   {
     var points: [SummaryPoint] = []
     for rawLine in output.components(separatedBy: .newlines) {
+      // some models wrap each point in quotes
       var line = rawLine.trimmingCharacters(in: .whitespaces)
+        .trimmingCharacters(in: CharacterSet(charactersIn: "\"“”'`"))
+        .trimmingCharacters(in: .whitespaces)
       guard !line.isEmpty else { continue }
       let bulleted = stripBullet(&line)
       // a heading or a preamble ("Here is the summary:") isn't a point

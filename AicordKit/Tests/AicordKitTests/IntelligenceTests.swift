@@ -77,6 +77,12 @@ class IntelligenceTests: XCTestCase {
     XCTAssertEqual(points.map(\.refs), [[2], [3], [1]])
   }
 
+  func testQuotedPoints() {
+    let points = SummaryParser.points(from: "\"- curl hangs on Windows [2, 3] \"\n“- Fixed tonight [4]”")
+    XCTAssertEqual(points.map(\.text), ["curl hangs on Windows", "Fixed tonight"])
+    XCTAssertEqual(points.map(\.refs), [[2, 3], [4]])
+  }
+
   func testPointLineRoundTrips() {
     let point = SummaryPoint(text: "Plans for Friday", refs: [2, 9])
     XCTAssertEqual(SummaryParser.points(from: point.line), [point])
