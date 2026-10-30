@@ -42,11 +42,9 @@ struct SettingsView: View {
     case profiles
     case contentSocial
     case dataPrivacy
-    case familyCentre
     case authorisedApps
     case devices
     case connections
-    case clips
     #if os(iOS)
       case scanQR
     #endif
@@ -71,11 +69,9 @@ struct SettingsView: View {
       case .profiles: "Profiles"
       case .contentSocial: "Content & Social"
       case .dataPrivacy: "Data & Privacy"
-      case .familyCentre: "Family Centre"
       case .authorisedApps: "Authorised Apps"
       case .devices: "Devices"
       case .connections: "Connections"
-      case .clips: "Clips"
       #if os(iOS)
         case .scanQR: "Scan QR Code"
       #endif
@@ -100,11 +96,9 @@ struct SettingsView: View {
       case .profiles: "person.3.fill"
       case .contentSocial: "bubble.left.and.bubble.right"
       case .dataPrivacy: "hand.raised.fill"
-      case .familyCentre: "house"
       case .authorisedApps: "app"
       case .devices: "pc"
       case .connections: "link"
-      case .clips: "scissors"
       #if os(iOS)
         case .scanQR: "qrcode"
       #endif
@@ -127,8 +121,8 @@ struct SettingsView: View {
         .you
       case .about:
         .about
-      case .account, .profiles, .contentSocial, .dataPrivacy, .familyCentre,
-        .authorisedApps, .devices, .connections, .clips:
+      case .account, .profiles, .contentSocial, .dataPrivacy,
+        .authorisedApps, .devices, .connections:
         .user
       #if os(iOS)
         case .scanQR:
@@ -219,16 +213,12 @@ struct SettingsView: View {
       contentSocialSection
     case .dataPrivacy:
       dataPrivacySection
-    case .familyCentre:
-      familyCentreSection
     case .authorisedApps:
       authorisedAppsSection
     case .devices:
       devicesSection
     case .connections:
       connectionsSection
-    case .clips:
-      clipsSection
     #if os(iOS)
       case .scanQR:
         scanQRSection

@@ -72,11 +72,9 @@
 		AA4207CF2F2D1170006B8227 /* EmojiPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4207CE2F2D116C006B8227 /* EmojiPicker.swift */; };
 		AA47AF192EDEEFC5008A50C9 /* ContentSocialSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF182EDEEFC0008A50C9 /* ContentSocialSection.swift */; };
 		AA47AF1B2EDEEFF9008A50C9 /* DataPrivacySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF1A2EDEEFF4008A50C9 /* DataPrivacySection.swift */; };
-		AA47AF1D2EDEF019008A50C9 /* FamilyCentreSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF1C2EDEF014008A50C9 /* FamilyCentreSection.swift */; };
 		AA47AF1F2EDEF04F008A50C9 /* AuthorisedAppsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF1E2EDEF048008A50C9 /* AuthorisedAppsSection.swift */; };
 		AA47AF212EDEF070008A50C9 /* DevicesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF202EDEF06C008A50C9 /* DevicesSection.swift */; };
 		AA47AF242EDEF139008A50C9 /* ConnectionsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF232EDEF134008A50C9 /* ConnectionsSection.swift */; };
-		AA47AF262EDEF14F008A50C9 /* ClipsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF252EDEF14F008A50C9 /* ClipsSection.swift */; };
 		AA47AF282EDEF158008A50C9 /* AppearanceSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF272EDEF158008A50C9 /* AppearanceSection.swift */; };
 		AA47AF2A2EDEF164008A50C9 /* AccessibilitySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF292EDEF164008A50C9 /* AccessibilitySection.swift */; };
 		AA47AF2C2EDEF1BA008A50C9 /* VoiceVideoSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA47AF2B2EDEF1BA008A50C9 /* VoiceVideoSection.swift */; };
@@ -224,11 +222,9 @@
 		AA4207CE2F2D116C006B8227 /* EmojiPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiPicker.swift; sourceTree = "<group>"; };
 		AA47AF182EDEEFC0008A50C9 /* ContentSocialSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSocialSection.swift; sourceTree = "<group>"; };
 		AA47AF1A2EDEEFF4008A50C9 /* DataPrivacySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataPrivacySection.swift; sourceTree = "<group>"; };
-		AA47AF1C2EDEF014008A50C9 /* FamilyCentreSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyCentreSection.swift; sourceTree = "<group>"; };
 		AA47AF1E2EDEF048008A50C9 /* AuthorisedAppsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorisedAppsSection.swift; sourceTree = "<group>"; };
 		AA47AF202EDEF06C008A50C9 /* DevicesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesSection.swift; sourceTree = "<group>"; };
 		AA47AF232EDEF134008A50C9 /* ConnectionsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsSection.swift; sourceTree = "<group>"; };
-		AA47AF252EDEF14F008A50C9 /* ClipsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipsSection.swift; sourceTree = "<group>"; };
 		AA47AF272EDEF158008A50C9 /* AppearanceSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSection.swift; sourceTree = "<group>"; };
 		AA47AF292EDEF164008A50C9 /* AccessibilitySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilitySection.swift; sourceTree = "<group>"; };
 		AA47AF2B2EDEF1BA008A50C9 /* VoiceVideoSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceVideoSection.swift; sourceTree = "<group>"; };
@@ -430,11 +426,9 @@
 				AA47AF372EDEF97F008A50C9 /* Profiles */,
 				AA47AF092EDEEB24008A50C9 /* ContentSocial */,
 				AA47AF0A2EDEEB39008A50C9 /* DataPrivacy */,
-				AA47AF0B2EDEEB43008A50C9 /* FamilyCentre */,
 				AA47AF0C2EDEEB59008A50C9 /* AuthorisedApps */,
 				AA47AF0D2EDEEB6C008A50C9 /* Devices */,
 				AA47AF0E2EDEEB75008A50C9 /* Connections */,
-				AA47AF0F2EDEEB99008A50C9 /* Clips */,
 				AAA9EEF82F22FD0D00770CAD /* ScanQR */,
 				AA47AF102EDEEBB1008A50C9 /* Appearance */,
 				AA47AF112EDEEBBF008A50C9 /* Accessibility */,
@@ -669,14 +663,6 @@
 			path = DataPrivacy;
 			sourceTree = "<group>";
 		};
-		AA47AF0B2EDEEB43008A50C9 /* FamilyCentre */ = {
-			isa = PBXGroup;
-			children = (
-				AA47AF1C2EDEF014008A50C9 /* FamilyCentreSection.swift */,
-			);
-			path = FamilyCentre;
-			sourceTree = "<group>";
-		};
 		AA47AF0C2EDEEB59008A50C9 /* AuthorisedApps */ = {
 			isa = PBXGroup;
 			children = (
@@ -699,14 +685,6 @@
 				AA47AF232EDEF134008A50C9 /* ConnectionsSection.swift */,
 			);
 			path = Connections;
-			sourceTree = "<group>";
-		};
-		AA47AF0F2EDEEB99008A50C9 /* Clips */ = {
-			isa = PBXGroup;
-			children = (
-				AA47AF252EDEF14F008A50C9 /* ClipsSection.swift */,
-			);
-			path = Clips;
 			sourceTree = "<group>";
 		};
 		AA47AF102EDEEBB1008A50C9 /* Appearance */ = {
@@ -1097,7 +1075,6 @@
 				AA74E4392EBC411C0031B285 /* EntityContextMenu.swift in Sources */,
 				AA10971D2E64C18C005BC3D2 /* ChatView.swift in Sources */,
 				AA9C81862E66670E0086B1DA /* CornerRadius.swift in Sources */,
-				AA47AF1D2EDEF019008A50C9 /* FamilyCentreSection.swift in Sources */,
 				AA0BAA792ECE9A3600365661 /* Color.swift in Sources */,
 				AA078FCA2EC8220E00EDFFA8 /* AboutSection.swift in Sources */,
 				57CDD8812E71FF7600022203 /* CaptchaSheet.swift in Sources */,
@@ -1181,7 +1158,6 @@
 				AABED5A22E7F4950005BDD63 /* DiscordDataStoreProtocol.swift in Sources */,
 				AAEEF5012E9900F60034FA04 /* Default.swift in Sources */,
 				57A4E7152E6B44C900470131 /* CGSize.swift in Sources */,
-				AA47AF262EDEF14F008A50C9 /* ClipsSection.swift in Sources */,
 				AAFD41382E92FA43002BC9BE /* Array+safe.swift in Sources */,
 				AA47AF282EDEF158008A50C9 /* AppearanceSection.swift in Sources */,
 				AACADCB62F3370B60007F705 /* PastableTextField.swift in Sources */,
