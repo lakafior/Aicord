@@ -75,6 +75,7 @@ private struct ReactionPickerModifier: ViewModifier {
     #if os(iOS)
       EmojiPicker(detent: $detent)
         .variant(.reactions)
+        .guild(target.guildID)
         .allowsShiftToKeepOpen(false)
         .onPickedEmoji { emoji in
           appState.reactionPickerTarget = nil
@@ -84,6 +85,7 @@ private struct ReactionPickerModifier: ViewModifier {
     #else
       EmojiPicker()
         .variant(.reactions)
+        .guild(target.guildID)
         .allowsShiftToKeepOpen(false)
         .onPickedEmoji { emoji in
           appState.reactionPickerTarget = nil

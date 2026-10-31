@@ -28,6 +28,8 @@ struct EmojiPicker: View {
   var onStickerPicked: ((Sticker) -> Void)? = nil
   var allowsShiftToKeepOpen: Bool = true
   var variant: Variant = .inputBar
+  /// The server the picker is for; its emoji come first and don't need Nitro.
+  var guildID: GuildSnowflake? = nil
 
   @State var chosenPicker: ChosenPicker = .emoji
   // only ios uses detents. macos uses popovers and has different layouts
@@ -74,6 +76,7 @@ struct EmojiPicker: View {
       VStack(spacing: 0) {
         if variant == .reactions {
           EmojiGridView(
+            guildID: guildID,
             onEmojiPicked: onEmojiPicked,
             allowsShiftToKeepOpen: allowsShiftToKeepOpen
           )
@@ -81,6 +84,7 @@ struct EmojiPicker: View {
           switch chosenPicker {
           case .emoji:
             EmojiGridView(
+              guildID: guildID,
               onEmojiPicked: onEmojiPicked,
               allowsShiftToKeepOpen: allowsShiftToKeepOpen
             )
@@ -557,6 +561,7 @@ struct EmojiPicker: View {
     @Environment(\.appState) var appState
     @Environment(\.dismiss) var dismiss
     @AppStorage(EmojiPicker.showsNitroEmojiKey) private var showsNitroEmoji = false
+    var guildID: GuildSnowflake? = nil
     var onEmojiPicked: ((DiscordModels.Emoji) -> Void)?
     var allowsShiftToKeepOpen: Bool = true
 
@@ -799,7 +804,7 @@ struct EmojiPicker: View {
     private var builder: SectionBuilder {
       .init(
         gw: gw,
-        currentGuildID: appState.selectedGuild,
+        currentGuildID: guildID ?? appState.selectedGuild,
         showsNitroEmoji: showsNitroEmoji
       )
     }
@@ -963,14 +968,14 @@ struct EmojiPicker: View {
         // pickers
         VStack(spacing: 0) {
           if variant == .reactions {
-            SheetEmojiGridView(detent: detentBinding, variant: variant) { emoji in
+            SheetEmojiGridView(detent: detentBinding, variant: variant, guildID: guildID) { emoji in
               onEmojiPicked?(emoji)
             }
           } else {
             Group {
               switch chosenPicker {
               case .emoji:
-                SheetEmojiGridView(detent: detentBinding, variant: variant) { emoji in
+                SheetEmojiGridView(detent: detentBinding, variant: variant, guildID: guildID) { emoji in
                   onEmojiPicked?(emoji)
                 }
               case .gif:
@@ -996,6 +1001,7 @@ struct EmojiPicker: View {
       @Environment(\.appState) var appState
       @Binding var detent: PresentationDetent
       var variant: Variant = .inputBar
+      var guildID: GuildSnowflake? = nil
       var onEmojiPicked: (DiscordModels.Emoji) -> Void
 
       @AppStorage(EmojiPicker.showsNitroEmojiKey) private var showsNitroEmoji = false
@@ -1007,7 +1013,7 @@ struct EmojiPicker: View {
       private var builder: SectionBuilder {
         .init(
           gw: gw,
-          currentGuildID: appState.selectedGuild,
+          currentGuildID: guildID ?? appState.selectedGuild,
           showsNitroEmoji: showsNitroEmoji
         )
       }
@@ -1266,6 +1272,12 @@ struct EmojiPicker: View {
   func variant(_ variant: Variant) -> Self {
     var copy = self
     copy.variant = variant
+    return copy
+  }
+
+  func guild(_ guildID: GuildSnowflake?) -> Self {
+    var copy = self
+    copy.guildID = guildID
     return copy
   }
 
