@@ -40,6 +40,23 @@ extension ChatView {
       self._inputVM = State(initialValue: InputBar.vm(for: vm))
     }
 
+    /// Puts a picked emoji at the end of the message, as Discord's text form.
+    func insertEmoji(_ emoji: Emoji) {
+      let text: String
+      if let id = emoji.id, let name = emoji.name {
+        text =
+          emoji.animated == true
+          ? DiscordUtils.customAnimatedEmoji(name: name, id: id)
+          : DiscordUtils.customEmoji(name: name, id: id)
+      } else if let name = emoji.name {
+        text = name
+      } else {
+        return
+      }
+      let separator = inputVM.content.isEmpty || inputVM.content.hasSuffix(" ") ? "" : " "
+      inputVM.content += separator + text
+    }
+
     #if os(iOS)
       struct PickerInteractionProperties {
         var storedKeyboardHeight: CGFloat = 0
@@ -232,6 +249,8 @@ extension ChatView {
         }
         .sheet(isPresented: $properties.showEmojiPicker) {
           EmojiPicker(detent: $emojiPickerDetent)
+            .guild(vm.guildStore?.guildId)
+            .onPickedEmoji { insertEmoji($0) }
           .presentationDetents(
             [.height(emojiPickerSheetHeight), .large],
             selection: $emojiPickerDetent
@@ -457,6 +476,8 @@ extension ChatView {
         #if !os(iOS)
           .popover(isPresented: $showingEmojiPicker, arrowEdge: .bottom) {
             EmojiPicker()
+              .guild(vm.guildStore?.guildId)
+              .onPickedEmoji { insertEmoji($0) }
           }
         #endif
       }
