@@ -23,7 +23,6 @@ struct AdvancedSettings: View {
 
   @State private var cacheSize: Int?
   #if os(macOS)
-    @AppStorage(MacLayoutPreferences.classicKey) private var classicLayout = false
     @AppStorage(MCPPreferences.enabledKey) private var mcpEnabled = false
     @AppStorage(MCPPreferences.directMessagesKey) private var mcpDirectMessages = false
   #endif
@@ -57,13 +56,6 @@ struct AdvancedSettings: View {
     }
 
     #if os(macOS)
-      Section {
-        Toggle("Classic Window Layout", isOn: $classicLayout)
-          .toggleStyle(.switch)
-      } footer: {
-        Text("The layout shared with iPad, from before the Mac got its own sidebar, toolbar and menus.")
-      }
-
       Section {
         Toggle("Allow MCP Server", isOn: $mcpEnabled)
           .toggleStyle(.switch)

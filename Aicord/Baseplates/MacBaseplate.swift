@@ -271,7 +271,3 @@ import SwiftUI
   }
 #endif
 
-enum MacLayoutPreferences {
-  /// The shared iPad layout instead of the Mac one, if the new one misbehaves.
-  static let classicKey = "Aicord.Mac.ClassicLayout"
-}

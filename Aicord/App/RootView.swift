@@ -17,7 +17,6 @@ struct RootView: View {
   @Environment(\.challenges) var challenges
   @Environment(\.userInterfaceIdiom) var idiom
   @Environment(\.horizontalSizeClass) var hSizeClass
-  @AppStorage(MacLayoutPreferences.classicKey) var macClassicLayout = false
 
   #if os(iOS)
     @State var hasLaunchedAlready: Bool = false
@@ -50,11 +49,7 @@ struct RootView: View {
             #endif
           } else {
             #if os(macOS)
-              if macClassicLayout {
-                LargeBaseplate()
-              } else {
-                MacBaseplate()
-              }
+              MacBaseplate()
             #else
               LargeBaseplate()
             #endif
