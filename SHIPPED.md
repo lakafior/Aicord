@@ -83,14 +83,15 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 - **New** · The Discord library is now Aicord's own `AicordKit`: bot-only endpoints, sharding and bot authentication are gone, and large message and user models are stored more compactly, so the compiled code is 42% smaller and the Mac app went from 60.9 MB to 51.5 MB
 - **New** · The Mac app is called Aicord in the menu bar and the Dock
-- **New** · The Mac gets its own window layout: the system sidebar and toggle, the channel and server as the window's title and subtitle, a toolbar with Search (⌘F) and the member list (⌥⌘M) in an inspector, a Go menu (Direct Messages ⌘0, Open Channel in New Window ⇧⌘O, Mark Channel as Read ⇧⎋), channels in windows of their own from their menu, and Settings as the system Settings window; Settings → Advanced → Classic Window Layout brings back the old one
-- **New** · A read-only MCP server for Claude and other assistants on the Mac: the `aicord-mcp` helper lists servers, channels and (if you allow it) direct messages, reads and searches messages through the open app, with Allow MCP Server, a copyable configuration and Reset Key in Settings → Advanced; it can't send or change anything
+- **New** · The Mac gets its own window layout: the system sidebar and toggle, the channel and server as the window's title and subtitle, a toolbar with Search (⌘F) and the member list (⌥⌘M) in an inspector, a Go menu (Direct Messages ⌘0, Open Channel in New Window ⇧⌘O, Mark Channel as Read ⇧⎋), channels in windows of their own from their menu, and Settings as the system Settings window
+- **New** · A read-only MCP server for Claude and other assistants on the Mac: the `aicord-mcp` helper lists servers, channels and (if you allow it) direct messages, reads and searches messages through the open app, with Allow MCP Server, a copyable configuration and Reset Key in Settings → Advanced; the helper ships inside the app (`Contents/Helpers`), so there's nothing to install, and it can't send or change anything
 - **New** · Release workflows (not yet run): a `v*` tag builds an unsigned iOS app for AltStore and SideStore, attaches it to a GitHub release and publishes an AltStore source on GitHub Pages; a signed and notarized Mac build waits for its secrets
 - **New** · Discord data that Aicord only receives is decode-only, so the iOS app is 0.7 MB smaller (44.9 → 44.2 MB) and the Discord models 7% smaller
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
 
 ### Fixed
 
+- **Fixed** · Forward on iPhone: Send stays above the keyboard instead of disappearing from the navigation bar while you search
 - **Fixed** · iPhone opens on Home instead of an empty chat screen, and the channel list's background reaches under the tab bar in the dark theme
 - **Fixed** · Unread direct messages arriving while the app runs now count towards the Messages badge
 - **Fixed** · Edit Message in a message's menu on iPhone opens the editor instead of doing nothing
