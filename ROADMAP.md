@@ -45,6 +45,7 @@ Zrobione (szczegóły w SHIPPED i `docs/INTELLIGENCE_NOTES.md`): ustawienia, tł
 1. **Weryfikacja:**
    - [ ] Na urządzeniu: opisy obrazów z VoiceOverem (etykieta z tekstem z Vision, opcjonalnie z API), Show Conversation, Explain Slang, podsumowanie wątku i odpowiedzi, ważne powiadomienia z wyciszonych kanałów, baner oszustwa, Ask na urządzeniu z narzędziami Foundation Models (sprawdzone tylko przez API), arkusz pobierania języka i automatyczne tłumaczenie. Lista kroków: `docs/INTELLIGENCE_NOTES.md`.
    - [ ] Komunikat „Apple Intelligence niedostępne” na urządzeniu bez modelu.
+   - [ ] Show Thread i Explain Context na długim wątku (ponad 50 odpowiedzi, rodzice spoza wczytanej historii) i z modelem przez API; menu pod nazwą kanału i podmenu Intelligence przeklikać na Macu (sprawdzone tylko w symulatorze iOS na krótkim wątku, `docs/THREAD_AI.md`).
 2. **Dokończenia:**
 3. **Wyszukiwanie po sensie:**
    - [ ] Index Channel: aktualizacja indeksu o nowe wiadomości z gatewaya w tle (dziś przycisk „Add New Messages”) i, opcjonalnie, mały wielojęzyczny model embeddingowy w Core ML zamiast średniej z `NLContextualEmbedding` (lepsza jakość, aplikacja większa o kilkadziesiąt–sto MB). Sprawdzić wyszukiwanie po sensie na urządzeniu z modelem (w symulatorze modelu nie ma, działało tylko po słowach).

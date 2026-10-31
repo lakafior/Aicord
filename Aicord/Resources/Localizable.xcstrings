@@ -4,6 +4,16 @@
     "" : {
 
     },
+    "%lld messages, oldest first. Tap one to jump to it in the channel." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiadomości: %lld, od najstarszej. Stuknij, by przejść do niej w kanale."
+          }
+        }
+      }
+    },
     ", " : {
 
     },
@@ -12,6 +22,86 @@
     },
     ":3" : {
 
+    },
+    "Following the replies…" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idę po odpowiedziach…"
+          }
+        }
+      }
+    },
+    "From earlier in this session. Regenerate to read it again." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Z wcześniej w tej sesji. Wygeneruj ponownie, by przeczytać jeszcze raz."
+          }
+        }
+      }
+    },
+    "Regenerate" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wygeneruj ponownie"
+          }
+        }
+      }
+    },
+    "Replying to %@: %@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpowiedź do %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Replying to a message not shown" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpowiedź na wiadomość, której tu nie ma"
+          }
+        }
+      }
+    },
+    "Show Thread" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż wątek"
+          }
+        }
+      }
+    },
+    "Shows Intelligence actions for this channel" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokazuje akcje Intelligence dla tego kanału"
+          }
+        }
+      }
+    },
+    "Thread" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wątek"
+          }
+        }
+      }
     },
     "·" : {
       "comment" : "A separator between the location and time of a forwarded message.",
