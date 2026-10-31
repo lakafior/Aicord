@@ -95,6 +95,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Fixed
 
+- **Fixed** · Mac: the right-click menu shows quick reactions again, and the emoji picker shows the server's own emoji (it now knows which server it was opened in)
+- **Fixed** · Picking an emoji next to the message field puts it in the message instead of just closing the picker
 - **Fixed** · Forward on iPhone: Send stays above the keyboard instead of disappearing from the navigation bar while you search
 - **Fixed** · iPhone opens on Home instead of an empty chat screen, and the channel list's background reaches under the tab bar in the dark theme
 - **Fixed** · Unread direct messages arriving while the app runs now count towards the Messages badge
