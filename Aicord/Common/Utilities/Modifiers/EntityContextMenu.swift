@@ -105,6 +105,13 @@ struct EntityContextMenu<Entity>: ViewModifier {
           Label("Forward", systemImage: "arrowshape.turn.up.right")
         }
       }
+      if message.replyParentID != nil {
+        Button {
+          appState.replyThreadTarget = ReplyThreadTarget(message: message, guildID: guild?.guildId)
+        } label: {
+          Label("Show Thread", systemImage: "bubble.left.and.bubble.right")
+        }
+      }
     }
 
     Section {

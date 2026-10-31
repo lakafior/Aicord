@@ -179,6 +179,11 @@ final class GatewayStore {
     }
   }
 
+  /// The messages a channel has loaded, oldest first, without opening it.
+  func loadedMessages(in id: ChannelSnowflake) -> [DiscordChannel.Message] {
+    channels[id].map { Array($0.messages.values) } ?? []
+  }
+
   /// Clears what the Chat settings kept in every open channel.
   func discardKeptMessages(deleted: Bool = false, edits: Bool = false) {
     for store in channels.values {
