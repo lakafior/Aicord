@@ -46,13 +46,18 @@
       return bytes.map { String(format: "%02x", $0) }.joined()
     }
 
+    /// The helper the build puts inside the app, in `Contents/Helpers`.
+    static var helperPath: String {
+      Bundle.main.bundleURL.appending(path: "Contents/Helpers/aicord-mcp").path
+    }
+
     /// What goes into Claude's (or another client's) MCP server list.
     static var clientConfiguration: String {
       """
       {
         "mcpServers": {
           "aicord": {
-            "command": "/usr/local/bin/aicord-mcp",
+            "command": "\(helperPath)",
             "env": { "AICORD_MCP_TOKEN": "\(token)", "AICORD_MCP_PORT": "\(port)" }
           }
         }

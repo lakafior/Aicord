@@ -1208,6 +1208,7 @@
 				AA1096D82E63BE84005BC3D2 /* Frameworks */,
 				AA1096D92E63BE84005BC3D2 /* Resources */,
 				5AFE4EE237370C67499CB83C /* Embed Foundation Extensions */,
+				AA10F00D2EB4C1A0005BC3D2 /* Embed MCP Helper */,
 			);
 			buildRules = (
 			);
@@ -1292,6 +1293,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		AA10F00D2EB4C1A0005BC3D2 /* Embed MCP Helper */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed MCP Helper";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Builds the aicord-mcp helper and puts it in Contents/Helpers, so MCP\n# clients can point at it inside the app instead of a manual install.\nif [ \"$PLATFORM_NAME\" != \"macosx\" ]; then exit 0; fi\nset -euo pipefail\nSCRATCH=\"$DERIVED_FILE_DIR/aicord-mcp\"\nswiftpm() {\n  env -i PATH=\"/usr/bin:/bin:/usr/sbin:/sbin\" HOME=\"$HOME\" DEVELOPER_DIR=\"$DEVELOPER_DIR\" \\\n    xcrun --sdk macosx swift build -c release --arch arm64 \\\n    --package-path \"$SRCROOT/AicordMCP\" --scratch-path \"$SCRATCH\" \"$@\"\n}\nswiftpm\nBIN=\"$(swiftpm --show-bin-path)\"\nDEST=\"$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Helpers\"\nmkdir -p \"$DEST\"\ncp -f \"$BIN/aicord-mcp\" \"$DEST/aicord-mcp\"\ncodesign --force --options runtime --sign \"${EXPANDED_CODE_SIGN_IDENTITY:--}\" \"$DEST/aicord-mcp\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5AFEF474B6ED04097E659EFB /* Sources */ = {
@@ -1698,6 +1721,7 @@
 		AA1096E82E63BE8C005BC3D2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"ARCHS[sdk=macosx*]" = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1766,6 +1790,7 @@
 		AA1096E92E63BE8C005BC3D2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"ARCHS[sdk=macosx*]" = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
