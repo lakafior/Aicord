@@ -10,7 +10,7 @@ public enum Interaction {
   #else
     @UnstableEnum<Int>
   #endif
-  public enum Kind: Sendable, Codable {
+  public enum Kind: Sendable, Decodable {
     case ping  // 1
     case applicationCommand  // 2
     case messageComponent  // 3
@@ -29,7 +29,7 @@ public enum Interaction {
   #else
     @UnstableEnum<Int>
   #endif
-  public enum ContextKind: Sendable, Codable {
+  public enum ContextKind: Sendable, Decodable {
     case guild  // 0
     case botDm  // 1
     case privateChannel  // 2
@@ -41,11 +41,11 @@ public enum Interaction {
   }
 
   /// https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-resolved-data-structure
-  public struct ResolvedData: Sendable, Codable, Equatable, Hashable {
+  public struct ResolvedData: Sendable, Decodable, Equatable, Hashable {
 
     /// https://discord.com/developers/docs/resources/channel#channel-object-channel-structure
     /// https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-resolved-data-structure
-    public struct PartialChannel: Sendable, Codable, Equatable, Hashable {
+    public struct PartialChannel: Sendable, Decodable, Equatable, Hashable {
       public var id: ChannelSnowflake
       public var type: DiscordChannel.Kind
       public var name: String?
@@ -64,7 +64,7 @@ public enum Interaction {
 }
 
 /// https://discord.com/developers/docs/interactions/receiving-and-responding#message-interaction-object-message-interaction-structure
-public struct MessageInteraction: Sendable, Codable, Equatable, Hashable {
+public struct MessageInteraction: Sendable, Decodable, Equatable, Hashable {
   public var id: InteractionSnowflake
   public var type: Interaction.Kind
   public var name: String
@@ -75,7 +75,7 @@ public struct MessageInteraction: Sendable, Codable, Equatable, Hashable {
 extension Interaction {
   /// Due to Discord reusing the components field, this enum exists to allow you to send either legacy components or the new components v2.
   /// This does not represent any actual Discord structure. It will try to parse legacy components first, and if that fails it will assume it's v2 components.
-  public enum ComponentSwitch: Sendable, Codable, Equatable, Hashable {
+  public enum ComponentSwitch: Sendable, Decodable, Equatable, Hashable {
     var legacy: [ActionRow]? {
       if case .legacy(let actionRows) = self {
         return actionRows
@@ -129,16 +129,6 @@ extension Interaction {
       }
     }
 
-    public func encode(to encoder: any Encoder) throws {
-      var container = encoder.unkeyedContainer()
-      switch self {
-      case .legacy(let actionRows):
-        try container.encode(actionRows)
-      case .v2:
-        // No encoding for v2 components yet
-        break
-      }
-    }
 
   }
 
@@ -146,7 +136,7 @@ extension Interaction {
   /// `ActionRow` is an attempt to simplify/beautify Discord's messy components.
   /// Anything inside `ActionRow` must not be used on its own for decoding/encoding purposes.
   /// For example you always need to use `[ActionRow]` instead of `[ActionRow.Component]`.
-  public struct ActionRow: Sendable, Codable, ExpressibleByArrayLiteral,
+  public struct ActionRow: Sendable, Decodable, ExpressibleByArrayLiteral,
     Equatable, Hashable, ValidatablePayload
   {
 
@@ -157,7 +147,7 @@ extension Interaction {
     #else
       @UnstableEnum<Int>
     #endif
-    public enum Kind: Sendable, Codable {
+    public enum Kind: Sendable, Decodable {
       case actionRow  // 1
       case button  // 2
       case stringSelect  // 3
@@ -186,7 +176,7 @@ extension Interaction {
     }
 
     /// https://discord.com/developers/docs/interactions/message-components#button-object-button-structure
-    public struct Button: Sendable, Codable, Equatable, Hashable,
+    public struct Button: Sendable, Decodable, Equatable, Hashable,
       ValidatablePayload
     {
 
@@ -196,7 +186,7 @@ extension Interaction {
       #else
         @UnstableEnum<Int>
       #endif
-      public enum Style: Sendable, Codable {
+      public enum Style: Sendable, Decodable {
         case primary  // 1
         case secondary  // 2
         case success  // 3
@@ -363,12 +353,12 @@ extension Interaction {
     }
 
     /// https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-menu-structure
-    public struct StringSelectMenu: Sendable, Codable, Equatable, Hashable,
+    public struct StringSelectMenu: Sendable, Decodable, Equatable, Hashable,
       ValidatablePayload
     {
 
       /// https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure
-      public struct Option: Sendable, Codable, Equatable, Hashable,
+      public struct Option: Sendable, Decodable, Equatable, Hashable,
         ValidatablePayload
       {
         public var label: String
@@ -454,10 +444,10 @@ extension Interaction {
     }
 
     /// https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-default-value-structure
-    public struct DefaultValue: Sendable, Codable, Equatable, Hashable {
+    public struct DefaultValue: Sendable, Decodable, Equatable, Hashable {
 
       /// https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-default-value-structure
-      public enum Kind: String, Sendable, Codable {
+      public enum Kind: String, Sendable, Decodable {
         case user
         case role
         case channel
@@ -483,7 +473,7 @@ extension Interaction {
     }
 
     /// https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-menu-structure
-    public struct ChannelSelectMenu: Sendable, Codable, Equatable, Hashable,
+    public struct ChannelSelectMenu: Sendable, Decodable, Equatable, Hashable,
       ValidatablePayload
     {
       public var custom_id: String
@@ -539,7 +529,7 @@ extension Interaction {
     }
 
     /// https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-menu-structure
-    public struct SelectMenu: Sendable, Codable, Equatable, Hashable,
+    public struct SelectMenu: Sendable, Decodable, Equatable, Hashable,
       ValidatablePayload
     {
       public var custom_id: String
@@ -598,7 +588,7 @@ extension Interaction {
     }
 
     /// https://discord.com/developers/docs/interactions/message-components#text-inputs
-    public struct TextInput: Sendable, Codable, Equatable, Hashable,
+    public struct TextInput: Sendable, Decodable, Equatable, Hashable,
       ValidatablePayload
     {
 
@@ -608,7 +598,7 @@ extension Interaction {
       #else
         @UnstableEnum<Int>
       #endif
-      public enum Style: Sendable, Codable {
+      public enum Style: Sendable, Decodable {
         case short  // 1
         case paragraph  // 2
         #if Non64BitSystemsCompatibility
@@ -675,7 +665,7 @@ extension Interaction {
       }
     }
 
-    public enum Component: Sendable, Codable, Equatable, Hashable,
+    public enum Component: Sendable, Decodable, Equatable, Hashable,
       ValidatablePayload
     {
       case button(Button)
@@ -757,33 +747,6 @@ extension Interaction {
         }
       }
 
-      public func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .button(let button):
-          try container.encode(Kind.button, forKey: .type)
-          try button.encode(to: encoder)
-        case .stringSelect(let selectMenu):
-          try container.encode(Kind.stringSelect, forKey: .type)
-          try selectMenu.encode(to: encoder)
-        case .textInput(let textInput):
-          try container.encode(Kind.textInput, forKey: .type)
-          try textInput.encode(to: encoder)
-        case .userSelect(let selectMenu):
-          try container.encode(Kind.userSelect, forKey: .type)
-          try selectMenu.encode(to: encoder)
-        case .roleSelect(let selectMenu):
-          try container.encode(Kind.roleSelect, forKey: .type)
-          try selectMenu.encode(to: encoder)
-        case .mentionableSelect(let selectMenu):
-          try container.encode(Kind.mentionableSelect, forKey: .type)
-          try selectMenu.encode(to: encoder)
-        case .channelSelect(let selectMenu):
-          try container.encode(Kind.channelSelect, forKey: .type)
-          try selectMenu.encode(to: encoder)
-        case .__undocumented: break
-        }
-      }
 
       public func validate() -> [ValidationFailure] {
         switch self {
@@ -844,11 +807,6 @@ extension Interaction {
       )
     }
 
-    public func encode(to encoder: any Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      try container.encode(Kind.actionRow, forKey: .type)
-      try container.encode(self.components, forKey: .components)
-    }
 
     public init(components: [Component]) {
       self.components = components

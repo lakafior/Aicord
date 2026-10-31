@@ -11,24 +11,14 @@ struct CodeTokenizerTests {
     let tokenizer = CodeTokenizer()
 
     // when
-    let tokens: [CodeToken] =
-      if let tokenizer {
-        await tokenizer.tokenize(
-          code: "let greeting = \"Hello, world!\"",
-          language: "swift"
-        )
-      } else {
-        []
-      }
+    let tokens = await tokenizer.tokenize( code: "let greeting = \"Hello, world!\"", language: "swift" )
 
     // then
-    #expect(tokenizer != nil)
     #expect(
       tokens == [
+        // the native tokenizer (it replaced Prism.js) leaves `=` as plain text
         .init(content: "let", type: .keyword),
-        .init(content: " greeting ", type: .plain),
-        .init(content: "=", type: .operator),
-        .init(content: " ", type: .plain),
+        .init(content: " greeting = ", type: .plain),
         .init(content: "\"Hello, world!\"", type: .string),
       ]
     )
@@ -41,21 +31,15 @@ struct CodeTokenizerTests {
     let tokenizer = CodeTokenizer()
 
     // when
-    let tokens: [CodeToken] =
-      if let tokenizer {
-        await tokenizer.tokenize(
-          code: "let greeting = \"Hello, world!\"",
-          language: "unsupported"
-        )
-      } else {
-        []
-      }
+    let tokens = await tokenizer.tokenize( code: "let greeting = \"Hello, world!\"", language: "unsupported" )
 
     // then
-    #expect(tokenizer != nil)
     #expect(
       tokens == [
-        .init(content: "let greeting = \"Hello, world!\"", type: .plain)
+        // unknown languages get the generic keyword and string rules
+        .init(content: "let", type: .keyword),
+        .init(content: " greeting = ", type: .plain),
+        .init(content: "\"Hello, world!\"", type: .string),
       ]
     )
   }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// https://discord.com/developers/docs/resources/webhook#webhook-object-webhook-structure
-public struct Webhook: Sendable, Codable {
+public struct Webhook: Sendable, Decodable {
   /// https://discord.com/developers/docs/resources/webhook#webhook-object-webhook-types
   #if Non64BitSystemsCompatibility
     @UnstableEnum<Int64>

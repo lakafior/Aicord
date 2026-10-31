@@ -305,7 +305,10 @@ struct InvitePreviewSheet: View {
 
   var body: some View {
     NavigationStack {
-      InvitePreview(code: code, style: .sheet)
+      VStack(spacing: 20) {
+        InvitePreview(code: code, style: .sheet)
+        SafariExtensionHint()
+      }
         .padding(24)
         .frame(maxHeight: .infinity, alignment: .top)
         .navigationTitle("Invite")
@@ -321,7 +324,7 @@ struct InvitePreviewSheet: View {
           }
         }
     }
-    .presentationDetents([.medium])
+    .presentationDetents([.medium, .large])
     #if os(macOS)
       .frame(minWidth: 360, idealWidth: 400, minHeight: 320)
     #endif

@@ -329,7 +329,7 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#hello-hello-structure
-  public struct Hello: Sendable, Codable {
+  public struct Hello: Sendable, Decodable {
     public var heartbeat_interval: Int
   }
 
@@ -348,7 +348,7 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/gateway-events#ready
-  public struct Ready: Sendable, Codable {
+  public struct Ready: Sendable, Decodable {
     // shared fields
     public var v: Int
     public var user: DiscordUser
@@ -382,17 +382,17 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/gateway-events#ready-supplemental
-  public struct ReadySupplemental: Sendable, Codable {
+  public struct ReadySupplemental: Sendable, Decodable {
 
   }
 
   /// https://docs.discord.food/topics/gateway-events#auth-session-change
-  public struct AuthSessionChange: Sendable, Codable {
+  public struct AuthSessionChange: Sendable, Decodable {
     public var auth_session_id_hash: String?
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#thread-delete
-  public struct ThreadDelete: Sendable, Codable {
+  public struct ThreadDelete: Sendable, Decodable {
     public var id: ChannelSnowflake
     public var type: DiscordChannel.Kind
     public var guild_id: GuildSnowflake?
@@ -405,7 +405,7 @@ extension Gateway {
   /// Swift.DecodingError.Context(codingPath: [
   /// CodingKeys(stringValue: "d", intValue: nil)]
   /// , debugDescription: "No value associated with key CodingKeys(stringValue: \"members\", intValue: nil) (\"members\").", underlyingError: nil))
-  public struct ThreadListSync: Sendable, Codable {
+  public struct ThreadListSync: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var channel_ids: [ChannelSnowflake]?
     public var threads: [DiscordChannel]
@@ -414,7 +414,7 @@ extension Gateway {
 
   /// A ``ThreadMember`` with a `guild_id` field.
   /// https://discord.com/developers/docs/topics/gateway-events#thread-member-update
-  public struct ThreadMemberUpdate: Sendable, Codable {
+  public struct ThreadMemberUpdate: Sendable, Decodable {
     public var id: ChannelSnowflake
     public var user_id: UserSnowflake?
     public var join_timestamp: DiscordTimestamp
@@ -423,16 +423,16 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#thread-members-update-thread-members-update-event-fields
-  public struct ThreadMembersUpdate: Sendable, Codable {
+  public struct ThreadMembersUpdate: Sendable, Decodable {
 
     /// A ``ThreadMember`` with some extra fields.
     /// https://discord.com/developers/docs/resources/channel#thread-member-object-thread-member-structure
     /// https://discord.com/developers/docs/topics/gateway-events#thread-members-update-thread-members-update-event-fields
-    public struct ThreadMember: Sendable, Codable, Equatable, Hashable {
+    public struct ThreadMember: Sendable, Decodable, Equatable, Hashable {
 
       /// A ``PresenceUpdate`` with nullable `guild_id`.
       /// https://discord.com/developers/docs/topics/gateway-events#presence-update-presence-update-event-fields
-      public struct ThreadMemberPresenceUpdate: Sendable, Codable, Equatable,
+      public struct ThreadMemberPresenceUpdate: Sendable, Decodable, Equatable,
         Hashable
       {
         public var user: PartialUser
@@ -460,7 +460,7 @@ extension Gateway {
   /// A `Guild` object with extra fields.
   /// https://discord.com/developers/docs/resources/guild#guild-object-guild-structure
   /// https://discord.com/developers/docs/topics/gateway-events#guild-create-guild-create-extra-fields
-  public struct GuildCreate: Sendable, Codable {
+  public struct GuildCreate: Sendable, Decodable {
     public var id: GuildSnowflake
     public var name: String
     public var icon: String?
@@ -577,51 +577,51 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#channel-pins-update-channel-pins-update-event-fields
-  public struct ChannelPinsUpdate: Sendable, Codable {
+  public struct ChannelPinsUpdate: Sendable, Decodable {
     public var guild_id: GuildSnowflake?
     public var channel_id: ChannelSnowflake
     public var last_pin_timestamp: DiscordTimestamp?
   }
 
   /// https://docs.discord.food/topics/gateway-events#channel-recipient-add
-  public struct ChannelRecipientAdd: Sendable, Codable {
+  public struct ChannelRecipientAdd: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var user: PartialUser
     public var nick: String?
   }
 
   /// https://docs.discord.food/topics/gateway-events#channel-recipient-remove
-  public struct ChannelRecipientRemove: Sendable, Codable {
+  public struct ChannelRecipientRemove: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var user: PartialUser
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#guild-ban-add-guild-ban-add-event-fields
-  public struct GuildBan: Sendable, Codable {
+  public struct GuildBan: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var user: DiscordUser
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#guild-emojis-update-guild-emojis-update-event-fields
-  public struct GuildEmojisUpdate: Sendable, Codable {
+  public struct GuildEmojisUpdate: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var emojis: [Emoji]
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#guild-stickers-update-guild-stickers-update-event-fields
-  public struct GuildStickersUpdate: Sendable, Codable {
+  public struct GuildStickersUpdate: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var stickers: [Sticker]
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#guild-integrations-update-guild-integrations-update-event-fields
-  public struct GuildIntegrationsUpdate: Sendable, Codable {
+  public struct GuildIntegrationsUpdate: Sendable, Decodable {
     public var guild_id: GuildSnowflake
   }
 
   /// A ``Guild.Member`` with an extra `guild_id` field.
   /// https://discord.com/developers/docs/resources/guild#guild-member-object
-  public struct GuildMemberAdd: Sendable, Codable {
+  public struct GuildMemberAdd: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var roles: [RoleSnowflake]
     public var user: DiscordUser
@@ -635,6 +635,12 @@ extension Gateway {
     public var pending: Bool?
     public var communication_disabled_until: DiscordTimestamp?
     public var avatar_decoration_data: DiscordUser.AvatarDecoration?
+
+    /// Written out: nothing synthesizes them for a decode-only type.
+    enum CodingKeys: String, CodingKey {
+      case guild_id, roles, user, nick, avatar, joined_at, premium_since, deaf, mute, flags
+      case pending, communication_disabled_until, avatar_decoration_data
+    }
 
     public init(from decoder: any Decoder) throws {
       let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -674,13 +680,13 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#guild-member-remove-guild-member-remove-event-fields
-  public struct GuildMemberRemove: Sendable, Codable {
+  public struct GuildMemberRemove: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var user: PartialUser  // contains only id
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#guild-members-chunk
-  public struct GuildMembersChunk: Sendable, Codable {
+  public struct GuildMembersChunk: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var members: [Guild.Member]
     public var chunk_index: Int
@@ -717,13 +723,13 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#guild-role-create-guild-role-create-event-fields
-  public struct GuildRole: Sendable, Codable {
+  public struct GuildRole: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var role: Role
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#guild-role-delete
-  public struct GuildRoleDelete: Sendable, Codable {
+  public struct GuildRoleDelete: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var role_id: RoleSnowflake
     public var version: Int?
@@ -732,7 +738,7 @@ extension Gateway {
   /// Not the same as what Discord calls `Guild Scheduled Event User`.
   /// This is used for guild-scheduled-event-user add and remove events.
   /// https://discord.com/developers/docs/topics/gateway-events#guild-scheduled-event-user-add-guild-scheduled-event-user-add-event-fields
-  public struct GuildScheduledEventUser: Sendable, Codable {
+  public struct GuildScheduledEventUser: Sendable, Decodable {
     public var guild_scheduled_event_id: GuildScheduledEventSnowflake
     public var user_id: UserSnowflake
     public var guild_id: GuildSnowflake
@@ -741,7 +747,7 @@ extension Gateway {
   /// An ``Integration`` with an extra `guild_id` field.
   /// https://discord.com/developers/docs/topics/gateway-events#integration-create
   /// https://discord.com/developers/docs/resources/guild#integration-object
-  public struct IntegrationCreate: Sendable, Codable {
+  public struct IntegrationCreate: Sendable, Decodable {
     public var id: IntegrationSnowflake
     public var name: String
     public var type: Integration.Kind
@@ -762,14 +768,14 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#integration-delete-integration-delete-event-fields
-  public struct IntegrationDelete: Sendable, Codable {
+  public struct IntegrationDelete: Sendable, Decodable {
     public var id: IntegrationSnowflake
     public var guild_id: GuildSnowflake
     public var application_id: ApplicationSnowflake?
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#invite-create-invite-create-event-fields
-  public struct InviteCreate: Sendable, Codable {
+  public struct InviteCreate: Sendable, Decodable {
 
     /// FIXME: Type-alias to avoid code breakage
     public typealias TargetKind = Invite.TargetKind
@@ -790,7 +796,7 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#invite-delete
-  public struct InviteDelete: Sendable, Codable {
+  public struct InviteDelete: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var guild_id: GuildSnowflake?
     public var code: String
@@ -799,7 +805,7 @@ extension Gateway {
   /// A ``Message`` object with a few extra fields.
   /// https://discord.com/developers/docs/topics/gateway-events#message-create
   /// https://discord.com/developers/docs/resources/channel#message-object
-  public struct MessageCreate: Sendable, Codable {
+  public struct MessageCreate: Sendable, Decodable {
     public var id: MessageSnowflake
     public var channel_id: ChannelSnowflake
     @Indirect public var author: DiscordUser?
@@ -919,14 +925,14 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#message-delete
-  public struct MessageDelete: Sendable, Codable {
+  public struct MessageDelete: Sendable, Decodable {
     public var id: MessageSnowflake
     public var channel_id: ChannelSnowflake
     public var guild_id: GuildSnowflake?
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#message-delete-bulk-message-delete-bulk-event-fields
-  public struct MessageDeleteBulk: Sendable, Codable {
+  public struct MessageDeleteBulk: Sendable, Decodable {
     public var ids: [MessageSnowflake]
     public var channel_id: ChannelSnowflake
     public var guild_id: GuildSnowflake?
@@ -948,7 +954,7 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#message-reaction-add-message-reaction-add-event-fields
-  public struct MessageReactionAdd: Sendable, Codable, Equatable, Hashable {
+  public struct MessageReactionAdd: Sendable, Decodable, Equatable, Hashable {
     public var type: ReactionKind
     public var user_id: UserSnowflake
     public var channel_id: ChannelSnowflake
@@ -1008,44 +1014,24 @@ extension Gateway {
       )
     }
 
-    public func encode(to encoder: any Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-
-      try container.encode(self.type, forKey: .type)
-      try container.encode(self.user_id, forKey: .user_id)
-      try container.encode(self.channel_id, forKey: .channel_id)
-      try container.encode(self.message_id, forKey: .message_id)
-      try container.encodeIfPresent(self.guild_id, forKey: .guild_id)
-      try container.encodeIfPresent(self.burst, forKey: .burst)
-      try container.encodeIfPresent(
-        self.burst_colors?.map { $0.asHex() },
-        forKey: .burst_colors
-      )
-      try container.encodeIfPresent(self.member, forKey: .member)
-      try container.encode(self.emoji, forKey: .emoji)
-      try container.encodeIfPresent(
-        self.message_author_id,
-        forKey: .message_author_id
-      )
-    }
 
   }
 
   /// https://docs.discord.food/topics/gateway-events#message-reaction-add-many
-  public struct MessageReactionAddMany: Sendable, Codable {
+  public struct MessageReactionAddMany: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var message_id: MessageSnowflake
     public var guild_id: GuildSnowflake?
     public var reactions: [DebouncedReactions]
 
-    public struct DebouncedReactions: Sendable, Codable, Hashable, Equatable {
+    public struct DebouncedReactions: Sendable, Decodable, Hashable, Equatable {
       public var emoji: Emoji
       public var users: [UserSnowflake]
     }
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#message-reaction-remove
-  public struct MessageReactionRemove: Sendable, Codable {
+  public struct MessageReactionRemove: Sendable, Decodable {
     public var type: ReactionKind
     public var user_id: UserSnowflake
     public var channel_id: ChannelSnowflake
@@ -1057,7 +1043,7 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#message-reaction-remove-all
-  public struct MessageReactionRemoveAll: Sendable, Codable {
+  public struct MessageReactionRemoveAll: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var message_id: MessageSnowflake
     public var guild_id: GuildSnowflake?
@@ -1065,7 +1051,7 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#message-reaction-remove-emoji
-  public struct MessageReactionRemoveEmoji: Sendable, Codable {
+  public struct MessageReactionRemoveEmoji: Sendable, Decodable {
     public var type: ReactionKind
     public var channel_id: ChannelSnowflake
     public var guild_id: GuildSnowflake?
@@ -1075,13 +1061,13 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/gateway-events#request-last-messages-structure
-  public struct RequestLastMessages: Sendable, Codable {
+  public struct RequestLastMessages: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var channel_ids: [ChannelSnowflake]
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#client-status-object
-  public struct ClientStatus: Sendable, Codable, Equatable, Hashable {
+  public struct ClientStatus: Sendable, Decodable, Equatable, Hashable {
     public init(
       desktop: Status? = nil,
       mobile: Status? = nil,
@@ -1101,7 +1087,7 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#presence-update-presence-update-event-fields
-  public struct PresenceUpdate: Sendable, Codable, Equatable, Hashable {
+  public struct PresenceUpdate: Sendable, Decodable, Equatable, Hashable {
     public init(
       user: PartialUser,
       guild_id: GuildSnowflake? = nil,
@@ -1128,7 +1114,7 @@ extension Gateway {
 
   /// Partial ``PresenceUpdate`` object.
   /// https://discord.com/developers/docs/topics/gateway-events#presence-update-presence-update-event-fields
-  public struct PartialPresenceUpdate: Sendable, Codable {
+  public struct PartialPresenceUpdate: Sendable, Decodable {
     public var user: PartialUser?
     public var guild_id: GuildSnowflake?
     public var status: Status?
@@ -1420,7 +1406,7 @@ extension Gateway {
 
   /// https://discord.com/developers/docs/topics/gateway-events#message-poll-vote-add-message-poll-vote-add-fields
   /// https://discord.com/developers/docs/topics/gateway-events#message-poll-vote-remove-message-poll-vote-remove-fields
-  public struct MessagePollVote: Sendable, Codable {
+  public struct MessagePollVote: Sendable, Decodable {
     public var user_id: UserSnowflake
     public var channel_id: ChannelSnowflake
     public var message_id: MessageSnowflake
@@ -1429,7 +1415,7 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#typing-start-typing-start-event-fields
-  public struct TypingStart: Sendable, Codable {
+  public struct TypingStart: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var guild_id: GuildSnowflake?
     public var user_id: UserSnowflake
@@ -1438,7 +1424,7 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway-events#voice-server-update-voice-server-update-event-fields
-  public struct VoiceServerUpdate: Sendable, Codable {
+  public struct VoiceServerUpdate: Sendable, Decodable {
     public var token: Secret
     /// Absent for DM and group calls.
     public var guild_id: GuildSnowflake?
@@ -1448,30 +1434,30 @@ extension Gateway {
   }
 
   /// https://discord.com/developers/docs/topics/gateway#get-gateway
-  public struct URL: Sendable, Codable {
+  public struct URL: Sendable, Decodable {
     public var url: String
   }
 
   /// https://docs.discord.food/topics/gateway-events#channel-statuses
-  public struct VoiceChannelStatuses: Sendable, Codable {
+  public struct VoiceChannelStatuses: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var channels: [Status]
 
-    public struct Status: Sendable, Codable {
+    public struct Status: Sendable, Decodable {
       public var id: ChannelSnowflake
       public var status: String
     }
   }
 
   /// https://docs.discord.food/topics/gateway-events#voice-channel-status-update
-  public struct VoiceChannelStatusUpdate: Sendable, Codable {
+  public struct VoiceChannelStatusUpdate: Sendable, Decodable {
     public var id: ChannelSnowflake
     public var guild_id: GuildSnowflake
     public var status: String?
   }
 
   /// https://docs.discord.food/topics/gateway-events#call-create
-  public struct CallCreate: Sendable, Codable {
+  public struct CallCreate: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var message_id: MessageSnowflake
     public var region: String
@@ -1480,7 +1466,7 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/gateway-events#call-update
-  public struct CallUpdate: Sendable, Codable {
+  public struct CallUpdate: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var message_id: MessageSnowflake
     public var region: String
@@ -1489,13 +1475,13 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/gateway-events#call-delete
-  public struct CallDelete: Sendable, Codable {
+  public struct CallDelete: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var unavailable: Bool?
   }
 
   /// https://docs.discord.food/topics/gateway-events#channel-member-count-update
-  public struct ChannelMemberCountUpdate: Sendable, Codable {
+  public struct ChannelMemberCountUpdate: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var channel_id: ChannelSnowflake
     public var member_count: Int
@@ -1503,22 +1489,22 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/gateway-events#request-channel-member-count
-  public struct RequestChannelMemberCount: Sendable, Codable {
+  public struct RequestChannelMemberCount: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var channel_id: ChannelSnowflake
   }
 
   /// https://docs.discord.food/topics/gateway-events#console-command-update
-  public struct ConsoleCommandUpdate: Sendable, Codable {}
+  public struct ConsoleCommandUpdate: Sendable, Decodable {}
 
   /// https://docs.discord.food/topics/gateway-events#conversation-summary-update
-  public struct ConversationSummaryUpdate: Sendable, Codable {
+  public struct ConversationSummaryUpdate: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var channel_id: ChannelSnowflake
   }
 
   /// https://docs.discord.food/topics/gateway-events#dm-settings-upsell-show
-  public struct DMSettingsShow: Sendable, Codable {
+  public struct DMSettingsShow: Sendable, Decodable {
     public var guild_id: GuildSnowflake
   }
 
@@ -1526,29 +1512,29 @@ extension Gateway {
   public typealias FriendSuggestionCreate = FriendSuggestion
 
   /// https://docs.discord.food/topics/gateway-events#friend-suggestion-delete
-  public struct FriendSuggestionDelete: Sendable, Codable {
+  public struct FriendSuggestionDelete: Sendable, Decodable {
     public var suggested_user_id: UserSnowflake
   }
 
   /// https://docs.discord.food/topics/gateway-events#guild-scheduled-event-exceptions-delete
-  public struct GuildScheduledEventExceptionsDelete: Sendable, Codable {
+  public struct GuildScheduledEventExceptionsDelete: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var event_id: GuildScheduledEventSnowflake
   }
 
   /// https://docs.discord.food/topics/gateway-events#recent-mention-delete
-  public struct RecentMentionDelete: Sendable, Codable {
+  public struct RecentMentionDelete: Sendable, Decodable {
     public var message_id: MessageSnowflake
   }
 
   /// https://docs.discord.food/topics/gateway-events#last-messages
-  public struct LastMessages: Sendable, Codable {
+  public struct LastMessages: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var messages: [MessageCreate]
   }
 
   // https://docs.discord.food/resources/user-settings#notification-settings-object
-  public struct NotificationSettings: Sendable, Codable {
+  public struct NotificationSettings: Sendable, Decodable {
     public var flags: IntBitField<Flag>?
 
     #if Non64BitSystemsCompatibility
@@ -1569,7 +1555,7 @@ extension Gateway {
   }
 
   ///	https://docs.discord.food/topics/gateway-events#partial-relationship-structure
-  public struct PartialRelationship: Sendable, Codable {
+  public struct PartialRelationship: Sendable, Decodable {
     public var id: UserSnowflake
     public var type: DiscordRelationship.Kind
     public var nickname: String?
@@ -1582,13 +1568,13 @@ extension Gateway {
   public typealias SavedMessageCreate = SavedMessage
 
   /// https://docs.discord.food/topics/gateway-events#saved-message-delete
-  public struct SavedMessageDelete: Sendable, Codable {
+  public struct SavedMessageDelete: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var message_id: MessageSnowflake
   }
 
   /// https://docs.discord.food/resources/presence#session-object
-  public struct Session: Sendable, Codable, Identifiable {
+  public struct Session: Sendable, Decodable, Identifiable {
     public var id: String { session_id }
     public var session_id: String
     public var client_info: ClientInfo
@@ -1601,7 +1587,7 @@ extension Gateway {
       session_id.hasSuffix("h:")
     }
 
-    public struct ClientInfo: Sendable, Codable {
+    public struct ClientInfo: Sendable, Decodable {
       // TODO: Make enums
       public var client: ClientType
       public var os: String
@@ -1633,7 +1619,7 @@ extension Gateway {
   public typealias SessionsReplace = [Session]
 
   /// https://docs.discord.food/topics/gateway-events#user-application-update
-  public struct UserApplicationUpdate: Sendable, Codable {
+  public struct UserApplicationUpdate: Sendable, Decodable {
     public var application_id: ApplicationSnowflake
   }
 
@@ -1641,7 +1627,7 @@ extension Gateway {
   public typealias UserApplicationRemove = UserApplicationUpdate
 
   /// https://docs.discord.food/topics/gateway-events#user-connections-update
-  public enum UserConnectionsUpdate: Sendable, Codable {
+  public enum UserConnectionsUpdate: Sendable, Decodable {
     case id(UserSnowflake)
     case connection(DiscordUser.Connection)
 
@@ -1669,25 +1655,16 @@ extension Gateway {
       )
     }
 
-    public func encode(to encoder: any Encoder) throws {
-      var container = encoder.singleValueContainer()
-      switch self {
-      case .connection(let connection):
-        try container.encode(connection)
-      case .id(let userId):
-        try container.encode(["user_id": userId])
-      }
-    }
   }
 
   /// https://docs.discord.food/topics/gateway-events#user-note-update
-  public struct UserNote: Sendable, Codable {
+  public struct UserNote: Sendable, Decodable {
     public var id: UserSnowflake
     public var note: String
   }
 
   /// https://docs.discord.food/topics/gateway-events#user-settings-proto-update
-  public struct UserSettingsProtoUpdate: Sendable, Codable {
+  public struct UserSettingsProtoUpdate: Sendable, Decodable {
     public var settings: UserSettingsProto
     public var partial: Bool
   }
@@ -1768,7 +1745,7 @@ extension Gateway {
   public typealias SoundboardSounds = [SoundboardSound]
 
   /// https://docs.discord.food/topics/gateway-events#guild-soundboard-sound-delete
-  public struct SoundboardSoundDelete: Sendable, Codable {
+  public struct SoundboardSoundDelete: Sendable, Decodable {
     public var guild_id: GuildSnowflake
     public var soundboard_sounds: SoundboardSounds
   }
@@ -1789,11 +1766,11 @@ extension Gateway {
   /// dolfies says its complicated, be sure to ask him later if he finishes docs
   ///
   /// from guessing, guild id might be nil for dms?
-  public struct ChannelUnreadUpdate: Sendable, Codable {
+  public struct ChannelUnreadUpdate: Sendable, Decodable {
     public var guild_id: GuildSnowflake?
     public var channel_unread_updates: [UnreadUpdate]
 
-    public struct UnreadUpdate: Sendable, Codable {
+    public struct UnreadUpdate: Sendable, Decodable {
       public var last_pin_timestamp: DiscordTimestamp?
       public var last_message_id: MessageSnowflake
       public var id: ChannelSnowflake
@@ -1801,7 +1778,7 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/read-state#read-state-structure
-  public struct ReadState: Sendable, Codable {
+  public struct ReadState: Sendable, Decodable {
     public var id: AnySnowflake  // can be for many types of entities
     public var read_state_type: IntBitField<Kind>?
     // last msg and last acked are mutually exclusive
@@ -1872,7 +1849,7 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/gateway-events#message-ack
-  public struct MessageAcknowledge: Sendable, Codable {
+  public struct MessageAcknowledge: Sendable, Decodable {
     public var ack_type: ReadState.Kind?
     public var channel_id: ChannelSnowflake
     public var message_id: MessageSnowflake
@@ -1884,14 +1861,14 @@ extension Gateway {
   }
 
   /// https://docs.discord.food/topics/gateway-events#channel-pins-ack
-  public struct ChannelPinsAcknowledge: Sendable, Codable {
+  public struct ChannelPinsAcknowledge: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var timestamp: DiscordTimestamp
     public var version: Int
   }
 
   /// https://docs.discord.food/topics/gateway-events#user-non-channel-ack-structure
-  public struct UserNonChannelAcknowledge: Sendable, Codable {
+  public struct UserNonChannelAcknowledge: Sendable, Decodable {
     public var ack_type: ReadState.Kind
     public var resource_id: UserSnowflake
     public var entity_id: AnySnowflake
@@ -1900,23 +1877,23 @@ extension Gateway {
 
   /// https://docs.discord.food/resources/message#create-attachments
   /// Note that this is the response payload when creating attachments, not the upload payload.
-  public struct CreateAttachments: Sendable, Codable {
+  public struct CreateAttachments: Sendable, Decodable {
     public var attachments: [CloudAttachment]
   }
 
   /// https://docs.discord.food/resources/message#cloud-attachment-structure
-  public struct CloudAttachment: Sendable, Codable {
+  public struct CloudAttachment: Sendable, Decodable {
     public var id: AttachmentSnowflake?
     public var upload_url: String
     public var upload_filename: String
   }
 
   /// https://docs.discord.food/remote-authentication/mobile#create-remote-auth-session
-  public struct CreateRemoteAuthSession: Sendable, Codable {
+  public struct CreateRemoteAuthSession: Sendable, Decodable {
     public var handshake_token: String
   }
 
-  public struct ExchangeRemoteAuthTicket: Sendable, Codable {
+  public struct ExchangeRemoteAuthTicket: Sendable, Decodable {
     public var encrypted_token: String
   }
 
@@ -2000,7 +1977,7 @@ extension Gateway {
   /// we request channels in the guild to get member lists for, discord sends us this payload containing groups of members and associated cell counts.
   /// the requesting happens via the UpdateGuildSubscriptions payload above, with the channels field and intpairs for the ranges you require visible rows of.
   /// each channel that has different permission sets will usually have their own member list. so public channels all share one member list id and private ones vary by permissions.
-  public struct GuildMemberListUpdate: Sendable, Codable {
+  public struct GuildMemberListUpdate: Sendable, Decodable {
     public var ops: [MemberListOp]
     public var online_count: Int
     public var member_count: Int
@@ -2009,7 +1986,7 @@ extension Gateway {
     public var groups: [GroupCount]
 
     /// Flat dictionary but i made it an enum based on the op field.
-    public enum MemberListOp: Sendable, Codable {
+    public enum MemberListOp: Sendable, Decodable {
       public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let opKind = try container.decode(OpKind.self, forKey: .op)
@@ -2051,29 +2028,6 @@ extension Gateway {
         }
       }
 
-      public func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .sync(let range, let items):
-          try container.encode(OpKind.sync, forKey: .op)
-          try container.encode(range, forKey: .range)
-          try container.encode(items, forKey: .items)
-        case .update(let index, let item):
-          try container.encode(OpKind.update, forKey: .op)
-          try container.encode(index, forKey: .index)
-          try container.encode(item, forKey: .item)
-        case .insert(let index, let item):
-          try container.encode(OpKind.insert, forKey: .op)
-          try container.encode(index, forKey: .index)
-          try container.encode(item, forKey: .item)
-        case .delete(let index):
-          try container.encode(OpKind.delete, forKey: .op)
-          try container.encode(index, forKey: .index)
-        case .invalidate(let range):
-          try container.encode(OpKind.invalidate, forKey: .op)
-          try container.encode(range, forKey: .range)
-        }
-      }
 
       case sync(
         range: IntPair,
@@ -2094,7 +2048,7 @@ extension Gateway {
         range: IntPair
       )
 
-      public enum GuildMemberListMixedItem: Sendable, Codable, Identifiable {
+      public enum GuildMemberListMixedItem: Sendable, Decodable, Identifiable {
         public init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           if container.contains(.member) {
@@ -2163,17 +2117,17 @@ extension Gateway {
       }
     }
 
-    public struct GroupCount: Sendable, Codable {
+    public struct GroupCount: Sendable, Decodable {
       public var id: RoleSnowflake  // this can also be "online" to represent unhoisted online members or "offline" for offline members in "everyone" member lists
       public var count: Int
     }
   }
 
-  public struct ContentInventoryInboxStale: Sendable, Codable {
+  public struct ContentInventoryInboxStale: Sendable, Decodable {
     public var refresh_after_ms: UInt
   }
 
-  public struct EmbeddedActivityUpdateV2: Sendable, Codable {
+  public struct EmbeddedActivityUpdateV2: Sendable, Decodable {
     public var participants: [Participant]
     public var location: Location
     public var launch_id: AnySnowflake
@@ -2182,14 +2136,14 @@ extension Gateway {
     public var composite_instance_id: String
     public var application_id: ApplicationSnowflake
 
-    public struct Participant: Sendable, Codable {
+    public struct Participant: Sendable, Decodable {
       public var user_id: UserSnowflake
       public var session_id: String
       public var nonce: AnySnowflake
       public var member: Guild.PartialMember
     }
 
-    public struct Location: Sendable, Codable {
+    public struct Location: Sendable, Decodable {
       public var kind: String
       public var channel_id: ChannelSnowflake
       public var guild_id: GuildSnowflake
@@ -2197,7 +2151,7 @@ extension Gateway {
     }
   }
 
-  public struct UserApplicationIdentityUpdate: Sendable, Codable {
+  public struct UserApplicationIdentityUpdate: Sendable, Decodable {
     public var application_id: ApplicationSnowflake
     public var username: String?
     public var user_id: UserSnowflake
@@ -2205,18 +2159,18 @@ extension Gateway {
     public var metadata: String?
   }
 
-  public struct VoiceChannelStartTimeUpdate: Sendable, Codable {
+  public struct VoiceChannelStartTimeUpdate: Sendable, Decodable {
     public var voice_start_time: DiscordTimestamp?
     public var id: ChannelSnowflake
     public var guild_id: GuildSnowflake
   }
 
-  public struct GuildJoinRequestUpdate: Sendable, Codable {
+  public struct GuildJoinRequestUpdate: Sendable, Decodable {
     public var status: Status
     public var request: GuildJoinRequest
     public var guild_id: GuildSnowflake
 
-    public struct GuildJoinRequest: Sendable, Codable {
+    public struct GuildJoinRequest: Sendable, Decodable {
       public var user_id: UserSnowflake
       public var user: PartialUser
       public var rejection_reason: String?
@@ -2232,7 +2186,7 @@ extension Gateway {
       public var actioned_at: AnySnowflake?
     }
 
-    public struct MemberVerificationFormField: Sendable, Codable {
+    public struct MemberVerificationFormField: Sendable, Decodable {
 
     }
 

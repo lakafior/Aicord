@@ -7,11 +7,11 @@
 //
 
 /// https://docs.discord.food/resources/user#saved-message-structure
-public struct SavedMessage: Sendable, Codable {
+public struct SavedMessage: Sendable, Decodable {
   public var message: Gateway.MessageCreate?
   public var save_data: SaveData
 
-  public struct SaveData: Sendable, Codable {
+  public struct SaveData: Sendable, Decodable {
     public var channel_id: ChannelSnowflake
     public var message_id: MessageSnowflake
     public var guild_id: GuildSnowflake?

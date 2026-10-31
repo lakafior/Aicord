@@ -9,7 +9,7 @@ import Foundation
 /// https://docs.discord.food/resources/user-settings#consents-object
 public typealias DiscordUserConsents = [String: DiscordUserConsent]
 
-public struct DiscordUserConsent: Sendable, Codable, Hashable {
+public struct DiscordUserConsent: Sendable, Decodable, Hashable {
   public var consented: Bool
 
   public init(consented: Bool) {
@@ -26,7 +26,7 @@ extension DiscordUserConsent {
 
 /// A request for a copy of the user's data.
 /// https://docs.discord.food/resources/user#harvest-object
-public struct DiscordUserHarvest: Sendable, Codable {
+public struct DiscordUserHarvest: Sendable, Decodable {
   public var harvest_id: String
   public var user_id: UserSnowflake
   public var email: String?

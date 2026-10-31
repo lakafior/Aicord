@@ -31,6 +31,8 @@ struct IntelligenceSettings: View {
   @AppStorage(Key.scamWarnings) private var scamWarnings = true
   @AppStorage(Key.importantMuted) private var importantMuted = false
   @AppStorage(Key.importantTopics) private var importantTopics = ""
+  @AppStorage(Key.voiceOverImages) private var voiceOverImages = true
+  @AppStorage(Key.voiceOverImagesAPI) private var voiceOverImagesAPI = false
 
   @State private var keyDraft = ""
   @State private var hasKey = IntelligenceKeychain.hasAPIKey
@@ -106,6 +108,22 @@ struct IntelligenceSettings: View {
       )
     }
 
+    Section {
+      Toggle("Describe Images for VoiceOver", isOn: $voiceOverImages)
+      if provider == .api {
+        Toggle("Describe with the API Model", isOn: $voiceOverImagesAPI)
+          .disabled(!voiceOverImages)
+      }
+    } header: {
+      Text("Accessibility")
+    } footer: {
+      Text(
+        provider == .api
+          ? "While VoiceOver is on, images without alt text are read with the text Vision finds in them on this device. With the API model, each image you reach is also sent to that server for a short description; images in direct messages only when Use in Direct Messages is on."
+          : "While VoiceOver is on, images without alt text are read with the text Vision finds in them, on this device. Spoilers and hidden sensitive media are never read."
+      )
+    }
+
     TranslationSettingsSections()
   }
 
@@ -162,8 +180,12 @@ struct IntelligenceSettings: View {
     } footer: {
       if apiBase.isEmpty {
         Text(
-          "Any server with the OpenAI chat completions API: OpenAI, Mistral, OpenRouter, or Ollama and LM Studio on your network (those need no key)."
+          "Any server with the OpenAI chat completions API: OpenAI, Mistral, OpenRouter, or Ollama and LM Studio on your network (those need no key). Ollama is at localhost:11434 and LM Studio at localhost:1234 on the same computer; from an iPhone, use the computer's name, like my-mac.local:11434."
         )
+      } else if let url = OpenAICompatibleClient.normalizedBaseURL(apiBase),
+        OpenAICompatibleClient.isLocalHost(url.host() ?? "")
+      {
+        Text("Requests go to \(url.absoluteString) on your network, over plain HTTP. The first time, iOS asks to allow Aicord on the local network.")
       } else if let url = OpenAICompatibleClient.normalizedBaseURL(apiBase) {
         Text("Requests go to \(url.absoluteString). The key stays in this device's keychain.")
       } else {

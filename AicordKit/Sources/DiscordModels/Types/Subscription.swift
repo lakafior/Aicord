@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/subscription#subscription-object
-public struct Subscription: Sendable, Codable {
+public struct Subscription: Sendable, Decodable {
 
   /// https://discord.com/developers/docs/resources/subscription#subscription-statuses
   #if Non64BitSystemsCompatibility

@@ -326,7 +326,7 @@ private struct ForwardPreview: View {
   var summary: String {
     if !message.content.isEmpty { return message.content }
     if !message.attachments.isEmpty {
-      return String(localized: "^[\(message.attachments.count) attachment](inflect: true)")
+      return String(AttributedString(localized: "^[\(message.attachments.count) attachment](inflect: true)").characters)
     }
     if !message.embeds.isEmpty { return String(localized: "Embed") }
     return String(localized: "Message")

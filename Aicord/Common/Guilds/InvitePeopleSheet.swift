@@ -202,7 +202,10 @@ enum InvitePeople {
       } ?? String(localized: "Never expires.")
     switch useLimit {
     case .unlimited: return expires
-    default: return expires + " " + String(localized: "^[\(useLimit.rawValue) use](inflect: true) at most.")
+    // a plain String would keep the ^[…](inflect:) markup as it is
+    default:
+      return expires + " "
+        + String(AttributedString(localized: "^[\(useLimit.rawValue) use](inflect: true) at most.").characters)
     }
   }
 

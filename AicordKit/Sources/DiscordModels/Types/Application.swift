@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/application#application-object-application-structure
-public struct DiscordApplication: Sendable, Codable {
+public struct DiscordApplication: Sendable, Decodable {
 
   /// https://discord.com/developers/docs/resources/application#application-object-application-flags
   #if Non64BitSystemsCompatibility
@@ -27,7 +27,7 @@ public struct DiscordApplication: Sendable, Codable {
   }
 
   /// https://discord.com/developers/docs/resources/application#install-params-object
-  public struct InstallParams: Sendable, Codable, Equatable, Hashable {
+  public struct InstallParams: Sendable, Decodable, Equatable, Hashable {
     public var scopes: [OAuth2Scope]
     public var permissions: StringBitField<Permission>
 
@@ -56,7 +56,7 @@ public struct DiscordApplication: Sendable, Codable {
   }
 
   /// https://discord.com/developers/docs/resources/application#application-object-application-integration-type-configuration-object
-  public struct IntegrationKindConfiguration: Sendable, Codable, Equatable,
+  public struct IntegrationKindConfiguration: Sendable, Decodable, Equatable,
     Hashable
   {
     public var oauth2_install_params: InstallParams?
@@ -97,7 +97,7 @@ public struct DiscordApplication: Sendable, Codable {
   public var custom_install_url: String?
 
   /// https://docs.discord.food/resources/application#application-asset-object
-  public struct Asset: Sendable, Codable, Equatable, Hashable {
+  public struct Asset: Sendable, Decodable, Equatable, Hashable {
     public var id: ApplicationAssetSnowflake
     public var type: Kind
     public var name: String
@@ -122,7 +122,7 @@ public struct DiscordApplication: Sendable, Codable {
 }
 
 /// https://discord.com/developers/docs/resources/application#application-object-application-structure
-public struct PartialApplication: Sendable, Codable, Equatable, Hashable {
+public struct PartialApplication: Sendable, Decodable, Equatable, Hashable {
   public var id: ApplicationSnowflake
   public var name: String?
   public var icon: String?
@@ -156,13 +156,13 @@ public struct PartialApplication: Sendable, Codable, Equatable, Hashable {
 }
 
 /// https://docs.discord.food/resources/application#get-embedded-activities
-public struct EmbeddedActivities: Sendable, Codable, Equatable, Hashable {
+public struct EmbeddedActivities: Sendable, Decodable, Equatable, Hashable {
   public var activities: [ActivityConfiguration]
   public var applications: [PartialApplication]
   public var assets: [ApplicationAssetSnowflake: [DiscordApplication.Asset]]
 
   /// https://docs.discord.food/resources/application#embedded-activity-config-object
-  public struct ActivityConfiguration: Sendable, Codable, Equatable, Hashable {
+  public struct ActivityConfiguration: Sendable, Decodable, Equatable, Hashable {
     public var application_id: ApplicationSnowflake?
     public var activity_preview_video_asset_id: ApplicationAssetSnowflake?
     public var supported_platforms: [SupportedPlatform]
@@ -200,7 +200,7 @@ public struct EmbeddedActivities: Sendable, Codable, Equatable, Hashable {
       #endif
     }
 
-    public struct PlatformConfiguration: Sendable, Codable, Equatable, Hashable {
+    public struct PlatformConfiguration: Sendable, Decodable, Equatable, Hashable {
       public var label_type: LabelType
       public var label_until: DiscordTimestamp?
       public var release_phase: ReleasePhase
@@ -238,7 +238,7 @@ public struct EmbeddedActivities: Sendable, Codable, Equatable, Hashable {
 }
 
 /// https://docs.discord.food/resources/application#external-asset-object
-public struct ApplicationExternalAsset: Sendable, Codable {
+public struct ApplicationExternalAsset: Sendable, Decodable {
   public var url: String
   public var external_asset_path: String
 }

@@ -148,6 +148,7 @@ struct AskChannelSheet: View {
     let toolbox = MessageToolbox(
       gw: gw, guildId: guildId, channelId: channelId, onDevice: model.isOnDevice)
     toolbox.onChange = { [weak toolbox] in searches = toolbox?.searches ?? [] }
+    toolbox.question = question
     self.toolbox = toolbox
     do {
       // pins first: rules and answers tend to be pinned
@@ -157,10 +158,18 @@ struct AskChannelSheet: View {
       {
         pinned = (try? res.decode()) ?? []
       }
-      let recent = try await IntelligenceSource.fetchMessages(
-        channelId: channelId, limit: model.isOnDevice ? 20 : 100, gw: gw)
+      var recent = try await IntelligenceSource.fetchMessages(
+        channelId: channelId, limit: model.isOnDevice ? 50 : 100, gw: gw)
+      if model.isOnDevice {
+        // the on-device window is small: the newest few, plus the ones closest to the question
+        recent = await Self.fitting(recent, question: question)
+      }
       let pinnedLines = toolbox.add(Array(pinned.prefix(model.isOnDevice ? 5 : 25)))
       let recentLines = toolbox.add(recent)
+      let indexedLines = toolbox.add(
+        await Self.indexed(
+          channelId: channelId, question: question, skipping: Set(recent.map(\.id)),
+          limit: model.isOnDevice ? 4 : 10, gw: gw))
       phase = .thinking
       let prompt = """
         Channel: \(channelName)\(guildId.flatMap { gw.user.guilds[$0]?.name }.map { " on \($0)" } ?? "")
@@ -168,6 +177,7 @@ struct AskChannelSheet: View {
         \(pinnedLines.isEmpty ? "(none)" : pinnedLines.joined(separator: "\n"))
         Recent messages:
         \(recentLines.joined(separator: "\n"))
+        \(indexedLines.isEmpty ? "" : "Older messages from the channel index that may help:\n" + indexedLines.joined(separator: "\n"))
 
         Question: \(question)
         """
@@ -184,6 +194,40 @@ struct AskChannelSheet: View {
       if Task.isCancelled { return }
       phase = .failed(error.localizedDescription)
     }
+  }
+
+  /// Older messages the channel's index on this device matches with the
+  /// question, fetched again so they can be cited and opened.
+  static func indexed(
+    channelId: ChannelSnowflake, question: String, skipping: Set<MessageSnowflake>, limit: Int,
+    gw: GatewayStore
+  ) async -> [DiscordChannel.Message] {
+    guard let index = ChannelIndexFiles.load(channelId) else { return [] }
+    var found: [DiscordChannel.Message] = []
+    for entry in await index.matches(for: question, limit: limit * 2) {
+      guard found.count < limit else { break }
+      let id = MessageSnowflake(entry.id)
+      guard !skipping.contains(id),
+        let res = try? await gw.client.listMessages(channelId: channelId, around: id, limit: 1),
+        let message = (try? res.decode())?.first(where: { $0.id == id })
+      else { continue }
+      found.append(message)
+    }
+    return found.sorted { $0.id < $1.id }
+  }
+
+  /// The 5 newest and the 15 others that match the question best, in order.
+  static func fitting(_ messages: [DiscordChannel.Message], question: String) async
+    -> [DiscordChannel.Message]
+  {
+    guard messages.count > 20 else { return messages }
+    let byAge = messages.sorted { $0.id < $1.id }
+    let newest = Array(byAge.suffix(5))
+    let rest = Array(byAge.dropLast(5))
+    let order = await SemanticRanker.rank(
+      query: question, documents: rest.map(SemanticRanker.document(for:)))
+    let picked = order.prefix(15).map { rest[$0] }
+    return (picked + newest).sorted { $0.id < $1.id }
   }
 
   static func instructions(language: String) -> String {

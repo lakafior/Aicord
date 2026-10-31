@@ -12,7 +12,7 @@ import SwiftUI
 struct ProfileBar: View {
   @Environment(\.gateway) var gw
   #if os(macOS)
-    @Environment(\.openWindow) var openWindow
+    @Environment(\.openSettings) var openSettings
   #endif
 
   @State var showingUsername = false
@@ -80,7 +80,7 @@ struct ProfileBar: View {
 
       Button {
         #if os(macOS)
-          openWindow(id: "settings")
+          openSettings()
         #elseif os(iOS)
           NotificationCenter.default.post(
             name: .presentSettingsSheet,

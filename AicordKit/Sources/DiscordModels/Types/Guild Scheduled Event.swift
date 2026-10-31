@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-object
-public struct GuildScheduledEvent: Sendable, Codable, ValidatablePayload {
+public struct GuildScheduledEvent: Sendable, Decodable, ValidatablePayload {
 
   /// https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-object-guild-scheduled-event-privacy-level
   #if Non64BitSystemsCompatibility
@@ -303,14 +303,14 @@ public struct GuildScheduledEvent: Sendable, Codable, ValidatablePayload {
 
 extension GuildScheduledEvent {
   /// https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-user-object-guild-scheduled-event-user-structure
-  public struct User: Sendable, Codable {
+  public struct User: Sendable, Decodable {
     public var guild_scheduled_event_id: GuildScheduledEventSnowflake
     public var user: DiscordUser
     public var member: Guild.Member?
   }
 }
 
-public struct GuildScheduledEventException: Sendable, Codable {
+public struct GuildScheduledEventException: Sendable, Decodable {
   public var event_id: GuildScheduledEventSnowflake
   public var event_exception_id: GuildScheduledEventExceptionSnowflake
   public var is_canceled: Bool

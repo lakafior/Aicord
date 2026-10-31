@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/guild#integration-object
-public struct Integration: Sendable, Codable {
+public struct Integration: Sendable, Decodable {
 
   /// https://discord.com/developers/docs/resources/guild#integration-object-integration-structure
   @UnstableEnum<String>
@@ -65,7 +65,7 @@ public struct Integration: Sendable, Codable {
 }
 
 /// https://discord.com/developers/docs/resources/guild#integration-object
-public struct PartialIntegration: Sendable, Codable {
+public struct PartialIntegration: Sendable, Decodable {
   public var id: IntegrationSnowflake
   public var name: String?
   public var type: Integration.Kind?

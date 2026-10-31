@@ -38,6 +38,7 @@ struct ChannelIntelligenceMenu: View {
   let channelId: ChannelSnowflake
   @Binding var summary: SummaryRange?
   @Binding var asking: Bool
+  @Binding var indexing: Bool
 
   var body: some View {
     Menu {
@@ -61,6 +62,13 @@ struct ChannelIntelligenceMenu: View {
           asking = true
         } label: {
           Label("Ask About This Channel", systemImage: "questionmark.bubble")
+        }
+        Button {
+          indexing = true
+        } label: {
+          Label(
+            ChannelIndexFiles.exists(channelId) ? "Channel Index…" : "Index Channel…",
+            systemImage: "square.stack.3d.down.right")
         }
       }
     } label: {

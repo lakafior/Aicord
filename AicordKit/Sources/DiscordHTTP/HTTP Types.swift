@@ -321,7 +321,7 @@ public struct DiscordHTTPResponse: Sendable, CustomStringConvertible {
 
 /// Represents a Discord HTTP response for endpoints that return some data in the body.
 public struct DiscordClientResponse<C>: Sendable, CustomStringConvertible
-where C: Codable {
+where C: Decodable {
   /// The raw http response.
   public let httpResponse: DiscordHTTPResponse
 

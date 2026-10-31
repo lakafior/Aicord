@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/poll#poll-object-poll-object-structure
-public struct Poll: Sendable, Codable, Equatable, Hashable {
+public struct Poll: Sendable, Decodable, Equatable, Hashable {
 
   /// https://discord.com/developers/docs/resources/poll#poll-media-object-poll-media-object-structure
   public struct Media: Sendable, Codable, Equatable, Hashable, ValidatablePayload {
@@ -57,10 +57,10 @@ public struct Poll: Sendable, Codable, Equatable, Hashable {
   }
 
   /// https://discord.com/developers/docs/resources/poll#poll-results-object-poll-results-object-structure
-  public struct Results: Sendable, Codable, Equatable, Hashable {
+  public struct Results: Sendable, Decodable, Equatable, Hashable {
 
     /// https://discord.com/developers/docs/resources/poll#poll-results-object-poll-answer-count-object-structure
-    public struct AnswerCount: Sendable, Codable, Equatable, Hashable {
+    public struct AnswerCount: Sendable, Decodable, Equatable, Hashable {
       public var id: Int
       public var count: Int
       public var me_voted: Bool

@@ -21,6 +21,7 @@ struct ChatView: View {
   @State private var currentScrollPosition: MessageSnowflake?
   @State private var summaryRange: SummaryRange?
   @State private var askingChannel = false
+  @State private var indexingChannel = false
   @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
 
@@ -117,7 +118,9 @@ struct ChatView: View {
         // esc to scroll to bottom of chat, its a little jank
         .focusable()
         .focusEffectDisabled()
-        .onTapGesture { isChatFocused = true }
+        // no tap gesture here: on macOS a click recogniser on the whole list
+        // swallowed mouse-downs before Textual's text view saw them, so links
+        // in messages (invite links among them) did nothing when clicked
         .focused($isChatFocused)
         .onKeyPress(.escape, phases: .down) { _ in
           vm.requestScrollToBottom(immediate: true)
@@ -127,6 +130,10 @@ struct ChatView: View {
       #endif
       .onScrollPhaseChange { _, newPhase in
         isScrolling = newPhase.isScrolling
+        #if os(macOS)
+          // scrolling the chat is what makes Esc jump back to the bottom
+          if newPhase == .interacting { isChatFocused = true }
+        #endif
       }
       .scrollPosition(id: $currentScrollPosition, anchor: .bottom)  // causes issues with input bar height changes:
       // currently, the input bar changing size can cause the scrollview position to jump unexpectedly.
@@ -197,7 +204,8 @@ struct ChatView: View {
       if !isPrivateChannel || intelligenceInDMs {
         ToolbarItem(placement: .primaryAction) {
           ChannelIntelligenceMenu(
-            channelId: vm.channelId, summary: $summaryRange, asking: $askingChannel)
+            channelId: vm.channelId, summary: $summaryRange, asking: $askingChannel,
+            indexing: $indexingChannel)
         }
       }
       // no calls before a request is accepted
@@ -220,6 +228,10 @@ struct ChatView: View {
     }
     .sheet(isPresented: $askingChannel) {
       AskChannelSheet(
+        channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
+    }
+    .sheet(isPresented: $indexingChannel) {
+      ChannelIndexSheet(
         channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
     }
     .onChange(of: vm.scrollRequest) { _, request in

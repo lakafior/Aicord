@@ -11,7 +11,7 @@ public typealias MFAVerificationHandler =
   async -> (MFAResponse?)
 
 // returned object when a user needs to complete MFA
-public struct MFAVerificationData: Sendable, Codable, Identifiable {
+public struct MFAVerificationData: Sendable, Decodable, Identifiable {
   public var id: String { ticket.value }
 
   public var ticket: Secret
@@ -22,7 +22,7 @@ public struct MFAVerificationData: Sendable, Codable, Identifiable {
     self.methods = methods
   }
 
-  public struct MFAMethod: Sendable, Codable {
+  public struct MFAMethod: Sendable, Decodable {
     public var type: MFAKind
     public var challenge: String?  // webauthn
     public var backup_codes_allowed: Bool?  // this is not nil when its totp
@@ -46,6 +46,6 @@ public struct MFAVerificationData: Sendable, Codable, Identifiable {
 }
 
 // they respond with this on successful mfa
-public struct MFAResponse: Sendable, Codable {
+public struct MFAResponse: Sendable, Decodable {
   public var token: String
 }

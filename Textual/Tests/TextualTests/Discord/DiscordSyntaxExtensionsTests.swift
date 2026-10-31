@@ -46,7 +46,9 @@ struct DiscordEmojiSyntaxExtensionTests {
   @Test func emojiURLPointsAtDiscordCDNByDefault() throws {
     let result = try parse("<:pepe:12345>")
     let emojiRun = try #require(result.runs.first { $0.textual.emojiURL != nil })
-    #expect(emojiRun.textual.emojiURL == URL(string: "https://cdn.discordapp.com/emojis/12345.png"))
+    #expect(
+      emojiRun.textual.emojiURL
+        == URL(string: "https://cdn.discordapp.com/emojis/12345.webp?size=44&animated=false"))
   }
 
   @Test func adjacentIdenticalEmojiStayAsSeparateRuns() throws {

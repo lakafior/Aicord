@@ -11,7 +11,7 @@ import SwiftUI
 struct AicordCommands: Commands {
   @Environment(\.gateway) var gatewayStore
   #if os(macOS)
-    @Environment(\.openWindow) var openWindow
+    @Environment(\.openSettings) var openSettings
   #endif
   @FocusedValue(\.appState) var appState
 
@@ -19,7 +19,7 @@ struct AicordCommands: Commands {
     CommandGroup(replacing: .appSettings) {
       Button("Settings") {
         #if os(macOS)
-          openWindow(id: "settings")
+          openSettings()
         #elseif os(iOS)
           NotificationCenter.default.post(
             name: .presentSettingsSheet,

@@ -16,7 +16,11 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Catch Up in a server's or channel's menu: a few points per unread channel
 - **New** · Explain Context: what a message in a busy channel answers, from its replies and the messages around it, with Show Conversation
 - **New** · Ask About This Channel, Explain Slang and Terms, thread and reply summaries; the model can search Discord, read around a message and follow replies, within a fixed number of lookups
-- **New** · Search with a Sentence turns a request into Search's server, channel, person, date and has filters
+- **New** · Search with a Sentence turns a request into Search's server, channel, person, date and has filters, then lists the results most relevant first, ranked on the device by meaning and shared words (also file names); when no message has all the keywords it ranks the latest messages there instead
+- **New** · Index Channel in the ✨ menu keeps a channel's last 500 to 5,000 messages on the device, searchable by meaning, with its size, Add New Messages and Delete Index; Ask About This Channel also reads the older indexed messages that fit the question
+- **New** · Local language model servers work: Ollama or LM Studio on this computer or your network over plain HTTP, with `localhost:11434` filled in as http and iOS asking for local network access
+- **New** · With VoiceOver on, images without alt text are read out with the text found in them on this device, or with a short description from your API model if you turn that on in Settings → Intelligence; spoilers and hidden sensitive media are never read
+- **New** · When the model searches Discord to answer, it gets the results closest to the question rather than just the newest, and Ask About This Channel on the device reads the messages that fit the question best
 - **New** · Important messages from muted channels, judged by the on-device model; scam warnings in DMs from strangers; text and descriptions of images
 - **New** · Filtered words, blocked people, spoilers and hidden sensitive media never reach a language model
 
@@ -25,6 +29,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · YouTube and other video links show a card with the channel, title and a thumbnail with a play button; tapping opens the video in its app or the browser. Poll results and AutoMod alerts get cards too, so no more “Unsupported embed type”
 - **New** · Add Friend by username from Messages → Friends, with clear errors, and from people's profiles
 - **New** · Invite People from the server menu and Server Settings: pick the channel, expiry and use limit, then copy or share the link
+- **New** · Server Settings → Invites lists the server's invite links with their channel, who made them, uses and expiry, and revokes one after a confirmation
+- **New** · Leave Server in a server's menu and in Server Settings, after a confirmation; it isn't offered to the server's owner
 - **New** · Server invite links in chat show the server with a Join button, or Open if you're already in it; tapped invite links open the same preview
 - **New** · Forward messages to up to five DMs, group chats or channels with an optional comment; forwarded messages show where they came from, and tapping the source opens the original
 - **New** · Message Requests and Spam folders in Messages (on Mac and iPad above the direct messages): accept, ignore or reject requests, move messages out of spam or delete them
@@ -48,6 +54,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Settings → Appearance: Light, Dark or Automatic, an accent colour that can also tint the tab bar and icons, text size and font (System, Rounded, Serif, Monospaced), Reduce Motion, and Discord's animated emoji, GIF autoplay, sticker animation and image description settings, saved to your account
 - **New** · Settings → Chat: Cozy or Compact message display (no avatars, time and name on the message's line), Discord's options for reactions, link previews, uploaded and linked media, spoilers (now also covering spoiler images) and converting emoticons like :) to emoji when sending, saved to your account
 - **New** · Notifications for messages, sent by Aicord itself while it runs (on iPhone while it's open and briefly after): they follow each server's and channel's settings from Discord, with direct messages from everyone, friends, chosen people or all but some, only selected servers or silencing servers and channels on your account, keywords, @everyone and role mentions, quiet hours and Do Not Disturb, a hidden preview, Reply and Mark as Read, and an unread badge on the app icon
+- **New** · Settings → Language: Discord's language, saved to your account, and the app's language with a link to the system's per-app setting
+- **New** · Aicord in Polish: 780 strings translated, picked by the system's language or Aicord's own language setting
 - **New** · Settings → Advanced: Developer Mode for Copy ID in menus, image cache size with Clear Cache, and viewing or sharing the app's logs; the separate Debug page is gone
 - **New** · Settings → My Account shows your account details and accounts, and Keybinds lists the shortcuts
 - **New** · Scan QR Code on iPhone uses the whole screen for the camera, starts over after a code that isn't a Discord login, and explains how to allow camera access when it's off
@@ -63,7 +71,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 ### App and design
 
 - **New** · Home and the member list are native lists: channels are a sidebar on Mac and iPad and an Apple Music–style plain list on iPhone, with collapsible categories that remember their state, system selection, and corners and backgrounds that match in light and dark
-- **New** · A Safari extension (iOS and macOS) opens discord.gg and discord.com/invite links in Aicord instead of the website
+- **New** · A Safari extension (iOS and macOS) opens discord.gg and discord.com/invite links in Aicord instead of the website; Settings → Advanced → Safari Extension explains how to turn it on, and the first invite preview offers to show you
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
 - **New** · iOS draws the app with Liquid Glass: the compatibility flag that kept the old look is gone, the tab bar is the system glass one and lists scroll underneath it
 - **New** · iPhone tabs are Home, Messages, Search and Settings; Messages holds direct messages, group chats, mentions and friends, and your status and activity sit behind a profile card at the top of Settings
@@ -75,6 +83,10 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 - **New** · The Discord library is now Aicord's own `AicordKit`: bot-only endpoints, sharding and bot authentication are gone, and large message and user models are stored more compactly, so the compiled code is 42% smaller and the Mac app went from 60.9 MB to 51.5 MB
 - **New** · The Mac app is called Aicord in the menu bar and the Dock
+- **New** · The Mac gets its own window layout: the system sidebar and toggle, the channel and server as the window's title and subtitle, a toolbar with Search (⌘F) and the member list (⌥⌘M) in an inspector, a Go menu (Direct Messages ⌘0, Open Channel in New Window ⇧⌘O, Mark Channel as Read ⇧⎋), channels in windows of their own from their menu, and Settings as the system Settings window; Settings → Advanced → Classic Window Layout brings back the old one
+- **New** · A read-only MCP server for Claude and other assistants on the Mac: the `aicord-mcp` helper lists servers, channels and (if you allow it) direct messages, reads and searches messages through the open app, with Allow MCP Server, a copyable configuration and Reset Key in Settings → Advanced; it can't send or change anything
+- **New** · Release workflows (not yet run): a `v*` tag builds an unsigned iOS app for AltStore and SideStore, attaches it to a GitHub release and publishes an AltStore source on GitHub Pages; a signed and notarized Mac build waits for its secrets
+- **New** · Discord data that Aicord only receives is decode-only, so the iOS app is 0.7 MB smaller (44.9 → 44.2 MB) and the Discord models 7% smaller
 - **New** · PaicordLib understands newer message payloads: voice message attachments, forwards, message requests and forum tags on channels (from [@tylertms](https://github.com/tylertms)' upstream PRs)
 
 ### Fixed
@@ -93,6 +105,9 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **Fixed** · Changing account settings actually reaches Discord (the request went out empty), and settings changed on another device are merged in
 - **Fixed** · Incoming messages keep their slash command info, and a message reference without a type no longer breaks decoding
 - **Fixed** · A failed attachment upload marks the message as failed instead of silently sending it without the file
+- **Fixed** · Clicking a link in a message on the Mac opens it again, and invite links open their preview; a click handler on the whole chat swallowed the clicks
+- **Fixed** · Counts like “1 use” and “2 attachments” read properly instead of showing “^[2 use](inflect: true)”
+- **Fixed** · Messages with thousands of formatted pieces no longer risk running out of stack while they're drawn
 
 ### Removed
 
@@ -288,6 +303,8 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
 7. **Weryfikacja:**
    - [x] Build macOS (arm64) i iOS bez nowych ostrzeżeń, zrzuty ekranu z obu platform.
    - [x] Poprawki po przeglądzie macOS: okno Ustawień startuje w rozmiarze 860×620, a pasek boczny ma co najmniej 210 pt (nazwy sekcji nie są ucinane; `navigationSplitViewColumnWidth` musi stać za `.searchable`); popover profilu ma 340×560 pt, przełącznik „Share My Activity” jako switch, „Log Out” na czerwono.
+   - [x] Language (noc 30/31.10): „Discord Language” (`localization.locale` w ustawieniach proto, 32 języki Discorda, nazwy po swojemu i w języku czytelnika, zapis na koncie) i „App Language” z bieżącym językiem aplikacji oraz przyciskiem do ustawień systemu (iOS: strona aplikacji w Ustawieniach, macOS: Język i region → Aplikacje). Odczyt sprawdzony w symulatorze („Polski (Polish)”); zapisu na koncie nie testowałem.
+   - [x] Polskie tłumaczenie `Localizable.xcstrings`: 780 wpisów (bez tych z `^[…](inflect: true)`, bo automatyczna odmiana nie obsługuje polskiego, i bez pustych), znaczniki formatu sprawdzone skryptem; `pl` w `knownRegions`. Nazwy sekcji Ustawień przez katalog zamiast surowych `String`.
 8. **Poprawki interfejsu (po Ustawieniach):**
    - [x] iPhone startuje na Home zamiast na pustym ekranie czatu „:3 Select a channel to start chatting” (`chatOpen` domyślnie `false`); dopóki nie wybrano kanału, czatu nie da się wysunąć gestem.
    - [x] Kontener kanałów na Home: tło kończyło się nad paskiem zakładek (widać to było tylko w ciemnym motywie), teraz sięga pod pasek jak lista.
@@ -300,6 +317,11 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [x] Invite People w menu serwera i w Server Settings: kanał, czas ważności (30 min do „nigdy”), limit użyć, kopiowanie i `ShareLink`. Sprawdzone na NAScin.
    - [x] Join: karta zaproszenia w czacie i podgląd po otwarciu linku (`resolveInvite`: ikona, nazwa, liczba członków), Join albo Open, gdy już jesteś na serwerze; parsowanie linków zaproszeń w AicordKit.
    - [x] Rozszerzenie Safari „Aicord Invites” (iOS i macOS): linki `discord.gg/…` i `discord.com/invite/…` otwierane w Aicord przez `aicord://invite/…`. Przekazanie linku sprawdzone na obu systemach; włączenie w Safari do zrobienia przez użytkownika. Przy AltStore z darmowym kontem zajmuje jedno z 3 App ID. Szczegóły: `docs/INVITES_NOTES.md`.
+   - [x] Leave Server w menu serwera i w Server Settings (`DELETE /users/@me/guilds/{id}`), za alertem z Cancel; ukryte dla właściciela. Po wyjściu z otwartego serwera wraca na Home. Sprawdzone w symulatorze tylko do alertu i Cancel (Sciwand), na NAScin opcji nie ma.
+   - [x] Server Settings → Invites: lista zaproszeń serwera (kanał, kto utworzył, użycia, ważność), Revoke za potwierdzeniem, kopiowanie linku, przesunięcie na iOS. Pokazywane przy Manage Server. Na NAScin unieważnione stare `EdxGVcWd` (noc 30/31.10).
+   - [x] Ekran z instrukcją włączenia rozszerzenia Safari (Settings → Advanced → Safari Extension), na macOS ze stanem rozszerzenia i przyciskiem do ustawień Safari; przy pierwszym podglądzie zaproszenia otwartym w aplikacji jednorazowa podpowiedź (znika po „Not Now”, obejrzeniu instrukcji albo pierwszym linku z rozszerzenia).
+   - [x] fix(macOS): kliknięcie linku w treści wiadomości nic nie robiło. Cała lista czatu miała `.onTapGesture` (focus pod Esc), który zjadał kliknięcia, zanim dotarły do `NSTextInteractionView` z Textual. Focus ustawia się teraz przy przewijaniu. Do sprawdzenia na Macu.
+   - [x] fix: liczniki z `^[…](inflect: true)` w zwykłym `String` (użycia zaproszeń, załączniki w Forward) pokazywały surowy zapis; teraz przez `AttributedString(localized:)`.
 
 ---
 
@@ -342,6 +364,33 @@ Szczegóły, decyzje i pomiary: `docs/SLIM_NOTES.md`. Binarka iOS (Release, arm6
    - [x] Scalenie prawie pustych modułów i nazwa `AicordKit`, bez pozostałości DiscordBM.
 3. **`Textual`:**
    - [x] Usunięty styl GitHub, przestarzałe API i renderowanie tabel, których aplikacja nie używa.
+4. **Dalej (noc 30/31.10, `docs/OVERNIGHT.md`):**
+   - [x] Typy tylko odbierane od Discorda (wiadomości, kanały, serwery, członkowie, komponenty, zdarzenia gatewaya…) są `Decodable` zamiast `Codable`, więc znikają ich `encode(to:)` i metadane. `Codable` zostaje dla tego, co się wysyła (payloady, gateway, aktywność) i co aplikacja zapisuje (`DiscordUser` w pęku kluczy); `Emoji` ma własne, małe kodowanie (`id`, `name`, `animated`). Z payloadów wiadomości zniknęło pole `components`, a z `CreateGuild` pola `roles` i `channels` (konto użytkownika ich nie wysyła). Binarka iOS (Release, arm64) 44,87 → 44,20 MB, `__text` 12,45 → 12,20 MB, `DiscordModels` 4,46 → 4,15 MB.
+   - [x] `Textual/Tests`: target `TextualTests` z testami logiki (parser i rozszerzenia Discorda, tokenizery, formatery, model zaznaczania z nagranymi układami), 187 testów. Testy snapshotowe z PNG usunięte: wymagały swift-snapshot-testing, a wzorce nagrano dla stylów, których już nie ma. Test na 2500 fragmentów wykrył przepełnienie stosu w `TextBuilder` (sklejanie `Text` w łańcuch głębokości N); teraz sklejanie zrównoważone. Oczekiwania tokenizera i adresu emoji dopasowane do obecnego kodu (natywny tokenizer zamiast Prism.js, `.webp?size=44`).
+
+---
+
+### ⏳ Etap 11: Aicord dla macOS (noc 30/31.10)
+Szczegóły i lista do sprawdzenia na Macu: `docs/OVERNIGHT.md`, punkt 5.
+1. **Interfejs Maca:**
+   - [x] `MacBaseplate`: `NavigationSplitView` z systemowym przełącznikiem paska bocznego (serwery i natywna lista kanałów), czat jako szczegóły, członkowie w inspektorze, tytuł okna = kanał, podtytuł = serwer, w pasku narzędzi Search (arkusz z wyszukiwarką) i lista członków. Stary układ zostaje pod Settings → Advanced → Classic Window Layout.
+   - [x] Menu: `SidebarCommands`, View → Show Member List (⌥⌘M), Edit → Search… (⌘F), nowe menu Go: Direct Messages (⌘0), Open Channel in New Window (⇧⌘O), Mark Channel as Read (⇧⎋).
+   - [x] Kanał w osobnym oknie (`WindowGroup(for: ChannelWindowValue.self)`) z menu kanału i z menu Go; okno ma własny `AicordAppState`, który nie zapisuje wyboru, więc główne okno otwiera się dalej na swoim kanale.
+   - [x] Ustawienia jako systemowa scena `Settings` (⌘, i Aicord → Settings…) zamiast zwykłego okna.
+2. **Serwer MCP:**
+   - [x] `AicordMCP/` (pakiet SwiftPM, tylko Foundation i Network): program `aicord-mcp` mówiący MCP (JSON-RPC 2.0) przez stdio, narzędzia `list_servers`, `list_channels`, `list_direct_messages`, `read_messages`, `search_messages`, wszystkie z `readOnlyHint`.
+   - [x] Most w aplikacji (`MCPBridge`, tylko macOS): nasłuch tylko na `127.0.0.1:47823`, jedno zapytanie na połączenie, klucz porównywany w stałym czasie, najwyżej 30 wywołań na minutę, te same filtry co dla modelu, DM-y osobnym przełącznikiem. Domyślnie wyłączony (Settings → Advanced → Allow MCP Server, Copy Configuration for Claude, Reset Key).
+
+---
+
+### ⏳ Etap 12: Wydania (przygotowanie, noc 30/31.10)
+Szczegóły, sekrety i kroki: `docs/OVERNIGHT.md`, punkt 4. Nic nie zostało uruchomione na GitHubie.
+1. **iOS:**
+   - [x] `.github/workflows/release.yml`: tag `v*` → build Release `generic/platform=iOS` bez podpisu (`MARKETING_VERSION` z tagu, `CURRENT_PROJECT_VERSION` = numer przebiegu), `Payload/Aicord.app` w `Aicord-<wersja>.ipa`, wydanie na GitHubie z notatkami z najnowszej sekcji `SHIPPED.md` i linkiem do źródła.
+   - [x] Źródło AltStore/SideStore (`scripts/altstore_source.py`, tylko biblioteka standardowa): wszystkie wydania z `.ipa` jako wersje, uprawnienia prywatności z `Info.plist`, publikacja `altstore.json` na GitHub Pages. Sprawdzone lokalnie na przykładowych danych (paginacja, szkice pomijane) i pakowanie `.ipa` na lokalnym buildzie Release (17 MB, z rozszerzeniem Safari).
+2. **macOS:**
+   - [x] Szkic `.github/workflows/release_macos.yml`: tymczasowy pęk kluczy z certyfikatem Developer ID, archiwum z hardened runtime, eksport `developer-id`, `notarytool` z kluczem API, `stapler`, `.zip` do tego samego wydania. Bez sekretów zadanie się pomija.
+   - [x] Wybór mechanizmu aktualizacji: sprawdzanie API GitHuba zamiast Sparkle 2 (bez nowej paczki, działa też dla iOS z AltStore).
 
 ---
 
@@ -366,4 +415,12 @@ Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tyl
    - [x] Ostrzeżenie przed oszustwem w DM od nieznajomych (na urządzeniu).
    - [x] Describe Images: tekst z obrazka przez Vision na urządzeniu, opis przez model API.
    - [x] Filtr słów, zablokowani, spoilery i ukryte media wrażliwe nigdy nie trafiają do modelu.
+7. **Dokończenia (noc 30/31.10, `docs/OVERNIGHT.md`):**
+   - [x] `SemanticRanker` w AicordKit: wektory zdań z `NLContextualEmbedding` (model dla pisma łacińskiego, 512 wymiarów, m.in. PL i EN, na urządzeniu) i wspólne słowa (bez diakrytyków, z odciętymi końcówkami, prefiksy liczone częściowo). Bez modelu wektorów działa samo dopasowanie słów. 6 testów.
+   - [x] Search with a Sentence: wyniki od najtrafniejszych względem całego zdania (przełącznik Most Relevant / Newest), w tym nazwy plików i tytuły embedów; gdy żadna wiadomość nie ma wszystkich słów kluczowych, ostatnie wiadomości z zakresu uszeregowane według zdania. Serwer nazwany w zdaniu jest rozpoznawany także wtedy, gdy model go pominie.
+   - [x] Opisy obrazów dla VoiceOver: gdy VoiceOver działa, obraz bez tekstu alternatywnego dostaje etykietę z tekstem odczytanym przez Vision na urządzeniu (Settings → Intelligence → Accessibility, domyślnie włączone), a opcjonalnie opis od modelu API (domyślnie wyłączone; w DM tylko z „Use in Direct Messages”). Alt text od nadawcy ma pierwszeństwo; spoilery i ukryte media wrażliwe to „Hidden image”. Wynik zapamiętany na sesję.
+   - [x] Lokalne serwery modeli: wyjątek ATS `NSAllowsLocalNetworking` i opis `NSLocalNetworkUsageDescription`; adres bez schematu dostaje `http://` dla `localhost`, nazw bez kropek, `.local` i prywatnych IPv4 (inne `https://`); podpowiedzi w ustawieniach. Sprawdzone w symulatorze na podstawionym serwerze na `localhost:8099` (Load Models), Ollamy na tym Macu nie ma.
+   - [x] Okno 4 tys. tokenów: odpowiedzi z narzędziami na urządzeniu (Ask, Explain Context) mają limit czasu, czytelne błędy i przy przepełnieniu okna drugą próbę bez narzędzi na przyciętym prompcie. Sprawdzone: Ask na urządzeniu w NAScin #ogólny „Who posted the ipa file and what was it called?” → „Lakafi posted the ipa file and it was called Kite.ipa.” z linkiem do wiadomości.
+   - [x] „Index Channel” (menu ✨ w kanale): ostatnie 500–5000 wiadomości pobierane po 100 z przerwą 350 ms, z paskiem postępu i anulowaniem, przez te same filtry co dla modelu, z wektorem zdania; plik JSON w Application Support (`ChannelIndexes/<kanał>.json`, ok. 190 B na wiadomość bez wektora, ok. 2 KB z wektorem). Wyszukiwanie po sensie z przejściem do wiadomości, rozmiar na dysku, „Add New Messages”, „Delete Index” z potwierdzeniem. Ask dokłada do 4 (urządzenie) / 10 (API) starszych wiadomości z indeksu. Sprawdzone na NAScin #ogólny: 925 wiadomości, 173 kB, „kite ipa” → wiadomość z Kite.ipa, usunięcie.
+   - [x] Rerankowanie bez indeksu: narzędzie `search` modelu z 25 wyników Discorda oddaje te najbliższe pytaniu (6 na urządzeniu, 15 przez API), a Ask na urządzeniu bierze 5 najnowszych i 15 najlepiej pasujących z ostatnich 50 wiadomości.
 

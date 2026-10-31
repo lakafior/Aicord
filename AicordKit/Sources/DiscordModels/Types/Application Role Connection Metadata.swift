@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/application-role-connection-metadata#application-role-connection-metadata-object-application-role-connection-metadata-structure
-public struct ApplicationRoleConnectionMetadata: Sendable, Codable, Equatable,
+public struct ApplicationRoleConnectionMetadata: Sendable, Decodable, Equatable,
   Hashable, ValidatablePayload
 {
 

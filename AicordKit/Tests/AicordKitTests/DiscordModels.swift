@@ -72,15 +72,6 @@ class DiscordModelsTests: XCTestCase {
     XCTAssertNil(message.poll)
     XCTAssertEqual(message.author?.id, "30")
 
-    /// `nil` fields are not encoded at all.
-    let encoded = try JSONEncoder().encode(message)
-    let object = try XCTUnwrap(
-      JSONSerialization.jsonObject(with: encoded) as? [String: Any]
-    )
-    XCTAssertNil(object["thread"])
-    XCTAssertNil(object["poll"])
-    XCTAssertNotNil(object["author"])
-
     /// Copies stay independent after a mutation.
     let copy = message
     message.author?.username = "b"
@@ -551,18 +542,10 @@ class DiscordModelsTests: XCTestCase {
       }
       """
     let data = Data(json.utf8)
-    let decoder = JSONDecoder()
-    let decoded = try decoder.decode(
+    // decode-only since the overnight slimming: user accounts never send it
+    _ = try JSONDecoder().decode(
       Interaction.ResolvedData.self,
       from: data
-    )
-
-    let encoder = JSONEncoder()
-    let encoded = try encoder.encode(decoded)
-
-    _ = try decoder.decode(
-      Interaction.ResolvedData.self,
-      from: encoded
     )
   }
 

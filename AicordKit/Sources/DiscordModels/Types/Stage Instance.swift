@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/stage-instance#stage-instance-object
-public struct StageInstance: Sendable, Codable {
+public struct StageInstance: Sendable, Decodable {
 
   /// https://discord.com/developers/docs/resources/stage-instance#stage-instance-object-privacy-level
   #if Non64BitSystemsCompatibility

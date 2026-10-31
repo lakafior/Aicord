@@ -3,7 +3,7 @@ import Foundation
 /// An Emoji with all fields marked as optional.
 /// The same as a `Partial Emoji`.
 /// https://discord.com/developers/docs/resources/emoji#emoji-object
-public struct Emoji: Sendable, Codable, Equatable, Hashable {
+public struct Emoji: Sendable, Decodable, Equatable, Hashable {
   public var id: EmojiSnowflake?
   public var name: String?
   public var roles: [RoleSnowflake]?
@@ -37,8 +37,23 @@ public struct Emoji: Sendable, Codable, Equatable, Hashable {
   }
 }
 
+/// Discord only reads `id`, `name` and `animated` from an emoji you send (polls,
+/// reactions), so encoding writes those and leaves out the user and roles.
+extension Emoji: Encodable {
+  private enum EncodingKeys: String, CodingKey {
+    case id, name, animated
+  }
+
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: EncodingKeys.self)
+    try container.encodeIfPresent(id, forKey: .id)
+    try container.encodeIfPresent(name, forKey: .name)
+    try container.encodeIfPresent(animated, forKey: .animated)
+  }
+}
+
 /// A reaction emoji.
-public struct Reaction: Sendable, Codable, Hashable {
+public struct Reaction: Sendable, Decodable, Hashable {
 
   private enum Base: Sendable, Codable, Hashable {
     case unicodeEmoji(String)
@@ -62,9 +77,6 @@ public struct Reaction: Sendable, Codable, Hashable {
     self.base = try .init(from: decoder)
   }
 
-  public func encode(to encoder: any Encoder) throws {
-    try self.base.encode(to: encoder)
-  }
 
   public enum Error: Swift.Error, CustomStringConvertible {
     /// Expected only 1 emoji in the input '\(input)' but recognized '\(count)' emojis.
@@ -123,7 +135,7 @@ public struct Reaction: Sendable, Codable, Hashable {
 
 /// Describes the guild or application that owns a custom emoji.
 /// https://docs.discord.food/resources/emoji#get-emoji-source
-public struct EmojiSource: Sendable, Codable {
+public struct EmojiSource: Sendable, Decodable {
   public var type: SourceType
   public var guild: GuildSource?
   public var application: ApplicationSource?
@@ -146,7 +158,7 @@ public struct EmojiSource: Sendable, Codable {
   }
 
   /// https://docs.discord.food/resources/emoji#emoji-guild-structure
-  public struct GuildSource: Sendable, Codable {
+  public struct GuildSource: Sendable, Decodable {
     public var id: GuildSnowflake
     public var name: String
     public var icon: String?
@@ -184,7 +196,7 @@ public struct EmojiSource: Sendable, Codable {
   }
 
   /// https://docs.discord.food/resources/emoji#emoji-application-structure
-  public struct ApplicationSource: Sendable, Codable {
+  public struct ApplicationSource: Sendable, Decodable {
     public var id: ApplicationSnowflake
     public var name: String
 

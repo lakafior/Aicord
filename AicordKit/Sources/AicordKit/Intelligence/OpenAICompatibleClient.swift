@@ -21,13 +21,17 @@ public struct OpenAICompatibleClient: Sendable {
     self.session = session
   }
 
-  /// The API root from what the user typed: `https` added when missing,
-  /// trailing slashes and a pasted `/chat/completions` taken off, and `/v1`
-  /// added when the path names no version.
+  /// The API root from what the user typed: a scheme added when missing
+  /// (`http` for a server on this computer or the local network, like Ollama
+  /// or LM Studio, `https` otherwise), trailing slashes and a pasted
+  /// `/chat/completions` taken off, and `/v1` added when the path names no version.
   public static func normalizedBaseURL(_ text: String) -> URL? {
     var string = text.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !string.isEmpty else { return nil }
-    if !string.contains("://") { string = "https://" + string }
+    if !string.contains("://") {
+      let host = String(string.split(separator: "/").first ?? "").split(separator: ":").first.map(String.init) ?? ""
+      string = (isLocalHost(host) ? "http://" : "https://") + string
+    }
     while string.hasSuffix("/") { string.removeLast() }
     for suffix in ["/chat/completions", "/models"] where string.hasSuffix(suffix) {
       string.removeLast(suffix.count)
@@ -41,6 +45,22 @@ public struct OpenAICompatibleClient: Sendable {
     }
     if !hasVersion { components.path = path + "/v1" }
     return components.url
+  }
+
+  /// This computer or the local network: `localhost`, a name without dots or
+  /// ending in `.local`, and private IPv4 addresses.
+  public static func isLocalHost(_ host: String) -> Bool {
+    let host = host.lowercased()
+    if host == "localhost" || host.hasSuffix(".local") || host == "::1" { return true }
+    let parts = host.split(separator: ".").compactMap { Int($0) }
+    if parts.count == 4 {
+      switch (parts[0], parts[1]) {
+      case (127, _), (10, _), (192, 168), (169, 254): return true
+      case (172, 16...31): return true
+      default: return false
+      }
+    }
+    return !host.isEmpty && !host.contains(".")
   }
 
   // MARK: Requests

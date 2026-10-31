@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/monetization/skus#sku-object-sku-structure
-public struct SKU: Sendable, Codable {
+public struct SKU: Sendable, Decodable {
 
   /// https://discord.com/developers/docs/monetization/skus#sku-object-sku-types
   #if Non64BitSystemsCompatibility

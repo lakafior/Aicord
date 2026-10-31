@@ -298,7 +298,6 @@ public enum Payloads {
     public var embeds: [Embed]?
     public var allowed_mentions: AllowedMentions?
     public var message_reference: DiscordChannel.Message.MessageReference?
-    public var components: Interaction.ComponentSwitch?
     public var sticker_ids: [String]?
     public var files: [RawFile]?
     public var attachments: [Attachment]?
@@ -313,7 +312,6 @@ public enum Payloads {
       case embeds
       case allowed_mentions
       case message_reference
-      case components
       case sticker_ids
       case attachments
       case flags
@@ -328,7 +326,6 @@ public enum Payloads {
       embeds: [Embed]? = nil,
       allowed_mentions: AllowedMentions? = nil,
       message_reference: DiscordChannel.Message.MessageReference? = nil,
-      components: Interaction.ComponentSwitch? = nil,
       sticker_ids: [String]? = nil,
       files: [RawFile]? = nil,
       attachments: [Attachment]? = nil,
@@ -342,7 +339,6 @@ public enum Payloads {
       self.embeds = embeds
       self.allowed_mentions = allowed_mentions
       self.message_reference = message_reference
-      self.components = components
       self.sticker_ids = sticker_ids
       self.files = files
       self.attachments = attachments
@@ -377,7 +373,6 @@ public enum Payloads {
         content?.isEmpty ?? true,
         embeds?.isEmpty ?? true,
         sticker_ids?.isEmpty ?? true,
-        components?.legacy?.isEmpty ?? true,
         files?.isEmpty ?? true,
         poll?.answers.isEmpty ?? true,
         message_reference?.type != .forward,
@@ -385,7 +380,6 @@ public enum Payloads {
         names: "content",
         "embeds",
         "sticker_ids",
-        "components",
         "files",
         "poll",
         "message_reference",
@@ -423,7 +417,7 @@ public enum Payloads {
           }
         }
         if content?.isEmpty == false || embeds?.isEmpty == false || sticker_ids?.isEmpty == false
-          || components != nil || poll != nil || tts == true
+          || poll != nil || tts == true
         {
           ValidationFailure.containsProhibitedValues(
             name: "flags",
@@ -444,7 +438,6 @@ public enum Payloads {
     public var embeds: [Embed]?
     public var flags: IntBitField<DiscordChannel.Message.Flag>?
     public var allowed_mentions: AllowedMentions?
-    public var components: Interaction.ComponentSwitch?
     public var files: [RawFile]?
     public var attachments: [Attachment]?
 
@@ -453,7 +446,6 @@ public enum Payloads {
       case embeds
       case flags
       case allowed_mentions
-      case components
       case attachments
     }
 
@@ -462,7 +454,6 @@ public enum Payloads {
       embeds: [Embed]? = nil,
       flags: IntBitField<DiscordChannel.Message.Flag>? = nil,
       allowed_mentions: AllowedMentions? = nil,
-      components: Interaction.ComponentSwitch? = nil,
       files: [RawFile]? = nil,
       attachments: [Attachment]? = nil
     ) {
@@ -470,7 +461,6 @@ public enum Payloads {
       self.embeds = embeds
       self.flags = flags
       self.allowed_mentions = allowed_mentions
-      self.components = components
       self.files = files
       self.attachments = attachments
     }
@@ -564,7 +554,6 @@ public enum Payloads {
       public var content: String?
       public var embeds: [Embed]?
       public var allowed_mentions: AllowedMentions?
-      public var components: Interaction.ComponentSwitch?
       public var sticker_ids: [String]?
       public var files: [RawFile]?
       public var attachments: [Attachment]?
@@ -575,7 +564,6 @@ public enum Payloads {
         case content
         case embeds
         case allowed_mentions
-        case components
         case sticker_ids
         case attachments
         case flags
@@ -586,7 +574,6 @@ public enum Payloads {
         content: String? = nil,
         embeds: [Embed]? = nil,
         allowed_mentions: AllowedMentions? = nil,
-        components: Interaction.ComponentSwitch? = nil,
         sticker_ids: [String]? = nil,
         files: [RawFile]? = nil,
         attachments: [Attachment]? = nil,
@@ -596,7 +583,6 @@ public enum Payloads {
         self.content = content
         self.embeds = embeds
         self.allowed_mentions = allowed_mentions
-        self.components = components
         self.sticker_ids = sticker_ids
         self.files = files
         self.attachments = attachments
@@ -621,13 +607,11 @@ public enum Payloads {
           content?.isEmpty,
           embeds?.isEmpty,
           sticker_ids?.isEmpty,
-          components?.legacy?.isEmpty,
           files?.isEmpty,
           poll?.answers.isEmpty,
           names: "content",
           "embeds",
           "sticker_ids",
-          "components",
           "files",
           "poll"
         )
@@ -1017,8 +1001,6 @@ public enum Payloads {
     public var verification_level: Guild.VerificationLevel?
     public var default_message_notifications: Guild.DefaultMessageNotificationLevel?
     public var explicit_content_filter: Guild.ExplicitContentFilterLevel?
-    public var roles: [Role]?
-    public var channels: [DiscordChannel]?
     public var afk_channel_id: ChannelSnowflake?
     public var afk_timeout: Guild.AFKTimeout?
     public var system_channel_id: ChannelSnowflake?
@@ -1031,8 +1013,6 @@ public enum Payloads {
       default_message_notifications: Guild.DefaultMessageNotificationLevel? =
         nil,
       explicit_content_filter: Guild.ExplicitContentFilterLevel? = nil,
-      roles: [Role]? = nil,
-      channels: [DiscordChannel]? = nil,
       afk_channel_id: ChannelSnowflake? = nil,
       afk_timeout: Guild.AFKTimeout? = nil,
       system_channel_id: ChannelSnowflake? = nil,
@@ -1043,8 +1023,6 @@ public enum Payloads {
       self.verification_level = verification_level
       self.default_message_notifications = default_message_notifications
       self.explicit_content_filter = explicit_content_filter
-      self.roles = roles
-      self.channels = channels
       self.afk_channel_id = afk_channel_id
       self.afk_timeout = afk_timeout
       self.system_channel_id = system_channel_id

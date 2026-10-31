@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/voice#voice-state-object-voice-state-structure
-public struct VoiceState: Sendable, Codable, Equatable, Hashable {
+public struct VoiceState: Sendable, Decodable, Equatable, Hashable {
   public var guild_id: GuildSnowflake?
   public var channel_id: ChannelSnowflake?
   public var user_id: UserSnowflake
@@ -16,7 +16,7 @@ public struct VoiceState: Sendable, Codable, Equatable, Hashable {
 }
 
 /// https://discord.com/developers/docs/resources/voice#voice-state-object-voice-state-structure
-public struct PartialVoiceState: Sendable, Codable, Equatable, Hashable {
+public struct PartialVoiceState: Sendable, Decodable, Equatable, Hashable {
   public var channel_id: ChannelSnowflake?
   public var user_id: UserSnowflake
   public var member: Guild.PartialMember?
@@ -47,7 +47,7 @@ public struct PartialVoiceState: Sendable, Codable, Equatable, Hashable {
 }
 
 /// https://discord.com/developers/docs/resources/voice#voice-region-object-voice-region-structure
-public struct VoiceRegion: Sendable, Codable {
+public struct VoiceRegion: Sendable, Decodable {
   public var id: String
   public var name: String
   public var optimal: Bool
@@ -142,6 +142,6 @@ public struct VoiceStateUpdate: Sendable, Codable {
 }
 
 /// https://docs.discord.food/resources/channel#get-call-eligibility
-public struct CallEligibility: Sendable, Codable {
+public struct CallEligibility: Sendable, Decodable {
   public var ringable: Bool
 }

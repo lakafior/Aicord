@@ -104,7 +104,7 @@ public enum DiscordLocale: Sendable, Codable {
 
 /// A container to decode/encode `[DiscordLocale: String]`,
 /// because Discord doesn't like how Codable decode/encodes `[DiscordLocale: String]`.
-public struct DiscordLocaleDict<C: Codable>: Codable,
+public struct DiscordLocaleDict<C: Codable>: Decodable,
   ExpressibleByDictionaryLiteral
 {
 
@@ -133,14 +133,6 @@ public struct DiscordLocaleDict<C: Codable>: Codable,
     }
   }
 
-  public func encode(to encoder: any Encoder) throws {
-    var stringKeyedDict = [String: C]()
-    stringKeyedDict.reserveCapacity(self.values.count)
-    for (key, value) in self.values {
-      stringKeyedDict[key.rawValue] = value
-    }
-    try stringKeyedDict.encode(to: encoder)
-  }
 }
 
 extension DiscordLocaleDict: Sendable where C: Sendable {}
@@ -808,7 +800,7 @@ extension KeyedEncodingContainer {
 
 /// A class so we can use the same type recursively in itself.
 @dynamicMemberLookup
-public final class DereferenceBox<C>: Codable where C: Codable {
+public final class DereferenceBox<C>: Decodable where C: Decodable {
   public let value: C
 
   public init(value: C) {
@@ -823,7 +815,9 @@ public final class DereferenceBox<C>: Codable where C: Codable {
     let container = try decoder.singleValueContainer()
     self.value = try container.decode(C.self)
   }
+}
 
+extension DereferenceBox: Encodable where C: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     try container.encode(self.value)

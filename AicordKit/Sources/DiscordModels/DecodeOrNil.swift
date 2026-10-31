@@ -2,7 +2,7 @@ import Foundation
 
 /// Decodes values, or `nil` if the decode fails.
 @propertyWrapper
-package struct DecodeOrNil<C> where C: Codable {
+package struct DecodeOrNil<C> where C: Decodable {
   package var wrappedValue: C?
 
   package init(wrappedValue: C? = nil) {
@@ -10,12 +10,14 @@ package struct DecodeOrNil<C> where C: Codable {
   }
 }
 
-extension DecodeOrNil: Codable {
+extension DecodeOrNil: Decodable {
   package init(from decoder: any Decoder) throws {
     let container = try decoder.singleValueContainer()
     self.wrappedValue = try? container.decode(C.self)
   }
+}
 
+extension DecodeOrNil: Encodable where C: Encodable {
   package func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     try container.encode(self.wrappedValue)
@@ -26,7 +28,7 @@ extension KeyedDecodingContainer {
   package func decode<C>(
     _ type: DecodeOrNil<C>.Type,
     forKey key: Key
-  ) throws -> DecodeOrNil<C> where C: Codable {
+  ) throws -> DecodeOrNil<C> where C: Decodable {
     (try? self.decodeIfPresent(type, forKey: key)) ?? .init(wrappedValue: nil)
   }
 }

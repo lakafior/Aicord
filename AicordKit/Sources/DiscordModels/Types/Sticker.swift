@@ -1,5 +1,5 @@
 /// https://discord.com/developers/docs/resources/sticker#sticker-object-sticker-structure
-public struct Sticker: Sendable, Codable, Identifiable, Equatable, Hashable {
+public struct Sticker: Sendable, Decodable, Identifiable, Equatable, Hashable {
 
   /// https://discord.com/developers/docs/resources/sticker#sticker-object-sticker-types
   #if Non64BitSystemsCompatibility
@@ -50,14 +50,14 @@ public struct Sticker: Sendable, Codable, Identifiable, Equatable, Hashable {
 }
 
 /// https://discord.com/developers/docs/resources/sticker#sticker-item-object
-public struct StickerItem: Sendable, Codable, Identifiable, Equatable, Hashable {
+public struct StickerItem: Sendable, Decodable, Identifiable, Equatable, Hashable {
   public var id: StickerSnowflake
   public var name: String
   public var format_type: Sticker.FormatKind
 }
 
 /// https://discord.com/developers/docs/resources/sticker#sticker-pack-object-sticker-pack-structure
-public struct StickerPack: Sendable, Codable {
+public struct StickerPack: Sendable, Decodable {
   public var id: StickerPackSnowflake
   public var stickers: [Sticker]
   public var name: String

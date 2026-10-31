@@ -41,6 +41,9 @@ final class MessageToolbox {
   private(set) var searches: [String] = []
   private(set) var calls = 0
   var onChange: (() -> Void)?
+  /// What the reader asked; search results that fit it best are kept when
+  /// there are more than the model can take.
+  var question: String?
 
   init(
     gw: GatewayStore, guildId: GuildSnowflake?, channelId: ChannelSnowflake, onDevice: Bool
@@ -146,18 +149,34 @@ final class MessageToolbox {
         }
       }
       guard !found.isEmpty else { return "No messages found." }
+      let kept = await Self.best(
+        found, for: [question, request.text].compactMap { $0 }.joined(separator: " "),
+        limit: resultLimit)
       let before = transcript.lines.count
       transcript = IntelligenceSource.transcript(
-        of: Array(found.prefix(resultLimit)).reversed(), guildId: guildId, gw: gw,
+        of: kept, guildId: guildId, gw: gw,
         maxCharacters: maxCharacters, into: transcript, describesPlace: true)
       let lines = transcript.lines[before...]
       onChange?()
       if lines.isEmpty { return "Found messages, but all of them are hidden by the reader's filters." }
-      return "Found \(page.total_results) messages, the newest \(lines.count), oldest first:\n"
+      return "Found \(page.total_results) messages, the \(lines.count) closest to the question, oldest first:\n"
         + lines.joined(separator: "\n")
     } catch {
       return "The search failed: \(error.localizedDescription)"
     }
+  }
+
+  /// The `limit` messages that match `query` best, oldest first; the newest
+  /// when there's nothing to rank by.
+  static func best(
+    _ messages: [DiscordChannel.Message], for query: String, limit: Int
+  ) async -> [DiscordChannel.Message] {
+    guard messages.count > limit else { return messages.reversed() }
+    let query = query.trimmingCharacters(in: .whitespaces)
+    guard !query.isEmpty else { return Array(messages.prefix(limit)).reversed() }
+    let order = await SemanticRanker.rank(
+      query: query, documents: messages.map(SemanticRanker.document(for:)))
+    return order.prefix(limit).map { messages[$0] }.sorted { $0.id < $1.id }
   }
 
   // MARK: messages around
@@ -400,8 +419,29 @@ extension IntelligenceModel {
         SearchMessagesTool(toolbox: toolbox), MessagesAroundTool(toolbox: toolbox),
         ReplyChainTool(toolbox: toolbox),
       ]
-      let session = LanguageModelSession(tools: tools, instructions: instructions)
-      return try await session.respond(to: prompt).content
+      do {
+        return try await withThrowingTaskGroup(of: String.self) { group in
+          group.addTask {
+            let session = LanguageModelSession(tools: tools, instructions: instructions)
+            return try await session.respond(to: prompt).content
+          }
+          group.addTask {
+            try await Task.sleep(for: IntelligenceModel.onDeviceTimeout)
+            throw IntelligenceError("Apple Intelligence took too long to answer. Try again.")
+          }
+          defer { group.cancelAll() }
+          return try await group.next() ?? ""
+        }
+      } catch where IntelligenceModel.isContextOverflow(error) {
+        // tool schemas and results filled the small window: answer from the
+        // messages given up front, newest part first, without lookups
+        let kept = String(prompt.suffix(prompt.count * 3 / 5))
+        return try await respond(instructions: instructions, prompt: kept)
+      } catch let error as IntelligenceError {
+        throw error
+      } catch {
+        throw IntelligenceModel.friendly(error)
+      }
     }
   }
 }

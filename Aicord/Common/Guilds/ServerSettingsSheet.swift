@@ -19,6 +19,7 @@ struct ServerSettingsSheet: View {
   @Environment(\.dismiss) var dismiss
   let guildId: GuildSnowflake
   @State private var error: String?
+  @State private var showsLeave = false
 
   private var guild: Guild? { gw.user.guilds[guildId] }
   private var notifications: UserGuildSettingsStore { gw.userGuildSettings }
@@ -35,6 +36,13 @@ struct ServerSettingsSheet: View {
             Label("Invite People", systemImage: "person.badge.plus")
           }
           .disabled(InvitePeople.channels(in: guildId, gw: gw).isEmpty)
+          if gw.existingGuildStore(for: guildId)?.hasPermission(channel: nil as DiscordChannel?, .manageGuild) != false {
+            NavigationLink {
+              ServerInvitesView(guildId: guildId)
+            } label: {
+              Label("Invites", systemImage: "link")
+            }
+          }
         }
 
         if let guild {
@@ -52,8 +60,15 @@ struct ServerSettingsSheet: View {
         } footer: {
           Text("Your nickname and pronouns on this server, also in Settings → Profiles.")
         }
+
+        if let guild, LeaveServer.canLeave(guild, gw: gw) {
+          Section {
+            Button("Leave Server", role: .destructive) { showsLeave = true }
+          }
+        }
       }
       .formStyle(.grouped)
+      .leaveServerConfirmation(isPresented: $showsLeave, guild: guild) { dismiss() }
       .navigationTitle(guild?.name ?? String(localized: "Server Settings"))
       #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
