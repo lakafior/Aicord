@@ -67,6 +67,9 @@ struct MessageIntelligenceSheet: View {
   @State private var searches: [String] = []
   @State private var note: String?
   @State private var model: IntelligenceModel?
+  /// Shown from the cache rather than worked out just now.
+  @State private var isCached = false
+  @State private var runID = 0
 
   private var message: DiscordChannel.Message { target.message }
 
@@ -109,7 +112,10 @@ struct MessageIntelligenceSheet: View {
               }
             }
           } footer: {
-            if let note { Text(note) }
+            VStack(alignment: .leading, spacing: 4) {
+              if let note { Text(note) }
+              if isCached { Text("From earlier in this session. Regenerate to read it again.") }
+            }
           }
         case .failed(let text):
           Section {
@@ -142,8 +148,16 @@ struct MessageIntelligenceSheet: View {
         ToolbarItem(placement: .cancellationAction) {
           Button(isWorking ? "Cancel" : "Done") { dismiss() }
         }
+        if !isWorking {
+          ToolbarItem(placement: .primaryAction) {
+            Button("Regenerate", systemImage: "arrow.clockwise") {
+              MessageIntelligenceCache.entries[target.id] = nil
+              runID += 1
+            }
+          }
+        }
       }
-      .task { await run() }
+      .task(id: runID) { await load() }
     }
     #if os(macOS)
       .frame(minWidth: 480, minHeight: 460)
@@ -168,6 +182,34 @@ struct MessageIntelligenceSheet: View {
     appState.open(
       guild: source.guild_id ?? target.guildID, channel: source.channel_id, message: source.id)
     dismiss()
+  }
+
+  /// The answer kept from earlier in this session, or a new one.
+  private func load() async {
+    if let entry = MessageIntelligenceCache.entries[target.id] {
+      phase = .done(entry.points)
+      toolbox = entry.toolbox
+      conversation = entry.conversation
+      searches = entry.searches
+      note = entry.note
+      model = entry.model
+      progress = nil
+      isCached = true
+      return
+    }
+    phase = .working(String(localized: "Reading the conversation…"))
+    progress = nil
+    toolbox = nil
+    conversation = []
+    searches = []
+    note = nil
+    isCached = false
+    await run()
+    if case .done(let points) = phase, !Task.isCancelled {
+      MessageIntelligenceCache.entries[target.id] = .init(
+        points: points, toolbox: toolbox, conversation: conversation, searches: searches,
+        note: note, model: model)
+    }
   }
 
   private func run() async {
@@ -413,6 +455,24 @@ struct MessageIntelligenceSheet: View {
     note = String(localized: "Read \(toolbox.transcript.lines.count) messages.")
     phase = .done(points)
   }
+}
+
+// MARK: - Cache
+
+/// Finished answers, per message and action, for as long as the app runs: going
+/// to a message an answer cites and back shows the same answer at once.
+@MainActor
+enum MessageIntelligenceCache {
+  struct Entry {
+    var points: [SummaryPoint]
+    var toolbox: MessageToolbox?
+    var conversation: [DiscordChannel.Message]
+    var searches: [String]
+    var note: String?
+    var model: IntelligenceModel?
+  }
+
+  static var entries: [MessageIntelligenceTarget.ID: Entry] = [:]
 }
 
 // MARK: - Images
