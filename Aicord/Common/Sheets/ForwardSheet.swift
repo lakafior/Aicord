@@ -76,6 +76,17 @@ struct ForwardSheet: View {
     var symbol: String
   }
 
+  @ViewBuilder var sendButton: some View {
+    if sending {
+      ProgressView()
+    } else {
+      Button(selected.count > 1 ? "Send (\(selected.count))" : "Send") {
+        Task { await send() }
+      }
+      .disabled(selected.isEmpty)
+    }
+  }
+
   var body: some View {
     NavigationStack {
       List {
@@ -136,17 +147,26 @@ struct ForwardSheet: View {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel", role: .cancel) { dismiss() }
         }
-        ToolbarItem(placement: .confirmationAction) {
-          if sending {
-            ProgressView()
-          } else {
-            Button(selected.count > 1 ? "Send (\(selected.count))" : "Send") {
-              Task { await send() }
-            }
-            .disabled(selected.isEmpty)
+        #if os(macOS)
+          ToolbarItem(placement: .confirmationAction) {
+            sendButton
+          }
+        #endif
+      }
+      #if os(iOS)
+        // the navigation bar drops its buttons while the search field is
+        // active, so Send sits above the keyboard instead
+        .safeAreaInset(edge: .bottom) {
+          if !selected.isEmpty {
+            sendButton
+              .buttonStyle(.glassProminent)
+              .controlSize(.large)
+              .frame(maxWidth: .infinity)
+              .padding(.horizontal)
+              .padding(.bottom, 8)
           }
         }
-      }
+      #endif
     }
   }
 
