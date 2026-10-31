@@ -17,12 +17,15 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Explain Context: what a message in a busy channel answers, from its replies and the messages around it, with Show Conversation
 - **New** · Ask About This Channel, Explain Slang and Terms, thread and reply summaries; the model can search Discord, read around a message and follow replies, within a fixed number of lookups
 - **New** · Search with a Sentence turns a request into Search's server, channel, person, date and has filters, then lists the results most relevant first, ranked on the device by meaning and shared words (also file names); when no message has all the keywords it ranks the latest messages there instead
-- **New** · Index Channel in the ✨ menu keeps a channel's last 500 to 5,000 messages on the device, searchable by meaning, with its size, Add New Messages and Delete Index; Ask About This Channel also reads the older indexed messages that fit the question
+- **New** · Index Channel in the channel's Intelligence menu keeps a channel's last 500 to 5,000 messages on the device, searchable by meaning, with its size, Add New Messages and Delete Index; Ask About This Channel also reads the older indexed messages that fit the question
 - **New** · Local language model servers work: Ollama or LM Studio on this computer or your network over plain HTTP, with `localhost:11434` filled in as http and iOS asking for local network access
 - **New** · With VoiceOver on, images without alt text are read out with the text found in them on this device, or with a short description from your API model if you turn that on in Settings → Intelligence; spoilers and hidden sensitive media are never read
 - **New** · When the model searches Discord to answer, it gets the results closest to the question rather than just the newest, and Ask About This Channel on the device reads the messages that fit the question best
 - **New** · Important messages from muted channels, judged by the on-device model; scam warnings in DMs from strangers; text and descriptions of images
 - **New** · Filtered words, blocked people, spoilers and hidden sensitive media never reach a language model
+- **New** · Channel Intelligence (summaries, Ask About This Channel, Index Channel) moved from the ✨ toolbar button to an Intelligence submenu in the channel's long-press menu and a menu under the channel's name in the chat; the toolbar button is gone
+- **New** · Explain Context and Summarize Replies read the whole reply thread (the chain up to where it started, fetched when it isn't loaded, plus loaded replies to any of it), not just two or three replies; Explain Context gives the model the closest part of it that fits its budget
+- **New** · Message Intelligence answers are kept for the session: opening a message an answer cites and coming back shows the same answer at once, with Regenerate to work it out again
 
 ### Messages, search and chat
 
@@ -36,6 +39,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Message Requests and Spam folders in Messages (on Mac and iPad above the direct messages): accept, ignore or reject requests, move messages out of spam or delete them
 - **New** · Friend requests: Incoming and Sent tabs in Friends with accept, ignore and cancel, and a badge that updates live
 - **New** · Search opens a message result at the message and highlights it, and filters by date range and by a regular expression
+- **New** · Show Thread in a reply's menu: the whole reply thread, oldest first, with the message you came from highlighted; tap one to jump to it in the channel
 - **New** · Rebuilt message menu: a row of quick reactions from your favourite and most used emoji, tidier groups, and a working Mark Unread; the empty Apps, Thread and Forward items are gone
 - **New** · One search for servers, channels, people and messages: pick a server, channel or person and the next results narrow to it
 - **New** · Long press (right click on Mac) a server or channel for Mark as Read, Pin to Top (kept in Aicord), Mute for 15 minutes to until you turn it back on, and Notify with @everyone and role mention switches, saved to your Discord account; Server Settings… gathers a server's notifications, DM, message request and activity exceptions and links to its server profile

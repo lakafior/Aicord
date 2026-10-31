@@ -67,6 +67,8 @@ final class AicordAppState {
   // MARK: - Intelligence
   /// A message an Intelligence sheet is open for (Explain Context, Explain, replies).
   var messageIntelligenceTarget: MessageIntelligenceTarget? = nil
+  /// A reply whose whole thread the Show Thread sheet is open for.
+  var replyThreadTarget: ReplyThreadTarget? = nil
 
   // MARK: - Jump to Message
   /// A message the chat should scroll to and highlight once its channel is open,

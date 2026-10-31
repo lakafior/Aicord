@@ -409,7 +409,7 @@ extension IntelligenceModel {
   {
     switch backend {
     case .api(let client):
-      let agent = ToolAgent(tools: await toolbox.apiTools(), maxCalls: await toolbox.maxCalls) {
+      let agent = ToolAgent(tools: await toolbox.apiTools(), maxCalls: toolbox.maxCalls) {
         messages, tools in
         try await client.turn(messages, tools: tools)
       }

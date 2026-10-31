@@ -407,3 +407,40 @@ class ScamSignalsTests: XCTestCase {
     XCTAssertTrue(ScamSignals.isLookalike("disocrd.gift"))
   }
 }
+
+class ReplyThreadTests: XCTestCase {
+  typealias Node = ReplyThread.Node
+
+  func testLaterRepliesFollowEachOther() {
+    let loaded = [
+      Node(id: "1", parentID: nil),
+      Node(id: "2", parentID: "1"),
+      Node(id: "3", parentID: nil),
+      Node(id: "4", parentID: "2"),
+      Node(id: "5", parentID: "4"),
+      Node(id: "6", parentID: "3"),
+    ]
+    XCTAssertEqual(ReplyThread.laterReplies(to: ["1", "2"], in: loaded), ["4", "5"])
+  }
+
+  func testFitKeepsTargetAndAncestorsFirst() {
+    // 1 ← 3 ← 5 (target); 2 and 4 reply to 1, closer to the target than 1 is
+    let thread = [
+      Node(id: "1", parentID: nil),
+      Node(id: "2", parentID: "1"),
+      Node(id: "3", parentID: "1"),
+      Node(id: "4", parentID: "1"),
+      Node(id: "5", parentID: "3"),
+    ]
+    let kept = ReplyThread.fit(thread: thread, target: "5", costs: [10, 10, 10, 10, 10], budget: 30)
+    XCTAssertEqual(kept, [0, 2, 4])
+    let more = ReplyThread.fit(thread: thread, target: "5", costs: [10, 10, 10, 10, 10], budget: 40)
+    XCTAssertEqual(more, [0, 2, 3, 4])
+  }
+
+  func testFitAlwaysKeepsTheTarget() {
+    let thread = [Node(id: "1", parentID: nil), Node(id: "2", parentID: "1")]
+    XCTAssertEqual(ReplyThread.fit(thread: thread, target: "2", costs: [5, 50], budget: 10), [1])
+    XCTAssertEqual(ReplyThread.fit(thread: thread, target: "9", costs: [5, 5], budget: 10), [])
+  }
+}

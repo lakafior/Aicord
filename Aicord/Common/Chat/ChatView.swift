@@ -191,23 +191,15 @@ struct ChatView: View {
       // most channel names, and the centre slot truncates gracefully when space runs out
       #if os(iOS)
         ToolbarItem(placement: .principal) {
-          ChannelHeader(vm: vm)
+          titleMenu
         }
         .sharedBackgroundVisibility(.hidden)
       #else
         ToolbarItem(placement: .navigation) {
-          ChannelHeader(vm: vm)
+          titleMenu
         }
         .sharedBackgroundVisibility(.hidden)
       #endif
-      // read-only summaries; in DMs only when allowed in Settings → Intelligence
-      if !isPrivateChannel || intelligenceInDMs {
-        ToolbarItem(placement: .primaryAction) {
-          ChannelIntelligenceMenu(
-            channelId: vm.channelId, summary: $summaryRange, asking: $askingChannel,
-            indexing: $indexingChannel)
-        }
-      }
       // no calls before a request is accepted
       if vm.channel?.type == .dm || vm.channel?.type == .groupDm,
         gw.user.privateChannels[vm.channelId].map({ !$0.isPendingMessageRequest && !$0.isSpam })
@@ -271,6 +263,34 @@ struct ChatView: View {
       await vm.jump(to: jump.messageID)
     }
     .onChange(of: scenePhase) { acknowledgeLatestIfVisible() }
+  }
+
+  /// The channel's name; tapping it opens the Intelligence actions, the same
+  /// ones as the channel's long-press menu. In DMs only when allowed in
+  /// Settings → Intelligence.
+  @ViewBuilder
+  private var titleMenu: some View {
+    if !isPrivateChannel || intelligenceInDMs {
+      Menu {
+        ChannelIntelligenceActions(
+          channelId: vm.channelId, summary: $summaryRange, asking: $askingChannel,
+          indexing: $indexingChannel)
+      } label: {
+        HStack(spacing: 4) {
+          ChannelHeader(vm: vm)
+          Image(systemName: "chevron.down")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .accessibilityHidden(true)
+        }
+        .contentShape(.rect)
+      }
+      .menuIndicator(.hidden)
+      .buttonStyle(.plain)
+      .accessibilityHint("Shows Intelligence actions for this channel")
+    } else {
+      ChannelHeader(vm: vm)
+    }
   }
 
   private var isPrivateChannel: Bool {
