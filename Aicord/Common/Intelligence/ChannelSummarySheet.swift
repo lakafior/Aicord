@@ -2,7 +2,7 @@
 //  ChannelSummarySheet.swift
 //  Aicord
 //
-//  "Summarize" from the channel header: the unread or latest messages as a
+//  "Summarize" from a channel's menu: the unread or latest messages as a
 //  few points, each linking to the messages it came from.
 //
 
@@ -32,49 +32,49 @@ enum SummaryRange: Hashable, Identifiable {
   }
 }
 
-/// The Intelligence menu in the channel's toolbar.
-struct ChannelIntelligenceMenu: View {
+/// A channel's Intelligence actions: in its long-press menu, and in the menu
+/// under its title in the chat.
+struct ChannelIntelligenceActions: View {
   @Environment(\.gateway) var gw
   let channelId: ChannelSnowflake
+  /// The long-press menu has its own Catch Up next to Mark as Read.
+  var includesCatchUp = true
   @Binding var summary: SummaryRange?
   @Binding var asking: Bool
   @Binding var indexing: Bool
 
   var body: some View {
-    Menu {
-      Section("Summarize") {
+    Section("Summarize") {
+      if includesCatchUp {
         Button {
           summary = .unread
         } label: {
           Label("Catch Up on Unread", systemImage: "envelope.badge")
         }
         .disabled(!hasUnread)
-        ForEach([100, 500, 1_000], id: \.self) { count in
-          Button {
-            summary = .last(count)
-          } label: {
-            Label("Last \(count) Messages", systemImage: "text.line.first.and.arrowtriangle.forward")
-          }
+      }
+      ForEach([100, 500, 1_000], id: \.self) { count in
+        Button {
+          summary = .last(count)
+        } label: {
+          Label("Last \(count) Messages", systemImage: "text.line.first.and.arrowtriangle.forward")
         }
       }
-      Section {
-        Button {
-          asking = true
-        } label: {
-          Label("Ask About This Channel", systemImage: "questionmark.bubble")
-        }
-        Button {
-          indexing = true
-        } label: {
-          Label(
-            ChannelIndexFiles.exists(channelId) ? "Channel Index…" : "Index Channel…",
-            systemImage: "square.stack.3d.down.right")
-        }
-      }
-    } label: {
-      Label("Intelligence", systemImage: "sparkles")
     }
-    .menuIndicator(.hidden)
+    Section {
+      Button {
+        asking = true
+      } label: {
+        Label("Ask About This Channel", systemImage: "questionmark.bubble")
+      }
+      Button {
+        indexing = true
+      } label: {
+        Label(
+          ChannelIndexFiles.exists(channelId) ? "Channel Index…" : "Index Channel…",
+          systemImage: "square.stack.3d.down.right")
+      }
+    }
   }
 
   private var hasUnread: Bool {

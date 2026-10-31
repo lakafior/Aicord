@@ -116,6 +116,8 @@ struct ChannelContextMenu: ViewModifier {
   let guildId: GuildSnowflake
   @State private var error: String?
   @State private var summary: SummaryRange?
+  @State private var asking = false
+  @State private var indexing = false
 
   func body(content: Content) -> some View {
     content
@@ -132,6 +134,13 @@ struct ChannelContextMenu: ViewModifier {
           summary = .unread
         }
         .disabled(!gw.readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id))
+
+        // read-only summaries and questions, as in the chat's title menu
+        Menu("Intelligence", systemImage: "sparkles") {
+          ChannelIntelligenceActions(
+            channelId: channel.id, includesCatchUp: false, summary: $summary, asking: $asking,
+            indexing: $indexing)
+        }
 
         #if os(macOS)
           OpenInNewWindowButton(value: .init(guildId: guildId, channelId: channel.id))
@@ -160,11 +169,18 @@ struct ChannelContextMenu: ViewModifier {
       }
       .sheet(item: $summary) { range in
         ChannelSummarySheet(
-          channelId: channel.id, guildId: guildId, channelName: "#" + (channel.name ?? "channel"),
-          range: range)
+          channelId: channel.id, guildId: guildId, channelName: channelName, range: range)
+      }
+      .sheet(isPresented: $asking) {
+        AskChannelSheet(channelId: channel.id, guildId: guildId, channelName: channelName)
+      }
+      .sheet(isPresented: $indexing) {
+        ChannelIndexSheet(channelId: channel.id, guildId: guildId, channelName: channelName)
       }
       .saveErrorAlert($error)
   }
+
+  private var channelName: String { "#" + (channel.name ?? "channel") }
 }
 
 // MARK: - Mute and Notify
