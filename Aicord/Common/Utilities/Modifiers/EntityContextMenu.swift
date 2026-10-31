@@ -58,7 +58,16 @@ struct EntityContextMenu<Entity>: ViewModifier {
           Button {
             target.react(with: .init(name: character), gw: gw, appState: appState)
           } label: {
-            Text(verbatim: character)
+            #if os(macOS)
+              // a palette in a Mac menu shows images only, so text emoji came out blank
+              Label {
+                Text(verbatim: character)
+              } icon: {
+                Image(nsImage: Self.emojiImage(character))
+              }
+            #else
+              Text(verbatim: character)
+            #endif
           }
         }
         Button {
@@ -269,6 +278,22 @@ struct EntityContextMenu<Entity>: ViewModifier {
       Label("Delete Message", systemImage: "trash")
     }
   }
+
+  #if os(macOS)
+    /// An emoji drawn into an image, for menu palettes.
+    static func emojiImage(_ character: String) -> NSImage {
+      let size = NSSize(width: 22, height: 22)
+      return NSImage(size: size, flipped: false) { rect in
+        let text = NSAttributedString(
+          string: character,
+          attributes: [.font: NSFont.systemFont(ofSize: 17)]
+        )
+        let textSize = text.size()
+        text.draw(at: NSPoint(x: rect.midX - textSize.width / 2, y: rect.midY - textSize.height / 2))
+        return true
+      }
+    }
+  #endif
 
   /// Unicode emoji for the quick reaction row: favourites, then the most used,
   /// topped up with defaults. Custom emoji are left to the picker, since a menu
