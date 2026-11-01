@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E2C0DE00000000000000004 /* FormattedMessageSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE00000000000000003 /* FormattedMessageSheet.swift */; };
+		0E2C0DE00000000000000002 /* MessageFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE00000000000000001 /* MessageFormatting.swift */; };
 		B0B0C0DE0000000000000102 /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000101 /* AppShortcuts.xcstrings */; };
 		B0B0C0DE0000000000000018 /* AicordWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0B0C0DE000000000000000A /* AicordWidgets.appex */; platformFilters = (ios, macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B0B0C0DE0000000000000017 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA1579352F3220D50097C0FA /* Localizable.xcstrings */; };
@@ -384,6 +386,8 @@
 		AA70EFB02EA1B3BA00344D98 /* InputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputBar.swift; sourceTree = "<group>"; };
 		D1A0C0DE0000000000000212 /* SlashCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommands.swift; sourceTree = "<group>"; };
 		D1A0C0DE0000000000000204 /* VoiceMessageButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMessageButton.swift; sourceTree = "<group>"; };
+		0E2C0DE00000000000000001 /* MessageFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFormatting.swift; sourceTree = "<group>"; };
+		0E2C0DE00000000000000003 /* FormattedMessageSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormattedMessageSheet.swift; sourceTree = "<group>"; };
 		D1A0C0DE0000000000000104 /* CreatePollSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePollSheet.swift; sourceTree = "<group>"; };
 		AA74E4382EBC410B0031B285 /* EntityContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityContextMenu.swift; sourceTree = "<group>"; };
 		AA74E43A2EBCA8FD0031B285 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
@@ -891,6 +895,8 @@
 				D1A0C0DE0000000000000212 /* SlashCommands.swift */,
 				D1A0C0DE0000000000000204 /* VoiceMessageButton.swift */,
 				D1A0C0DE0000000000000104 /* CreatePollSheet.swift */,
+				0E2C0DE00000000000000003 /* FormattedMessageSheet.swift */,
+				0E2C0DE00000000000000001 /* MessageFormatting.swift */,
 				AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */,
 				AA9F7A522EF96308008BB452 /* AttachmentBar.swift */,
 				AA67FD122EF4A792004676A1 /* InputVM.swift */,
@@ -1548,6 +1554,8 @@
 				D1A0C0DE0000000000000213 /* SlashCommands.swift in Sources */,
 				D1A0C0DE0000000000000205 /* VoiceMessageButton.swift in Sources */,
 				D1A0C0DE0000000000000105 /* CreatePollSheet.swift in Sources */,
+				0E2C0DE00000000000000004 /* FormattedMessageSheet.swift in Sources */,
+				0E2C0DE00000000000000002 /* MessageFormatting.swift in Sources */,
 				AADD58652E82A95B00CBC8B6 /* GuildScrollBar.swift in Sources */,
 				AA0624802F0A04DF007F28EB /* MessageDrainView.swift in Sources */,
 				AAB905302E82FD9200EA171B /* Conformances.swift in Sources */,

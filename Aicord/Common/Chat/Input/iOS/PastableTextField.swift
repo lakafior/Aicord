@@ -96,6 +96,31 @@ import SwiftUI
           }
         }
 
+        /// Adds Formatting to the system edit menu while text is selected.
+        func textView(
+          _ textView: UITextView,
+          editMenuForTextIn range: NSRange,
+          suggestedActions: [UIMenuElement]
+        ) -> UIMenu? {
+          guard range.length > 0, let textView = textView as? PastableUITextView else {
+            return nil
+          }
+          let actions = MessageFormat.allCases.map { format in
+            UIAction(
+              title: format.title,
+              image: UIImage(systemName: format.systemImage)
+            ) { [weak textView] _ in
+              textView?.apply(format)
+            }
+          }
+          let formatting = UIMenu(
+            title: String(localized: "Formatting"),
+            image: UIImage(systemName: "textformat"),
+            children: actions
+          )
+          return UIMenu(children: suggestedActions + [formatting])
+        }
+
         func textViewDidBeginEditing(_ textView: UITextView) {
           if parent.isFocused == false {
             DispatchQueue.main.async {
@@ -153,10 +178,51 @@ import SwiftUI
           invalidateIntrinsicContentSize()
         }
 
+        /// Wraps the selection in Discord markdown, as one undoable edit.
+        func apply(_ format: MessageFormat) {
+          let edit = format.edit(in: text, selection: selectedRange)
+          guard
+            let start = position(from: beginningOfDocument, offset: edit.range.location),
+            let end = position(from: start, offset: edit.range.length),
+            let range = textRange(from: start, to: end)
+          else { return }
+          replace(range, withText: edit.replacement)
+          selectedRange = edit.selection
+          delegate?.textViewDidChange?(self)
+        }
+
+        override var keyCommands: [UIKeyCommand]? {
+          let formatting = MessageFormat.allCases.compactMap { format -> UIKeyCommand? in
+            guard let key = format.keyEquivalent else { return nil }
+            let command = UIKeyCommand(
+              title: format.title,
+              action: #selector(formatKeyCommand(_:)),
+              input: key,
+              modifierFlags: format.usesShift ? [.command, .shift] : .command,
+              propertyList: format.rawValue
+            )
+            command.wantsPriorityOverSystemBehavior = true
+            return command
+          }
+          return (super.keyCommands ?? []) + formatting
+        }
+
+        @objc func formatKeyCommand(_ sender: UIKeyCommand) {
+          guard let raw = sender.propertyList as? String,
+            let format = MessageFormat(rawValue: raw)
+          else { return }
+          apply(format)
+        }
+
         override func canPerformAction(
           _ action: Selector,
           withSender sender: Any?
         ) -> Bool {
+          if action == #selector(formatKeyCommand(_:)) {
+            // ⌘K without a selection stays the Quick Switcher.
+            let raw = (sender as? UIKeyCommand)?.propertyList as? String
+            return raw != MessageFormat.link.rawValue || selectedRange.length > 0
+          }
           if action == #selector(paste(_:)) {
             if UIPasteboard.general.hasImages {
               return true

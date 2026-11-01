@@ -369,6 +369,7 @@ extension ChatView {
 
     @Namespace private var mediaPickerNamespace
     @State private var creatingPoll = false
+    @State private var composingFormatted = false
 
     /// What follows a leading `/`, while it can still be a command name.
     private var slashQuery: String? {
@@ -396,6 +397,17 @@ extension ChatView {
       mediaPickerMenu
         .sheet(isPresented: $creatingPoll) {
           CreatePollSheet(vm: vm)
+        }
+        .sheet(isPresented: $composingFormatted) {
+          FormattedMessageSheet(
+            channel: vm,
+            initialText: inputVM.content,
+            onSend: { text in
+              inputVM.content = text
+              sendMessage()
+            },
+            onMoveToField: { inputVM.content = $0 }
+          )
         }
     }
 
@@ -453,6 +465,14 @@ extension ChatView {
                 Label("Create Poll", systemImage: "chart.bar.xaxis")
               }
             }
+            Button {
+              properties.showPhotosPicker = false
+              properties.showFilePicker = false
+              properties.showEmojiPicker = false
+              composingFormatted = true
+            } label: {
+              Label("Formatted Message", systemImage: "textformat")
+            }
           } label: {
             Image(systemName: "plus")
               .imageScale(.large)
@@ -476,6 +496,11 @@ extension ChatView {
             } label: {
               Label("Create Poll", systemImage: "chart.bar.xaxis")
             }
+          }
+          Button {
+            composingFormatted = true
+          } label: {
+            Label("Formatted Message", systemImage: "textformat")
           }
         } label: {
           Image(systemName: "plus")

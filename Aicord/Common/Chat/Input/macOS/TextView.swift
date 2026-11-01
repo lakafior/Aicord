@@ -272,6 +272,71 @@ import SwiftUI
             }
           }
 
+          /// Wraps the selection in Discord markdown, as one undoable edit.
+          func apply(_ format: MessageFormat) {
+            let edit = format.edit(in: string, selection: selectedRange())
+            guard shouldChangeText(in: edit.range, replacementString: edit.replacement) else {
+              return
+            }
+            replaceCharacters(in: edit.range, with: edit.replacement)
+            didChangeText()
+            setSelectedRange(edit.selection)
+          }
+
+          @objc func applyFormatItem(_ sender: NSMenuItem) {
+            guard let raw = sender.representedObject as? String,
+              let format = MessageFormat(rawValue: raw)
+            else { return }
+            apply(format)
+          }
+
+          override func menu(for event: NSEvent) -> NSMenu? {
+            let menu = super.menu(for: event) ?? NSMenu()
+            guard selectedRange().length > 0 else { return menu }
+            let submenu = NSMenu()
+            for format in MessageFormat.allCases {
+              let item = NSMenuItem(
+                title: format.title,
+                action: #selector(applyFormatItem(_:)),
+                keyEquivalent: format.keyEquivalent ?? ""
+              )
+              item.keyEquivalentModifierMask = format.usesShift ? [.command, .shift] : .command
+              item.representedObject = format.rawValue
+              item.target = self
+              item.image = NSImage(
+                systemSymbolName: format.systemImage, accessibilityDescription: nil)
+              submenu.addItem(item)
+            }
+            let formatting = NSMenuItem(
+              title: String(localized: "Formatting"), action: nil, keyEquivalent: "")
+            formatting.image = NSImage(
+              systemSymbolName: "textformat", accessibilityDescription: nil)
+            formatting.submenu = submenu
+            menu.insertItem(formatting, at: 0)
+            menu.insertItem(.separator(), at: 1)
+            return menu
+          }
+
+          /// ⌘B, ⌘I, ⌘U, ⌘⇧X and ⌘K format the selection while the field has focus.
+          /// ⌘K without a selection is left to the Quick Switcher.
+          override func performKeyEquivalent(with event: NSEvent) -> Bool {
+            guard window?.firstResponder === self else {
+              return super.performKeyEquivalent(with: event)
+            }
+            let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            let key = event.charactersIgnoringModifiers?.lowercased()
+            for format in MessageFormat.allCases {
+              guard let equivalent = format.keyEquivalent, equivalent == key else { continue }
+              let expected: NSEvent.ModifierFlags =
+                format.usesShift ? [.command, .shift] : .command
+              guard flags == expected else { continue }
+              if format == .link, selectedRange().length == 0 { break }
+              apply(format)
+              return true
+            }
+            return super.performKeyEquivalent(with: event)
+          }
+
           override func keyDown(with event: NSEvent) {
             if event.keyCode == 36 {  // Return key
               let shiftPressed = event.modifierFlags.contains(.shift)
