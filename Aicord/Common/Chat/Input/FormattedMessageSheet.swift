@@ -73,19 +73,31 @@ struct FormattedMessageSheet: View {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel", role: .cancel) { dismiss() }
         }
-        ToolbarItem(placement: .primaryAction) {
-          Button("Send") {
-            onSend(trimmed)
-            dismiss()
-          }
-          .disabled(trimmed.isEmpty || trimmed.count > characterLimit)
-        }
-        ToolbarItem(placement: .secondaryAction) {
-          Button("Move to Message Field", systemImage: "arrow.down.to.line") {
+      }
+      .safeAreaInset(edge: .bottom) {
+        HStack(spacing: 10) {
+          Button {
             onMoveToField(text)
             dismiss()
+          } label: {
+            Label("Move to Message Field", systemImage: "arrow.down.to.line")
+              .frame(maxWidth: .infinity)
           }
+          .buttonStyle(.glass)
+          Button {
+            onSend(trimmed)
+            dismiss()
+          } label: {
+            Label("Send", systemImage: "paperplane.fill")
+              .frame(maxWidth: .infinity)
+          }
+          .buttonStyle(.glassProminent)
+          .disabled(trimmed.isEmpty || trimmed.count > characterLimit)
+          .keyboardShortcut(.return, modifiers: .command)
         }
+        .controlSize(.large)
+        .padding(.horizontal)
+        .padding(.bottom, 8)
       }
       .sheet(isPresented: $showingTimestamp) {
         TimestampInsertSheet { insert($0) }
@@ -231,6 +243,15 @@ struct FormattedMessageSheet: View {
 
   private func insert(_ snippet: String) {
     let range = selectedRange
+    // keep mentions, emoji and timestamps apart from the word before them
+    var snippet = snippet
+    if range.location > 0,
+      let previous = (text as NSString).substring(
+        with: NSRange(location: range.location - 1, length: 1)).unicodeScalars.first,
+      !CharacterSet.whitespacesAndNewlines.contains(previous)
+    {
+      snippet = " " + snippet
+    }
     let end = NSRange(location: range.location + (snippet as NSString).length, length: 0)
     replace(range, with: snippet, select: end)
   }
