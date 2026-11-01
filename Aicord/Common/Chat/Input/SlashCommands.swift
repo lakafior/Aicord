@@ -44,13 +44,14 @@ final class SlashCommandIndex {
   func entries(for channel: ChannelStore, client: any DiscordClient) async -> [SlashCommandEntry] {
     let key = Self.key(for: channel)
     if let cached = cache[key] { return cached }
-    async let place: ApplicationCommandIndex? =
+    async let place = Self.load {
       if let guild = channel.guildStore {
-        try? await client.getGuildApplicationCommandIndex(guildId: guild.guildId).decode()
+        try await client.getGuildApplicationCommandIndex(guildId: guild.guildId).decode()
       } else {
-        try? await client.getChannelApplicationCommandIndex(channelId: channel.channelId).decode()
+        try await client.getChannelApplicationCommandIndex(channelId: channel.channelId).decode()
       }
-    async let user = try? await client.getUserApplicationCommandIndex().decode()
+    }
+    async let user = Self.load { try await client.getUserApplicationCommandIndex().decode() }
     var entries: [SlashCommandEntry] = []
     var contextEntries: [SlashCommandEntry] = []
     var seen = Set<String>()
@@ -78,6 +79,17 @@ final class SlashCommandIndex {
     cache[key] = entries
     contextCommands[key] = contextEntries
     return entries
+  }
+
+  private static func load(
+    _ request: () async throws -> ApplicationCommandIndex
+  ) async -> ApplicationCommandIndex? {
+    do {
+      return try await request()
+    } catch {
+      print("[SlashCommands] Command index failed:", error)
+      return nil
+    }
   }
 
   private static func flatten(
@@ -523,6 +535,7 @@ struct SlashCommandComposer: View {
           close()
         }
       } catch {
+        print("[Interactions] Command failed:", error)
         draft.error = error.localizedDescription
       }
     }
@@ -688,7 +701,11 @@ struct SlashOptionField: View {
   }
 
   private var roleChoices: [(String, SlashOptionValue)] {
-    (channel.guildStore?.allRoles ?? []).map { ("@" + $0.name, .role($0.id, label: "@" + $0.name)) }
+    (channel.guildStore?.allRoles ?? []).map { role in
+      // @everyone already carries its @
+      let name = role.name.hasPrefix("@") ? role.name : "@" + role.name
+      return (name, .role(role.id, label: name))
+    }
   }
 
   private var channelChoices: [(String, SlashOptionValue)] {

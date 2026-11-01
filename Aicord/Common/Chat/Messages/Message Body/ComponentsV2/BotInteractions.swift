@@ -109,6 +109,7 @@ final class BotInteractions {
           picks.removeValue(forKey: key)
         }
       } catch {
+        print("[Interactions] Component failed:", error)
         failures[message.id] = error.localizedDescription
         picks.removeValue(forKey: key)
       }
@@ -263,7 +264,8 @@ struct SelectChoice: Identifiable, Hashable {
   private static func roles(channel: ChannelStore, defaults: Set<String>) -> [SelectChoice] {
     (channel.guildStore?.allRoles ?? []).map {
       SelectChoice(
-        value: $0.id.rawValue, label: "@" + $0.name, isDefault: defaults.contains($0.id.rawValue))
+        value: $0.id.rawValue, label: $0.name.hasPrefix("@") ? $0.name : "@" + $0.name,
+        isDefault: defaults.contains($0.id.rawValue))
     }
   }
 }
@@ -378,7 +380,8 @@ struct InteractionModalSheet: View {
       switch field.input {
       case .text(let input):
         let text = texts[input.custom_id, default: ""]
-        return (input.required ?? true) && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        // the gateway leaves out `required: false` but sends `true`
+        return input.required == true && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
           || text.count < (input.min_length ?? 0) && !text.isEmpty
       case .select(let select):
         return selections[select.custom_id, default: []].count < (select.min_values ?? 1)

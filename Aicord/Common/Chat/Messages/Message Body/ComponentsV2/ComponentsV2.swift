@@ -355,6 +355,8 @@ extension MessageCell {
         .padding(.vertical, 8)
         .frame(maxWidth: 400)
         .background(theme.common.tertiaryBackground, in: .rect(cornerRadius: 6))
+        // inside a container the card has the same background
+        .overlay(.quaternary, in: .rect(cornerRadius: 6).stroke(lineWidth: 1))
         .contentShape(.rect)
       }
       .buttonStyle(.plain)

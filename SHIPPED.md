@@ -59,6 +59,10 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Pinned Messages in the chat's toolbar menu, and Pin or Unpin Message in a message's menu; tapping a pin jumps to it
 - **New** · Threads in a text or announcement channel's toolbar menu: active and archived threads, each opening in the chat with a button back to the channel
 - **New** · Slash commands: type `/` for the commands of the server's bots, the DM's bots and apps on your account, then fill in the options (text, numbers, choices, people, channels, roles, with the bot's suggestions where it offers them) and Send runs it like Discord's own apps
+- **New** · Bot buttons and select menus work, in older bot messages and Components V2 alike: a tap or a pick goes to the bot like in Discord, with a spinner while it answers and “This interaction failed” when it doesn't. Selects open a list with the bot's options or the server's people, roles and channels, one tap or several with Done
+- **New** · Bot modals open as a native form (text fields, menus, lines of text) and are sent with Submit; replies only you can see say “Only you can see this” with Dismiss, and a bot that is working on it shows “… is thinking”
+- **New** · Apps in the message menu runs bots' message commands, and user commands on the author; slash commands take files for attachment options
+- **New** · Forum channels: New Post (title, message, tags, with the forum's required tag) and search posts by title
 - **New** · Voice messages: hold the microphone next to the message field on iPhone and iPad (slide left to cancel), or click it on the Mac and press Send; sent as Opus with a waveform and length, like Discord's apps
 - **New** · Server rules and Channels & Roles: a server that asks you to agree to its rules shows that above its channels, and its onboarding questions give you roles and channels; both open by themselves the first day after joining and Channels & Roles stays in the server menu
 - **New** · Server events in the server menu and above the channels when there are any: when and where, the picture and description, how many are interested, and Interested to add or take back yours
@@ -131,6 +135,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **Fixed** · Tapping a notification sometimes did nothing: it could reach a window state that wasn't on screen
 - **Fixed** · Deprecated `Text` concatenation in system messages, now string interpolation
 - **Fixed** · A message right after a system line from the same person no longer joins onto it as if it were the same message
+- **Fixed** · Slash commands of a server whose bots also have user or message commands showed only the account's own apps (the command list failed to load), and a server bot's command was refused with “Unknown Integration”
 - **Fixed** · Messages with components no longer show “ComponentsV2 unsupported”, and forum, media and stage channels are no longer greyed out rows that don't open
 - **Fixed** · A message's components decode properly: v1 action rows were always mistaken for v2, and one unknown component no longer breaks the message
 - **Fixed** · Mac: the right-click menu shows quick reactions again, and the emoji picker shows the server's own emoji (it now knows which server it was opened in)
@@ -452,6 +457,9 @@ Szczegóły, decyzje i testy: `docs/PACK1_NOTES.md` i `docs/PACK2_NOTES.md`. Zap
    - [x] Głosówki: AVAudioEngine → 48 kHz mono → libopus z AicordKit → Ogg (OpusHead, OpusTags, strony co sekundę, CRC), fala 256 słupków w base64 i `duration_secs`, upload do chmury Discorda i wiadomość z flagą `IS_VOICE_MESSAGE`.
    - [x] Wydarzenia: lista z `with_user_count`, własne „Interested” z `GET /users/@me/scheduled-events`, `PUT`/`DELETE …/users/@me`, link do kanału lub miejsca, obrazek.
    - [x] Activities: karta „Open in Discord” z nazwą i ikoną aplikacji (`GET /applications/{id}/rpc`) nad polem wiadomości, gdy w kanale działa Activity (`EMBEDDED_ACTIVITY_UPDATE_V2`, liczba uczestników), i pod wiadomością z zaproszeniem do gry (`activity` + `application`). Eksperyment z uruchamianiem aktywności przeniesiony do „Później” w roadmapie.
+3. **Interakcje z botami (1.11):** szczegóły i wynik testów w `docs/BOT_INTERACTIONS_NOTES.md`, bot testowy w `tools/testbot/`.
+   - [x] Przyciski i selecty (v1 i v2) wysyłają `POST /interactions` typ 3, modal typ 5 z natywnym arkuszem (`INTERACTION_MODAL_CREATE`), stany wysyłania i porażki, ephemeral z Dismiss, „thinking…”, opcja typu załącznik, komendy z menu kontekstowego w „Apps”.
+   - [x] Forum: nowy post (tytuł, treść, tagi) i wyszukiwanie po nazwie (niesprawdzone na żywo, NAScin nie ma forum).
 
 
 ### ✅ Etap 10: Intelligence (faza 1 i 2)

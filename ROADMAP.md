@@ -27,7 +27,8 @@ Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`).
    - Nie robimy: Purge (masowe usuwanie wiadomości z czatu). API Discorda pozwala usunąć tylko własne wiadomości w DM, a cudze na serwerze tylko z Manage Messages; masowe usuwanie z konta użytkownika to automatyzacja, za którą Discord blokuje konta (ostrzega przed tym nawet Undiscord).
    - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`. Do tego z zaproszeń: prawdziwe Add Friend (z listy i z profilu) i rozszerzenie Safari na macOS. Kroki: `docs/INVITES_NOTES.md`. (Join na nowym serwerze przez Safari na iPhonie sprawdzony 30.10.2026.)
    - [ ] Natywne listy: sprawdzić na iPadzie i przewijanie dużej listy członków (`docs/LISTS_NOTES.md`).
-   - [ ] Komponenty i forum, dalszy ciąg (`docs/COMPONENTS_V2.md`): przyciski i menu botów (v1 i v2) działają tylko do odczytu, bo klient nie wysyła interakcji (`POST /interactions`); w forum brak tworzenia posta, wyszukiwania po nazwie i siatki dla kanałów media; post otwarty w osobnym oknie Maca nie przełącza okna.
+   - [ ] Komponenty i forum, dalszy ciąg (`docs/COMPONENTS_V2.md`, `docs/BOT_INTERACTIONS_NOTES.md`): siatka dla kanałów media; post otwarty w osobnym oknie Maca nie przełącza okna; nowy post i wyszukiwanie po nazwie sprawdzić na serwerze z forum (NAScin go nie ma).
+   - [ ] Interakcje z botami na Macu: przyciski, menu, arkusz modala, „Apps” w menu wiadomości i wybór pliku dla opcji załącznika (sprawdzone tylko w symulatorze iOS).
    - [ ] Na Macu po poprawce z nocy 30/31.10: kliknięcie linku (także zaproszenia) w treści wiadomości, Esc po przewinięciu czatu, Safari → Extensions z ekranu instrukcji (`docs/OVERNIGHT.md`).
 
 ---
@@ -71,13 +72,12 @@ Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK
    - [ ] Przeklikać na Macu (sprawdzone tylko w symulatorze iOS): ankieta, tworzenie ankiety, Pinned Messages, Threads, Pin Message w menu pod prawym przyciskiem.
    - [ ] Zobaczyć na żywo typy, których nie było pod ręką: połączenie w DM (czas i nieodebrane), grupa (dodanie, usunięcie, nazwa, ikona), boost, Stage, AutoMod, zamknięta ankieta (typ 46), utworzenie wątku.
 2. **Paczka 2, sprawdzenie:**
-   - [ ] Slash-komenda bota z opcjami (tekst, liczba, wybór, osoba, kanał, rola) i autouzupełnianiem: na NAScin nie ma bota, sprawdzone tylko `/wordle` (aplikacja na koncie, bez opcji). Do zrobienia po dodaniu bota testowego na NAScin.
    - [ ] Wydarzenia z danymi i „Interested” / cofnięcie: NAScin nie ma wydarzeń, a Aicord ich nie tworzy; sprawdzony tylko pusty stan.
    - [ ] Zapisanie odpowiedzi w Channels & Roles i wysłanie reguł serwera: widoki sprawdzone na LimeWire i Polish Debrid bez zapisu; NAScin nie ma onboardingu ani reguł.
    - [ ] Nagrywanie głosówki na Macu (przycisk i pasek Send/Cancel); na iOS sprawdzone.
 3. **Później albo wcale:**
    - [ ] Stage, soundboard, super-reakcje.
-   - [ ] Modale i odpowiedzi botów po komendzie (`INTERACTION_MODAL_CREATE`), opcje typu załącznik.
+   - [ ] Modale botów: pola wyboru osób, ról i kanałów oraz upload pliku (typ 19) w modalu; dziś pokazujemy tylko tekst, menu tekstowe i napisy. Stan wypełnionego modala ginie po przejściu do innego kanału.
    - [ ] Activities, eksperyment (dziś jest tylko karta „Open in Discord”): Activity to strona `https://<application_id>.discordsays.com` w WebView, która rozmawia z klientem przez Embedded App SDK (`postMessage`, ramki RPC). Plan:
      - najpierw zmierzyć, ilu komend SDK naprawdę potrzebują popularne aktywności (np. Wordle, Gartic): zalogować ruch `postMessage` z jednej sesji;
      - minimalny most RPC: handshake (`frame_id`, `platform`), `AUTHORIZE` (kod OAuth z `POST /oauth2/authorize` dla `client_id` aktywności), `AUTHENTICATE` (token od serwera aktywności), `GET_CHANNEL`, uczestnicy (`ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE` z `EMBEDDED_ACTIVITY_UPDATE_V2`), zamknięcie;

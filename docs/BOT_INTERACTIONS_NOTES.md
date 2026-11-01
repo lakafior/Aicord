@@ -24,6 +24,7 @@ Notatki z sesji 1.11.2026 (gałąź `claude/bot-interactions-361499`). Endpointy
 - Stopka wiadomości (`InteractionFooter`): flaga `loading` (odpowiedź odroczona) daje kółko i „<bot> is thinking…”, flaga `ephemeral` „Only you can see this • Dismiss message” (Dismiss usuwa wiadomość lokalnie, tak jak Discord).
 - `DefaultMessage` i `ChatInputCommandMessage` porównują teraz też komponenty, flagi i treść, inaczej update z przycisku (bez `edited_timestamp`) nie odświeżał komórki.
 - Slash-komendy: opcja typu załącznik. „Choose File…” (`fileImporter`), przed Send plik idzie na `POST /channels/{id}/attachments` i PUT na `upload_url`, a interakcja ma `data.attachments` i wartość opcji równą indeksowi.
+- Forum (`ForumChannelView.swift`): w pasku „New Post” (gdy jest Send Messages) otwiera `NewForumPostSheet`: tytuł (do 100 znaków), treść, do 5 tagów (moderowane tylko z Manage Threads), wymagany tag, gdy forum ma flagę `REQUIRE_TAG`. Wysyłka `POST /channels/{id}/threads` (`startThreadInForumOrMediaChannel`, było w AicordKit), po sukcesie post otwiera się w czacie. Pole wyszukiwania nad listą wysyła `name` w `threads/search` (już obsługiwane przez `ThreadSearchQuery`) po 350 ms przerwy.
 - Komendy z menu kontekstowego: w menu wiadomości „Apps” z komendami wiadomości (typ 3, `target_id` = wiadomość) i komendami osoby dla autora (typ 2, `target_id` = autor). Indeks komend wczytuje się przy otwarciu kanału (raz na serwer na sesję), żeby menu miało je od razu.
 
 ## Bot testowy
@@ -32,6 +33,43 @@ Notatki z sesji 1.11.2026 (gałąź `claude/bot-interactions-361499`). Endpointy
 - Token czytany przy starcie ze zmiennej `DISCORD_BOT_TOKEN` albo z pliku (`AICORD_BOT_FILE`, domyślnie `~/Desktop/bot.txt`, linia po „Token”). Nigdzie nie jest wypisywany. `.gitignore`: `.env`, `*.env`, `bot.txt`.
 - Jeśli bota nie ma na serwerze, loguje link OAuth (`bot applications.commands`, View Channel + Send Messages) i nic więcej nie robi.
 
+## Pułapki znalezione w testach
+
+- **Indeks komend serwera się nie dekodował,** gdy jakiś bot miał komendę z menu kontekstowego: te komendy nie mają w indeksie `description`, a `Command.description` było wymagane. Cały indeks serwera wypadał i na liście był tylko `/wordle` z konta. Teraz `description` jest opcjonalne. Błąd był też przed tą sesją, na każdym serwerze z takim botem.
+- **„Unknown Integration” (10005)** przy komendzie bota zarejestrowanej na serwerze: `data` musi mieć `guild_id` komendy, inaczej Discord szuka komendy globalnej. `CommandData` bierze je z komendy.
+- **`required: false` znika w `INTERACTION_MODAL_CREATE`,** a `true` przychodzi. Brak pola znaczy więc „nie wymagane” (odwrotnie niż domyślne w dokumentacji), inaczej Submit był zablokowany przez opcjonalne pole.
+- `DefaultMessage`/`ChatInputCommandMessage` są `Equatable`: bez porównania komponentów, flag i treści update z przycisku nie odświeżał komórki.
+- Rola `@everyone` miała podwójne `@` w listach ról (menu i slash-komendy).
+- Menu wewnątrz kontenera V2 zlewało się z tłem karty; ma teraz obrys.
+- W symulatorze banery Aicord Alerts (słowa kluczowe) wjeżdżają na pasek narzędzi arkuszy. Jedno stuknięcie w Submit trafiło w baner i otworzyło inny serwer (nic tam nie wysłane); trzeba patrzeć przed stuknięciem u góry ekranu.
+
 ## Testy
 
-(uzupełniane)
+Buildy `platform=macOS` i `generic/platform=iOS Simulator` (derived data w scratchpadzie) bez nowych warningów. Symulator iPhone 18 Pro, konto użytkownika, wszystko tylko na **NAScin #ogólny**; bot `Bot_test` uruchomiony lokalnie na czas testów i potem wyłączony. Bota dodał użytkownik linkiem OAuth (View Channel + Send Messages).
+
+| Funkcja bota | Wynik |
+|---|---|
+| Lista `/` | 13 komend bota obok `/wordle` (po poprawce indeksu) |
+| `/options`: string z choices, integer, number, boolean, user, channel, role, mentionable, attachment | wszystko doszło: `text: Cherry, count: 42, ratio: 0.5, flag: True, who, where, role, target, file: aicord-test.txt (30 B)`; plik z „On My iPhone”, pierwsza próba padła na uploadzie (-1005, sieć symulatora), druga przeszła |
+| `/fruit` (autouzupełnianie) | „Ap” → Apple, Apricot, Grape; wybór → „You picked apricot.” |
+| `/group nested gamma` (grupa i podkomenda) | „flag: True” |
+| `/buttons`: primary, secondary, success, danger, link, disabled | wszystkie style; link ze strzałką, Disabled wyszarzony |
+| Update (edit_message) | „clicked 1×”, „(edited)” |
+| Ephemeral | „Only you can see this • Dismiss message”; Dismiss usuwa wiadomość |
+| Think (defer + follow-up) | „Bot_test is thinking…”, po 4 s follow-up |
+| No reply | „This interaction failed” pod wiadomością, znika przy następnym kliknięciu |
+| Defer update | treść zmieniona po 2 s |
+| Modal (przycisk, `/modal`, przycisk w V2) | arkusz z polami (action row) i menu (label); Submit nieaktywny bez wymaganych; odpowiedź z wartościami |
+| `/selects`: string (1–2), user, role, mentionable (do 3), channel (tylko tekstowe) | arkusze z listą; multi z Done; bot odpisał wybrane wartości |
+| `/v2`: kontener, sekcja z przyciskiem, separator, select, przyciski | „Clicks: 1”, „Size: medium” |
+| `/ephemeral` z przyciskami | Update na wiadomości ephemeral działa (`message_flags` 64) |
+| `/defer` | „thinking…”, odpowiedź i ephemeral follow-up |
+| `/edit` | „Original reply…” → „Edited reply.” |
+| `/silent` | formularz zostaje z „The application did not respond.” |
+| Apps → Inspect user / Quote message | odpowiedź ephemeral z ID bota; cytat wiadomości w kanale |
+
+Zrzuty: `side-session-notes/…/bot-interactions-shots/`.
+
+Niesprawdzone: nowy post i wyszukiwanie w forum (NAScin nie ma kanału forum, a tworzenie go wymaga serwera społeczności), wszystko na Macu (tylko buildy).
+
+**Zostało na NAScin:** wiadomości bota z testów (przyciski, menu, V2, odpowiedzi, cytat). Dwie odpowiedzi bota wspomniały rolę Notifiarr i @Lakafi (wybrane w menu), zanim bot dostał `allowed_mentions` bez pingów. W ankiecie „Pack 1 poll test” widać głos na Apple, którego ta sesja nie oddawała (stuknięcia były tylko w pole wiadomości).

@@ -40,7 +40,8 @@ def read_token() -> str:
 
 intents = discord.Intents.none()
 intents.guilds = True
-client = discord.Client(intents=intents)
+# replies name people and roles without pinging them
+client = discord.Client(intents=intents, allowed_mentions=discord.AllowedMentions.none())
 tree = app_commands.CommandTree(client)
 
 

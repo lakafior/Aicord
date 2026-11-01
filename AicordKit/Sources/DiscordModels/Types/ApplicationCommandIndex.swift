@@ -29,14 +29,15 @@ public struct ApplicationCommandIndex: Sendable, Decodable {
     public var type: Int?
     public var name: String
     public var name_localized: String?
-    public var description: String
+    /// Missing on user and message commands.
+    public var description: String?
     public var description_localized: String?
     public var options: [Option]?
     public var guild_id: GuildSnowflake?
 
     public var isChatInput: Bool { (type ?? 1) == 1 }
     public var displayName: String { name_localized ?? name }
-    public var displayDescription: String { description_localized ?? description }
+    public var displayDescription: String { description_localized ?? description ?? "" }
   }
 
   /// https://docs.discord.food/interactions/application-commands#application-command-option-structure
@@ -172,6 +173,9 @@ extension Payloads {
       public var attachments: [UploadedAttachment]
       /// The user or message a context menu command runs on.
       public var target_id: AnySnowflake?
+      /// Set for a command registered on one guild; without it Discord looks for
+      /// a global command and answers "Unknown Integration".
+      public var guild_id: GuildSnowflake?
 
       public init(
         command: ApplicationCommandIndex.Command, options: [DataOption],
@@ -185,6 +189,7 @@ extension Payloads {
         self.application_command = command
         self.attachments = attachments
         self.target_id = target_id
+        self.guild_id = command.guild_id
       }
     }
 
