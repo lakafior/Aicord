@@ -322,6 +322,18 @@ async def silent(interaction: discord.Interaction):
     pass
 
 
+async def sync(guild: discord.Guild):
+    tree.copy_global_to(guild=guild)
+    synced = await tree.sync(guild=guild)
+    log.info("Synced %d commands on %s (%s)", len(synced), guild.name, guild.id)
+
+
+@client.event
+async def on_guild_join(guild: discord.Guild):
+    if guild.name == GUILD_NAME:
+        await sync(guild)
+
+
 @client.event
 async def on_ready():
     guild = discord.utils.get(client.guilds, name=GUILD_NAME)
@@ -332,9 +344,7 @@ async def on_ready():
         log.warning("Invite: %s", discord.utils.oauth_url(
             app.id, permissions=perms, scopes=("bot", "applications.commands")))
         return
-    tree.copy_global_to(guild=guild)
-    synced = await tree.sync(guild=guild)
-    log.info("Synced %d commands on %s (%s)", len(synced), guild.name, guild.id)
+    await sync(guild)
 
 
 if __name__ == "__main__":
