@@ -113,6 +113,9 @@ class ChannelStore: DiscordDataStore {
 
   /// Messages Discord deleted that stay in `messages`, shown as deleted.
   var deletedMessageIDs: Set<MessageSnowflake> = []
+  /// Activities running in this channel, by application, with who's in them.
+  /// Aicord can't open them, so the chat says so instead of staying silent.
+  var activities: [ApplicationSnowflake: Set<UserSnowflake>] = [:]
   /// Earlier text of edited messages, oldest first.
   var previousVersions: [MessageSnowflake: [String]] = [:]
 
@@ -277,6 +280,15 @@ class ChannelStore: DiscordDataStore {
         case .messagePollVoteRemove(let vote):
           if vote.channel_id == channelId {
             handlePollVote(vote, added: false)
+          }
+        case .embeddedActivityUpdateV2(let update):
+          if update.location.channel_id == channelId {
+            let people = Set(update.participants.map(\.user_id))
+            if people.isEmpty {
+              activities.removeValue(forKey: update.application_id)
+            } else {
+              activities[update.application_id] = people
+            }
           }
         case .typingStart(let typing):
           if typing.channel_id == channelId {

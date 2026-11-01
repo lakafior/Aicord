@@ -59,6 +59,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Voice messages: hold the microphone next to the message field on iPhone and iPad (slide left to cancel), or click it on the Mac and press Send; sent as Opus with a waveform and length, like Discord's apps
 - **New** · Server rules and Channels & Roles: a server that asks you to agree to its rules shows that above its channels, and its onboarding questions give you roles and channels; both open by themselves the first day after joining and Channels & Roles stays in the server menu
 - **New** · Server events in the server menu and above the channels when there are any: when and where, the picture and description, how many are interested, and Interested to add or take back yours
+- **New** · Apps that open an Activity (Wordle and the like) no longer leave silence: the chat shows the app with its icon, how many are playing and Open in Discord, and game invites in messages get the same card
 
 ### Settings
 
@@ -428,6 +429,7 @@ Szczegóły, decyzje i testy: `docs/PACK1_NOTES.md` i `docs/PACK2_NOTES.md`. Zap
    - [x] Slash-komendy: indeks komend serwera, DM i konta (`…/application-command-index`), podkomendy i grupy spłaszczone, opcje z typami, autouzupełnianie (`POST /interactions` typ 4 i `APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE`), wysłanie typu 2 z `session_id` i wynik z `INTERACTION_SUCCESS`/`FAILURE`.
    - [x] Głosówki: AVAudioEngine → 48 kHz mono → libopus z AicordKit → Ogg (OpusHead, OpusTags, strony co sekundę, CRC), fala 256 słupków w base64 i `duration_secs`, upload do chmury Discorda i wiadomość z flagą `IS_VOICE_MESSAGE`.
    - [x] Wydarzenia: lista z `with_user_count`, własne „Interested” z `GET /users/@me/scheduled-events`, `PUT`/`DELETE …/users/@me`, link do kanału lub miejsca, obrazek.
+   - [x] Activities: karta „Open in Discord” z nazwą i ikoną aplikacji (`GET /applications/{id}/rpc`) nad polem wiadomości, gdy w kanale działa Activity (`EMBEDDED_ACTIVITY_UPDATE_V2`, liczba uczestników), i pod wiadomością z zaproszeniem do gry (`activity` + `application`). Eksperyment z uruchamianiem aktywności przeniesiony do „Później” w roadmapie.
 
 
 ### ✅ Etap 10: Intelligence (faza 1 i 2)

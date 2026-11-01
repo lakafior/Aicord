@@ -77,8 +77,14 @@ Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK
    - [ ] Nagrywanie głosówki na Macu (przycisk i pasek Send/Cancel); na iOS sprawdzone.
 3. **Później albo wcale:**
    - [ ] Stage, soundboard, super-reakcje.
-   - [ ] Modale i odpowiedzi botów po komendzie (Activities, modale `INTERACTION_MODAL_CREATE`), opcje typu załącznik.
-   - Nie robimy: Questy, Activities i sklep Nitro.
+   - [ ] Modale i odpowiedzi botów po komendzie (`INTERACTION_MODAL_CREATE`), opcje typu załącznik.
+   - [ ] Activities, eksperyment (dziś jest tylko karta „Open in Discord”): Activity to strona `https://<application_id>.discordsays.com` w WebView, która rozmawia z klientem przez Embedded App SDK (`postMessage`, ramki RPC). Plan:
+     - najpierw zmierzyć, ilu komend SDK naprawdę potrzebują popularne aktywności (np. Wordle, Gartic): zalogować ruch `postMessage` z jednej sesji;
+     - minimalny most RPC: handshake (`frame_id`, `platform`), `AUTHORIZE` (kod OAuth z `POST /oauth2/authorize` dla `client_id` aktywności), `AUTHENTICATE` (token od serwera aktywności), `GET_CHANNEL`, uczestnicy (`ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE` z `EMBEDDED_ACTIVITY_UPDATE_V2`), zamknięcie;
+     - na początek tylko aktywności w kanale tekstowym (bez dźwięku i obrazu z kanału głosowego);
+     - płatne aktywności i gry (SKU, zakupy w aplikacji) odpadają;
+     - kod aktywności trzeba odizolować: osobny `WKWebsiteDataStore` bez ciasteczek Discorda, dostęp tylko do domeny aktywności, token OAuth wydany dla tej jednej aplikacji, nigdy token konta, i potwierdzenie przed `AUTHORIZE`.
+   - Nie robimy: Questy i sklep Nitro.
 
 ---
 

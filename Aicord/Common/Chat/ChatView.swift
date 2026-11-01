@@ -167,6 +167,18 @@ struct ChatView: View {
         }
       }
 
+      ForEach(vm.activities.keys.sorted { $0.rawValue < $1.rawValue }, id: \.self) { app in
+        ActivityNotice(
+          applicationID: app,
+          channel: vm,
+          participants: vm.activities[app]?.count ?? 0
+        ) {
+          vm.activities.removeValue(forKey: app)
+        }
+        .padding(.horizontal, 8)
+        .padding(.bottom, -12)
+      }
+
       if let channel = gw.user.privateChannels[vm.channelId],
         channel.isPendingMessageRequest || channel.isSpam
       {

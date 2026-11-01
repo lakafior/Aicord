@@ -177,6 +177,11 @@ extension MessageCell {
           HiddenContentNote(text: "^[\(blocked) item](inflect: true) blocked by your content settings")
         }
 
+        // An invite to a game or Activity, which Aicord can't open
+        if !isSnapshot, message.activity != nil, let app = message.application {
+          ActivityNotice(applicationID: app.id, channel: channelStore, knownApp: app)
+        }
+
         // Stickers
         if let stickers = message.sticker_items, !stickers.isEmpty {
           StickersView(stickers: stickers)

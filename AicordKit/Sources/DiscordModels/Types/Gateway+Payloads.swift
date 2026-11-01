@@ -2130,23 +2130,25 @@ extension Gateway {
   public struct EmbeddedActivityUpdateV2: Sendable, Decodable {
     public var participants: [Participant]
     public var location: Location
-    public var launch_id: AnySnowflake
-    public var instance_id: AnySnowflake
-    public var guild_id: GuildSnowflake
-    public var composite_instance_id: String
+    public var launch_id: AnySnowflake?
+    public var instance_id: AnySnowflake?
+    /// Absent for activities in DMs and group DMs.
+    public var guild_id: GuildSnowflake?
+    public var composite_instance_id: String?
     public var application_id: ApplicationSnowflake
 
     public struct Participant: Sendable, Decodable {
       public var user_id: UserSnowflake
-      public var session_id: String
-      public var nonce: AnySnowflake
-      public var member: Guild.PartialMember
+      public var session_id: String?
+      public var nonce: AnySnowflake?
+      public var member: Guild.PartialMember?
     }
 
     public struct Location: Sendable, Decodable {
+      /// `gc` for a guild channel, `pc` for a private channel.
       public var kind: String
       public var channel_id: ChannelSnowflake
-      public var guild_id: GuildSnowflake
+      public var guild_id: GuildSnowflake?
       public var id: String
     }
   }

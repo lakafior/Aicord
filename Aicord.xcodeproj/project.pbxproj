@@ -74,6 +74,7 @@
 		AA13A1E32EA83766005A3613 /* TypingIndicatorBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA13A1E22EA83766005A3613 /* TypingIndicatorBar.swift */; };
 		C0F0A1B2C3D4E5F6A7B8C9D1 /* ForumChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F0A1B2C3D4E5F6A7B8C9D0 /* ForumChannelView.swift */; };
 		D1A0C0DE0000000000000107 /* ThreadBrowserSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000106 /* ThreadBrowserSheet.swift */; };
+		D1A0C0DE000000000000021D /* ActivityNotice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE000000000000021C /* ActivityNotice.swift */; };
 		AA1579362F3220D50097C0FA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA1579352F3220D50097C0FA /* Localizable.xcstrings */; };
 		AA1878F32E81A30C009C7E40 /* GuildView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1878F22E81A305009C7E40 /* GuildView.swift */; };
 		AA21D27E2EA8ED4400C75093 /* ProfileFullSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21D27D2EA8ED3E00C75093 /* ProfileFullSheetView.swift */; };
@@ -296,6 +297,7 @@
 		AA13A1E22EA83766005A3613 /* TypingIndicatorBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorBar.swift; sourceTree = "<group>"; };
 		C0F0A1B2C3D4E5F6A7B8C9D0 /* ForumChannelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForumChannelView.swift; sourceTree = "<group>"; };
 		D1A0C0DE0000000000000106 /* ThreadBrowserSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadBrowserSheet.swift; sourceTree = "<group>"; };
+		D1A0C0DE000000000000021C /* ActivityNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityNotice.swift; sourceTree = "<group>"; };
 		AA1579352F3220D50097C0FA /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		AA1878F22E81A305009C7E40 /* GuildView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuildView.swift; sourceTree = "<group>"; };
 		AA21D27D2EA8ED3E00C75093 /* ProfileFullSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileFullSheetView.swift; sourceTree = "<group>"; };
@@ -696,6 +698,7 @@
 				AA13A1E22EA83766005A3613 /* TypingIndicatorBar.swift */,
 				C0F0A1B2C3D4E5F6A7B8C9D0 /* ForumChannelView.swift */,
 				D1A0C0DE0000000000000106 /* ThreadBrowserSheet.swift */,
+				D1A0C0DE000000000000021C /* ActivityNotice.swift */,
 				AA36D5A52EB60F23006612F8 /* Input */,
 				AA5DC5582E9482E800D81EB5 /* Messages */,
 			);
@@ -1474,6 +1477,7 @@
 				AA13A1E32EA83766005A3613 /* TypingIndicatorBar.swift in Sources */,
 				C0F0A1B2C3D4E5F6A7B8C9D1 /* ForumChannelView.swift in Sources */,
 				D1A0C0DE0000000000000107 /* ThreadBrowserSheet.swift in Sources */,
+				D1A0C0DE000000000000021D /* ActivityNotice.swift in Sources */,
 				AA9D26B12EC95EE4006071FE /* FlowLayout.swift in Sources */,
 				AA47AF212EDEF070008A50C9 /* DevicesSection.swift in Sources */,
 				AA67FD132EF4A792004676A1 /* InputVM.swift in Sources */,

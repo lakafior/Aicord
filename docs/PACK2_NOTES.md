@@ -41,6 +41,15 @@ Notatki z sesji 1.11.2026 (gałąź `claude/pack1-system-polls-9e4515`, po fast-
 - `ScheduledEventsSheet`: zaplanowane i trwające, od najbliższych; obrazek (`cdn…/guild-events/<id>/<hash>.png`), „Live Now” albo data i godzina, koniec, opis, miejsce (kanał głosowy/Stage otwiera kanał, link otwiera przeglądarkę, inne miejsce jako tekst), liczba zainteresowanych.
 - „Interested” od razu zmienia stan i licznik, `PUT`/`DELETE /guilds/{g}/scheduled-events/{e}/users/@me`; przy błędzie wraca. Własne zainteresowania z `GET /users/@me/scheduled-events?guild_ids=…`.
 
+## Activities (dodatek)
+
+- Co przychodzi po `/wordle` (zalogowane na NAScin): `INTERACTION_CREATE`, `EMBEDDED_ACTIVITY_UPDATE_V2` (aplikacja, `location` z kanałem, uczestnicy) i `INTERACTION_SUCCESS`. Żadnej wiadomości w kanale: odpowiedź LAUNCH_ACTIVITY nie zostawia nic w czacie, dlatego wcześniej była cisza.
+- `ChannelStore.activities` trzyma aplikacje działające w kanale (z uczestnikami); pusta lista uczestników usuwa wpis. `ActivityNotice` (`Aicord/Common/Chat/ActivityNotice.swift`) rysuje kartę nad polem wiadomości: ikona i nazwa z `GET /applications/{id}/rpc` (publiczne, w pamięci na sesję), „N person playing”, „This app opens an Activity, which Aicord can't run yet.”, **Open in Discord** (`https://discord.com/channels/<guild|@me>/<kanał>`, z zainstalowanym Discordem otwiera aplikację) i zamknięcie.
+- Ta sama karta pod wiadomością z zaproszeniem do gry lub aktywności (`message.activity` z `message.application`).
+- `EmbeddedActivityUpdateV2`: pola, których nie ma w DM (`guild_id`, `member` uczestnika itd.), są opcjonalne, żeby zdarzenie w DM nie psuło dekodowania.
+- Sprawdzone na NAScin #ogólny: `/wordle` → karta „Wordle · 1 person playing” z ikoną. Przycisk „Open in Discord” nieklikany w testach (otwiera przeglądarkę), wiadomość z zaproszeniem do gry niesprawdzona (nie było jej pod ręką).
+- Eksperyment z prawdziwym uruchamianiem aktywności (WebView `<id>.discordsays.com`, most RPC Embedded App SDK) opisany w `ROADMAP.md`, Etap 13, „Później”.
+
 ## Testy
 
 - Buildy `platform=macOS` i `generic/platform=iOS Simulator` przechodzą (`-derivedDataPath` w scratchpadzie), `swift build` AicordKit też.
@@ -60,6 +69,7 @@ Notatki z sesji 1.11.2026 (gałąź `claude/pack1-system-polls-9e4515`, po fast-
 
 ## Otwarte
 
+- Uruchamianie Activities (plan w roadmapie).
 - Modale i komponenty w odpowiedziach na komendy (`INTERACTION_MODAL_CREATE`), opcje typu załącznik, komendy z menu kontekstowego (osoba/wiadomość).
 - Odświeżenie indeksu komend po `GUILD_APPLICATION_COMMAND_INDEX_UPDATE` (dziś raz na sesję).
 - Tworzenie wydarzeń, wydarzenia cykliczne (wyjątki), zdarzenia gatewaya wydarzeń (lista odświeża się przy otwarciu).
