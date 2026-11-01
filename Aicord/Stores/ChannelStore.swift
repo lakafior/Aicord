@@ -191,7 +191,7 @@ class ChannelStore: DiscordDataStore {
     guard let gateway = gateway?.gateway else { return }
     // not needed anymore, handled by ui
     self.loadingMessagesTask = Task {
-      guard hasPermission(.readMessageHistory) else { return }
+      guard hasPermission(.readMessageHistory), channel?.type?.opensAsChat ?? true else { return }
 
       defer {
         self.requestScrollToBottom()
@@ -200,6 +200,7 @@ class ChannelStore: DiscordDataStore {
       do {
         try await self.fetchMessages()
       } catch {
+        print("[ChannelStore] Fetching messages failed:", error)
         AicordAppState.instances.first?.value.error = error
       }
       self.hasLatestMessages = true

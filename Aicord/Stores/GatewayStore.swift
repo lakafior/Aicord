@@ -171,7 +171,7 @@ final class GatewayStore {
     if let store = channels[id] {
       return store
     } else {
-      let channel = guild?.channels[id] ?? user.privateChannels[id]
+      let channel = guild?.channels[id] ?? guild?.threads[id] ?? user.privateChannels[id]
       let store = ChannelStore(id: id, from: channel, guildStore: guild)
       store.setGateway(self)
       channels[id] = store

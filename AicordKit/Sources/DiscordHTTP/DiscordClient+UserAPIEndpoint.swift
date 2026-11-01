@@ -269,6 +269,16 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint, queries: query.queries))
   }
 
+  /// Lists a forum or media channel's posts. Answers 202 while the index is being built.
+  /// https://docs.discord.food/resources/channel#search-threads
+  public func searchForumThreads(
+    channelID: ChannelSnowflake,
+    query: ThreadSearchQuery
+  ) async throws -> DiscordClientResponse<ThreadSearchResults> {
+    let endpoint = UserAPIEndpoint.searchForumThreads(channelId: channelID)
+    return try await self.send(request: .init(to: endpoint, queries: query.queries))
+  }
+
   /// Returns the public RPC details of an application (name, icon). Needs no authorization,
   /// so it doubles as a check that an application ID exists.
   /// https://docs.discord.food/resources/application#get-application-rpc

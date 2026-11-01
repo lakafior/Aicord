@@ -84,7 +84,7 @@ import SwiftUI
     @ViewBuilder
     private var detail: some View {
       if let currentChannelStore {
-        ChatView(vm: currentChannelStore)
+        ChannelContentView(vm: currentChannelStore)
           // a fixed minimum keeps the chat and member list columns from resizing
           // each other in a loop (AppKit throws once it runs out of layout passes)
           .frame(minWidth: 0, maxWidth: .infinity)
@@ -216,7 +216,7 @@ import SwiftUI
         if gw.state != .connected {
           ProgressView()
         } else if let channelStore {
-          ChatView(vm: channelStore)
+          ChannelContentView(vm: channelStore)
             .frame(minWidth: 0, maxWidth: .infinity)
             .inspector(isPresented: $showingMembers) {
               MemberSidebarView(guildStore: guildStore, channelStore: channelStore)

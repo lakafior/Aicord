@@ -67,7 +67,7 @@ struct LargeBaseplate: View {
     } detail: {
       Group {
         if let currentChannelStore {
-          ChatView(vm: currentChannelStore)
+          ChannelContentView(vm: currentChannelStore)
             // a fixed minimum keeps the chat and member list columns from resizing each other
             // in a loop (AppKit throws once it runs out of layout passes)
             .frame(minWidth: 0, maxWidth: .infinity)

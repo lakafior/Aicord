@@ -75,6 +75,10 @@ extension MessageCell {
       )
     }
 
+    private var isComponentsV2: Bool {
+      message.flags?.contains(.isComponentsV2) == true
+    }
+
     @ViewBuilder
     private var content: some View {
       let mediaFilter = mediaFilter
@@ -83,9 +87,13 @@ extension MessageCell {
         Group {
           if !messageContentHidden {
             let content = message.content ?? ""
-            if message.flags?.contains(.isComponentsV2) == true {
-              ComponentsV2View( /*components: message.components*/)
-                .equatable(by: message.components)
+            if isComponentsV2 {
+              ComponentsV2View(
+                components: message.components?.tree ?? [],
+                message: message,
+                channelStore: channelStore
+              )
+              .equatable(by: message.components)
             } else if !content.isEmpty {
               MarkdownText(
                 content: content,
@@ -104,8 +112,9 @@ extension MessageCell {
         #endif
 
         // Attachments, flagged ones blurred or left out per Content & Social
+        // components v2 messages show their attachments through file and gallery components
         let attachments = Dictionary(
-          grouping: message.attachments ?? [],
+          grouping: isComponentsV2 ? [] : message.attachments ?? [],
           by: mediaFilter.redaction(for:)
         )
         if let shown = attachments[.show] {
@@ -144,6 +153,12 @@ extension MessageCell {
           SensitiveMediaCover {
             EmbedsView(embeds: blurred, message: message, showsLinkMedia: showsLinkMedia)
           }
+        }
+
+        // A bot's v1 buttons and menus, under its embeds
+        if !isComponentsV2, let tree = message.components?.tree, !tree.isEmpty {
+          ComponentsV2View(components: tree, message: message, channelStore: channelStore)
+            .equatable(by: message.components)
         }
 
         // Invite cards for the server links in the text, like Discord

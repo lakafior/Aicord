@@ -23,6 +23,8 @@ class GuildStore: DiscordDataStore {
   let guildId: GuildSnowflake
   var guild: Guild?
   var channels: [ChannelSnowflake: DiscordChannel] = [:]
+  /// Forum and media posts opened from their channel; threads aren't in `channels`.
+  var threads: [ChannelSnowflake: DiscordChannel] = [:]
   private var memberBoxes: [UserSnowflake: MemberBox] = [:]
   private var roleBoxes: OrderedDictionary<RoleSnowflake, RoleBox> = [:]
   var presences: [UserSnowflake: Gateway.PresenceUpdate] = [:]

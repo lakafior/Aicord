@@ -78,13 +78,12 @@ struct ChannelButton: View {
           .modifier(OptionalChannelContextMenu(channel: channel, guildId: guild?.guildId))
       }
     default:
-      // forums, media and stage channels don't open in Aicord yet
+      // forums and media open their post list; other kinds a way to Discord on the web
       if isHidden {
         hiddenRow
       } else {
         serverChannelLabel
-          .opacity(0.5)
-          .selectionDisabled()
+          .tag(channel.id)
           .modifier(OptionalChannelContextMenu(channel: channel, guildId: guild?.guildId))
       }
     }

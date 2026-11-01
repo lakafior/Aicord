@@ -22,6 +22,7 @@ public enum UserAPIEndpoint: Endpoint {
   case getApplicationRPC(id: ApplicationSnowflake)
   case searchGuildMessages(guildId: GuildSnowflake)
   case searchChannelMessages(channelId: ChannelSnowflake)
+  case searchForumThreads(channelId: ChannelSnowflake)
   case getRecentMentions
   case getDetectableApplications
 
@@ -223,6 +224,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "guilds/\(guildId.rawValue)/messages/search"
     case .searchChannelMessages(let channelId):
       suffix = "channels/\(channelId.rawValue)/messages/search"
+    case .searchForumThreads(let channelId):
+      suffix = "channels/\(channelId.rawValue)/threads/search"
     case .getRecentMentions:
       suffix = "users/@me/mentions"
     case .getDetectableApplications:
@@ -421,6 +424,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "guilds/\(guildId.rawValue)/messages/search"
     case .searchChannelMessages(let channelId):
       suffix = "channels/\(channelId.rawValue)/messages/search"
+    case .searchForumThreads(let channelId):
+      suffix = "channels/\(channelId.rawValue)/threads/search"
     case .getRecentMentions:
       suffix = "users/@me/mentions"
     case .getApplicationsWithAssets(let withTeamApplications):
@@ -596,7 +601,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getPartialApplications: return .GET
     case .getPartialApplication: return .GET
     case .getApplicationRPC: return .GET
-    case .searchGuildMessages, .searchChannelMessages: return .GET
+    case .searchGuildMessages, .searchChannelMessages, .searchForumThreads: return .GET
     case .getRecentMentions: return .GET
     case .getDetectableApplications: return .GET
     case .validateAutoModRule: return .POST
@@ -679,7 +684,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getEmbeddedActivities: return true
     case .getPartialApplications: return true
     case .getApplicationRPC: return true
-    case .searchGuildMessages, .searchChannelMessages: return true
+    case .searchGuildMessages, .searchChannelMessages, .searchForumThreads: return true
     case .getRecentMentions: return true
     case .getPartialApplication: return true
     case .getDetectableApplications: return true
@@ -759,7 +764,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getEmbeddedActivities: return true
     case .getPartialApplications: return true
     case .getApplicationRPC: return false
-    case .searchGuildMessages, .searchChannelMessages: return true
+    case .searchGuildMessages, .searchChannelMessages, .searchForumThreads: return true
     case .getRecentMentions: return true
     case .getPartialApplication: return true
     case .getDetectableApplications: return true
@@ -843,6 +848,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getApplicationRPC(let id): return [id.rawValue]
     case .searchGuildMessages(let guildId): return [guildId.rawValue]
     case .searchChannelMessages(let channelId): return [channelId.rawValue]
+    case .searchForumThreads(let channelId): return [channelId.rawValue]
     case .getRecentMentions: return []
     case .getDetectableApplications: return []
     case .validateAutoModRule(let guildId): return [guildId.rawValue]
@@ -1001,6 +1007,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getApplicationRPC: return 125
     case .searchGuildMessages: return 126
     case .searchChannelMessages: return 127
+    case .searchForumThreads: return 143
     case .getRecentMentions: return 128
     case .getUserConsents: return 129
     case .modifyUserConsents: return 130
@@ -1080,6 +1087,8 @@ public enum UserAPIEndpoint: Endpoint {
       return "searchGuildMessages(guildId: \(guildId.rawValue))"
     case .searchChannelMessages(let channelId):
       return "searchChannelMessages(channelId: \(channelId.rawValue))"
+    case .searchForumThreads(let channelId):
+      return "searchForumThreads(channelId: \(channelId.rawValue))"
     case .getRecentMentions:
       return "getRecentMentions"
     case .deleteAttachment(let filename):

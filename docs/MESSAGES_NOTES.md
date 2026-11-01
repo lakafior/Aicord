@@ -34,7 +34,7 @@ Buildy: macOS (arm64) i iOS (symulator) bez nowych ostrzeżeń. PaicordLib: 111 
 - **Do pięciu celów naraz** (limit Discorda). Cele, które się nie udały, zostają zaznaczone, a błąd jest pod podglądem, więc „Send” ponawia tylko je.
 - **Lista celów**: DM-y i grupy od najnowszych (bez próśb i spamu), a kanały tekstowe tylko z bieżącego serwera, dopóki nie wpiszesz nic w wyszukiwarkę. Wyszukiwanie obejmuje wszystkie serwery (dopasowuje też nazwę serwera, więc „NAScin” pokazuje jego kanały).
 - **Uprawnienia** (View Channel + Send Messages) sprawdzam tylko na serwerach, które mają już `GuildStore` z Twoimi rolami. Nie tworzę `GuildStore` dla każdego serwera, bo to subskrypcja gatewaya (op 37) na każdy z nich. Na pozostałych odpowie Discord, a błąd pokaże się w arkuszu.
-- **Forward w menu**: tylko dla wiadomości typu default/reply, bez ankiety, połączenia i komponentów v2. `components` w PaicordLib dekoduje puste `[]` jako `.v2` (zagnieżdżony `decode([ActionRow])` w kontenerze bez klucza), więc sprawdzam tylko flagę `isComponentsV2`. Błąd dekodera jest do poprawienia osobno.
+- **Forward w menu**: tylko dla wiadomości typu default/reply, bez ankiety, połączenia i komponentów v2. `components` w PaicordLib dekoduje puste `[]` jako `.v2` (zagnieżdżony `decode([ActionRow])` w kontenerze bez klucza), więc sprawdzam tylko flagę `isComponentsV2`. Błąd dekodera naprawiony razem z Components V2 (`docs/COMPONENTS_V2.md`).
 - **Wyświetlanie**: istniejący blok „Forwarded” dostał linię źródła (#kanał · serwer albo nazwa DM, data oryginału). Stuknięcie otwiera oryginał, jeśli jesteś na tym serwerze lub w tej rozmowie. Kopia nie pokazuje reakcji oryginału, bo ma jego ID i wcześniej brała reakcje z `ChannelStore.reactions`.
 
 ### Skok do wiadomości (Search i źródło forwardu)
@@ -102,4 +102,4 @@ Z prawdziwymi danymi, bo tego nie wolno mi było klikać:
 - Skok do wiadomości zastępuje wczytane wiadomości kanału. Wiadomości z gatewaya przychodzące w tym czasie nie są dopisywane, dopóki nie wrócisz strzałką do najnowszych (tak działało już `hasLatestMessages`).
 - Filtr uprawnień w arkuszu Forward działa tylko na serwerach z wczytanym `GuildStore`. Na innych mogą być widoczne kanały, w których nie wolno pisać; Discord wtedy odmówi.
 - Błędy z Discorda pokazują się w surowej formie (`DiscordHTTPError.badStatusCode(...)`), jak w reszcie aplikacji.
-- Dekoder `Interaction.ComponentSwitch` w PaicordLib myli puste `components` z v2. Nie poprawiałem go, bo to osobna zmiana w bibliotece.
+- ~~Dekoder `Interaction.ComponentSwitch` w PaicordLib myli puste `components` z v2.~~ Naprawione razem z Components V2.

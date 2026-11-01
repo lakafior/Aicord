@@ -48,6 +48,9 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Optional message logging in Settings → Chat: other people's deleted messages stay in the chat marked in red, and edited messages show what they said before; kept only in memory, cleared when you quit or turn it off
 - **New** · Media Discord flags as sensitive is blurred or blocked in chats according to those settings, and an optional word filter hides matching messages behind a tap (also in reply quotes, mentions and search results), using the community LDNOOBW lists (CC BY 4.0) plus your own words
 
+- **New** · Bot messages built from components (Components V2, e.g. MonitoRSS feeds) show as Discord draws them: cards with an accent bar, sections with a thumbnail or button, text, image galleries, files, separators, link buttons that open their page, and buttons and menus shown read-only; older bot messages show their buttons and menus under the embeds too
+- **New** · Forum and media channels open: their posts, most recently active first (or newest), with tags to filter by, each with its title, tags, author, opening line, picture, reply count and last activity; a post opens in the chat, with a button back to the list. Other channels Aicord can't show yet (stage, directory) offer Open in Browser instead of doing nothing
+
 ### Settings
 
 - **New** · Settings → Content & Social: sensitive and graphic media (show, blur or block), keyword filters, DM spam filter, message requests and who can send you friend requests, saved to your Discord account
@@ -95,6 +98,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Fixed
 
+- **Fixed** · Messages with components no longer show “ComponentsV2 unsupported”, and forum, media and stage channels are no longer greyed out rows that don't open
+- **Fixed** · A message's components decode properly: v1 action rows were always mistaken for v2, and one unknown component no longer breaks the message
 - **Fixed** · Mac: the right-click menu shows quick reactions again, and the emoji picker shows the server's own emoji (it now knows which server it was opened in)
 - **Fixed** · Picking an emoji next to the message field puts it in the message instead of just closing the picker
 - **Fixed** · Forward on iPhone: Send stays above the keyboard instead of disappearing from the navigation bar while you search

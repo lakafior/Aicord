@@ -74,7 +74,8 @@ public struct MessageInteraction: Sendable, Decodable, Equatable, Hashable {
 
 extension Interaction {
   /// Due to Discord reusing the components field, this enum exists to allow you to send either legacy components or the new components v2.
-  /// This does not represent any actual Discord structure. It will try to parse legacy components first, and if that fails it will assume it's v2 components.
+  /// This does not represent any actual Discord structure. It parses legacy action rows when every
+  /// top-level component is one, and the lossy components v2 tree otherwise.
   public enum ComponentSwitch: Sendable, Decodable, Equatable, Hashable {
     var legacy: [ActionRow]? {
       if case .legacy(let actionRows) = self {
@@ -83,53 +84,28 @@ extension Interaction {
       return nil
     }
 
-    var v2: Void? {
-      if case .v2 = self {
-        return ()
-      }
-      return nil
-    }
-
-    public static func == (
-      lhs: Interaction.ComponentSwitch,
-      rhs: Interaction.ComponentSwitch
-    )
-      -> Bool
-    {
-      switch (lhs, rhs) {
-      case (.legacy(let a), .legacy(let b)):
-        return a == b
-      case (.v2, .v2):
-        return true  // TODO: implement when v2 components are defined
-      default:
-        return false
-      }
-    }
-
-    public func hash(into hasher: inout Hasher) {
+    /// The component tree to render, whichever kind was received.
+    public var tree: [MessageComponent] {
       switch self {
-      case .legacy(let actionRows):
-        hasher.combine("legacy")
-        hasher.combine(actionRows)
-      case .v2:
-        hasher.combine("v2")
-      // No properties to hash for v2 yet
+      case .legacy(let actionRows): actionRows.map(MessageComponent.init)
+      case .v2(let components): components
       }
     }
 
     case legacy([ActionRow])
-    case v2(Void)  // Placeholder for future v2 components
+    case v2([MessageComponent])
 
     public init(from decoder: any Decoder) throws {
-      var container = try decoder.unkeyedContainer()
-      if let actionRows = try? container.decode([ActionRow].self) {
+      let container = try decoder.singleValueContainer()
+      let tree = try container.decode([MessageComponent.Lossy].self).map(\.value)
+      if tree.allSatisfy({ if case .actionRow = $0 { true } else { false } }),
+        let actionRows = try? container.decode([ActionRow].self)
+      {
         self = .legacy(actionRows)
       } else {
-        self = .v2(())
+        self = .v2(tree)
       }
     }
-
-
   }
 
   /// https://discord.com/developers/docs/interactions/message-components#action-rows

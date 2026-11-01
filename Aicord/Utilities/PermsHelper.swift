@@ -105,6 +105,25 @@ enum PermissionsHelper {
       guild: guildStore
     )
 
+    // a thread has no overwrites of its own: it takes its parent's, and
+    // Send Messages in Threads stands in for Send Messages
+    if channel.type?.isThread == true, let parentID = channel.parent_id,
+      let parent = guildStore.channels[ChannelSnowflake(parentID.rawValue)]
+    {
+      var permissions = computeOverwrites(
+        basePermissions: basePermissions,
+        member: member,
+        guildStore: guildStore,
+        channel: parent
+      )
+      if permissions.contains(.sendMessagesInThreads) {
+        permissions.insert(.sendMessages)
+      } else {
+        permissions.remove(.sendMessages)
+      }
+      return permissions
+    }
+
     return computeOverwrites(
       basePermissions: basePermissions,
       member: member,

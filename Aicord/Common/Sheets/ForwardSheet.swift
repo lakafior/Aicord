@@ -23,8 +23,7 @@ struct ForwardTarget: Identifiable, Hashable {
   static func canForward(_ message: DiscordChannel.Message) -> Bool {
     guard message.type == .default || message.type == .reply else { return false }
     guard message.poll == nil, message.call == nil else { return false }
-    // `components` can't tell an empty list from v2 components after decoding, so
-    // only the flag is checked; Discord refuses other component messages itself
+    // only the v2 flag is checked; Discord refuses other component messages itself
     if message.flags?.contains(.isComponentsV2) == true { return false }
     return true
   }

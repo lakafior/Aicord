@@ -58,7 +58,7 @@ struct SmallBaseplate: View {
     } secondary: {
       NavigationStack {
         if let currentChannelStore {
-          ChatView(vm: currentChannelStore)
+          ChannelContentView(vm: currentChannelStore)
             .id(currentChannelStore.channelId)  // force view update
             .environment(\.guildStore, currentGuildStore)
             .environment(\.channelStore, currentChannelStore)

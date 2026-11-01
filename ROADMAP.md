@@ -27,6 +27,7 @@ Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`).
    - Nie robimy: Purge (masowe usuwanie wiadomości z czatu). API Discorda pozwala usunąć tylko własne wiadomości w DM, a cudze na serwerze tylko z Manage Messages; masowe usuwanie z konta użytkownika to automatyzacja, za którą Discord blokuje konta (ostrzega przed tym nawet Undiscord).
    - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`. Do tego z zaproszeń: prawdziwe Add Friend (z listy i z profilu) i rozszerzenie Safari na macOS. Kroki: `docs/INVITES_NOTES.md`. (Join na nowym serwerze przez Safari na iPhonie sprawdzony 30.10.2026.)
    - [ ] Natywne listy: sprawdzić na iPadzie i przewijanie dużej listy członków (`docs/LISTS_NOTES.md`).
+   - [ ] Komponenty i forum, dalszy ciąg (`docs/COMPONENTS_V2.md`): przyciski i menu botów (v1 i v2) działają tylko do odczytu, bo klient nie wysyła interakcji (`POST /interactions`); w forum brak tworzenia posta, wyszukiwania po nazwie i siatki dla kanałów media; post otwarty w osobnym oknie Maca nie przełącza okna.
    - [ ] Na Macu po poprawce z nocy 30/31.10: kliknięcie linku (także zaproszenia) w treści wiadomości, Esc po przewinięciu czatu, Safari → Extensions z ekranu instrukcji (`docs/OVERNIGHT.md`).
 
 ---
