@@ -37,6 +37,15 @@ struct ChatView: View {
 
   init(vm: ChannelStore) { self._vm = .init(initialValue: vm) }
 
+  private var botModal: Binding<BotInteractions.PresentedModal?> {
+    Binding(
+      get: {
+        BotInteractions.shared.modal.flatMap { $0.origin.channelID == vm.channelId ? $0 : nil }
+      },
+      set: { if $0 == nil { BotInteractions.shared.modal = nil } }
+    )
+  }
+
   #if os(macOS)
     @FocusState private var isChatFocused: Bool
   #endif
@@ -255,6 +264,15 @@ struct ChatView: View {
     .sheet(isPresented: $indexingChannel) {
       ChannelIndexSheet(
         channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
+    }
+    // a bot's modal, in the chat where its interaction ran
+    .sheet(item: botModal) { presented in
+      InteractionModalSheet(presented: presented)
+        .environment(\.channelStore, vm)
+    }
+    // user and message commands for the message menu's Apps
+    .task(id: vm.channelId) {
+      _ = await SlashCommandIndex.shared.entries(for: vm, client: gw.client)
     }
     .onChange(of: vm.scrollRequest) { _, request in
       guard let request else { return }

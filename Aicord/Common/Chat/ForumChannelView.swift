@@ -107,6 +107,8 @@ struct ForumChannelView: View {
   @State private var indexing = false
   @State private var sort: ThreadSearchQuery.SortBy = .lastMessageTime
   @State private var selectedTags: Set<ForumTagSnowflake> = []
+  @State private var searchText = ""
+  @State private var composing = false
 
   private var channel: DiscordChannel? { vm.channel }
   private var tags: [DiscordChannel.ForumTag] { channel?.available_tags ?? [] }
@@ -164,13 +166,17 @@ struct ForumChannelView: View {
         } else if failed {
           Text("The posts couldn't be loaded.")
         } else if !isLoading && posts.isEmpty {
-          Text("No posts yet.")
+          Text(searchName == nil ? "No posts yet." : "No matching posts.")
         }
       }
     }
     .scrollContentBackground(.hidden)
     .background(theme.common.secondaryBackground)
     .refreshable { await load(reset: true) }
+    .searchable(text: $searchText, prompt: Text("Search posts"))
+    .sheet(isPresented: $composing) {
+      NewForumPostSheet(vm: vm, tags: tags) { post in open(post) }
+    }
     .toolbar {
       ToolbarItem(placement: .principal) {
         Label(
@@ -179,6 +185,15 @@ struct ForumChannelView: View {
         )
         .labelStyle(.titleAndIcon)
         .font(.headline)
+      }
+      if vm.guildStore?.hasPermission(channel: vm, .sendMessages) ?? false {
+        ToolbarItem(placement: .primaryAction) {
+          Button {
+            composing = true
+          } label: {
+            Label("New Post", systemImage: "square.and.pencil")
+          }
+        }
       }
       ToolbarItem(placement: .primaryAction) {
         Menu {
@@ -191,12 +206,23 @@ struct ForumChannelView: View {
         }
       }
     }
-    .task(id: QueryKey(sort: sort, tags: selectedTags)) { await load(reset: true) }
+    .task(id: QueryKey(sort: sort, tags: selectedTags, name: searchName)) {
+      // wait for a pause in typing before searching
+      if searchName != nil { try? await Task.sleep(for: .milliseconds(350)) }
+      guard !Task.isCancelled else { return }
+      await load(reset: true)
+    }
+  }
+
+  private var searchName: String? {
+    let trimmed = searchText.trimmingCharacters(in: .whitespaces)
+    return trimmed.isEmpty ? nil : trimmed
   }
 
   private struct QueryKey: Equatable {
     var sort: ThreadSearchQuery.SortBy
     var tags: Set<ForumTagSnowflake>
+    var name: String?
   }
 
   private func open(_ post: DiscordChannel) {
@@ -209,7 +235,7 @@ struct ForumChannelView: View {
     isLoading = true
     defer { isLoading = false }
     let query = ThreadSearchQuery(
-      tags: Array(selectedTags), sortBy: sort, offset: reset ? 0 : posts.count)
+      name: searchName, tags: Array(selectedTags), sortBy: sort, offset: reset ? 0 : posts.count)
     // Discord answers 202 while it builds the index; it's usually ready in seconds
     for attempt in 0..<3 {
       do {
@@ -241,6 +267,127 @@ struct ForumChannelView: View {
           failed = true
         }
         return
+      }
+    }
+  }
+}
+
+/// A new forum post: title, first message and tags, like Discord's composer.
+struct NewForumPostSheet: View {
+  var vm: ChannelStore
+  var tags: [DiscordChannel.ForumTag]
+  var onCreate: (DiscordChannel) -> Void
+  @Environment(\.gateway) var gw
+  @Environment(\.dismiss) var dismiss
+  @State private var title = ""
+  @State private var content = ""
+  @State private var picked: Set<ForumTagSnowflake> = []
+  @State private var isSending = false
+  @State private var error: String?
+
+  /// Tags the user may apply: moderated ones need Manage Threads.
+  private var usableTags: [DiscordChannel.ForumTag] {
+    let canModerate = vm.guildStore?.hasPermission(channel: vm, .manageThreads) ?? false
+    return tags.filter { !$0.moderated || canModerate }
+  }
+
+  private var requiresTag: Bool {
+    vm.channel?.flags?.contains(.requireTag) == true && !usableTags.isEmpty
+  }
+
+  private var canPost: Bool {
+    !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+      && !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+      && (!requiresTag || !picked.isEmpty) && !isSending
+  }
+
+  var body: some View {
+    NavigationStack {
+      Form {
+        Section("Post Title") {
+          TextField("Title", text: $title)
+            .onChange(of: title) { _, new in if new.count > 100 { title = String(new.prefix(100)) } }
+        }
+        Section("Message") {
+          TextField("Message", text: $content, axis: .vertical)
+            .lineLimit(4...12)
+        }
+        if !usableTags.isEmpty {
+          Section {
+            ScrollView(.horizontal, showsIndicators: false) {
+              HStack(spacing: 6) {
+                ForEach(usableTags, id: \.id) { tag in
+                  let isOn = picked.contains(tag.id)
+                  Button {
+                    if isOn {
+                      picked.remove(tag.id)
+                    } else if picked.count < 5 {
+                      picked.insert(tag.id)
+                    }
+                  } label: {
+                    ForumTagChip(tag: tag, isSelected: isOn)
+                  }
+                  .buttonStyle(.plain)
+                  .accessibilityAddTraits(isOn ? .isSelected : [])
+                }
+              }
+            }
+          } header: {
+            Text("Tags")
+          } footer: {
+            Text(requiresTag ? "Pick at least one tag, up to 5." : "Up to 5 tags.")
+          }
+        }
+        if let error {
+          Section {
+            Label(error, systemImage: "exclamationmark.triangle.fill")
+              .foregroundStyle(.red)
+          }
+        }
+      }
+      .formStyle(.grouped)
+      .navigationTitle("New Post")
+      #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+      #endif
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Cancel") { dismiss() }
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          if isSending {
+            ProgressView()
+          } else {
+            Button("Post") { post() }
+              .disabled(!canPost)
+          }
+        }
+      }
+      .interactiveDismissDisabled(isSending)
+    }
+    #if os(macOS)
+      .frame(minWidth: 420, minHeight: 380)
+    #endif
+  }
+
+  private func post() {
+    isSending = true
+    error = nil
+    Task {
+      defer { isSending = false }
+      do {
+        let created = try await gw.client.startThreadInForumOrMediaChannel(
+          channelId: vm.channelId,
+          payload: .init(
+            name: title.trimmingCharacters(in: .whitespacesAndNewlines),
+            message: .init(content: content.trimmingCharacters(in: .whitespacesAndNewlines)),
+            applied_tags: picked.isEmpty ? nil : Array(picked)
+          )
+        ).decode()
+        dismiss()
+        onCreate(created.channel)
+      } catch {
+        self.error = error.localizedDescription
       }
     }
   }

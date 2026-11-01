@@ -943,6 +943,22 @@ extension DiscordClient {
     try await self.send(request: .init(to: UserAPIEndpoint.createInteraction), payload: payload)
   }
 
+  /// Clicks a bot's button or picks from its select menu.
+  @inlinable
+  public func createInteraction(
+    payload: Payloads.ComponentInteraction
+  ) async throws -> DiscordHTTPResponse {
+    try await self.send(request: .init(to: UserAPIEndpoint.createInteraction), payload: payload)
+  }
+
+  /// Sends the answers to a bot's modal.
+  @inlinable
+  public func createInteraction(
+    payload: Payloads.ModalSubmitInteraction
+  ) async throws -> DiscordHTTPResponse {
+    try await self.send(request: .init(to: UserAPIEndpoint.createInteraction), payload: payload)
+  }
+
   // MARK: - Onboarding and member verification
 
   /// Saves the options the user picked in a guild's onboarding.

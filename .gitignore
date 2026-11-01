@@ -11,3 +11,9 @@ Package.resolved
 /.idea
 /AicordKit/build
 skills
+
+# test bot secrets
+.env
+*.env
+bot.txt
+__pycache__/

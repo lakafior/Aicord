@@ -71,6 +71,10 @@ extension MessageCell {
       lhs.message.id == rhs.message.id
         && lhs.message.edited_timestamp == rhs.message.edited_timestamp
         && lhs.message.embeds == rhs.message.embeds
+        // bots update replies in place: components, "thinking…" and content
+        && lhs.message.components == rhs.message.components
+        && lhs.message.flags == rhs.message.flags
+        && lhs.message.content == rhs.message.content
     }
 
     var body: some View {

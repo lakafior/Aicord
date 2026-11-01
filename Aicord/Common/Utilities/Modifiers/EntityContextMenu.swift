@@ -162,6 +162,8 @@ struct EntityContextMenu<Entity>: ViewModifier {
 
     intelligenceSection(message)
 
+    appsMenu(message)
+
     Section {
       Button {
         Task {
@@ -373,6 +375,50 @@ struct EntityContextMenu<Entity>: ViewModifier {
       characters.append(fallback)
     }
     return Array(characters.prefix(5))
+  }
+
+  /// Bots' message commands, and user commands run on the author, like Discord's Apps.
+  @ViewBuilder
+  func appsMenu(_ message: DiscordChannel.Message) -> some View {
+    if let channel {
+      let commands = SlashCommandIndex.shared.contextCommands[SlashCommandIndex.key(for: channel)] ?? []
+      let messageCommands = commands.filter { $0.command.type == 3 }
+      let userCommands = message.author == nil ? [] : commands.filter { $0.command.type == 2 }
+      if !messageCommands.isEmpty || !userCommands.isEmpty {
+        Section {
+          Menu {
+            ForEach(messageCommands) { entry in
+              appButton(entry, target: AnySnowflake(message.id), channel: channel)
+            }
+            if !userCommands.isEmpty, let author = message.author {
+              Section(author.global_name ?? author.username) {
+                ForEach(userCommands) { entry in
+                  appButton(entry, target: AnySnowflake(author.id), channel: channel)
+                }
+              }
+            }
+          } label: {
+            Label("Apps", systemImage: "square.grid.2x2")
+          }
+        }
+      }
+    }
+  }
+
+  private func appButton(_ entry: SlashCommandEntry, target: AnySnowflake, channel: ChannelStore)
+    -> some View
+  {
+    Button {
+      BotInteractions.shared.runContextCommand(entry, target: target, channel: channel, gw: gw) {
+        appState.error = $0
+      }
+    } label: {
+      if let app = entry.application?.name {
+        Text(verbatim: entry.command.displayName + " · " + app)
+      } else {
+        Text(verbatim: entry.command.displayName)
+      }
+    }
   }
 
   @ViewBuilder

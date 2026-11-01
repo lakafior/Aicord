@@ -165,6 +165,11 @@ extension MessageCell {
             .equatable(by: message.components)
         }
 
+        // A bot's "thinking…", an interaction that failed, "Only you can see this"
+        if !isSnapshot {
+          InteractionFooter(message: message, channelStore: channelStore)
+        }
+
         // Invite cards for the server links in the text, like Discord
         if !isSnapshot {
           ForEach(InviteLink.codes(in: message.content ?? "").prefix(3), id: \.self) { code in

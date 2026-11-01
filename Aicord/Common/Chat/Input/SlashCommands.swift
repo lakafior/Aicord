@@ -5,6 +5,7 @@
 
 import AicordKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Index
 
@@ -28,13 +29,20 @@ struct SlashCommandEntry: Identifiable, Hashable {
 /// Commands the user can run, per server or DM, plus their own installed apps.
 /// Loaded the first time `/` is typed there and kept for the session.
 @MainActor
+@Observable
 final class SlashCommandIndex {
   static let shared = SlashCommandIndex()
 
-  private var cache: [String: [SlashCommandEntry]] = [:]
+  @ObservationIgnored private var cache: [String: [SlashCommandEntry]] = [:]
+  /// User (type 2) and message (type 3) commands, for the message menu's Apps.
+  private(set) var contextCommands: [String: [SlashCommandEntry]] = [:]
+
+  static func key(for channel: ChannelStore) -> String {
+    channel.guildStore.map { "g\($0.guildId.rawValue)" } ?? "c\(channel.channelId.rawValue)"
+  }
 
   func entries(for channel: ChannelStore, client: any DiscordClient) async -> [SlashCommandEntry] {
-    let key = channel.guildStore.map { "g\($0.guildId.rawValue)" } ?? "c\(channel.channelId.rawValue)"
+    let key = Self.key(for: channel)
     if let cached = cache[key] { return cached }
     async let place: ApplicationCommandIndex? =
       if let guild = channel.guildStore {
@@ -44,10 +52,21 @@ final class SlashCommandIndex {
       }
     async let user = try? await client.getUserApplicationCommandIndex().decode()
     var entries: [SlashCommandEntry] = []
+    var contextEntries: [SlashCommandEntry] = []
     var seen = Set<String>()
     for index in [await place, await user].compactMap({ $0 }) {
       let apps = Dictionary(index.applications.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
-      for command in index.application_commands where command.isChatInput {
+      for command in index.application_commands {
+        if command.type == 2 || command.type == 3 {
+          if seen.insert(command.id.rawValue).inserted {
+            contextEntries.append(
+              SlashCommandEntry(
+                command: command, application: apps[command.application_id], path: [], options: [],
+                description: command.displayDescription))
+          }
+          continue
+        }
+        guard command.isChatInput else { continue }
         for entry in Self.flatten(command, application: apps[command.application_id])
         where seen.insert(entry.id).inserted {
           entries.append(entry)
@@ -55,7 +74,9 @@ final class SlashCommandIndex {
       }
     }
     entries.sort { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+    contextEntries.sort { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
     cache[key] = entries
+    contextCommands[key] = contextEntries
     return entries
   }
 
@@ -102,9 +123,25 @@ final class InteractionWatcher {
 
   enum Outcome { case success, failure }
 
+  /// Where each interaction sent from here ran, by nonce, so a modal it opens
+  /// can be answered in the same place.
+  struct Origin {
+    var applicationID: ApplicationSnowflake
+    var guildID: GuildSnowflake?
+    var channelID: ChannelSnowflake
+  }
+
   private var listening = false
+  private var origins: [String: Origin] = [:]
   private var outcomes: [String: CheckedContinuation<Outcome?, Never>] = [:]
   private var autocompletes: [String: CheckedContinuation<[ApplicationCommandIndex.Choice], Never>] = [:]
+
+  /// Remembers where an interaction ran before it is sent.
+  func sent(nonce: String, origin: Origin, gateway: UserGatewayManager) {
+    listen(gateway)
+    origins[nonce] = origin
+    if origins.count > 50, let oldest = origins.keys.min() { origins.removeValue(forKey: oldest) }
+  }
 
   private func listen(_ gateway: UserGatewayManager) {
     guard !listening else { return }
@@ -117,6 +154,9 @@ final class InteractionWatcher {
           resolve(status.nonce, .success)
         case .interactionFailure(let status):
           resolve(status.nonce, .failure)
+        case .interactionModalCreate(let modal):
+          let origin = modal.nonce.flatMap { origins[$0] }
+          BotInteractions.shared.present(modal, origin: origin)
         case .applicationCommandAutocompleteResponse(let response):
           if let nonce = response.nonce, let waiter = autocompletes.removeValue(forKey: nonce) {
             waiter.resume(returning: response.choices)
@@ -170,10 +210,12 @@ enum SlashOptionValue: Hashable {
   case user(UserSnowflake, label: String)
   case channel(ChannelSnowflake, label: String)
   case role(RoleSnowflake, label: String)
+  case attachment(Data, filename: String)
 
   var label: String {
     switch self {
     case .text(let text): text
+    case .attachment(_, let filename): filename
     case .choice(_, let label), .user(_, let label), .channel(_, let label), .role(_, let label): label
     case .bool(let value): value ? String(localized: "True") : String(localized: "False")
     }
@@ -188,6 +230,8 @@ final class SlashCommandDraft {
   var values: [String: SlashOptionValue] = [:]
   var isSending = false
   var error: String?
+  /// Files for attachment options, uploaded right before sending: index and upload by option name.
+  private var uploads: [String: (index: Int, file: Payloads.CreateInteraction.UploadedAttachment)] = [:]
 
   init(entry: SlashCommandEntry) { self.entry = entry }
 
@@ -212,6 +256,7 @@ final class SlashCommandDraft {
     case .user(let id, _): return .string(id.rawValue)
     case .channel(let id, _): return .string(id.rawValue)
     case .role(let id, _): return .string(id.rawValue)
+    case .attachment: return uploads[option.name].map { .int($0.index) }
     case .text(let text):
       let trimmed = text.trimmingCharacters(in: .whitespaces)
       guard !trimmed.isEmpty else { return nil }
@@ -257,9 +302,52 @@ final class SlashCommandDraft {
       guild_id: channel.guildStore?.guildId,
       channel_id: channel.channelId,
       session_id: sessionId,
-      data: .init(command: entry.command, options: dataOptions(focused: focused)),
+      data: .init(
+        command: entry.command, options: dataOptions(focused: focused),
+        attachments: uploads.values.sorted { $0.index < $1.index }.map(\.file)),
       nonce: try MessageSnowflake.makeFake(date: .now).rawValue
     )
+  }
+
+  /// Uploads the files picked for attachment options to Discord's storage.
+  func uploadAttachments(channel: ChannelSnowflake, client: any DiscordClient) async throws {
+    uploads = [:]
+    let files: [(name: String, data: Data, filename: String)] = entry.options.compactMap { option in
+      guard case .attachment(let data, let filename) = values[option.name] else { return nil }
+      return (option.name, data, filename)
+    }
+    for (index, file) in files.enumerated() {
+      let uploaded = try await InteractionUpload.upload(
+        file.data, filename: file.filename, channel: channel, client: client)
+      uploads[file.name] = (
+        index,
+        .init(id: String(index), filename: file.filename, uploaded_filename: uploaded)
+      )
+    }
+  }
+}
+
+/// Puts a file in Discord's storage the way message attachments go:
+/// ask for an upload URL, then PUT the bytes there.
+enum InteractionUpload {
+  static func upload(
+    _ data: Data, filename: String, channel: ChannelSnowflake, client: any DiscordClient
+  ) async throws -> String {
+    let slots = try await client.createAttachments(
+      channelID: channel,
+      payload: .init(files: [.init(filename: filename, file_size: data.count)])
+    ).decode()
+    guard let slot = slots.attachments.first, let url = URL(string: slot.upload_url) else {
+      throw URLError(.badServerResponse)
+    }
+    var request = URLRequest(url: url)
+    request.httpMethod = "PUT"
+    request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+    let (_, response) = try await URLSession.shared.upload(for: request, from: data)
+    guard let status = (response as? HTTPURLResponse)?.statusCode, (200..<300).contains(status) else {
+      throw URLError(.cannotWriteToFile)
+    }
+    return slot.upload_filename
   }
 }
 
@@ -419,7 +507,14 @@ struct SlashCommandComposer: View {
         guard let sessionId = await gateway.getSessionID() else {
           throw URLError(.notConnectedToInternet)
         }
+        try await draft.uploadAttachments(channel: channel.channelId, client: gw.client)
         let payload = try draft.interaction(type: 2, channel: channel, sessionId: sessionId)
+        InteractionWatcher.shared.sent(
+          nonce: payload.nonce,
+          origin: .init(
+            applicationID: payload.application_id, guildID: payload.guild_id,
+            channelID: payload.channel_id),
+          gateway: gateway)
         try await gw.client.createInteraction(payload: payload).guardSuccess()
         let outcome = await InteractionWatcher.shared.outcome(of: payload.nonce, gateway: gateway)
         if outcome == .failure {
@@ -442,6 +537,7 @@ struct SlashOptionField: View {
   @Environment(\.gateway) var gw
 
   @State private var suggestions: [ApplicationCommandIndex.Choice] = []
+  @State private var pickingFile = false
   @State private var autocompleteTask: Task<Void, Never>?
 
   private var label: String {
@@ -491,7 +587,9 @@ struct SlashOptionField: View {
         menu(channelChoices)
       case .role:
         menu(roleChoices)
-      case .attachment, .unknown, .subCommand, .subCommandGroup:
+      case .attachment:
+        attachmentPicker
+      case .unknown, .subCommand, .subCommandGroup:
         Text("Aicord can't fill in this kind of option yet.")
           .font(.caption)
           .foregroundStyle(.secondary)
@@ -510,6 +608,39 @@ struct SlashOptionField: View {
         #if os(iOS)
           .keyboardType(option.type == .string ? .default : .numbersAndPunctuation)
         #endif
+      }
+    }
+  }
+
+  private var attachmentPicker: some View {
+    HStack {
+      Button {
+        pickingFile = true
+      } label: {
+        Label(
+          draft.values[option.name]?.label ?? String(localized: "Choose File…"),
+          systemImage: "paperclip")
+      }
+      .buttonStyle(.bordered)
+      if draft.values[option.name] != nil {
+        Button {
+          draft.values[option.name] = nil
+        } label: {
+          Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(Text("Remove File"))
+      }
+    }
+    .fileImporter(isPresented: $pickingFile, allowedContentTypes: [.item]) { result in
+      guard case .success(let url) = result else { return }
+      let scoped = url.startAccessingSecurityScopedResource()
+      defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+      do {
+        let data = try Data(contentsOf: url)
+        draft.values[option.name] = .attachment(data, filename: url.lastPathComponent)
+      } catch {
+        draft.error = error.localizedDescription
       }
     }
   }

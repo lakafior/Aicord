@@ -169,16 +169,36 @@ extension Payloads {
       public var type: Int
       public var options: [DataOption]
       public var application_command: ApplicationCommandIndex.Command
-      public var attachments: [String]
+      public var attachments: [UploadedAttachment]
+      /// The user or message a context menu command runs on.
+      public var target_id: AnySnowflake?
 
-      public init(command: ApplicationCommandIndex.Command, options: [DataOption]) {
+      public init(
+        command: ApplicationCommandIndex.Command, options: [DataOption],
+        attachments: [UploadedAttachment] = [], target_id: AnySnowflake? = nil
+      ) {
         self.version = command.version
         self.id = command.id
         self.name = command.name
         self.type = command.type ?? 1
         self.options = options
         self.application_command = command
-        self.attachments = []
+        self.attachments = attachments
+        self.target_id = target_id
+      }
+    }
+
+    /// A file already uploaded to Discord's storage for an attachment option;
+    /// the option's value is this `id`.
+    public struct UploadedAttachment: Sendable, Encodable {
+      public var id: String
+      public var filename: String
+      public var uploaded_filename: String
+
+      public init(id: String, filename: String, uploaded_filename: String) {
+        self.id = id
+        self.filename = filename
+        self.uploaded_filename = uploaded_filename
       }
     }
 

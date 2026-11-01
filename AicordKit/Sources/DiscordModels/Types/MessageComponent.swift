@@ -48,11 +48,34 @@ extension Interaction {
       }
     }
 
-    /// A select menu of any kind, kept for display only.
+    /// A select menu of any kind: string (3), user (5), role (6), mentionable (7), channel (8).
     public struct Select: Sendable, Equatable, Hashable {
+      public var type: Int
+      public var custom_id: String
       public var placeholder: String?
       public var options: [ActionRow.StringSelectMenu.Option]
+      public var min_values: Int?
+      public var max_values: Int?
+      public var channel_types: [Int]?
+      public var default_values: [ActionRow.DefaultValue]?
       public var disabled: Bool
+
+      public init(
+        type: Int, custom_id: String, placeholder: String? = nil,
+        options: [ActionRow.StringSelectMenu.Option] = [], min_values: Int? = nil,
+        max_values: Int? = nil, channel_types: [Int]? = nil,
+        default_values: [ActionRow.DefaultValue]? = nil, disabled: Bool = false
+      ) {
+        self.type = type
+        self.custom_id = custom_id
+        self.placeholder = placeholder
+        self.options = options
+        self.min_values = min_values
+        self.max_values = max_values
+        self.channel_types = channel_types
+        self.default_values = default_values
+        self.disabled = disabled
+      }
     }
 
     public struct Section: Sendable, Decodable, Equatable, Hashable {
@@ -102,7 +125,8 @@ extension Interaction {
     }
 
     enum CodingKeys: String, CodingKey {
-      case type, components, placeholder, options, disabled
+      case type, components, placeholder, options, disabled, custom_id
+      case min_values, max_values, channel_types, default_values
     }
 
     public init(from decoder: any Decoder) throws {
@@ -117,9 +141,16 @@ extension Interaction {
         case 3, 5, 6, 7, 8:
           self = .select(
             Select(
+              type: type,
+              custom_id: try container.decode(String.self, forKey: .custom_id),
               placeholder: try? container.decode(String.self, forKey: .placeholder),
               options: (try? container.decode(
                 [ActionRow.StringSelectMenu.Option].self, forKey: .options)) ?? [],
+              min_values: try? container.decode(Int.self, forKey: .min_values),
+              max_values: try? container.decode(Int.self, forKey: .max_values),
+              channel_types: try? container.decode([Int].self, forKey: .channel_types),
+              default_values: try? container.decode(
+                [ActionRow.DefaultValue].self, forKey: .default_values),
               disabled: (try? container.decode(Bool.self, forKey: .disabled)) ?? false
             ))
         case 9: self = .section(try .init(from: decoder))
@@ -180,14 +211,28 @@ extension Interaction.MessageComponent {
         case .stringSelect(let menu):
           return .select(
             Select(
-              placeholder: menu.placeholder, options: menu.options,
+              type: 3, custom_id: menu.custom_id, placeholder: menu.placeholder,
+              options: menu.options, min_values: menu.min_values, max_values: menu.max_values,
               disabled: menu.disabled ?? false))
         case .userSelect(let menu), .roleSelect(let menu), .mentionableSelect(let menu):
+          let type: Int =
+            switch component {
+            case .userSelect: 5
+            case .roleSelect: 6
+            default: 7
+            }
           return .select(
-            Select(placeholder: menu.placeholder, options: [], disabled: menu.disabled ?? false))
+            Select(
+              type: type, custom_id: menu.custom_id, placeholder: menu.placeholder,
+              min_values: menu.min_values, max_values: menu.max_values,
+              default_values: menu.default_values, disabled: menu.disabled ?? false))
         case .channelSelect(let menu):
           return .select(
-            Select(placeholder: menu.placeholder, options: [], disabled: menu.disabled ?? false))
+            Select(
+              type: 8, custom_id: menu.custom_id, placeholder: menu.placeholder,
+              min_values: menu.min_values, max_values: menu.max_values,
+              channel_types: menu.channel_types?.map { Int($0.rawValue) },
+              default_values: menu.default_values, disabled: menu.disabled ?? false))
         case .textInput, .__undocumented:
           return .unknown(0)
         }

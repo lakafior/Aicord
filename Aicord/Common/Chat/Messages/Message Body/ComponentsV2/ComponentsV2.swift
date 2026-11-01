@@ -11,8 +11,8 @@ import SwiftUI
 
 extension MessageCell {
   /// A message's component tree: containers, sections, text, media, files and
-  /// action rows. Link buttons open their URL; the client has no way to send
-  /// interactions, so other buttons and selects are shown but do nothing.
+  /// action rows. Link buttons open their URL; other buttons and selects send
+  /// an interaction to the bot (`BotInteractions`).
   struct ComponentsV2View: View {
     var components: [Interaction.MessageComponent]
     var message: DiscordChannel.PartialMessage
@@ -65,11 +65,11 @@ extension MessageCell {
           Spacer().frame(height: large ? 24 : 8)
         }
       case .actionRow(let children):
-        ComponentActionRow(components: children)
+        ComponentActionRow(components: children, message: message, channelStore: channelStore)
       case .button(let button):
-        ComponentButton(button: button)
+        ComponentButton(button: button, message: message, channelStore: channelStore)
       case .select(let select):
-        ComponentSelect(select: select)
+        ComponentSelect(select: select, message: message, channelStore: channelStore)
       case .unknown:
         // types Discord adds later
         EmptyView()
@@ -221,14 +221,18 @@ extension MessageCell {
 
   struct ComponentActionRow: View {
     var components: [Interaction.MessageComponent]
+    var message: DiscordChannel.PartialMessage
+    var channelStore: ChannelStore
 
     var body: some View {
       // buttons wrap like Discord's; a select takes the whole row
       FlowLayout(spacing: 8) {
         ForEach(Array(components.enumerated()), id: \.offset) { _, component in
           switch component {
-          case .button(let button): ComponentButton(button: button)
-          case .select(let select): ComponentSelect(select: select)
+          case .button(let button):
+            ComponentButton(button: button, message: message, channelStore: channelStore)
+          case .select(let select):
+            ComponentSelect(select: select, message: message, channelStore: channelStore)
           default: EmptyView()
           }
         }
@@ -238,7 +242,10 @@ extension MessageCell {
 
   struct ComponentButton: View {
     @Environment(\.openURL) var openURL
+    @Environment(\.gateway) var gw
     var button: Interaction.ActionRow.Button
+    var message: DiscordChannel.PartialMessage
+    var channelStore: ChannelStore
 
     private var linkURL: URL? {
       guard button.style == .link, let url = button.url else { return nil }
@@ -255,10 +262,23 @@ extension MessageCell {
       }
     }
 
+    private var isSending: Bool {
+      button.custom_id.map { BotInteractions.shared.isSending(message.id, $0) } ?? false
+    }
+
     var body: some View {
-      let isDisabled = button.disabled == true || linkURL == nil
+      let isSending = isSending
+      // premium buttons open a store page Aicord doesn't have
+      let isDisabled =
+        button.disabled == true || button.style == .premium
+        || (linkURL == nil && button.custom_id == nil)
       Button {
-        if let linkURL { openURL(linkURL) }
+        if let linkURL {
+          openURL(linkURL)
+        } else if let customID = button.custom_id {
+          BotInteractions.shared.send(
+            componentType: 2, customID: customID, message: message, channel: channelStore, gw: gw)
+        }
       } label: {
         HStack(spacing: 6) {
           if let emoji = button.emoji {
@@ -273,48 +293,82 @@ extension MessageCell {
               .font(.caption)
           }
         }
+        .opacity(isSending ? 0 : 1)
+        .overlay {
+          if isSending {
+            ProgressView()
+              .controlSize(.small)
+              .tint(.white)
+          }
+        }
         .font(.subheadline.weight(.medium))
         .foregroundStyle(.white)
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
         .background(background, in: .rect(cornerRadius: 6))
-        .opacity(button.disabled == true ? 0.5 : 1)
+        .opacity(isDisabled ? 0.5 : 1)
       }
       .buttonStyle(.plain)
-      .disabled(isDisabled)
-      .help(
-        linkURL == nil
-          ? Text("Aicord can't use bot buttons yet") : Text(verbatim: button.url ?? ""))
+      .disabled(isDisabled || isSending)
+      .help(linkURL == nil ? Text(verbatim: button.label ?? "") : Text(verbatim: button.url ?? ""))
+      .accessibilityValue(isSending ? Text("Sending") : Text(verbatim: ""))
     }
   }
 
-  /// A select menu, shown as its placeholder or default choice; it can't be used.
+  /// A select menu: its placeholder, default or picked values; tapping opens
+  /// the list and a pick goes to the bot.
   struct ComponentSelect: View {
     @Environment(\.theme) var theme
+    @Environment(\.gateway) var gw
     var select: Interaction.MessageComponent.Select
+    var message: DiscordChannel.PartialMessage
+    var channelStore: ChannelStore
+    @State private var picking = false
 
     var body: some View {
-      let selected = select.options.filter { $0.default == true }.map(\.label)
-      HStack {
-        Text(
-          selected.isEmpty
-            ? (select.placeholder ?? String(localized: "Make a selection"))
-            : selected.joined(separator: ", ")
-        )
-        .lineLimit(1)
-        .foregroundStyle(selected.isEmpty ? .secondary : .primary)
-        Spacer(minLength: 8)
-        Image(systemName: "chevron.down")
-          .font(.caption)
-          .foregroundStyle(.secondary)
+      let interactions = BotInteractions.shared
+      let isSending = interactions.isSending(message.id, select.custom_id)
+      let choices = SelectChoice.choices(for: select, channel: channelStore, gw: gw)
+      let defaults = choices.filter(\.isDefault)
+      let selected = interactions.pickedLabels(message, select.custom_id) ?? defaults.map(\.label)
+      Button {
+        picking = true
+      } label: {
+        HStack {
+          Text(
+            selected.isEmpty
+              ? (select.placeholder ?? String(localized: "Make a selection"))
+              : selected.joined(separator: ", ")
+          )
+          .lineLimit(1)
+          .foregroundStyle(selected.isEmpty ? .secondary : .primary)
+          Spacer(minLength: 8)
+          if isSending {
+            ProgressView().controlSize(.small)
+          } else {
+            Image(systemName: "chevron.down")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .frame(maxWidth: 400)
+        .background(theme.common.tertiaryBackground, in: .rect(cornerRadius: 6))
+        .contentShape(.rect)
       }
-      .padding(.horizontal, 10)
-      .padding(.vertical, 8)
-      .frame(maxWidth: 400)
-      .background(theme.common.tertiaryBackground, in: .rect(cornerRadius: 6))
+      .buttonStyle(.plain)
+      .disabled(select.disabled || isSending)
       .opacity(select.disabled ? 0.5 : 1)
-      .accessibilityElement(children: .combine)
-      .accessibilityHint(Text("Aicord can't use bot menus yet"))
+      .sheet(isPresented: $picking) {
+        SelectPickerSheet(
+          select: select, choices: choices, initial: Set(defaults.map(\.value))
+        ) { picked in
+          BotInteractions.shared.send(
+            componentType: select.type, customID: select.custom_id, values: picked.map(\.value),
+            labels: picked.map(\.label), message: message, channel: channelStore, gw: gw)
+        }
+      }
     }
   }
 
