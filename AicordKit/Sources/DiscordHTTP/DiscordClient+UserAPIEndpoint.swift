@@ -1210,3 +1210,14 @@ extension DiscordClient {
       payload: Payloads.ClearRoleIcon())
   }
 }
+
+extension DiscordClient {
+  /// Deletes a server the account owns. User accounts use this rather than
+  /// `DELETE /guilds/{id}`; with two-factor authentication on, Discord asks
+  /// for a code first (MFA required).
+  /// https://docs.discord.food/resources/guild#delete-guild
+  @inlinable
+  public func deleteOwnedGuild(guildId: GuildSnowflake) async throws -> DiscordHTTPResponse {
+    try await self.send(request: .init(to: UserAPIEndpoint.deleteOwnedGuild(guildId: guildId)))
+  }
+}

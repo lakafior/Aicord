@@ -1200,7 +1200,7 @@ struct DeleteServerSection: View {
     Task {
       defer { isDeleting = false }
       do {
-        try await gw.client.deleteGuild(id: guildId).guardSuccess()
+        try await gw.client.deleteOwnedGuild(guildId: guildId).guardSuccess()
         if appState.selectedGuild == guildId { appState.selectedGuild = nil }
         onDeleted()
       } catch {
