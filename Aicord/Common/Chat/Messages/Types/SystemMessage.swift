@@ -49,10 +49,9 @@ extension MessageCell {
           .foregroundStyle(notice.tint)
           .frame(width: avatarSize)
           .accessibilityHidden(true)
-        (notice.text + Text(verbatim: "  ")
-          + Text(SystemTimestamp.text(for: message.timestamp.date))
-          .font(.caption2)
-          .foregroundStyle(.secondary))
+        Text(
+          "\(notice.text)  \(Text(SystemTimestamp.text(for: message.timestamp.date)).font(.caption2).foregroundStyle(.secondary))"
+        )
           #if os(iOS)
             .font(.callout)
           #elseif os(macOS)
@@ -158,7 +157,7 @@ extension MessageCell {
           : Text("\(author) just boosted the server!")
         return Notice(
           symbol: "rocket.fill", tint: .pink,
-          text: boosted + Text(verbatim: " ") + Text("\(guildName) has achieved Level \(level)!"))
+          text: Text("\(boosted) \(Text("\(guildName) has achieved Level \(level)!"))"))
       case .channelFollowAdd:
         return Notice(
           symbol: "megaphone.fill",
@@ -219,10 +218,10 @@ extension MessageCell {
         return Notice(symbol: "face.smiling", text: Text("\(author) added a new emoji."))
       default:
         // anything else: a quiet line with whatever text Discord sent
-        let detail = message.content.isEmpty ? nil : Text(verbatim: ": " + message.content)
+        let detail = message.content.isEmpty ? "" : ": " + message.content
         return Notice(
           symbol: "info.circle",
-          text: Text("\(author) · system message") + (detail ?? Text(verbatim: "")))
+          text: Text("\(Text("\(author) · system message"))\(Text(verbatim: detail))"))
       }
     }
 
