@@ -2251,6 +2251,20 @@ public enum Payloads {
     public func validate() -> [ValidationFailure] {}
   }
 
+  /// https://docs.discord.food/resources/message#create-poll-vote
+  public struct CreatePollVote: Sendable, Encodable, ValidatablePayload {
+    /// Answer IDs as strings, the way Discord's client sends them. Empty removes the vote.
+    public var answer_ids: [String]
+
+    public init(answer_ids: [String]) {
+      self.answer_ids = answer_ids
+    }
+
+    public func validate() -> [ValidationFailure] {
+      validateElementCountDoesNotExceed(answer_ids, max: 10, name: "answer_ids")
+    }
+  }
+
   /// https://docs.discord.food/resources/channel#batch-reject-message-requests
   public struct BatchRejectMessageRequests: Sendable, Encodable, ValidatablePayload {
     public var channel_ids: [ChannelSnowflake]

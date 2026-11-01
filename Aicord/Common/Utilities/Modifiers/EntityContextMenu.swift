@@ -177,6 +177,9 @@ struct EntityContextMenu<Entity>: ViewModifier {
       } label: {
         Label("Mark Unread", systemImage: "envelope.badge")
       }
+      if hasPermission(.pinMessages) || hasPermission(.manageMessages) {
+        pinButton(message)
+      }
     }
 
     if messageIsFromSelf(message) || hasPermission(.manageMessages) {
@@ -262,6 +265,31 @@ struct EntityContextMenu<Entity>: ViewModifier {
       }
     }
   #endif
+
+  /// Pins or unpins; the gateway's message update then flips `pinned`.
+  func pinButton(_ message: DiscordChannel.Message) -> some View {
+    Button {
+      Task {
+        do {
+          let response =
+            message.pinned
+            ? try await gw.client.unpinMessage(
+              channelId: message.channel_id, messageId: message.id)
+            : try await gw.client.pinMessage(
+              channelId: message.channel_id, messageId: message.id)
+          try response.guardSuccess()
+        } catch {
+          appState.error = error
+        }
+      }
+    } label: {
+      if message.pinned {
+        Label("Unpin Message", systemImage: "pin.slash")
+      } else {
+        Label("Pin Message", systemImage: "pin")
+      }
+    }
+  }
 
   func deleteMessageButton(_ message: DiscordChannel.Message) -> some View {
     Button(role: .destructive) {

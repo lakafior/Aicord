@@ -850,6 +850,22 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint), payload: payload)
   }
 
+  /// Sets the current user's answers in a poll; an empty list takes the vote back.
+  /// Fires Message Poll Vote Add/Remove Gateway events.
+  /// https://docs.discord.food/resources/message#create-poll-vote
+  @inlinable
+  public func createPollVote(
+    channelId: ChannelSnowflake,
+    messageId: MessageSnowflake,
+    answerIds: [Int]
+  ) async throws -> DiscordHTTPResponse {
+    let endpoint = UserAPIEndpoint.createPollVote(channelId: channelId, messageId: messageId)
+    return try await self.send(
+      request: .init(to: endpoint),
+      payload: Payloads.CreatePollVote(answer_ids: answerIds.map(String.init))
+    )
+  }
+
   /// Accepts a message request; it moves out of Requests (or Spam) into your DMs.
   /// Fires a Channel Update Gateway event.
   /// https://docs.discord.food/resources/channel#update-message-request

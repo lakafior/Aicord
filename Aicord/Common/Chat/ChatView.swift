@@ -22,6 +22,8 @@ struct ChatView: View {
   @State private var summaryRange: SummaryRange?
   @State private var askingChannel = false
   @State private var indexingChannel = false
+  @State private var showsPins = false
+  @State private var showsThreads = false
   @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
 
@@ -200,6 +202,9 @@ struct ChatView: View {
         }
         .sharedBackgroundVisibility(.hidden)
       #endif
+      ToolbarItem(placement: .primaryAction) {
+        channelMenu
+      }
       // no calls before a request is accepted
       if vm.channel?.type == .dm || vm.channel?.type == .groupDm,
         gw.user.privateChannels[vm.channelId].map({ !$0.isPendingMessageRequest && !$0.isSpam })
@@ -221,6 +226,12 @@ struct ChatView: View {
     .sheet(isPresented: $askingChannel) {
       AskChannelSheet(
         channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
+    }
+    .sheet(isPresented: $showsPins) {
+      PinnedMessagesSheet(vm: vm)
+    }
+    .sheet(isPresented: $showsThreads) {
+      ThreadBrowserSheet(vm: vm)
     }
     .sheet(isPresented: $indexingChannel) {
       ChannelIndexSheet(
@@ -290,6 +301,35 @@ struct ChatView: View {
       .accessibilityHint("Shows Intelligence actions for this channel")
     } else {
       ChannelHeader(vm: vm)
+    }
+  }
+
+  /// Pins, and the threads of a text or announcement channel.
+  @ViewBuilder
+  private var channelMenu: some View {
+    let hasThreads = vm.channel?.type == .guildText || vm.channel?.type == .guildAnnouncement
+    if hasThreads {
+      Menu {
+        Button {
+          showsPins = true
+        } label: {
+          Label("Pinned Messages", systemImage: "pin")
+        }
+        Button {
+          showsThreads = true
+        } label: {
+          Label("Threads", systemImage: "number.square")
+        }
+      } label: {
+        Label("Channel", systemImage: "ellipsis.circle")
+      }
+    } else {
+      Button {
+        showsPins = true
+      } label: {
+        Label("Pinned Messages", systemImage: "pin")
+      }
+      .help(Text("Pinned Messages"))
     }
   }
 

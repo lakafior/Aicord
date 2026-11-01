@@ -56,6 +56,7 @@
 		A20BAF032FA751E000B337A6 /* ProfileBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20BAF022FA751DA00B337A6 /* ProfileBannerView.swift */; };
 		A2C21A1E2FA8150200B0F069 /* SettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C21A1D2FA8150000B0F069 /* SettingsSheet.swift */; };
 		A2C21A202FA816C200B0F069 /* GuildMemberJoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C21A1F2FA816BD00B0F069 /* GuildMemberJoin.swift */; };
+		D1A0C0DE0000000000000101 /* SystemMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000100 /* SystemMessage.swift */; };
 		AA0624802F0A04DF007F28EB /* MessageDrainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06247F2F0A04DA007F28EB /* MessageDrainView.swift */; };
 		AA078FC42EC809D600EDFFA8 /* AccountSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA078FC32EC809D200EDFFA8 /* AccountSection.swift */; };
 		AA078FC72EC80D3C00EDFFA8 /* LocalConsoleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA078FC62EC80D3A00EDFFA8 /* LocalConsoleManager.swift */; };
@@ -71,6 +72,7 @@
 		AA1378062E967A4A00100969 /* ProcessInfo+previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1378042E96798000100969 /* ProcessInfo+previews.swift */; };
 		AA13A1E32EA83766005A3613 /* TypingIndicatorBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA13A1E22EA83766005A3613 /* TypingIndicatorBar.swift */; };
 		C0F0A1B2C3D4E5F6A7B8C9D1 /* ForumChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F0A1B2C3D4E5F6A7B8C9D0 /* ForumChannelView.swift */; };
+		D1A0C0DE0000000000000107 /* ThreadBrowserSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000106 /* ThreadBrowserSheet.swift */; };
 		AA1579362F3220D50097C0FA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA1579352F3220D50097C0FA /* Localizable.xcstrings */; };
 		AA1878F32E81A30C009C7E40 /* GuildView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1878F22E81A305009C7E40 /* GuildView.swift */; };
 		AA21D27E2EA8ED4400C75093 /* ProfileFullSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA21D27D2EA8ED3E00C75093 /* ProfileFullSheetView.swift */; };
@@ -109,6 +111,7 @@
 		AA67FD152EF4A7F4004676A1 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */; };
 		AA6C77472F1A6B9E006BF281 /* AttachmentViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6C77462F1A6B95006BF281 /* AttachmentViewer.swift */; };
 		AA70EFB12EA1B3BD00344D98 /* InputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA70EFB02EA1B3BA00344D98 /* InputBar.swift */; };
+		D1A0C0DE0000000000000105 /* CreatePollSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000104 /* CreatePollSheet.swift */; };
 		AA74E4392EBC411C0031B285 /* EntityContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74E4382EBC410B0031B285 /* EntityContextMenu.swift */; };
 		AA74E43B2EBCA9010031B285 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74E43A2EBCA8FD0031B285 /* Environment.swift */; };
 		AA74E43D2EBD0DFE0031B285 /* BitField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74E43C2EBD0DFB0031B285 /* BitField.swift */; };
@@ -127,6 +130,7 @@
 		AAB50A502E9AA6800048E8B0 /* ChatInputCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB50A4F2E9AA67C0048E8B0 /* ChatInputCommand.swift */; };
 		AAB50A522E9AC9CB0048E8B0 /* ChannelHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB50A512E9AC9CB0048E8B0 /* ChannelHeader.swift */; };
 		AAB50A542E9AD4470048E8B0 /* MessageBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB50A532E9AD4470048E8B0 /* MessageBody.swift */; };
+		D1A0C0DE0000000000000103 /* PollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000102 /* PollView.swift */; };
 		AAB50A562E9AD4680048E8B0 /* StickersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB50A552E9AD4680048E8B0 /* StickersView.swift */; };
 		AAB50A582E9AD4BB0048E8B0 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB50A572E9AD4B80048E8B0 /* Utilities.swift */; };
 		AAB50A5A2E9AD5790048E8B0 /* MessageAuthor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB50A592E9AD5750048E8B0 /* MessageAuthor.swift */; };
@@ -268,6 +272,7 @@
 		A20BAF022FA751DA00B337A6 /* ProfileBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileBannerView.swift; sourceTree = "<group>"; };
 		A2C21A1D2FA8150000B0F069 /* SettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSheet.swift; sourceTree = "<group>"; };
 		A2C21A1F2FA816BD00B0F069 /* GuildMemberJoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuildMemberJoin.swift; sourceTree = "<group>"; };
+		D1A0C0DE0000000000000100 /* SystemMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMessage.swift; sourceTree = "<group>"; };
 		AA06247F2F0A04DA007F28EB /* MessageDrainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDrainView.swift; sourceTree = "<group>"; };
 		AA078FC32EC809D200EDFFA8 /* AccountSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSection.swift; sourceTree = "<group>"; };
 		AA078FC62EC80D3A00EDFFA8 /* LocalConsoleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalConsoleManager.swift; sourceTree = "<group>"; };
@@ -285,6 +290,7 @@
 		AA1378042E96798000100969 /* ProcessInfo+previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProcessInfo+previews.swift"; sourceTree = "<group>"; };
 		AA13A1E22EA83766005A3613 /* TypingIndicatorBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorBar.swift; sourceTree = "<group>"; };
 		C0F0A1B2C3D4E5F6A7B8C9D0 /* ForumChannelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForumChannelView.swift; sourceTree = "<group>"; };
+		D1A0C0DE0000000000000106 /* ThreadBrowserSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadBrowserSheet.swift; sourceTree = "<group>"; };
 		AA1579352F3220D50097C0FA /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		AA1878F22E81A305009C7E40 /* GuildView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuildView.swift; sourceTree = "<group>"; };
 		AA21D27D2EA8ED3E00C75093 /* ProfileFullSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileFullSheetView.swift; sourceTree = "<group>"; };
@@ -323,6 +329,7 @@
 		AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		AA6C77462F1A6B95006BF281 /* AttachmentViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentViewer.swift; sourceTree = "<group>"; };
 		AA70EFB02EA1B3BA00344D98 /* InputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputBar.swift; sourceTree = "<group>"; };
+		D1A0C0DE0000000000000104 /* CreatePollSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePollSheet.swift; sourceTree = "<group>"; };
 		AA74E4382EBC410B0031B285 /* EntityContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityContextMenu.swift; sourceTree = "<group>"; };
 		AA74E43A2EBCA8FD0031B285 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		AA74E43C2EBD0DFB0031B285 /* BitField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitField.swift; sourceTree = "<group>"; };
@@ -342,6 +349,7 @@
 		AAB50A4F2E9AA67C0048E8B0 /* ChatInputCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatInputCommand.swift; sourceTree = "<group>"; };
 		AAB50A512E9AC9CB0048E8B0 /* ChannelHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelHeader.swift; sourceTree = "<group>"; };
 		AAB50A532E9AD4470048E8B0 /* MessageBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBody.swift; sourceTree = "<group>"; };
+		D1A0C0DE0000000000000102 /* PollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollView.swift; sourceTree = "<group>"; };
 		AAB50A552E9AD4680048E8B0 /* StickersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickersView.swift; sourceTree = "<group>"; };
 		AAB50A572E9AD4B80048E8B0 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		AAB50A592E9AD5750048E8B0 /* MessageAuthor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageAuthor.swift; sourceTree = "<group>"; };
@@ -678,6 +686,7 @@
 				AA10971C2E64C189005BC3D2 /* ChatView.swift */,
 				AA13A1E22EA83766005A3613 /* TypingIndicatorBar.swift */,
 				C0F0A1B2C3D4E5F6A7B8C9D0 /* ForumChannelView.swift */,
+				D1A0C0DE0000000000000106 /* ThreadBrowserSheet.swift */,
 				AA36D5A52EB60F23006612F8 /* Input */,
 				AA5DC5582E9482E800D81EB5 /* Messages */,
 			);
@@ -772,6 +781,7 @@
 				AACADCB42F336EE60007F705 /* macOS */,
 				AA06247F2F0A04DA007F28EB /* MessageDrainView.swift */,
 				AA70EFB02EA1B3BA00344D98 /* InputBar.swift */,
+				D1A0C0DE0000000000000104 /* CreatePollSheet.swift */,
 				AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */,
 				AA9F7A522EF96308008BB452 /* AttachmentBar.swift */,
 				AA67FD122EF4A792004676A1 /* InputVM.swift */,
@@ -908,6 +918,7 @@
 			isa = PBXGroup;
 			children = (
 				AAB50A532E9AD4470048E8B0 /* MessageBody.swift */,
+				D1A0C0DE0000000000000102 /* PollView.swift */,
 				AA0C43D52E9EF91D000FA834 /* Markdown */,
 				AA63EB742EA7125300A5F21D /* ComponentsV2 */,
 				AA63EB702EA711C200A5F21D /* Embeds */,
@@ -1112,6 +1123,7 @@
 			isa = PBXGroup;
 			children = (
 				A2C21A1F2FA816BD00B0F069 /* GuildMemberJoin.swift */,
+				D1A0C0DE0000000000000100 /* SystemMessage.swift */,
 				AAEEF5002E9900E50034FA04 /* Default.swift */,
 				AAB50A4F2E9AA67C0048E8B0 /* ChatInputCommand.swift */,
 			);
@@ -1370,6 +1382,7 @@
 				AA2278C72EA448C7002C335F /* Profile.swift in Sources */,
 				AA5F76EE2F3EA53300A7A003 /* QuickSwitcherModifier.swift in Sources */,
 				AA70EFB12EA1B3BD00344D98 /* InputBar.swift in Sources */,
+				D1A0C0DE0000000000000105 /* CreatePollSheet.swift in Sources */,
 				AADD58652E82A95B00CBC8B6 /* GuildScrollBar.swift in Sources */,
 				AA0624802F0A04DF007F28EB /* MessageDrainView.swift in Sources */,
 				AAB905302E82FD9200EA171B /* Conformances.swift in Sources */,
@@ -1395,6 +1408,7 @@
 				AA078FC72EC80D3C00EDFFA8 /* LocalConsoleManager.swift in Sources */,
 				AA47AF2A2EDEF164008A50C9 /* AppearancePreferences.swift in Sources */,
 				AAB50A542E9AD4470048E8B0 /* MessageBody.swift in Sources */,
+				D1A0C0DE0000000000000103 /* PollView.swift in Sources */,
 				57E05C592E6C6AE400B81AA7 /* Design Constants.swift in Sources */,
 				AAFC9DDA2EB7DAE300BB8028 /* VariableBlurView.swift in Sources */,
 				AABED5A62E7F514B005BDD63 /* SettingsStore.swift in Sources */,
@@ -1443,6 +1457,7 @@
 				AA409ABF2EC74F5E00848045 /* ThemingSupport.swift in Sources */,
 				AA13A1E32EA83766005A3613 /* TypingIndicatorBar.swift in Sources */,
 				C0F0A1B2C3D4E5F6A7B8C9D1 /* ForumChannelView.swift in Sources */,
+				D1A0C0DE0000000000000107 /* ThreadBrowserSheet.swift in Sources */,
 				AA9D26B12EC95EE4006071FE /* FlowLayout.swift in Sources */,
 				AA47AF212EDEF070008A50C9 /* DevicesSection.swift in Sources */,
 				AA67FD132EF4A792004676A1 /* InputVM.swift in Sources */,
@@ -1471,6 +1486,7 @@
 				57F5AF532E7CBDD000AD5674 /* AccountPicker.swift in Sources */,
 				AAB50A5A2E9AD5790048E8B0 /* MessageAuthor.swift in Sources */,
 				A2C21A202FA816C200B0F069 /* GuildMemberJoin.swift in Sources */,
+				D1A0C0DE0000000000000101 /* SystemMessage.swift in Sources */,
 				AAB905342E8334AC00EA171B /* SlideoverDoubleView.swift in Sources */,
 				AA47AF362EDEF1E2008A50C9 /* AdvancedSection.swift in Sources */,
 				57F5AF4B2E7CB13F00AD5674 /* Commands.swift in Sources */,

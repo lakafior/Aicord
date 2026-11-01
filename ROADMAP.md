@@ -65,6 +65,22 @@ Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI,
 
 ---
 
+### 🔜 Etap 13: Brakujące funkcje Discorda
+Paczka 1 zrobiona (szczegóły w SHIPPED i `docs/PACK1_NOTES.md`): wiadomości systemowe, ankiety, przypięte i przeglądarka wątków.
+1. **Paczka 1, sprawdzenie:**
+   - [ ] Przeklikać na Macu (sprawdzone tylko w symulatorze iOS): ankieta, tworzenie ankiety, Pinned Messages, Threads, Pin Message w menu pod prawym przyciskiem.
+   - [ ] Zobaczyć na żywo typy, których nie było pod ręką: połączenie w DM (czas i nieodebrane), grupa (dodanie, usunięcie, nazwa, ikona), boost, Stage, AutoMod, zamknięta ankieta (typ 46), utworzenie wątku.
+2. **Paczka 2:**
+   - [ ] Onboarding serwera: pytania i wybór ról po dołączeniu (pokazuje się prawie zawsze na nowym serwerze).
+   - [ ] Slash-komendy z podpowiedziami po `/`.
+   - [ ] Nagrywanie wiadomości głosowych (odtwarzanie już jest).
+   - [ ] Wydarzenia serwera: lista i „Zainteresowany”.
+3. **Później albo wcale:**
+   - [ ] Stage, soundboard, super-reakcje.
+   - Nie robimy: Questy, Activities i sklep Nitro.
+
+---
+
 ### 🔜 Etap 12: Wydania — macOS i iOS w GitHub Releases
 Na końcu, gdy aplikacja jest stabilna. Przygotowane w nocy 30/31.10 (niczego nie uruchomiono na GitHubie): `release.yml` (iOS, `.ipa`, Release, źródło AltStore na Pages), `release_macos.yml` (szkic podpisu i notaryzacji) i `scripts/altstore_source.py`. Kroki i sekrety: `docs/OVERNIGHT.md`, punkt 4.
 1. **macOS: podpisana aplikacja z aktualizacjami:**

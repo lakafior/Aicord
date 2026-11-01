@@ -269,6 +269,15 @@ class ChannelStore: DiscordDataStore {
           if removeAll.channel_id == channelId {
             handleMessageReactionRemoveAll(removeAll)
           }
+        // polls
+        case .messagePollVoteAdd(let vote):
+          if vote.channel_id == channelId {
+            handlePollVote(vote, added: true)
+          }
+        case .messagePollVoteRemove(let vote):
+          if vote.channel_id == channelId {
+            handlePollVote(vote, added: false)
+          }
         case .typingStart(let typing):
           if typing.channel_id == channelId {
             handleTypingStart(typing)
@@ -554,6 +563,44 @@ class ChannelStore: DiscordDataStore {
         self.typingTimeoutTokens.removeValue(forKey: userId)
       }
     }
+  }
+
+  private func handlePollVote(_ vote: Gateway.MessagePollVote, added: Bool) {
+    let isMe = vote.user_id == gateway?.user.currentUser?.id
+    adjustPoll(messageID: vote.message_id, answerID: vote.answer_id, added: added, isMe: isMe)
+  }
+
+  /// Applies the current user's answers after a vote request went through. The
+  /// gateway sends the same votes again; `adjustPoll` ignores ones already counted.
+  func applyOwnPollVote(messageID: MessageSnowflake, answerIDs: Set<Int>) {
+    guard let poll = messages[messageID]?.poll else { return }
+    for answer in poll.answers {
+      guard let id = answer.answer_id else { continue }
+      adjustPoll(messageID: messageID, answerID: id, added: answerIDs.contains(id), isMe: true)
+    }
+  }
+
+  /// Counts one vote in or out. The current user's own votes are tracked by
+  /// `me_voted`, so a repeated add or remove of theirs changes nothing.
+  private func adjustPoll(messageID: MessageSnowflake, answerID: Int, added: Bool, isMe: Bool) {
+    guard var message = messages[messageID], var poll = message.poll else { return }
+    var results = poll.results ?? Poll.Results(is_finalized: false, answer_counts: [])
+    if let index = results.answer_counts.firstIndex(where: { $0.id == answerID }) {
+      var count = results.answer_counts[index]
+      if isMe {
+        guard count.me_voted != added else { return }
+        count.me_voted = added
+      }
+      count.count = max(0, count.count + (added ? 1 : -1))
+      results.answer_counts[index] = count
+    } else if added {
+      results.answer_counts.append(.init(id: answerID, count: 1, me_voted: isMe))
+    } else {
+      return
+    }
+    poll.results = results
+    message.poll = poll
+    messages.updateValue(message, forKey: messageID)
   }
 
   private func handleChannelPinsUpdate(_ pinsUpdate: Gateway.ChannelPinsUpdate) {

@@ -111,6 +111,10 @@ extension MessageCell {
           }
         #endif
 
+        if !isSnapshot, let poll = message.poll {
+          PollView(messageID: message.id, fallback: poll, channelStore: channelStore)
+        }
+
         // Attachments, flagged ones blurred or left out per Content & Social
         // components v2 messages show their attachments through file and gallery components
         let attachments = Dictionary(

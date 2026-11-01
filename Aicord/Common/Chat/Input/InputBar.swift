@@ -354,9 +354,22 @@ extension ChatView {
     }
 
     @Namespace private var mediaPickerNamespace
+    @State private var creatingPoll = false
+
+    /// Polls need Create Polls in servers; DMs and groups always allow them.
+    private var canCreatePoll: Bool {
+      vm.hasPermission(.sendPolls)
+    }
+
+    var mediaPickerButton: some View {
+      mediaPickerMenu
+        .sheet(isPresented: $creatingPoll) {
+          CreatePollSheet(vm: vm)
+        }
+    }
 
     @ViewBuilder
-    var mediaPickerButton: some View {
+    private var mediaPickerMenu: some View {
       #if os(iOS)
         if properties.pickerShown {
           Button {
@@ -399,6 +412,16 @@ extension ChatView {
             } label: {
               Label("Upload Files", systemImage: "doc.on.doc")
             }
+            if canCreatePoll {
+              Button {
+                properties.showPhotosPicker = false
+                properties.showFilePicker = false
+                properties.showEmojiPicker = false
+                creatingPoll = true
+              } label: {
+                Label("Create Poll", systemImage: "chart.bar.xaxis")
+              }
+            }
           } label: {
             Image(systemName: "plus")
               .imageScale(.large)
@@ -415,6 +438,13 @@ extension ChatView {
             self.fileImporterPresented = true
           } label: {
             Label("Upload Files", systemImage: "doc.on.doc")
+          }
+          if canCreatePoll {
+            Button {
+              creatingPoll = true
+            } label: {
+              Label("Create Poll", systemImage: "chart.bar.xaxis")
+            }
           }
         } label: {
           Image(systemName: "plus")

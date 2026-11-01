@@ -67,7 +67,7 @@ struct MessageCell: View {
         priorMessage?.timestamp.date ?? .distantPast
       ) < 300 && message.referenced_message == nil
       && message.type == .default
-      && priorMessage?.type != .guildMemberJoin
+      && (priorMessage?.type == .default || priorMessage?.type == .reply)
 
     let compact = GatewayStore.shared.settings.displaysCompactMessages
     let isDeleted = channelStore.deletedMessageIDs.contains(message.id)
@@ -84,19 +84,24 @@ struct MessageCell: View {
           compact: compact
         )
         .equatable()
-      case .chatInputCommand:
+      case .chatInputCommand, .contextMenuCommand:
         ChatInputCommandMessage(message: message, channelStore: channelStore)
           .equatable()
       case .guildMemberJoin:
         GuildMemberJoinMessage(message: message, channelStore: channelStore)
           .equatable()
+      case .autoModerationAction:
+        // the blocked message under its author, with AutoMod's card
+        DefaultMessage(
+          message: message,
+          channelStore: channelStore,
+          inline: false,
+          compact: compact
+        )
+        .equatable()
       default:
-        HStack {
-          AvatarBalancing()
-          Text("\(Image(systemName: "xmark.circle.fill")) Unsupported message type \(String(describing: message.type))")
-            .foregroundStyle(.red)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
+        SystemMessage(message: message, channelStore: channelStore)
+          .equatable()
       }
 
       if !previousVersions.isEmpty {

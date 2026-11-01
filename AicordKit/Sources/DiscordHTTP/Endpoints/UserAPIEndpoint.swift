@@ -57,6 +57,9 @@ public enum UserAPIEndpoint: Endpoint {
   case batchRejectMessageRequests
   case getMessageRequestSupplementalData
 
+  // MARK: - Polls
+  case createPollVote(channelId: ChannelSnowflake, messageId: MessageSnowflake)
+
   // MARK: - Directory Entries
 
   // MARK: - Discovery
@@ -374,6 +377,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "channels/\(channelId.rawValue)/recipients/@me"
     case .batchRejectMessageRequests:
       suffix = "channels/recipients/@me/batch-reject"
+    case .createPollVote(let channelId, let messageId):
+      suffix = "channels/\(channelId.rawValue)/polls/\(messageId.rawValue)/answers/@me"
     case .getMessageRequestSupplementalData:
       suffix = "users/@me/message-requests/supplemental-data"
 
@@ -566,6 +571,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "channels/\(channelId.rawValue)/recipients/@me"
     case .batchRejectMessageRequests:
       suffix = "channels/recipients/@me/batch-reject"
+    case .createPollVote(let channelId, let messageId):
+      suffix = "channels/\(channelId.rawValue)/polls/\(messageId.rawValue)/answers/@me"
     case .getMessageRequestSupplementalData:
       suffix = "users/@me/message-requests/supplemental-data"
     case .createRemoteAuthSession:
@@ -658,6 +665,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .rejectMessageRequest: return .DELETE
     case .batchRejectMessageRequests: return .PUT
     case .getMessageRequestSupplementalData: return .GET
+    case .createPollVote: return .PUT
     case .createRemoteAuthSession: return .POST
     case .finishRemoteAuthSession: return .POST
     case .cancelRemoteAuthSession: return .POST
@@ -738,6 +746,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .rejectMessageRequest: return true
     case .batchRejectMessageRequests: return true
     case .getMessageRequestSupplementalData: return true
+    case .createPollVote: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -818,6 +827,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .rejectMessageRequest: return true
     case .batchRejectMessageRequests: return true
     case .getMessageRequestSupplementalData: return true
+    case .createPollVote: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -931,6 +941,8 @@ public enum UserAPIEndpoint: Endpoint {
     case .rejectMessageRequest(let channelId): return [channelId.rawValue]
     case .batchRejectMessageRequests: return []
     case .getMessageRequestSupplementalData: return []
+    case .createPollVote(let channelId, let messageId):
+      return [channelId.rawValue, messageId.rawValue]
     case .createRemoteAuthSession: return []
     case .finishRemoteAuthSession: return []
     case .cancelRemoteAuthSession: return []
@@ -1023,6 +1035,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .rejectMessageRequest: return 140
     case .batchRejectMessageRequests: return 141
     case .getMessageRequestSupplementalData: return 142
+    case .createPollVote: return 144
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -1168,6 +1181,8 @@ public enum UserAPIEndpoint: Endpoint {
       return "rejectMessageRequest(channelId: \(channelId.rawValue))"
     case .batchRejectMessageRequests: return "batchRejectMessageRequests"
     case .getMessageRequestSupplementalData: return "getMessageRequestSupplementalData"
+    case .createPollVote(let channelId, let messageId):
+      return "createPollVote(channelId: \(channelId.rawValue), messageId: \(messageId.rawValue))"
     case .createRemoteAuthSession: return "createRemoteAuthSession"
     case .finishRemoteAuthSession: return "finishRemoteAuthSession"
     case .cancelRemoteAuthSession: return "cancelRemoteAuthSession"

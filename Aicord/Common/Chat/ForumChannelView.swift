@@ -49,18 +49,19 @@ struct ChannelContentView: View {
               } label: {
                 Label(parent.name ?? String(localized: "Forum"), systemImage: "chevron.backward")
               }
-              .help(Text("Back to the post list"))
+              .help(
+                parent.type?.isThreadOnly == true
+                  ? Text("Back to the post list") : Text("Back to the channel"))
             }
           }
         }
     }
   }
 
-  /// The forum or media channel a post belongs to, for the way back to its list.
+  /// The channel a thread or forum post belongs to, for the way back to it.
   private var forumParent: DiscordChannel? {
     guard vm.channel?.type?.isThread == true, let parentID = vm.channel?.parent_id,
-      let parent = vm.guildStore?.channels[ChannelSnowflake(parentID.rawValue)],
-      parent.type?.isThreadOnly == true
+      let parent = vm.guildStore?.channels[ChannelSnowflake(parentID.rawValue)]
     else { return nil }
     return parent
   }

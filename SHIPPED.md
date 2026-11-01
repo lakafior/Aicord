@@ -50,6 +50,11 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 - **New** · Bot messages built from components (Components V2, e.g. MonitoRSS feeds) show as Discord draws them: cards with an accent bar, sections with a thumbnail or button, text, image galleries, files, separators, link buttons that open their page, and buttons and menus shown read-only; older bot messages show their buttons and menus under the embeds too
 - **New** · Forum and media channels open: their posts, most recently active first (or newest), with tags to filter by, each with its title, tags, author, opening line, picture, reply count and last activity; a post opens in the chat, with a button back to the list. Other channels Aicord can't show yet (stage, directory) offer Open in Browser instead of doing nothing
+- **New** · Discord's system lines show as quiet grey notices instead of a red “Unsupported message type”: pins (with Show Message), new threads (with Open Thread), the message a thread started from, boosts and boost levels, channel name and icon changes, followed announcement channels, DM and group calls with their length or a missed call, people added to or leaving a group, AutoMod blocks, Stage events, closed polls and the rest; context menu commands show like slash commands
+- **New** · Polls: the question, answers with emoji, vote bars with counts and percentages, time left, one or several answers, Show Results, Vote and Remove Vote, updated live as people vote
+- **New** · Create Poll in the message field's + menu: a question, up to ten answers, how long it stays open and whether people can pick more than one
+- **New** · Pinned Messages in the chat's toolbar menu, and Pin or Unpin Message in a message's menu; tapping a pin jumps to it
+- **New** · Threads in a text or announcement channel's toolbar menu: active and archived threads, each opening in the chat with a button back to the channel
 
 ### Settings
 
@@ -98,6 +103,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Fixed
 
+- **Fixed** · A message right after a system line from the same person no longer joins onto it as if it were the same message
 - **Fixed** · Messages with components no longer show “ComponentsV2 unsupported”, and forum, media and stage channels are no longer greyed out rows that don't open
 - **Fixed** · A message's components decode properly: v1 action rows were always mistaken for v2, and one unknown component no longer breaks the message
 - **Fixed** · Mac: the right-click menu shows quick reactions again, and the emoji picker shows the server's own emoji (it now knows which server it was opened in)
@@ -405,6 +411,14 @@ Szczegóły, sekrety i kroki: `docs/OVERNIGHT.md`, punkt 4. Nic nie zostało uru
    - [x] Wybór mechanizmu aktualizacji: sprawdzanie API GitHuba zamiast Sparkle 2 (bez nowej paczki, działa też dla iOS z AltStore).
 
 ---
+
+### 🧪 Etap 13: Brakujące funkcje Discorda — Paczka 1
+Szczegóły, decyzje i testy: `docs/PACK1_NOTES.md`. Zapisy testowane tylko na NAScin.
+1. **Paczka 1:**
+   - [x] Wiadomości systemowe: `MessageCell.SystemMessage` z linią i ikoną dla przypięcia (skok do wiadomości), utworzenia wątku (otwiera wątek), startera wątku (wiadomość z kanału nadrzędnego), boostów i poziomów, zmiany nazwy i ikony, obserwowania kanału, połączeń w DM (czas, nieodebrane), dodania i usunięcia z grupy, AutoMod, Stage, zamkniętej ankiety, alertów bezpieczeństwa serwera i nowej emoji; komenda z menu kontekstowego jak slash-komenda; każdy inny typ to szara neutralna linia.
+   - [x] Ankiety: `PollView` w treści wiadomości (pytanie, emoji, paski z liczbą i procentem, czas do końca, wiele odpowiedzi, Show Results, Vote, Remove Vote), głos przez `PUT /channels/{c}/polls/{m}/answers/@me` (`UserAPIEndpoint.createPollVote`), aktualizacja z `MESSAGE_POLL_VOTE_ADD`/`REMOVE`; tworzenie ankiety z menu „+” paska wiadomości.
+   - [x] Przypięte: arkusz z listą (`GET /channels/{c}/pins`) i skokiem do wiadomości; Pin/Unpin w menu wiadomości.
+   - [x] Przeglądarka wątków kanału tekstowego i ogłoszeniowego (aktywne i zarchiwizowane przez `threads/search`), wątek w zwykłym czacie z przyciskiem powrotu do kanału.
 
 ### ✅ Etap 10: Intelligence (faza 1 i 2)
 Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tylko do odczytu; przez zewnętrzne API testowane wyłącznie na treści z NAScin.
