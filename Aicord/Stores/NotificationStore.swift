@@ -627,21 +627,7 @@ class NotificationStore: DiscordDataStore {
   private func open(
     guildId: GuildSnowflake?, channelId: ChannelSnowflake, messageId: MessageSnowflake? = nil
   ) {
-    guard
-      let appState = AicordAppState.main
-        ?? AicordAppState.instances.values.first(where: { $0 !== AicordAppState.sharedEphemeral })
-    else { return }
-    if let messageId {
-      appState.open(guild: guildId, channel: channelId, message: messageId)
-    } else {
-      appState.selectedGuild = guildId
-      appState.selectedChannel = channelId
-      appState.chatOpen = true
-    }
-    appState.openedFromNotification += 1
-    #if os(macOS)
-      NSApp.activate()
-    #endif
+    AicordAppState.openExternally(guild: guildId, channel: channelId, message: messageId)
   }
 
   // MARK: - Background (iOS)

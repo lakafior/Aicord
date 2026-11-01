@@ -7,6 +7,7 @@
 //
 
 import AicordKit
+import CoreSpotlight
 import SwiftUI
 
 // Handles using phone suitable layout or desktop suitable layout
@@ -84,14 +85,25 @@ struct RootView: View {
       )
     )
     .onAppear { setupGatewayCallbacks() }
-    // invite links handed over by the Safari extension (aicord://invite/…)
+    // widgets (aicord://channel/…) and invite links handed over by the
+    // Safari extension (aicord://invite/…)
     .onOpenURL { url in
+      if let link = AicordLink(url: url) {
+        SystemIntegration.shared.open(link)
+        return
+      }
       guard gatewayStore.accounts.currentAccountID != nil,
         let code = InviteLink.code(from: url)
       else { return }
       SafariExtensionGuide.markWorking()
       appState.invitePreviewCode = code
     }
+    // Spotlight results and channels handed off from another device
+    .onContinueUserActivity(CSSearchableItemActionType) { SystemIntegration.shared.continue($0) }
+    .onContinueUserActivity(SystemIntegration.channelActivityType) {
+      SystemIntegration.shared.continue($0)
+    }
+    .modifier(ChannelHandoff(appState: appState))
     #if os(macOS)
       // into the open window rather than a new one
       .handlesExternalEvents(preferring: [InviteLink.appScheme], allowing: ["*"])

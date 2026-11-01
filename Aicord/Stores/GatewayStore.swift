@@ -254,6 +254,8 @@ final class GatewayStore {
       )
     }
 
+    SystemIntegration.shared.gatewayReady()
+
     // update user data in account storage
     accounts.updateProfile(for: data.user.id, data.user)
 

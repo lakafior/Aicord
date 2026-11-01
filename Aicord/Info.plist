@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>AicordAppGroup</key>
+	<string>$(AICORD_APP_GROUP)</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>net.smigi.aicord.channel</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

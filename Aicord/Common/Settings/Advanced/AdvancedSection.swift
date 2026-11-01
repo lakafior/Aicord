@@ -22,6 +22,7 @@ struct AdvancedSettings: View {
   @Environment(\.appState) var appState
 
   @State private var cacheSize: Int?
+  @AppStorage(SystemIntegration.spotlightEnabledKey) private var spotlightEnabled = true
   #if os(macOS)
     @AppStorage(MCPPreferences.enabledKey) private var mcpEnabled = false
     @AppStorage(MCPPreferences.directMessagesKey) private var mcpDirectMessages = false
@@ -93,6 +94,22 @@ struct AdvancedSettings: View {
       }
     } footer: {
       Text("Open discord.gg and discord.com/invite links from Safari in Aicord.")
+    }
+
+    Section {
+      Toggle("Show in Spotlight", isOn: $spotlightEnabled)
+        #if os(macOS)
+          .toggleStyle(.switch)
+        #endif
+        .onChange(of: spotlightEnabled) {
+          SystemIntegration.shared.setSpotlightEnabled(spotlightEnabled)
+        }
+    } header: {
+      Text("Spotlight")
+    } footer: {
+      Text(
+        "Find your DMs, channels and saved messages from Spotlight search. Only names go in, plus the text of messages you saved. Turning this off or logging out removes them."
+      )
     }
 
     Section {

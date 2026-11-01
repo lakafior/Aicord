@@ -154,7 +154,8 @@ struct CatchUpSheet: View {
 
   /// The server's unread text channels you can view, except muted ones,
   /// newest activity first.
-  private func candidates() -> [DiscordChannel] {
+  /// Also what "What's New in Server" in Shortcuts reads.
+  static func candidates(guildId: GuildSnowflake, gw: GatewayStore) -> [DiscordChannel] {
     guard let guild = gw.user.guilds[guildId] else { return [] }
     let readStates = gw.readStates
     let guildSettings = gw.userGuildSettings
@@ -180,7 +181,7 @@ struct CatchUpSheet: View {
     }
     guard let model else { return }
 
-    let all = candidates()
+    let all = Self.candidates(guildId: guildId, gw: gw)
     total = min(all.count, Self.channelLimit)
     let place = gw.user.guilds[guildId]?.name ?? ""
     // channels the app can't check permissions for yet may refuse to load;

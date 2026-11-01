@@ -7,6 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B0B0C0DE0000000000000018 /* AicordWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0B0C0DE000000000000000A /* AicordWidgets.appex */; platformFilters = (ios, macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B0B0C0DE0000000000000017 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA1579352F3220D50097C0FA /* Localizable.xcstrings */; };
+		B0B0C0DE0000000000000016 /* VoiceCallLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000007 /* VoiceCallLiveActivity.swift */; };
+		B0B0C0DE0000000000000015 /* AicordWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000006 /* AicordWidgets.swift */; };
+		B0B0C0DE0000000000000014 /* VoiceCallActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000002 /* VoiceCallActivity.swift */; };
+		B0B0C0DE0000000000000013 /* AicordShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000001 /* AicordShared.swift */; };
+		B0B0C0DE0000000000000012 /* AicordIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000005 /* AicordIntents.swift */; };
+		B0B0C0DE0000000000000011 /* VoiceLiveActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000004 /* VoiceLiveActivityController.swift */; };
+		B0B0C0DE0000000000000010 /* SystemIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000003 /* SystemIntegration.swift */; };
+		B0B0C0DE000000000000000F /* VoiceCallActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000002 /* VoiceCallActivity.swift */; };
+		B0B0C0DE000000000000000E /* AicordShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000001 /* AicordShared.swift */; };
 		15A0C0DE00000000015A0009 /* AlertSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A0C0DE00000000015A0008 /* AlertSettings.swift */; };
 		15A0C0DE00000000015A0007 /* ChannelGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A0C0DE00000000015A0006 /* ChannelGallery.swift */; };
 		15A0C0DE00000000015A0005 /* SavedItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A0C0DE00000000015A0004 /* SavedItemsView.swift */; };
@@ -215,6 +226,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		B0B0C0DE0000000000000020 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA1096D32E63BE84005BC3D2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B0B0C0DE000000000000001C;
+			remoteInfo = AicordWidgets;
+		};
 		5AFE74A2CAD15154F5EAD7F6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AA1096D32E63BE84005BC3D2 /* Project object */;
@@ -231,6 +249,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				B0B0C0DE0000000000000018 /* AicordWidgets.appex in Embed Foundation Extensions */,
 				5AFEF657D454654A8F2C4082 /* AicordSafari.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -239,6 +258,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B0B0C0DE000000000000000A /* AicordWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AicordWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0B0C0DE0000000000000009 /* AicordWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AicordWidgets.entitlements; sourceTree = "<group>"; };
+		B0B0C0DE0000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B0B0C0DE0000000000000007 /* VoiceCallLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCallLiveActivity.swift; sourceTree = "<group>"; };
+		B0B0C0DE0000000000000006 /* AicordWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AicordWidgets.swift; sourceTree = "<group>"; };
+		B0B0C0DE0000000000000005 /* AicordIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AicordIntents.swift; sourceTree = "<group>"; };
+		B0B0C0DE0000000000000004 /* VoiceLiveActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceLiveActivityController.swift; sourceTree = "<group>"; };
+		B0B0C0DE0000000000000003 /* SystemIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemIntegration.swift; sourceTree = "<group>"; };
+		B0B0C0DE0000000000000002 /* VoiceCallActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCallActivity.swift; sourceTree = "<group>"; };
+		B0B0C0DE0000000000000001 /* AicordShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AicordShared.swift; sourceTree = "<group>"; };
 		15A0C0DE00000000015A0008 /* AlertSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertSettings.swift; sourceTree = "<group>"; };
 		15A0C0DE00000000015A0006 /* ChannelGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelGallery.swift; sourceTree = "<group>"; };
 		15A0C0DE00000000015A0004 /* SavedItemsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedItemsView.swift; sourceTree = "<group>"; };
@@ -449,6 +478,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B0B0C0DE000000000000000C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5AFEB4020C2B43B3FB3C2A97 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -468,6 +504,36 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B0B0C0DE000000000000001B /* AicordWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				B0B0C0DE0000000000000006 /* AicordWidgets.swift */,
+				B0B0C0DE0000000000000007 /* VoiceCallLiveActivity.swift */,
+				B0B0C0DE0000000000000008 /* Info.plist */,
+				B0B0C0DE0000000000000009 /* AicordWidgets.entitlements */,
+			);
+			path = AicordWidgets;
+			sourceTree = "<group>";
+		};
+		B0B0C0DE000000000000001A /* System */ = {
+			isa = PBXGroup;
+			children = (
+				B0B0C0DE0000000000000003 /* SystemIntegration.swift */,
+				B0B0C0DE0000000000000004 /* VoiceLiveActivityController.swift */,
+				B0B0C0DE0000000000000005 /* AicordIntents.swift */,
+			);
+			path = System;
+			sourceTree = "<group>";
+		};
+		B0B0C0DE0000000000000019 /* AicordShared */ = {
+			isa = PBXGroup;
+			children = (
+				B0B0C0DE0000000000000001 /* AicordShared.swift */,
+				B0B0C0DE0000000000000002 /* VoiceCallActivity.swift */,
+			);
+			path = AicordShared;
+			sourceTree = "<group>";
+		};
 		578E1CDE2E6777DE00C6DEA3 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -682,6 +748,8 @@
 		AA1096D22E63BE84005BC3D2 = {
 			isa = PBXGroup;
 			children = (
+				B0B0C0DE0000000000000019 /* AicordShared */,
+				B0B0C0DE000000000000001B /* AicordWidgets */,
 				AA1097132E64C181005BC3D2 /* Aicord */,
 				5AFE0E59960BFE2FD810352F /* AicordSafari */,
 				579848C62E6C5A07004CC343 /* Frameworks */,
@@ -692,6 +760,7 @@
 		AA1096DC2E63BE84005BC3D2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				B0B0C0DE000000000000000A /* AicordWidgets.appex */,
 				AA1096DB2E63BE84005BC3D2 /* Aicord.app */,
 				5AFEDA6B3775552587C1C25A /* AicordSafari.appex */,
 			);
@@ -1035,6 +1104,7 @@
 		AA9C81802E665E190086B1DA /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				B0B0C0DE000000000000001A /* System */,
 				AE00CD4D95B942E89273CB85 /* Intelligence */,
 				AC09DCE335D5D346D644EE0D /* Voice */,
 				57A4E7092E6B315700470131 /* Login */,
@@ -1228,6 +1298,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B0B0C0DE000000000000001C /* AicordWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B0B0C0DE000000000000001D /* Build configuration list for PBXNativeTarget "AicordWidgets" */;
+			buildPhases = (
+				B0B0C0DE000000000000000B /* Sources */,
+				B0B0C0DE000000000000000C /* Frameworks */,
+				B0B0C0DE000000000000000D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AicordWidgets;
+			productName = AicordWidgets;
+			productReference = B0B0C0DE000000000000000A /* AicordWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		5AFE758A7256AD2044554B31 /* AicordSafari */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5AFEDCFB4B1404FA3487E9B7 /* Build configuration list for PBXNativeTarget "AicordSafari" */;
@@ -1258,6 +1345,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B0B0C0DE0000000000000021 /* PBXTargetDependency */,
 				5AFEF582CE10B187A29DE55E /* PBXTargetDependency */,
 			);
 			name = Aicord;
@@ -1280,6 +1368,9 @@
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					5AFE758A7256AD2044554B31 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					B0B0C0DE000000000000001C = {
 						CreatedOnToolsVersion = 26.0;
 					};
 					AA1096DA2E63BE84005BC3D2 = {
@@ -1309,11 +1400,20 @@
 			targets = (
 				AA1096DA2E63BE84005BC3D2 /* Aicord */,
 				5AFE758A7256AD2044554B31 /* AicordSafari */,
+				B0B0C0DE000000000000001C /* AicordWidgets */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B0B0C0DE000000000000000D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0B0C0DE0000000000000017 /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5AFE239D6CFEB90D75B2044A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1362,6 +1462,17 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B0B0C0DE000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0B0C0DE0000000000000013 /* AicordShared.swift in Sources */,
+				B0B0C0DE0000000000000014 /* VoiceCallActivity.swift in Sources */,
+				B0B0C0DE0000000000000015 /* AicordWidgets.swift in Sources */,
+				B0B0C0DE0000000000000016 /* VoiceCallLiveActivity.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5AFEF474B6ED04097E659EFB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1374,6 +1485,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0B0C0DE0000000000000012 /* AicordIntents.swift in Sources */,
+				B0B0C0DE0000000000000011 /* VoiceLiveActivityController.swift in Sources */,
+				B0B0C0DE0000000000000010 /* SystemIntegration.swift in Sources */,
+				B0B0C0DE000000000000000F /* VoiceCallActivity.swift in Sources */,
+				B0B0C0DE000000000000000E /* AicordShared.swift in Sources */,
 				AEA0F807B973625EA9F2D537 /* ScamWarning.swift in Sources */,
 				044C78D9083D40903B75814E /* ChannelIndex.swift in Sources */,
 				0AFD5990586C92D6CFD99C40 /* ImageDescriptions.swift in Sources */,
@@ -1572,6 +1688,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		B0B0C0DE0000000000000021 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+				macos,
+			);
+			target = B0B0C0DE000000000000001C /* AicordWidgets */;
+			targetProxy = B0B0C0DE0000000000000020 /* PBXContainerItemProxy */;
+		};
 		5AFEF582CE10B187A29DE55E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			platformFilters = (
@@ -1584,6 +1709,90 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		B0B0C0DE000000000000001E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AicordWidgets/AicordWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 5TA8RF548P;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AicordWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Aicord;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B0B0C0DE000000000000001F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AicordWidgets/AicordWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 5TA8RF548P;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AicordWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Aicord;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		5AFE3DB581C16A9EF22B6694 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1675,6 +1884,8 @@
 		AA1096E52E63BE8C005BC3D2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AICORD_APP_GROUP = group.net.smigi.aicord;
+				"AICORD_APP_GROUP[sdk=macosx*]" = "$(DEVELOPMENT_TEAM).net.smigi.aicord";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -1741,6 +1952,8 @@
 		AA1096E62E63BE8C005BC3D2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				AICORD_APP_GROUP = group.net.smigi.aicord;
+				"AICORD_APP_GROUP[sdk=macosx*]" = "$(DEVELOPMENT_TEAM).net.smigi.aicord";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -1936,6 +2149,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B0B0C0DE000000000000001D /* Build configuration list for PBXNativeTarget "AicordWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0B0C0DE000000000000001E /* Debug */,
+				B0B0C0DE000000000000001F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		5AFEDCFB4B1404FA3487E9B7 /* Build configuration list for PBXNativeTarget "AicordSafari" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
