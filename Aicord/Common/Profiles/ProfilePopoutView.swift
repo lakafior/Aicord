@@ -188,6 +188,12 @@ struct ProfilePopoutView: View {
 
       AddFriendProfileButton(user: user)
       DMGalleryProfileButton(user: user)
+      if user.id != gw.user.currentUser?.id {
+        PersonNoteEditor(
+          user: user.id,
+          mutualServers: profile?.mutual_guilds?.compactMap { gw.user.guilds[$0.id]?.name } ?? []
+        )
+      }
       if let guild, !Moderation.actions(for: user, in: guild).isEmpty {
         Menu {
           ModerationMenuItems(guild: guild, user: user) { moderationTarget = $0 }

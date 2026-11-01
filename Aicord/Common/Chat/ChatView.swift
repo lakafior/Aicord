@@ -25,6 +25,7 @@ struct ChatView: View {
   @State private var showsPins = false
   @State private var showsThreads = false
   @State private var showsGallery = false
+  @State private var showsExport = false
   @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
 
@@ -126,6 +127,7 @@ struct ChatView: View {
       .safeAreaInset(edge: .top, spacing: 0) {
         ScamWarningBanner(vm: vm)
       }
+      .overlay(alignment: .top) { OfflinePill() }
       #if os(macOS)
         // esc to scroll to bottom of chat, its a little jank
         .focusable()
@@ -255,6 +257,11 @@ struct ChatView: View {
     .sheet(isPresented: $showsThreads) {
       ThreadBrowserSheet(vm: vm)
     }
+    .sheet(isPresented: $showsExport) {
+      ChannelExportSheet(
+        channelId: vm.channelId, guildId: vm.guildStore?.guildId,
+        title: exportTitle)
+    }
     .sheet(isPresented: $showsGallery) {
       ChannelGallerySheet(
         channelId: vm.channelId, guildId: vm.guildStore?.guildId, title: channelTitle
@@ -294,6 +301,12 @@ struct ChatView: View {
     .onAppear { acknowledgeLatestIfVisible() }
     // a channel marked unread goes back to normal once the user leaves it
     .onDisappear { gw.readStates.manuallyUnread.remove(vm.channelId) }
+    // keep the newest messages on disk to read offline, once loading settles
+    .task(id: vm.messages.keys.last) {
+      try? await Task.sleep(for: .seconds(3))
+      guard !Task.isCancelled else { return }
+      OfflineCache.shared.save(vm, gateway: gw)
+    }
     .onChange(of: vm.channelId) { old, _ in gw.readStates.manuallyUnread.remove(old) }
     // on iPhone the chat only slides away, so closing it counts as leaving
     .onChange(of: appState.chatOpen) { _, open in
@@ -362,9 +375,21 @@ struct ChatView: View {
           Label("Threads", systemImage: "number.square")
         }
       }
+      Divider()
+      Button {
+        showsExport = true
+      } label: {
+        Label("Export Channel…", systemImage: "square.and.arrow.up")
+      }
     } label: {
       Label("Channel", systemImage: "ellipsis.circle")
     }
+  }
+
+  /// "#channel · Server" for a server channel, the DM's name otherwise.
+  private var exportTitle: String {
+    let place = gw.placeName(channelId: vm.channelId, guildId: vm.guildStore?.guildId)
+    return place.isEmpty ? channelTitle : place
   }
 
   private var isPrivateChannel: Bool {

@@ -64,6 +64,8 @@ struct RootView: View {
         .reminderSheet()
         .messageIntelligenceSheet()
         .settingsSheet()
+        .overlay(alignment: .top) { UpdateBanner() }
+        .task { await UpdateChecker.shared.checkOnLaunch() }
         .task {
           AicordAppState.main = appState
           appState.loadPrevGuild()

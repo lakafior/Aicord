@@ -55,6 +55,10 @@ Pick the **Aicord** scheme, choose a Mac or an iOS 26 device or simulator, and r
 
 AI-assisted contributions are welcome. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for how to help out.
 
+## About notifications
+
+Discord's real push notifications go through Apple's push service with Discord's own certificate, so Apple delivers them only to the official Discord app. Aicord can't receive them, and it won't run a server that keeps your account token to forward them. So Aicord notifies you only while it's running: on a Mac that's whenever the app is open, but iOS suspends apps in the background within minutes, after which nothing arrives until you open Aicord again. Keep the official app installed (with its notifications on) if you need to be reached on iPhone.
+
 ## A word of caution
 
 Like every third-party client, using Aicord breaks Discord's Terms of Service. It identifies itself as close to the official client as it can, but the risk of an account ban never goes away. Use it at your own risk.

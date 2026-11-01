@@ -112,7 +112,10 @@ final class SavedItemsStore {
 
   struct GhostPing: Codable, Hashable, Identifiable {
     var message: MessageSnapshot
+    /// When it was deleted, or edited to drop the mention.
     var deletedAt: Date
+    /// The mention was edited out rather than the message deleted.
+    var edited: Bool?
     var id: String { message.id }
   }
 
@@ -219,9 +222,9 @@ final class SavedItemsStore {
 
   // MARK: - Ghost Pings
 
-  func addGhostPing(_ message: MessageSnapshot) {
+  func addGhostPing(_ message: MessageSnapshot, edited: Bool = false) {
     guard !ghostPings.contains(where: { $0.id == message.id }) else { return }
-    ghostPings.insert(GhostPing(message: message, deletedAt: .now), at: 0)
+    ghostPings.insert(GhostPing(message: message, deletedAt: .now, edited: edited), at: 0)
     if ghostPings.count > Self.ghostPingLimit {
       ghostPings.removeLast(ghostPings.count - Self.ghostPingLimit)
     }

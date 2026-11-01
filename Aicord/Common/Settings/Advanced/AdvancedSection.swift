@@ -23,6 +23,12 @@ struct AdvancedSettings: View {
 
   @State private var cacheSize: Int?
   @AppStorage(SystemIntegration.spotlightEnabledKey) private var spotlightEnabled = true
+  @AppStorage(UpdateChecker.enabledKey) private var updatesEnabled = true
+  @State private var updates = UpdateChecker.shared
+  @State private var checkingUpdates = false
+  @AppStorage(OfflineCache.enabledKey) private var offlineEnabled = true
+  @State private var offline = OfflineCache.shared
+  @State private var showingOffline = false
   #if os(macOS)
     @AppStorage(MCPPreferences.enabledKey) private var mcpEnabled = false
     @AppStorage(MCPPreferences.directMessagesKey) private var mcpDirectMessages = false
@@ -53,6 +59,57 @@ struct AdvancedSettings: View {
     } footer: {
       Text(
         "Saved to your Discord account. Adds Copy ID to the menus of messages, users and servers, for bots and bug reports."
+      )
+    }
+
+    Section {
+      Toggle("Check for Updates", isOn: $updatesEnabled)
+        #if os(macOS)
+          .toggleStyle(.switch)
+        #endif
+      Button {
+        checkingUpdates = true
+        Task {
+          await updates.check()
+          checkingUpdates = false
+        }
+      } label: {
+        HStack {
+          Text("Check Now")
+          if checkingUpdates {
+            Spacer()
+            ProgressView().controlSize(.small)
+          }
+        }
+      }
+      .disabled(checkingUpdates)
+      if let result = updates.lastResult {
+        Text(verbatim: result)
+          .font(.footnote)
+          .foregroundStyle(.secondary)
+      }
+    } header: {
+      Text("Updates")
+    } footer: {
+      Text(
+        "Once a day at launch, Aicord asks GitHub for the newest release and shows a banner with a link. Nothing is installed automatically."
+      )
+    }
+
+    Section {
+      Toggle("Save Messages for Offline Reading", isOn: $offlineEnabled)
+        #if os(macOS)
+          .toggleStyle(.switch)
+        #endif
+      Button("Saved for Offline") { showingOffline = true }
+        .sheet(isPresented: $showingOffline) { OfflineReaderView() }
+      Button("Delete Saved Messages", role: .destructive) { offline.removeAll() }
+        .disabled(offline.channels.isEmpty)
+    } header: {
+      Text("Offline")
+    } footer: {
+      Text(
+        "The newest \(OfflineCache.messagesPerChannel) messages of the last \(OfflineCache.channelLimit) channels you opened stay on this device, so you can read them without a connection. Nothing extra is downloaded. \(offline.sizeOnDisk.formatted(.byteCount(style: .file)))"
       )
     }
 

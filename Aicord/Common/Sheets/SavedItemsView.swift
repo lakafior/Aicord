@@ -199,7 +199,7 @@ struct SavedItemsView: View {
     } else {
       Section {
         ForEach(store.ghostPings) { ping in
-          row(ping.message, detail: ping.deletedAt, deleted: true) {
+          row(ping.message, detail: ping.deletedAt, deleted: true, edited: ping.edited == true) {
             store.removeGhostPings([ping.id])
           }
         }
@@ -211,13 +211,13 @@ struct SavedItemsView: View {
   }
 
   private func row(
-    _ message: MessageSnapshot, detail: Date? = nil, deleted: Bool = false,
+    _ message: MessageSnapshot, detail: Date? = nil, deleted: Bool = false, edited: Bool = false,
     remove: @escaping () -> Void
   ) -> some View {
     Button {
       open(message)
     } label: {
-      SnapshotRow(message: message, detail: detail, deleted: deleted)
+      SnapshotRow(message: message, detail: detail, deleted: deleted, edited: edited)
     }
     .buttonStyle(.plain)
     .contextMenu {
@@ -240,6 +240,8 @@ struct SnapshotRow: View {
   /// A reminder's time, or when a ghost ping was deleted.
   var detail: Date? = nil
   var deleted = false
+  /// A ghost ping by editing the mention out, not by deleting.
+  var edited = false
 
   var body: some View {
     HStack(alignment: .top, spacing: 10) {
@@ -271,9 +273,13 @@ struct SnapshotRow: View {
         }
         if let detail {
           Label {
-            Text(detail, format: .relative(presentation: .named))
+            if edited {
+              Text("Mention edited out \(Text(detail, format: .relative(presentation: .named)))")
+            } else {
+              Text(detail, format: .relative(presentation: .named))
+            }
           } icon: {
-            Image(systemName: deleted ? "trash" : "alarm")
+            Image(systemName: edited ? "pencil" : deleted ? "trash" : "alarm")
           }
           .font(.caption)
           .foregroundStyle(deleted ? Color.red : Color.accentColor)

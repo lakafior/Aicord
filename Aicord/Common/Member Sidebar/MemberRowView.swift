@@ -79,6 +79,8 @@ extension MemberSidebarView {
           .fontWeight(.semibold)
           .lineLimit(1)
           .truncationMode(.tail)
+
+          PersonTagsView(user: user.id)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {

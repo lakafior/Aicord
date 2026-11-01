@@ -13,6 +13,8 @@ struct ConnectionStateView: View {
   var state: GatewayState
   @Environment(\.gateway) var gw
   @Environment(\.theme) var theme
+  @State private var offline = OfflineCache.shared
+  @State private var readingOffline = false
   var body: some View {
     ZStack(alignment: .bottom) {
       VStack {
@@ -45,6 +47,12 @@ struct ConnectionStateView: View {
         Text(state.description.capitalized)
           .foregroundStyle(.tertiary)
           .padding(2)
+        if !offline.channels.isEmpty {
+          Button("Read Saved Messages", systemImage: "tray.full") { readingOffline = true }
+            .buttonStyle(.bordered)
+            .padding(.bottom, 4)
+            .sheet(isPresented: $readingOffline) { OfflineReaderView() }
+        }
         switch state {
         case .stopped:
           Text(

@@ -18346,6 +18346,572 @@
           }
         }
       }
+    },
+    "No releases published yet." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie ma jeszcze żadnego wydania."
+          }
+        }
+      }
+    },
+    "GitHub answered with status %lld." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub odpowiedział kodem %lld."
+          }
+        }
+      }
+    },
+    "Aicord is up to date." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aicord jest aktualny."
+          }
+        }
+      }
+    },
+    "Aicord %@ is available." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dostępny jest Aicord %@."
+          }
+        }
+      }
+    },
+    "Aicord %@ is available" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dostępny jest Aicord %@"
+          }
+        }
+      }
+    },
+    "Check for Updates" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdzaj aktualizacje"
+          }
+        }
+      }
+    },
+    "Check Now" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź teraz"
+          }
+        }
+      }
+    },
+    "Updates" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizacje"
+          }
+        }
+      }
+    },
+    "Once a day at launch, Aicord asks GitHub for the newest release and shows a banner with a link. Nothing is installed automatically." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raz dziennie przy starcie Aicord pyta GitHuba o najnowsze wydanie i pokazuje baner z linkiem. Nic nie instaluje się samo."
+          }
+        }
+      }
+    },
+    "Save Messages for Offline Reading" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisuj wiadomości do czytania offline"
+          }
+        }
+      }
+    },
+    "Saved for Offline" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisane offline"
+          }
+        }
+      }
+    },
+    "Delete Saved Messages" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń zapisane wiadomości"
+          }
+        }
+      }
+    },
+    "Offline" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline"
+          }
+        }
+      }
+    },
+    "The newest %lld messages of the last %lld channels you opened stay on this device, so you can read them without a connection. Nothing extra is downloaded. %@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ostatnie wiadomości (do %1$lld) z ostatnio otwartych kanałów (do %2$lld) zostają na tym urządzeniu, więc przeczytasz je bez połączenia. Nic nie jest pobierane dodatkowo. %3$@"
+          }
+        }
+      }
+    },
+    "You're offline. These are the messages saved on this device." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jesteś offline. To wiadomości zapisane na tym urządzeniu."
+          }
+        }
+      }
+    },
+    "Saved %@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisano %@"
+          }
+        }
+      }
+    },
+    "Channels you open are saved here to read without a connection." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwierane kanały zapisują się tutaj, żeby dało się je czytać bez połączenia."
+          }
+        }
+      }
+    },
+    "Offline. New messages won't load until you're connected." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline. Nowe wiadomości wczytają się po połączeniu."
+          }
+        }
+      }
+    },
+    "Read Saved Messages" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czytaj zapisane wiadomości"
+          }
+        }
+      }
+    },
+    "A message that mentioned you was edited to remove the mention" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiadomość ze wzmianką o Tobie została edytowana i wzmianka zniknęła"
+          }
+        }
+      }
+    },
+    "Mention edited out %@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wzmianka usunięta edycją %@"
+          }
+        }
+      }
+    },
+    "Tags: %@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagi: %@"
+          }
+        }
+      }
+    },
+    "Private Note" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prywatna notatka"
+          }
+        }
+      }
+    },
+    "Who is this? Where do you know them from?" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kto to? Skąd się znacie?"
+          }
+        }
+      }
+    },
+    "Remove tag %@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń tag %@"
+          }
+        }
+      }
+    },
+    "Add Tag" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj tag"
+          }
+        }
+      }
+    },
+    "Existing Tags" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Istniejące tagi"
+          }
+        }
+      }
+    },
+    "Mutual servers: %@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wspólne serwery: %@"
+          }
+        }
+      }
+    },
+    "Only on this device. Not shared with Discord." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tylko na tym urządzeniu. Discord tego nie widzi."
+          }
+        }
+      }
+    },
+    "Range" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakres"
+          }
+        }
+      }
+    },
+    "Since a Date" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od daty"
+          }
+        }
+      }
+    },
+    "Since" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od"
+          }
+        }
+      }
+    },
+    "Fetched page by page, about one request a second, so a long history takes a while. At most %lld messages." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pobieranie idzie stronami, mniej więcej jedno zapytanie na sekundę, więc długa historia chwilę potrwa. Najwyżej %lld wiadomości."
+          }
+        }
+      }
+    },
+    "Format" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format"
+          }
+        }
+      }
+    },
+    "Attachments as Links" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Załączniki jako linki"
+          }
+        }
+      }
+    },
+    "Export Channel" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksport kanału"
+          }
+        }
+      }
+    },
+    "Export Channel…" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj kanał…"
+          }
+        }
+      }
+    },
+    "Export" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj"
+          }
+        }
+      }
+    },
+    "Fetched %lld messages…" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fetched %lld message…"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fetched %lld messages…"
+                }
+              }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pobrano %lld wiadomość…"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pobrano %lld wiadomości…"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pobrano %lld wiadomości…"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pobrano %lld wiadomości…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld messages exported." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld message exported."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld messages exported."
+                }
+              }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wyeksportowano %lld wiadomość."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wyeksportowano %lld wiadomości."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wyeksportowano %lld wiadomości."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wyeksportowano %lld wiadomości."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld messages" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld message"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld messages"
+                }
+              }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wiadomość"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wiadomości"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wiadomości"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wiadomości"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Share %@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udostępnij %@"
+          }
+        }
+      }
+    },
+    "No messages in this range." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W tym zakresie nie ma wiadomości."
+          }
+        }
+      }
+    },
+    "Exported from Aicord on %@." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyeksportowano z Aicorda %@."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

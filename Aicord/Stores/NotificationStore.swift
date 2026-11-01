@@ -46,6 +46,8 @@ class NotificationStore: DiscordDataStore {
           handleDeleted([delete.id])
         case .messageDeleteBulk(let delete):
           handleDeleted(delete.ids)
+        case .messageUpdate(let update):
+          handleEdited(update)
         case .relationshipAdd(let relationship):
           handleRelationshipAdd(relationship)
         default:
@@ -181,28 +183,53 @@ class NotificationStore: DiscordDataStore {
     recentMentions[message.id] = (gw.snapshot(of: message), .now)
   }
 
+  /// An edit that takes the mention out (of you, your role or everyone) is a
+  /// ghost ping too. Embeds arriving later send updates without content: skip those.
+  private func handleEdited(_ update: DiscordChannel.PartialMessage) {
+    guard recentMentions[update.id] != nil, update.content != nil,
+      let gw = gateway, let me = gw.user.currentUser?.id
+    else { return }
+    var stillMentioned =
+      (update.mentions ?? []).contains { $0.id == me } || update.mention_everyone == true
+    if !stillMentioned, let guildId = update.guild_id ?? recentMentions[update.id]?.0.guild,
+      let roles = update.mention_roles, !roles.isEmpty
+    {
+      let mine = gw.existingGuildStore(for: guildId)?.member(me)?.roles ?? []
+      stillMentioned = mine.contains { roles.contains($0) }
+    }
+    guard !stillMentioned else { return }
+    reportGhostPing(update.id, edited: true)
+  }
+
   private func handleDeleted(_ ids: [MessageSnowflake]) {
     for id in ids {
-      guard let (snapshot, _) = recentMentions.removeValue(forKey: id),
-        AlertRules.watchesGhostPings
-      else { continue }
-      SavedItemsStore.shared.addGhostPing(snapshot)
-      guard Prefs.bool(Prefs.enabledKey) else { continue }
-      var info = ["channel": snapshot.channelID]
-      info["guild"] = snapshot.guildID
-      post(
-        Content(
-          title: String(localized: "Ghost Ping"),
-          subtitle: [snapshot.authorName, snapshot.place].filter { !$0.isEmpty }
-            .joined(separator: " · "),
-          body: Prefs.preview == .full
-            ? snapshot.text : String(localized: "A message that mentioned you was deleted"),
-          thread: "ghost-pings",
-          userInfo: info
-        ),
-        id: "ghost-\(id.rawValue)"
-      )
+      reportGhostPing(id, edited: false)
     }
+  }
+
+  private func reportGhostPing(_ id: MessageSnowflake, edited: Bool) {
+    guard let (snapshot, _) = recentMentions.removeValue(forKey: id),
+      AlertRules.watchesGhostPings
+    else { return }
+    SavedItemsStore.shared.addGhostPing(snapshot, edited: edited)
+    guard Prefs.bool(Prefs.enabledKey) else { return }
+    var info = ["channel": snapshot.channelID]
+    info["guild"] = snapshot.guildID
+    post(
+      Content(
+        title: String(localized: "Ghost Ping"),
+        subtitle: [snapshot.authorName, snapshot.place].filter { !$0.isEmpty }
+          .joined(separator: " · "),
+        body: Prefs.preview == .full
+          ? snapshot.text
+          : edited
+            ? String(localized: "A message that mentioned you was edited to remove the mention")
+            : String(localized: "A message that mentioned you was deleted"),
+        thread: "ghost-pings",
+        userInfo: info
+      ),
+      id: "ghost-\(id.rawValue)"
+    )
   }
 
   /// Someone's looking at the channel already: the app is in front and it's open.
