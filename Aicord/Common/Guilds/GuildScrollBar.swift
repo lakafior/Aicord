@@ -12,6 +12,7 @@ import SwiftUI
 struct GuildScrollBar: View {
   @Environment(\.gateway) var gw
   @Environment(\.userInterfaceIdiom) var idiom
+  @State private var showsCreateServer = false
 
   var body: some View {
     #if os(iOS)
@@ -90,7 +91,24 @@ struct GuildScrollBar: View {
           }
         }
       }
+
+      Button {
+        showsCreateServer = true
+      } label: {
+        Image(systemName: "plus")
+          .font(.title3.weight(.semibold))
+          .foregroundStyle(.green)
+          .frame(width: 48, height: 48)
+          .background(.fill.tertiary, in: .circle)
+      }
+      .buttonStyle(.plain)
+      .help(Text("Create a Server"))
+      .accessibilityLabel(Text("Create a Server"))
+      .padding(.top, 4)
     }
     .safeAreaPadding(.all, 10)
+    .sheet(isPresented: $showsCreateServer) {
+      CreateServerSheet()
+    }
   }
 }

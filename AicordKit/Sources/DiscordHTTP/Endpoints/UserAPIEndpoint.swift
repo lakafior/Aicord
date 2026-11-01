@@ -27,6 +27,7 @@ public enum UserAPIEndpoint: Endpoint {
   case getDetectableApplications
 
   // MARK: Audit Log
+  case listGuildAuditLogEntries(guildId: GuildSnowflake)
 
   // MARK: Auto Moderation
   case validateAutoModRule(guildId: GuildSnowflake)
@@ -251,6 +252,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "guilds/\(guildId.rawValue)/auto-moderation/rules/validate"
     case .executeAutoModAlertAction(let guildId):
       suffix = "guilds/\(guildId.rawValue)/auto-moderation/alert-action"
+    case .listGuildAuditLogEntries(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/audit-logs"
 
     // MARK: - Channels
     case .getCallEligibility(let channelId):
@@ -483,6 +486,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "guilds/\(guildId.rawValue)/auto-moderation/rules/validate"
     case .executeAutoModAlertAction(let guildId):
       suffix = "guilds/\(guildId.rawValue)/auto-moderation/alert-action"
+    case .listGuildAuditLogEntries(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/audit-logs"
     case .getCallEligibility(let channelId):
       suffix = "channels/\(channelId.rawValue)/call"
     case .modifyCall(let channelId):
@@ -665,6 +670,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return .GET
     case .validateAutoModRule: return .POST
     case .executeAutoModAlertAction: return .POST
+    case .listGuildAuditLogEntries: return .GET
     case .getCallEligibility: return .GET
     case .modifyCall: return .PATCH
     case .ringChannelRecipients: return .POST
@@ -760,6 +766,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return true
     case .validateAutoModRule: return true
     case .executeAutoModAlertAction: return true
+    case .listGuildAuditLogEntries: return true
     case .getCallEligibility: return true
     case .modifyCall: return true
     case .ringChannelRecipients: return true
@@ -851,6 +858,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return true
     case .validateAutoModRule: return true
     case .executeAutoModAlertAction: return true
+    case .listGuildAuditLogEntries: return true
     case .getCallEligibility: return true
     case .modifyCall: return true
     case .ringChannelRecipients: return true
@@ -945,6 +953,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getDetectableApplications: return []
     case .validateAutoModRule(let guildId): return [guildId.rawValue]
     case .executeAutoModAlertAction(let guildId): return [guildId.rawValue]
+    case .listGuildAuditLogEntries(let guildId): return [guildId.rawValue]
     case .getCallEligibility(let channelId): return [channelId.rawValue]
     case .modifyCall(let channelId): return [channelId.rawValue]
     case .ringChannelRecipients(let channelId): return [channelId.rawValue]
@@ -1138,6 +1147,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .addScheduledEventInterest: return 152
     case .removeScheduledEventInterest: return 153
     case .listOwnScheduledEventRSVPs: return 154
+    case .listGuildAuditLogEntries: return 155
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -1175,6 +1185,8 @@ public enum UserAPIEndpoint: Endpoint {
       return "validateAutoModRule(guildId: \(guildId.rawValue), ...)"
     case .executeAutoModAlertAction(let guildId):
       return "executeAutoModAlertAction(guildId: \(guildId.rawValue), ..."
+    case .listGuildAuditLogEntries(let guildId):
+      return "listGuildAuditLogEntries(guildId: \(guildId.rawValue))"
     case .getCallEligibility(let channelId):
       return "getCallEligibility(channelId: \(channelId.rawValue))"
     case .modifyCall(let channelId):

@@ -31,6 +31,7 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 - **Intelligence, read-only and on device by default** — translate messages, summarize channels and catch up on servers, ask a channel or explain what a message refers to, with links back to the messages; an OpenAI-compatible API is optional
 - **Notifications that follow your Discord rules** — per server and channel, quiet hours, keywords, Reply and Mark as Read, without a push server
 - **Messages done properly** — slash commands, voice messages, polls you can vote in and create, pins, a thread browser, Discord's system lines, forwards, message requests and a spam folder, friend requests and Add Friend, a long-press menu with quick reactions
+- **Tools for moderators** — create a server from scratch or a template, timeout, kick and ban with a reason, channels, categories and roles, bans and the audit log, shown only with the right permissions
 - **Invites that open in the app** — create invite links, preview a server before joining, and a Safari extension that sends discord.gg links straight to Aicord
 - **Things the official app doesn't do** — a gallery of a channel's media, links and files, message reminders and saved messages, ghost ping, keyword and person alerts, deleted messages and edit history kept in memory, hidden channels and who can view them, a local word filter, pinned servers and channels
 - **Native on iPhone and Mac** — system lists and Liquid Glass throughout, Swift 6 with strict concurrency, iOS 26 and macOS 26, and almost only Apple's own frameworks

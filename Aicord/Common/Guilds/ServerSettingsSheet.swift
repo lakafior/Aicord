@@ -45,6 +45,8 @@ struct ServerSettingsSheet: View {
           }
         }
 
+        ServerAdminSection(guildId: guildId)
+
         if let guild {
           notificationsSection(guild)
         }

@@ -67,6 +67,10 @@ final class AicordAppState {
   /// The message the forward sheet is open for, if any.
   var forwardTarget: ForwardTarget? = nil
 
+  // MARK: - Moderation
+  /// A member a moderation sheet (timeout, kick, ban, roles) is open for.
+  var moderationTarget: ModerationTarget? = nil
+
   // MARK: - Reminders
   /// A message the custom reminder time sheet is open for.
   var reminderTarget: MessageSnapshot? = nil

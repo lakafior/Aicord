@@ -183,6 +183,18 @@ struct EntityContextMenu<Entity>: ViewModifier {
       }
     }
 
+    if let guild, let author = message.author?.toPartialUser(),
+      !Moderation.actions(for: author, in: guild).isEmpty
+    {
+      Section {
+        Menu {
+          ModerationMenuItems(guild: guild, user: author)
+        } label: {
+          Label("Moderate", systemImage: "shield.lefthalf.filled")
+        }
+      }
+    }
+
     if messageIsFromSelf(message) || hasPermission(.manageMessages) {
       Section {
         #if os(iOS)
@@ -365,6 +377,9 @@ struct EntityContextMenu<Entity>: ViewModifier {
 
   @ViewBuilder
   func userContextMenu(user: PartialUser) -> some View {
+    if let guild {
+      ModerationMenuItems(guild: guild, user: user)
+    }
     if isDeveloperModeEnabled() {
       Button {
         copyText(user.id.rawValue)

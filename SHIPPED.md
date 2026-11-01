@@ -64,6 +64,13 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Server events in the server menu and above the channels when there are any: when and where, the picture and description, how many are interested, and Interested to add or take back yours
 - **New** · Apps that open an Activity (Wordle and the like) no longer leave silence: the chat shows the app with its icon, how many are playing and Open in Discord, and game invites in messages get the same card
 
+### Server management
+
+- **New** · Create a Server from the + at the end of the server list: empty, or from a template link (discord.new/…) after a look at the template; the new server opens at once
+- **New** · Moderate from a member's profile (also opened from the member list) or a message's menu: timeout (60 seconds to a week), remove a timeout, kick and ban (deleting their messages from the last hour to 7 days), each with a confirmation and an optional reason for the audit log. Shown only with the permission and for people below your highest role, never for yourself or the owner
+- **New** · Roles… for a member: give and take the roles below yours
+- **New** · Server Settings → Server Management, for moderators: Channels (create channels and categories; edit name, topic, slowmode, age restriction and category; delete after a confirmation; drag to reorder within a category), Roles (create; name, colour, display options and the common permissions; delete after a confirmation), Bans (with reasons, unban after a confirmation) and the Audit Log (who did what, with reasons, 50 at a time)
+
 ### Settings
 
 - **New** · Settings → Content & Social: sensitive and graphic media (show, blur or block), keyword filters, DM spam filter, message requests and who can send you friend requests, saved to your Discord account
@@ -75,7 +82,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Settings → Chat: Cozy or Compact message display (no avatars, time and name on the message's line), Discord's options for reactions, link previews, uploaded and linked media, spoilers (now also covering spoiler images) and converting emoticons like :) to emoji when sending, saved to your account
 - **New** · Notifications for messages, sent by Aicord itself while it runs (on iPhone while it's open and briefly after): they follow each server's and channel's settings from Discord, with direct messages from everyone, friends, chosen people or all but some, only selected servers or silencing servers and channels on your account, keywords, @everyone and role mentions, quiet hours and Do Not Disturb, a hidden preview, Reply and Mark as Read, and an unread badge on the app icon
 - **New** · Settings → Language: Discord's language, saved to your account, and the app's language with a link to the system's per-app setting
-- **New** · Aicord in Polish: 780 strings translated, picked by the system's language or Aicord's own language setting
+- **New** · Aicord in Polish: all 1,440 strings translated, counts in proper Polish forms (1 / 2–4 / 5+), picked by the system's language or Aicord's own language setting
 - **New** · Settings → Advanced: Developer Mode for Copy ID in menus, image cache size with Clear Cache, and viewing or sharing the app's logs; the separate Debug page is gone
 - **New** · Settings → My Account shows your account details and accounts, and Keybinds lists the shortcuts
 - **New** · Scan QR Code on iPhone uses the whole screen for the camera, starts over after a code that isn't a Discord login, and explains how to allow camera access when it's off
@@ -92,6 +99,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 - **New** · Home and the member list are native lists: channels are a sidebar on Mac and iPad and an Apple Music–style plain list on iPhone, with collapsible categories that remember their state, system selection, and corners and backgrounds that match in light and dark
 - **New** · A Safari extension (iOS and macOS) opens discord.gg and discord.com/invite links in Aicord instead of the website; Settings → Advanced → Safari Extension explains how to turn it on, and the first invite preview offers to show you
+- **New** · Channels & Roles and the server rules look native: rounded cards with emoji and a clear selected state, numbered rules with an agree card, the action in a glass button at the bottom, and rows above the channels without an opaque cell or separator
 - **New** · Liquid Glass app icon made in Icon Composer, with light, dark and tinted variants
 - **New** · iOS draws the app with Liquid Glass: the compatibility flag that kept the old look is gone, the tab bar is the system glass one and lists scroll underneath it
 - **New** · iPhone tabs are Home, Messages, Search and Settings; Messages holds direct messages, group chats, mentions and friends, and your status and activity sit behind a profile card at the top of Settings
@@ -468,3 +476,10 @@ Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tyl
    - [x] „Index Channel” (menu ✨ w kanale): ostatnie 500–5000 wiadomości pobierane po 100 z przerwą 350 ms, z paskiem postępu i anulowaniem, przez te same filtry co dla modelu, z wektorem zdania; plik JSON w Application Support (`ChannelIndexes/<kanał>.json`, ok. 190 B na wiadomość bez wektora, ok. 2 KB z wektorem). Wyszukiwanie po sensie z przejściem do wiadomości, rozmiar na dysku, „Add New Messages”, „Delete Index” z potwierdzeniem. Ask dokłada do 4 (urządzenie) / 10 (API) starszych wiadomości z indeksu. Sprawdzone na NAScin #ogólny: 925 wiadomości, 173 kB, „kite ipa” → wiadomość z Kite.ipa, usunięcie.
    - [x] Rerankowanie bez indeksu: narzędzie `search` modelu z 25 wyników Discorda oddaje te najbliższe pytaniu (6 na urządzeniu, 15 przez API), a Ask na urządzeniu bierze 5 najnowszych i 15 najlepiej pasujących z ostatnich 50 wiadomości.
 
+### 🧪 Etap 14: Reszta do Discorda 1:1 — punkt 3 (1.11)
+3. **Zarządzanie serwerem (dla moderatorów):** szczegóły i testy w `docs/PL_ONBOARDING_ADMIN_NOTES.md`.
+   - [x] Tworzenie serwera od zera (`POST /guilds`) i z szablonu (`GET /guilds/templates/{code}` z podglądem, `POST /guilds/templates/{code}`), przycisk „+” na końcu listy serwerów.
+   - [x] Moderacja z profilu (także z listy członków) i z menu wiadomości: timeout (`communication_disabled_until`), zdjęcie timeoutu (jawne `null`), kick, ban z `delete_message_seconds`, unban; potwierdzenie i powód w `X-Audit-Log-Reason`. Widoczne z uprawnieniem i hierarchią ról jak w Discordzie. Na żywo sprawdzone tylko arkusze i role na sobie; kick, ban i timeout drugiej osoby niesprawdzone.
+   - [x] Kanały i kategorie: tworzenie, nazwa, temat, slowmode, NSFW, kategoria, usuwanie z potwierdzeniem, kolejność przeciąganiem w kategorii (`PATCH /guilds/{id}/channels`).
+   - [x] Role: lista, tworzenie, nazwa, kolor (próbki Discorda i własny), osobno na liście, wzmianki, podstawowe uprawnienia, usuwanie; nadawanie i odbieranie członkom.
+   - [x] Dziennik audytu (`GET /guilds/{id}/audit-logs`, nowy model `GuildAuditLog`), lista banów.

@@ -378,6 +378,46 @@ extension DiscordClient {
     )
   }
 
+  // MARK: - Moderation
+
+  /// One page of a guild's audit log, newest first. Needs View Audit Log.
+  /// https://docs.discord.food/resources/audit-log#get-guild-audit-log
+  @inlinable
+  public func listGuildAuditLogEntries(
+    guildID: GuildSnowflake,
+    before: AnySnowflake? = nil,
+    limit: Int = 50
+  ) async throws -> DiscordClientResponse<GuildAuditLog> {
+    let endpoint = UserAPIEndpoint.listGuildAuditLogEntries(guildId: guildID)
+    return try await self.send(
+      request: .init(
+        to: endpoint,
+        queries: [
+          ("before", before?.rawValue),
+          ("limit", String(limit)),
+        ]
+      )
+    )
+  }
+
+  /// Ends a member's timeout. Needs Moderate Members.
+  /// https://docs.discord.food/resources/guild#modify-guild-member
+  @inlinable
+  public func removeGuildMemberTimeout(
+    guildId: GuildSnowflake,
+    userId: UserSnowflake,
+    reason: String? = nil
+  ) async throws -> DiscordClientResponse<Guild.Member> {
+    let endpoint = APIEndpoint.updateGuildMember(guildId: guildId, userId: userId)
+    return try await self.send(
+      request: .init(
+        to: endpoint,
+        headers: reason.map { ["X-Audit-Log-Reason": $0] } ?? [:]
+      ),
+      payload: Payloads.RemoveGuildMemberTimeout()
+    )
+  }
+
   // MARK: - Emoji
 
   /// Returns the most-used emojis for the given guild.

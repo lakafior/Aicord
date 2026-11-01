@@ -94,12 +94,12 @@ Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK
 2. **Wideo:** (nadawanie wideo i ekranu jest w Etapie 9)
    - [ ] Najpierw oglądanie cudzego Go Live i kamer w kanale głosowym, potem własna kamera.
    - [ ] Redukcja szumów mikrofonu w voice (odpowiednik Krisp, np. przetwarzanie głosu z `AVAudioEngine`).
-3. **Zarządzanie serwerem (dla moderatorów):**
-   - [ ] Moderacja z profilu i menu wiadomości: timeout, kick, ban, usuwanie wiadomości z ostatnich godzin.
-   - [ ] Tworzenie i edycja kanałów i kategorii, kolejność, uprawnienia kanału.
-   - [ ] Role: lista, edycja (nazwa, kolor, uprawnienia), nadawanie i odbieranie członkom.
-   - [ ] Dziennik audytu, ustawienia AutoModa, wgrywanie emoji i naklejek.
-   - [ ] Tworzenie serwera (z szablonu albo od zera).
+3. **Zarządzanie serwerem (dla moderatorów):** moderacja, kanały, role, bany, dziennik audytu i tworzenie serwera zrobione 1.11 (SHIPPED, `docs/PL_ONBOARDING_ADMIN_NOTES.md`). Zostało:
+   - [ ] Sprawdzić kick, ban i timeout z drugim kontem na serwerze testowym (z jednego konta się nie da).
+   - [ ] Uprawnienia kanału (nadpisania dla ról i osób), kolejność kategorii i ról.
+   - [ ] Ustawienia AutoModa, wgrywanie emoji i naklejek.
+   - [ ] Pełna lista uprawnień roli (dziś najczęstsze) i ikony ról.
+   - [ ] Usuwanie serwera przez właściciela (z potwierdzeniem i kodem 2FA).
 
 ---
 

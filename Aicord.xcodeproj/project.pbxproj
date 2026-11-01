@@ -207,6 +207,9 @@
 		BDE5D9945DEAF7729CD99416 /* SafariExtensionGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = F34F85AD5CC5B7FA6C495015 /* SafariExtensionGuide.swift */; };
 		C0FFEE012F00000000000002 /* PlaceContextMenus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012F00000000000001 /* PlaceContextMenus.swift */; };
 		C0FFEE012F00000000000004 /* ServerSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */; };
+		C0FFEE0A5000000000000002 /* ServerAdmin.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE0A5000000000000001 /* ServerAdmin.swift */; };
+		C0FFEE0A5000000000000004 /* ServerModeration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE0A5000000000000003 /* ServerModeration.swift */; };
+		C0FFEE0A5000000000000006 /* CreateServerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE0A5000000000000005 /* CreateServerSheet.swift */; };
 		C0FFEE012F00000000000006 /* PinnedPlacesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012F00000000000005 /* PinnedPlacesStore.swift */; };
 		FFF120AE8D0339D38072C91F /* MessageRequestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4FFA92C2DFA47F205C9009 /* MessageRequestsView.swift */; };
 /* End PBXBuildFile section */
@@ -431,6 +434,9 @@
 		AED92A80890A6328BD415CDD /* Intelligence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Intelligence.swift; sourceTree = "<group>"; };
 		C0FFEE012F00000000000001 /* PlaceContextMenus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceContextMenus.swift; sourceTree = "<group>"; };
 		C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerSettingsSheet.swift; sourceTree = "<group>"; };
+		C0FFEE0A5000000000000001 /* ServerAdmin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Admin/ServerAdmin.swift; sourceTree = "<group>"; };
+		C0FFEE0A5000000000000003 /* ServerModeration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Admin/ServerModeration.swift; sourceTree = "<group>"; };
+		C0FFEE0A5000000000000005 /* CreateServerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Admin/CreateServerSheet.swift; sourceTree = "<group>"; };
 		C0FFEE012F00000000000005 /* PinnedPlacesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedPlacesStore.swift; sourceTree = "<group>"; };
 		C1BB0BEFE1B9D49733BD5EED /* YourProfileSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourProfileSection.swift; sourceTree = "<group>"; };
 		CD0FCDF43CEB925D98D9DEB7 /* DiscordEmojiNames.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DiscordEmojiNames.json; sourceTree = "<group>"; };
@@ -542,6 +548,9 @@
 				AA1878F22E81A305009C7E40 /* GuildView.swift */,
 				AA9C81822E6660BE0086B1DA /* GuildButton.swift */,
 				C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */,
+				C0FFEE0A5000000000000001 /* ServerAdmin.swift */,
+				C0FFEE0A5000000000000003 /* ServerModeration.swift */,
+				C0FFEE0A5000000000000005 /* CreateServerSheet.swift */,
 				1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */,
 				1A7E4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift */,
 				D1A0C0DE0000000000000200 /* ServerOnboarding.swift */,
@@ -1421,6 +1430,9 @@
 				AAB905302E82FD9200EA171B /* Conformances.swift in Sources */,
 				AA9C81832E6660BE0086B1DA /* GuildButton.swift in Sources */,
 				C0FFEE012F00000000000004 /* ServerSettingsSheet.swift in Sources */,
+				C0FFEE0A5000000000000002 /* ServerAdmin.swift in Sources */,
+				C0FFEE0A5000000000000004 /* ServerModeration.swift in Sources */,
+				C0FFEE0A5000000000000006 /* CreateServerSheet.swift in Sources */,
 				1A7F501E161E4DAD6C94F7C8 /* InvitePreview.swift in Sources */,
 				1A7F4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift in Sources */,
 				D1A0C0DE0000000000000201 /* ServerOnboarding.swift in Sources */,

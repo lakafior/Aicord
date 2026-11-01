@@ -59,6 +59,7 @@ struct RootView: View {
         .attachmentViewer()
         .reactionPicker()
         .forwardSheet()
+        .moderationSheet()
         .reminderSheet()
         .messageIntelligenceSheet()
         .settingsSheet()

@@ -22,6 +22,7 @@ struct ProfilePopoutView: View {
   @Environment(\.colorScheme) var systemColorScheme
   @State private var profile: DiscordUser.Profile?
   @State private var showMainProfile: Bool = false
+  @State private var moderationTarget: ModerationTarget?
 
   public init(
     guild: GuildStore? = nil,
@@ -187,6 +188,17 @@ struct ProfilePopoutView: View {
 
       AddFriendProfileButton(user: user)
       DMGalleryProfileButton(user: user)
+      if let guild, !Moderation.actions(for: user, in: guild).isEmpty {
+        Menu {
+          ModerationMenuItems(guild: guild, user: user) { moderationTarget = $0 }
+        } label: {
+          Label("Moderate", systemImage: "shield.lefthalf.filled")
+        }
+        .buttonStyle(.bordered)
+        .sheet(item: $moderationTarget) { target in
+          ModerationTargetSheet(target: target)
+        }
+      }
     }
   }
 

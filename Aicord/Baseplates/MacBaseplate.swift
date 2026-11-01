@@ -242,6 +242,7 @@ import SwiftUI
       .attachmentViewer()
       .reactionPicker()
       .forwardSheet()
+      .moderationSheet()
       .reminderSheet()
       .messageIntelligenceSheet()
       .environment(\.appState, appState)

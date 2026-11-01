@@ -1145,7 +1145,12 @@ extension DiscordClient {
       guildId: guildId,
       userId: userId
     )
-    return try await self.send(request: .init(to: endpoint))
+    return try await self.send(
+      request: .init(
+        to: endpoint,
+        headers: reason.map { ["X-Audit-Log-Reason": $0] } ?? [:]
+      )
+    )
   }
 
   /// https://discord.com/developers/docs/resources/guild#get-guild-roles
