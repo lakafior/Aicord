@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B0B0C0DE0000000000000102 /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000101 /* AppShortcuts.xcstrings */; };
 		B0B0C0DE0000000000000018 /* AicordWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0B0C0DE000000000000000A /* AicordWidgets.appex */; platformFilters = (ios, macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B0B0C0DE0000000000000017 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA1579352F3220D50097C0FA /* Localizable.xcstrings */; };
 		B0B0C0DE0000000000000016 /* VoiceCallLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B0C0DE0000000000000007 /* VoiceCallLiveActivity.swift */; };
@@ -258,6 +259,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B0B0C0DE0000000000000101 /* AppShortcuts.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = AppShortcuts.xcstrings; sourceTree = "<group>"; };
 		B0B0C0DE000000000000000A /* AicordWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AicordWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0B0C0DE0000000000000009 /* AicordWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AicordWidgets.entitlements; sourceTree = "<group>"; };
 		B0B0C0DE0000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -846,6 +848,7 @@
 				E84D65FC5165C77155CF85BB /* AppIcon.icon */,
 				AA1097102E64C181005BC3D2 /* Assets.xcassets */,
 				AA1579352F3220D50097C0FA /* Localizable.xcstrings */,
+				B0B0C0DE0000000000000101 /* AppShortcuts.xcstrings */,
 				AB0C0A110000000000000001 /* WordLists */,
 				CD0FCDF43CEB925D98D9DEB7 /* DiscordEmojiNames.json */,
 			);
@@ -1430,6 +1433,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA1579362F3220D50097C0FA /* Localizable.xcstrings in Resources */,
+				B0B0C0DE0000000000000102 /* AppShortcuts.xcstrings in Resources */,
 				AB0C0A110000000000000002 /* WordLists in Resources */,
 				9E08D02F0DF3EA41E426DA50 /* AppIcon.icon in Resources */,
 				AA1097142E64C181005BC3D2 /* Assets.xcassets in Resources */,

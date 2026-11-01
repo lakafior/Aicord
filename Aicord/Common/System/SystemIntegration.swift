@@ -14,6 +14,7 @@ import CoreSpotlight
 import SwiftUI
 import UniformTypeIdentifiers
 import WidgetKit
+import os
 
 /// A channel or DM the system knows about, for Spotlight and App Intents.
 struct DirectoryEntry: Codable, Hashable, Sendable {
@@ -38,6 +39,7 @@ final class SystemIntegration {
   }
 
   private let index = CSSearchableIndex(name: "Aicord")
+  private let logger = Logger(subsystem: "net.smigi.aicord", category: "System")
   private var gateway: GatewayStore { GatewayStore.shared }
   private var spotlightTask: Task<Void, Never>?
   private var widgetTask: Task<Void, Never>?
@@ -209,9 +211,14 @@ final class SystemIntegration {
       item.expirationDate = .distantFuture
       return item
     }
-    try? await index.deleteSearchableItems(withDomainIdentifiers: [Domain.channels])
-    guard !Task.isCancelled else { return }
-    try? await index.indexSearchableItems(items)
+    do {
+      try await index.deleteSearchableItems(withDomainIdentifiers: [Domain.channels])
+      guard !Task.isCancelled else { return }
+      try await index.indexSearchableItems(items)
+      logger.info("Spotlight: \(items.count) channels indexed")
+    } catch {
+      logger.error("Spotlight: indexing channels failed: \(error.localizedDescription)")
+    }
   }
 
   /// Saved messages are the only message text that goes into Spotlight.
@@ -220,7 +227,7 @@ final class SystemIntegration {
       let message = saved.message
       let link = AicordLink(
         guildID: message.guildID, channelID: message.channelID, messageID: message.id)
-      let attributes = CSSearchableItemAttributeSet(contentType: .message)
+      let attributes = CSSearchableItemAttributeSet(contentType: .text)
       attributes.title = message.authorName
       attributes.displayName = message.authorName
       attributes.contentDescription = [message.place, message.text].filter { !$0.isEmpty }
@@ -235,9 +242,14 @@ final class SystemIntegration {
       item.expirationDate = .distantFuture
       return item
     }
-    try? await index.deleteSearchableItems(withDomainIdentifiers: [Domain.saved])
-    guard !items.isEmpty, !Task.isCancelled else { return }
-    try? await index.indexSearchableItems(items)
+    do {
+      try await index.deleteSearchableItems(withDomainIdentifiers: [Domain.saved])
+      guard !items.isEmpty, !Task.isCancelled else { return }
+      try await index.indexSearchableItems(items)
+      logger.info("Spotlight: \(items.count) saved messages indexed")
+    } catch {
+      logger.error("Spotlight: indexing saved messages failed: \(error.localizedDescription)")
+    }
   }
 
   private func observeSaved() {

@@ -17296,6 +17296,590 @@
           }
         }
       }
+    },
+    "%@" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
+    "%lld channels" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld kanał"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld kanały"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld kanałów"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld kanały"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld channel"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld channels"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld servers" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serwer"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serwery"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serwerów"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serwery"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld server"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld servers"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld mentions" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wzmianka"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wzmianki"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wzmianek"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wzmianki"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mention"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mentions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld more unread channels" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Jeszcze %lld nieprzeczytany kanał"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Jeszcze %lld nieprzeczytane kanały"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Jeszcze %lld nieprzeczytanych kanałów"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Jeszcze %lld nieprzeczytane kanały"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more unread channel"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more unread channels"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld others" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld inna osoba"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld inne osoby"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld innych osób"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld inne osoby"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld other"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld others"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld servers with unread" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serwer z nieprzeczytanymi"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serwery z nieprzeczytanymi"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serwerów z nieprzeczytanymi"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld serwery z nieprzeczytanymi"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld server with unread"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld servers with unread"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld unread DMs" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nieprzeczytany DM"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nieprzeczytane DM-y"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nieprzeczytanych DM-ów"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nieprzeczytane DM-y"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unread DM"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unread DMs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Aicord couldn't connect to Discord." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aicord nie połączył się z Discordem."
+          }
+        }
+      }
+    },
+    "Disconnects from the voice call." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozłącza z połączeniem głosowym."
+          }
+        }
+      }
+    },
+    "Find your DMs, channels and saved messages from Spotlight search. Only names go in, plus the text of messages you saved. Turning this off or logging out removes them." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Znajduj DM-y, kanały i zapisane wiadomości w wyszukiwaniu Spotlight. Trafiają tam tylko nazwy oraz treść zapisanych wiadomości. Wyłączenie albo wylogowanie je usuwa."
+          }
+        }
+      }
+    },
+    "Leave Voice Call" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opuść połączenie głosowe"
+          }
+        }
+      }
+    },
+    "Log in to Aicord first." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Najpierw zaloguj się w Aicord."
+          }
+        }
+      }
+    },
+    "Mentions and unread messages, as of the last time Aicord was open." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wzmianki i nieprzeczytane wiadomości z chwili, gdy Aicord był ostatnio otwarty."
+          }
+        }
+      }
+    },
+    "Mute or Unmute" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wycisz lub wyłącz wyciszenie"
+          }
+        }
+      }
+    },
+    "No mentions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak wzmianek"
+          }
+        }
+      }
+    },
+    "Nothing new on %@." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nic nowego na %@."
+          }
+        }
+      }
+    },
+    "Only you" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tylko ty"
+          }
+        }
+      }
+    },
+    "Open Aicord to see your unread messages here." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz Aicord, żeby zobaczyć tu nieprzeczytane wiadomości."
+          }
+        }
+      }
+    },
+    "Open Channel" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz kanał"
+          }
+        }
+      }
+    },
+    "Opens a server channel or a direct message in Aicord." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwiera kanał serwera albo wiadomość prywatną w Aicord."
+          }
+        }
+      }
+    },
+    "Show in Spotlight" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokazuj w Spotlight"
+          }
+        }
+      }
+    },
+    "Spotlight" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spotlight"
+          }
+        }
+      }
+    },
+    "Summarises a server's unread channels with Intelligence, the same as Catch Up in the server's menu." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Streszcza nieprzeczytane kanały serwera przez Intelligence, tak jak „Nadrób zaległości” w menu serwera."
+          }
+        }
+      }
+    },
+    "Turns your microphone off or on in the voice call." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyłącza albo włącza mikrofon w połączeniu głosowym."
+          }
+        }
+      }
+    },
+    "What's New" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Co nowego"
+          }
+        }
+      }
+    },
+    "What's New in Server" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Co nowego na serwerze"
+          }
+        }
+      }
+    },
+    "Open ${channel}" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz ${channel}"
+          }
+        }
+      }
+    },
+    "What's new in ${server}" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Co nowego na ${server}"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
