@@ -143,6 +143,9 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Fixed
 
+- **Fixed** · Picking a server in Search on iPhone opened a black screen instead of the server; it now shows the server's channels on Home
+- **Fixed** · Scrolling the chat jumped: rows no longer re-render when a scroll starts or ends, the scroll position no longer redraws the whole chat, and only a new message animates, not every reaction or embed that arrives
+
 - **Fixed** · The attachment viewer on iPhone and iPad opened on the first image instead of the one tapped when a message had several
 - **Fixed** · Tapping a notification sometimes did nothing: it could reach a window state that wasn't on screen
 - **Fixed** · Deprecated `Text` concatenation in system messages, now string interpolation

@@ -92,3 +92,25 @@ Każdy commit: build macOS i iOS Simulator bez nowych ostrzeżeń. `swift test`:
 - **Mac i iPad:** Szukaj jest tam arkuszem, `onOpen` tylko go zamyka, a bez kanału baseplate pokazuje `ContentUnavailableView`, więc czarnego ekranu nie było; ścieżka bez zmian (build macOS zielony, nie klikane).
 - Sprawdzone w symulatorze: Szukaj → „Aicord Delete” → serwer → Home z kanałami „Aicord Delete Test”.
 - Przy okazji zauważone (nie poprawiane): na świeżym serwerze kategorie z tą samą pozycją (0) potrafią zamienić się miejscami między uruchomieniami, bo sortowanie nie ma drugiego klucza.
+
+## Dodatkowo: skaczące przewijanie czatu
+
+Odtwarzane w symulatorze na publicznym kanale FashionReps #jaki-batch (dużo obrazów) i #general-offtopic, tylko przewijanie, nic nie klikane ani nie wysyłane.
+
+**Pomiar:** tymczasowy licznik wywołań `MessageCell.body` i `ChatView.body` (nie wszedł do commita), ten sam scenariusz: otwarcie kanału, 4 przeciągnięcia w górę, 4 w dół.
+
+| | `MessageCell.body` przy przewijaniu | `ChatView.body` |
+|---|---|---|
+| przed | 42 | 19 |
+| po | 6 | 21 |
+
+Do tego narzędzie porównujące kolejne zrzuty co 0,25 s (przesunięcie treści w pikselach): po poprawce przewijanie w górę i w dół kończy się płynnym wyhamowaniem, bez skoku po zatrzymaniu. Lista kanałów też (bez zmian w kodzie).
+
+**Przyczyny i zmiany** (`ChatView.swift`):
+1. `isScrolling` (faza przewijania) szło do każdej `MessageCell`, więc każdy początek i koniec przewijania przeliczał wszystkie widoczne wiersze, w tym Textual z markdownem, w środku gestu. Potrzebuje tego tylko podświetlenie po najechaniu na Macu: na iOS już nie jest przekazywane ani ustawiane.
+2. Strzałka „na dół” i `.onChange(of: currentScrollPosition)` czytały pozycję przewijania w `body` czatu, a `scrollPosition(id:)` zmienia ją przy każdym mijanym wierszu. Przeniesione do osobnego widoku `JumpToLatestButton`, więc zmiana pozycji odświeża tylko przycisk.
+3. `.animation(..., value: orderedMessages)` animowało każdą zmianę w wiadomościach (reakcja, edycja, dociągnięty embed, członek z gatewaya) i za każdym razem porównywało całą tablicę wiadomości. Zmiana wysokości wiersza w trakcie przewijania była animowana i przesuwała treść. Teraz animuje tylko pojawienie się nowej najnowszej wiadomości (`vm.messages.keys.last`).
+
+**Sprawdzone bez zmian:** obrazy w załącznikach i embedach mają ramki z `width`/`height` (`AttachmentSizedView`, `aspectRatio`), emoji i awatary stałe wymiary, `id` wierszy to stabilne ID wiadomości.
+
+**Znalezione, nie zmienione:** czat w ogóle nie dociąga starszej historii przy przewijaniu w górę (autor oryginału zakomentował wywołanie `tryFetchMoreMessageHistory` w grudniu 2025, „partial pagination support”), więc skoków przy doładowaniu dziś nie ma, ale po ~50 wiadomościach lista się kończy. Przywrócenie stronicowania z zachowaniem pozycji to osobna praca (punkt w ROADMAP). Listy członków nie mierzyłam. Instruments nie używałam (liczniki i zrzuty wystarczyły do znalezienia przyczyn).

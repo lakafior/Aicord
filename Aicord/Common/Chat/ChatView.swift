@@ -78,12 +78,18 @@ struct ChatView: View {
           ForEach(orderedMessages) { msg in
             let prior = vm.getMessage(before: msg)
             if messageAllowed(msg) {
-              MessageCell(
-                for: msg,
-                prior: prior,
-                channel: vm,
-                scrolling: isScrolling
-              )
+              #if os(macOS)
+                MessageCell(
+                  for: msg,
+                  prior: prior,
+                  channel: vm,
+                  scrolling: isScrolling
+                )
+              #else
+                // only the Mac's hover highlight needs the scroll phase; passing it
+                // here re-rendered every visible row whenever a scroll began or ended
+                MessageCell(for: msg, prior: prior, channel: vm)
+              #endif
             }
           }
 
@@ -143,8 +149,8 @@ struct ChatView: View {
         }
       #endif
       .onScrollPhaseChange { _, newPhase in
-        isScrolling = newPhase.isScrolling
         #if os(macOS)
+          isScrolling = newPhase.isScrolling
           // scrolling the chat is what makes Esc jump back to the bottom
           if newPhase == .interacting { isChatFocused = true }
         #endif
@@ -156,26 +162,10 @@ struct ChatView: View {
       .scrollClipDisabled()
       .frame(maxHeight: .infinity)
       .overlay(alignment: .bottomTrailing) {
-        let lastMessages = orderedMessages.suffix(10).map { $0.id }
-        if !vm.hasLatestMessages
-          || currentScrollPosition.map({ !lastMessages.contains($0) }) == true
-        {
-          Button(action: {
-            if vm.hasLatestMessages {
-              vm.requestScrollToBottom(immediate: true)
-            } else {
-              vm.returnToLatest()
-            }
-          }) {
-            Image(systemName: "arrow.down")
-              .tint(.primary)
-              .imageScale(.large)
-              .padding(10)
-              .glassEffect(.regular.interactive(), in: .circle)
-          }
-          .buttonStyle(.plain)
-          .padding()
-          .transition(.blurReplace.animation(.default))
+        // its own view, so the scroll position changing as rows pass by only
+        // updates the button, not the whole chat
+        JumpToLatestButton(vm: vm, position: $currentScrollPosition) {
+          acknowledgeLatestIfVisible()
         }
       }
 
@@ -203,9 +193,12 @@ struct ChatView: View {
         Spacer().frame(height: 10)
       }
     }
+    // only a new newest message animates: animating on any change (a reaction, an
+    // edit, an embed arriving) moved rows around while scrolling, and compared
+    // every loaded message on each update
     .animation(
       shouldAnimate && chatAnimatesMessages ? .default : nil,
-      value: orderedMessages
+      value: vm.messages.keys.last
     )
     .animation(chatAnimatesMessages ? .default : nil, value: pendingMessages)
     .scrollDismissesKeyboard(.interactively)
@@ -316,7 +309,6 @@ struct ChatView: View {
         gw.readStates.manuallyUnread.remove(vm.channelId)
       }
     }
-    .onChange(of: currentScrollPosition) { acknowledgeLatestIfVisible() }
     // a jump from Search or a forward's source, for this channel
     .task(id: appState.pendingJump) {
       guard let jump = appState.pendingJump, jump.channelID == vm.channelId else { return }
@@ -482,3 +474,41 @@ extension View {
       .defaultScrollAnchor(.bottom, for: .sizeChanges)
   }
 }
+
+/// The arrow back to the newest messages, shown once they're scrolled out of view.
+private struct JumpToLatestButton: View {
+  let vm: ChannelStore
+  @Binding var position: MessageSnowflake?
+  /// Runs when the scroll position moves, e.g. to mark the latest as read.
+  var onPositionChange: () -> Void
+
+  var body: some View {
+    // a ZStack stays in the tree while the button is hidden, so onChange still runs
+    ZStack { content }
+      .onChange(of: position) { onPositionChange() }
+  }
+
+  @ViewBuilder
+  private var content: some View {
+    let lastMessages = vm.messages.keys.suffix(10)
+    if !vm.hasLatestMessages || position.map({ !lastMessages.contains($0) }) == true {
+      Button(action: {
+        if vm.hasLatestMessages {
+          vm.requestScrollToBottom(immediate: true)
+        } else {
+          vm.returnToLatest()
+        }
+      }) {
+        Image(systemName: "arrow.down")
+          .tint(.primary)
+          .imageScale(.large)
+          .padding(10)
+          .glassEffect(.regular.interactive(), in: .circle)
+      }
+      .buttonStyle(.plain)
+      .padding()
+      .transition(.blurReplace.animation(.default))
+    }
+  }
+}
+
