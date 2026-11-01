@@ -2,20 +2,38 @@
   "sourceLanguage" : "en",
   "strings" : {
     "Open a channel in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
       "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Open a channel in ${applicationName}"
+            ]
+          }
+        },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Otwórz kanał w ${applicationName}"
           }
         }
       }
     },
     "What's new in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
       "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "What's new in ${applicationName}"
+            ]
+          }
+        },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Co nowego w ${applicationName}"
           }
         }
