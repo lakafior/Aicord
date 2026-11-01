@@ -15807,6 +15807,17 @@
           }
         }
       }
+    },
+    "Answer the required questions to save." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpowiedz na wymagane pytania, aby zapisać."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

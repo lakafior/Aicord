@@ -59,29 +59,36 @@ struct GuildPlacesSection: View {
           Button {
             showsVerification = true
           } label: {
-            Label("Agree to the Server Rules", systemImage: "checkmark.shield")
-              .foregroundStyle(Color.accentColor)
+            PlaceRow(systemImage: "checkmark.shield.fill", tint: .accentColor) {
+              Text("Agree to the Server Rules")
+                .foregroundStyle(Color.accentColor)
+            }
           }
+          .channelListRow()
+          .listRowSeparator(.hidden)
         }
         if !upcoming.isEmpty {
+          let isLive = upcoming.contains { $0.status == .active }
           Button {
             showsEvents = true
           } label: {
-            Label {
+            PlaceRow(systemImage: isLive ? "dot.radiowaves.left.and.right" : "calendar", tint: isLive ? .green : .orange) {
               Text("^[\(upcoming.count) Event](inflect: true)")
-            } icon: {
-              Image(
-                systemName: upcoming.contains { $0.status == .active }
-                  ? "dot.radiowaves.left.and.right" : "calendar")
             }
           }
+          .channelListRow()
+          .listRowSeparator(.hidden)
         }
         if places.hasOnboarding {
           Button {
             showsOnboarding = true
           } label: {
-            Label("Channels & Roles", systemImage: "checklist")
+            PlaceRow(systemImage: "checklist", tint: .indigo) {
+              Text("Channels & Roles")
+            }
           }
+          .channelListRow()
+          .listRowSeparator(.hidden)
         }
       }
       .buttonStyle(.plain)
@@ -118,6 +125,32 @@ struct GuildPlacesSection: View {
   }
 }
 
+/// A row above the channels: a symbol in a tinted rounded tile, the title and a chevron.
+private struct PlaceRow<Title: View>: View {
+  var systemImage: String
+  var tint: Color
+  @ViewBuilder var title: Title
+
+  var body: some View {
+    HStack(spacing: 10) {
+      Image(systemName: systemImage)
+        .font(.footnote.weight(.semibold))
+        .foregroundStyle(tint)
+        .frame(width: 26, height: 26)
+        .background(tint.opacity(0.15), in: .rect(cornerRadius: 7))
+        .accessibilityHidden(true)
+      title
+        .lineLimit(1)
+      Spacer(minLength: 4)
+      Image(systemName: "chevron.forward")
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(.tertiary)
+        .accessibilityHidden(true)
+    }
+    .contentShape(.rect)
+  }
+}
+
 // MARK: - Onboarding
 
 /// A server's onboarding questions: each option gives roles or opens channels.
@@ -144,28 +177,21 @@ struct OnboardingSheet: View {
 
   var body: some View {
     NavigationStack {
-      List {
-        if let onboarding, onboarding.prompts.isEmpty {
-          Text("This server has no channels or roles to pick.")
-            .foregroundStyle(.secondary)
-        }
-        ForEach(prompts, id: \.id) { prompt in
-          Section {
-            ForEach(prompt.options, id: \.id) { option in
-              optionRow(option, in: prompt)
-            }
-          } header: {
-            HStack {
-              Text(prompt.title)
-              if prompt.required {
-                Text("Required").foregroundStyle(.red)
-              }
-            }
-          } footer: {
-            Text(prompt.single_select ? "Pick one." : "Pick any that apply.")
+      ScrollView {
+        VStack(alignment: .leading, spacing: 28) {
+          if let onboarding, onboarding.prompts.isEmpty {
+            ContentUnavailableView("This server has no channels or roles to pick.", systemImage: "checklist")
+          }
+          ForEach(prompts, id: \.id) { prompt in
+            promptSection(prompt)
           }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .frame(maxWidth: 720)
+        .frame(maxWidth: .infinity)
       }
+      .background(OnboardingStyle.background)
       .overlay {
         if isLoading { ProgressView() }
       }
@@ -175,57 +201,107 @@ struct OnboardingSheet: View {
       #endif
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
-          Button("Cancel") { dismiss() }
+          Button("Cancel", role: .cancel) { dismiss() }
         }
-        ToolbarItem(placement: .confirmationAction) {
-          if isSaving {
-            ProgressView()
-          } else {
-            Button("Save") { save() }
-              .disabled(onboarding == nil || missingRequired)
-          }
+      }
+      .safeAreaInset(edge: .bottom) {
+        if onboarding != nil && !prompts.isEmpty {
+          OnboardingActionButton(
+            title: "Save",
+            hint: missingRequired ? "Answer the required questions to save." : nil,
+            isWorking: isSaving,
+            isDisabled: missingRequired
+          ) { save() }
         }
       }
       .saveErrorAlert($error)
       .task { await load() }
     }
     #if os(macOS)
-      .frame(minWidth: 440, minHeight: 520)
+      .frame(minWidth: 480, idealWidth: 560, minHeight: 560, idealHeight: 640)
     #endif
   }
 
-  private func optionRow(_ option: Guild.Onboarding.Prompt.Option, in prompt: Guild.Onboarding.Prompt)
+  private func promptSection(_ prompt: Guild.Onboarding.Prompt) -> some View {
+    VStack(alignment: .leading, spacing: 12) {
+      VStack(alignment: .leading, spacing: 6) {
+        Text(prompt.title)
+          .font(.title3.weight(.semibold))
+          .fixedSize(horizontal: false, vertical: true)
+        HStack(spacing: 8) {
+          if prompt.required {
+            Text("Required")
+              .font(.caption.weight(.semibold))
+              .foregroundStyle(.red)
+              .padding(.horizontal, 8)
+              .padding(.vertical, 3)
+              .background(.red.opacity(0.12), in: .capsule)
+          }
+          Text(prompt.single_select ? "Pick one." : "Pick any that apply.")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+      }
+      .accessibilityElement(children: .combine)
+      .accessibilityAddTraits(.isHeader)
+
+      LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 10)], spacing: 10) {
+        ForEach(prompt.options, id: \.id) { option in
+          optionCard(option, in: prompt)
+        }
+      }
+    }
+  }
+
+  private func optionCard(_ option: Guild.Onboarding.Prompt.Option, in prompt: Guild.Onboarding.Prompt)
     -> some View
   {
     let isOn = selected.contains(option.id)
     return Button {
-      if isOn {
-        selected.remove(option.id)
-      } else {
-        if prompt.single_select {
-          for other in prompt.options { selected.remove(other.id) }
+      withAnimation(.snappy(duration: 0.2)) {
+        if isOn {
+          selected.remove(option.id)
+        } else {
+          if prompt.single_select {
+            for other in prompt.options { selected.remove(other.id) }
+          }
+          selected.insert(option.id)
         }
-        selected.insert(option.id)
       }
     } label: {
-      HStack(spacing: 10) {
-        if let emoji = option.emoji, emoji.id != nil || emoji.name != nil {
-          MessageCell.ComponentEmoji(emoji: emoji)
-            .frame(width: 24)
-        }
+      HStack(spacing: 12) {
+        OnboardingOptionIcon(option: option, isOn: isOn)
         VStack(alignment: .leading, spacing: 2) {
           Text(option.title)
+            .font(.body.weight(.medium))
+            .foregroundStyle(.primary)
           if let description = option.description, !description.isEmpty {
             Text(description)
-              .font(.caption)
+              .font(.subheadline)
               .foregroundStyle(.secondary)
+              .lineLimit(3)
           }
         }
-        Spacer()
-        Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
-          .foregroundStyle(isOn ? Color.accentColor : .secondary)
+        .multilineTextAlignment(.leading)
+        Spacer(minLength: 4)
+        Image(
+          systemName: isOn
+            ? (prompt.single_select ? "largecircle.fill.circle" : "checkmark.circle.fill")
+            : "circle"
+        )
+        .font(.title3)
+        .foregroundStyle(isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
+        .contentTransition(.symbolEffect(.replace))
       }
-      .contentShape(.rect)
+      .padding(12)
+      .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
+      .background(OnboardingStyle.card, in: .rect(cornerRadius: 16))
+      .background(isOn ? Color.accentColor.opacity(0.12) : .clear, in: .rect(cornerRadius: 16))
+      .overlay {
+        RoundedRectangle(cornerRadius: 16)
+          .strokeBorder(isOn ? Color.accentColor : .clear, lineWidth: 2)
+      }
+      .contentShape(.rect(cornerRadius: 16))
     }
     .buttonStyle(.plain)
     .accessibilityAddTraits(isOn ? .isSelected : [])
@@ -271,6 +347,94 @@ struct OnboardingSheet: View {
   }
 }
 
+/// The colours both sheets share: rounded cards on the grouped background,
+/// so they read well in light and dark mode.
+enum OnboardingStyle {
+  static var background: Color {
+    #if os(iOS)
+      Color(uiColor: .systemGroupedBackground)
+    #else
+      Color.clear
+    #endif
+  }
+
+  static var card: AnyShapeStyle {
+    #if os(iOS)
+      AnyShapeStyle(Color(uiColor: .secondarySystemGroupedBackground))
+    #else
+      AnyShapeStyle(.fill.tertiary)
+    #endif
+  }
+}
+
+/// The option's emoji in a rounded tile, or a symbol for what it gives.
+private struct OnboardingOptionIcon: View {
+  var option: Guild.Onboarding.Prompt.Option
+  var isOn: Bool
+
+  private var symbol: String {
+    switch (option.role_ids.isEmpty, option.channel_ids.isEmpty) {
+    case (false, true): "tag"
+    case (true, false): "number"
+    default: "sparkles"
+    }
+  }
+
+  var body: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 10)
+        .fill(isOn ? AnyShapeStyle(Color.accentColor.opacity(0.18)) : AnyShapeStyle(.fill.secondary))
+      if let emoji = option.emoji, emoji.id != nil || emoji.name != nil {
+        MessageCell.ComponentEmoji(emoji: emoji)
+          .font(.title2)
+          .frame(width: 26, height: 26)
+      } else {
+        Image(systemName: symbol)
+          .font(.body.weight(.semibold))
+          .foregroundStyle(isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+      }
+    }
+    .frame(width: 42, height: 42)
+    .accessibilityHidden(true)
+  }
+}
+
+/// The sheet's main action at the bottom, in glass, with an optional hint above.
+struct OnboardingActionButton: View {
+  var title: LocalizedStringKey
+  var hint: LocalizedStringKey? = nil
+  var isWorking = false
+  var isDisabled = false
+  var action: () -> Void
+
+  var body: some View {
+    VStack(spacing: 8) {
+      if let hint {
+        Text(hint)
+          .font(.footnote)
+          .foregroundStyle(.secondary)
+          .multilineTextAlignment(.center)
+      }
+      Button(action: action) {
+        ZStack {
+          Text(title).opacity(isWorking ? 0 : 1)
+          if isWorking { ProgressView() }
+        }
+        .frame(maxWidth: .infinity)
+      }
+      .buttonStyle(.glassProminent)
+      .controlSize(.large)
+      .disabled(isDisabled || isWorking)
+      #if os(macOS)
+        .frame(maxWidth: 360)
+      #endif
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.horizontal)
+    .padding(.bottom, 8)
+  }
+}
+
 // MARK: - Member verification
 
 /// A server's rules (and any questions) to agree to before you can talk there.
@@ -300,20 +464,30 @@ struct MemberVerificationSheet: View {
 
   var body: some View {
     NavigationStack {
-      Form {
-        if let description = verification?.description, !description.isEmpty {
-          Section { Text(description) }
-        }
-        ForEach(fields.indices, id: \.self) { index in
-          fieldSection(index)
-        }
-        if submitted {
-          Section {
-            Label("Sent. The server's moderators will review your answers.", systemImage: "clock")
+      ScrollView {
+        VStack(alignment: .leading, spacing: 24) {
+          if let description = verification?.description, !description.isEmpty {
+            Text(description)
+              .font(.callout)
+              .foregroundStyle(.secondary)
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
+          ForEach(fields.indices, id: \.self) { index in
+            fieldSection(index)
+          }
+          if submitted {
+            Label("Sent. The server's moderators will review your answers.", systemImage: "clock.badge.checkmark")
+              .padding(14)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .background(OnboardingStyle.card, in: .rect(cornerRadius: 16))
           }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .frame(maxWidth: 720)
+        .frame(maxWidth: .infinity)
       }
-      .formStyle(.grouped)
+      .background(OnboardingStyle.background)
       .overlay {
         if isLoading { ProgressView() }
       }
@@ -323,67 +497,48 @@ struct MemberVerificationSheet: View {
       #endif
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
-          Button(submitted ? "Done" : "Cancel") { dismiss() }
+          Button(submitted ? "Done" : "Cancel", role: .cancel) { dismiss() }
         }
-        if !submitted {
-          ToolbarItem(placement: .confirmationAction) {
-            if isSending {
-              ProgressView()
-            } else {
-              Button("Submit") { submit() }
-                .disabled(verification == nil || !isComplete)
-            }
-          }
+      }
+      .safeAreaInset(edge: .bottom) {
+        if verification != nil && !submitted {
+          OnboardingActionButton(
+            title: "Submit",
+            isWorking: isSending,
+            isDisabled: !isComplete
+          ) { submit() }
         }
       }
       .saveErrorAlert($error)
       .task { await load() }
     }
     #if os(macOS)
-      .frame(minWidth: 440, minHeight: 520)
+      .frame(minWidth: 480, idealWidth: 560, minHeight: 560, idealHeight: 640)
     #endif
+  }
+
+  private func header(_ text: String) -> some View {
+    Text(text)
+      .font(.title3.weight(.semibold))
+      .accessibilityAddTraits(.isHeader)
   }
 
   @ViewBuilder
   private func fieldSection(_ index: Int) -> some View {
     let field = fields[index]
-    switch field.field_type {
-    case "TERMS":
-      Section {
-        ForEach(Array((field.values ?? []).enumerated()), id: \.offset) { number, rule in
-          HStack(alignment: .top, spacing: 8) {
-            Text("\(number + 1).").foregroundStyle(.secondary).monospacedDigit()
-            Text(rule)
-          }
-        }
-        Toggle(
-          "I have read and agree to the rules",
-          isOn: Binding(
-            get: { fields[index].response == .bool(true) },
-            set: { fields[index].response = .bool($0) }
-          ))
-      } header: {
-        Text(field.label)
-      }
-    case "MULTIPLE_CHOICE":
-      Section {
-        Picker(
-          field.label,
-          selection: Binding(
-            get: { if case .int(let choice) = fields[index].response { choice } else { -1 } },
-            set: { fields[index].response = .int($0) }
-          )
-        ) {
-          Text("Choose…").tag(-1)
+    VStack(alignment: .leading, spacing: 12) {
+      header(field.label)
+      switch field.field_type {
+      case "TERMS":
+        termsCard(field)
+        agreeCard(index)
+      case "MULTIPLE_CHOICE":
+        VStack(spacing: 8) {
           ForEach(Array((field.choices ?? []).enumerated()), id: \.offset) { choice, text in
-            Text(text).tag(choice)
+            choiceCard(text, choice: choice, index: index)
           }
         }
-      } header: {
-        Text(field.label)
-      }
-    case "TEXT_INPUT", "PARAGRAPH":
-      Section {
+      case "TEXT_INPUT", "PARAGRAPH":
         TextField(
           field.placeholder ?? "",
           text: Binding(
@@ -392,19 +547,102 @@ struct MemberVerificationSheet: View {
           ),
           axis: field.field_type == "PARAGRAPH" ? .vertical : .horizontal
         )
-      } header: {
-        Text(field.label)
-      } footer: {
-        if let description = field.description { Text(description) }
-      }
-    default:
-      Section {
+        .textFieldStyle(.plain)
+        .lineLimit(field.field_type == "PARAGRAPH" ? 3...8 : 1...1)
+        .padding(14)
+        .background(OnboardingStyle.card, in: .rect(cornerRadius: 16))
+        if let description = field.description {
+          Text(description)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+        }
+      default:
         Text("Aicord can't answer this kind of question yet. Open the server in Discord to finish.")
           .foregroundStyle(.secondary)
-      } header: {
-        Text(field.label)
+          .padding(14)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .background(OnboardingStyle.card, in: .rect(cornerRadius: 16))
       }
     }
+  }
+
+  private func termsCard(_ field: MemberVerification.FormField) -> some View {
+    VStack(alignment: .leading, spacing: 14) {
+      ForEach(Array((field.values ?? []).enumerated()), id: \.offset) { number, rule in
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+          Text(verbatim: "\(number + 1)")
+            .font(.footnote.weight(.bold))
+            .monospacedDigit()
+            .foregroundStyle(.tint)
+            .frame(minWidth: 24, minHeight: 24)
+            .background(Color.accentColor.opacity(0.15), in: .circle)
+            .accessibilityHidden(true)
+          Text(rule)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+      }
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(OnboardingStyle.card, in: .rect(cornerRadius: 16))
+  }
+
+  private func agreeCard(_ index: Int) -> some View {
+    let agreed = fields[index].response == .bool(true)
+    return Button {
+      withAnimation(.snappy(duration: 0.2)) {
+        fields[index].response = .bool(!agreed)
+      }
+    } label: {
+      HStack(spacing: 12) {
+        Image(systemName: agreed ? "checkmark.square.fill" : "square")
+          .font(.title2)
+          .foregroundStyle(agreed ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
+          .contentTransition(.symbolEffect(.replace))
+        Text("I have read and agree to the rules")
+          .font(.body.weight(.medium))
+          .multilineTextAlignment(.leading)
+        Spacer(minLength: 0)
+      }
+      .padding(14)
+      .background(OnboardingStyle.card, in: .rect(cornerRadius: 16))
+      .background(agreed ? Color.accentColor.opacity(0.12) : .clear, in: .rect(cornerRadius: 16))
+      .overlay {
+        RoundedRectangle(cornerRadius: 16)
+          .strokeBorder(agreed ? Color.accentColor : .clear, lineWidth: 2)
+      }
+      .contentShape(.rect(cornerRadius: 16))
+    }
+    .buttonStyle(.plain)
+    .accessibilityAddTraits(agreed ? [.isToggle, .isSelected] : .isToggle)
+  }
+
+  private func choiceCard(_ text: String, choice: Int, index: Int) -> some View {
+    let isOn = fields[index].response == .int(choice)
+    return Button {
+      withAnimation(.snappy(duration: 0.2)) {
+        fields[index].response = .int(choice)
+      }
+    } label: {
+      HStack(spacing: 12) {
+        Text(text)
+          .multilineTextAlignment(.leading)
+        Spacer(minLength: 4)
+        Image(systemName: isOn ? "largecircle.fill.circle" : "circle")
+          .font(.title3)
+          .foregroundStyle(isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
+      }
+      .padding(14)
+      .background(OnboardingStyle.card, in: .rect(cornerRadius: 16))
+      .overlay {
+        RoundedRectangle(cornerRadius: 16)
+          .strokeBorder(isOn ? Color.accentColor : .clear, lineWidth: 2)
+      }
+      .contentShape(.rect(cornerRadius: 16))
+    }
+    .buttonStyle(.plain)
+    .accessibilityAddTraits(isOn ? .isSelected : [])
   }
 
   private func load() async {
