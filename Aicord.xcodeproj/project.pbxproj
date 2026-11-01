@@ -11,6 +11,7 @@
 		0AFD5990586C92D6CFD99C40 /* ImageDescriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5544B514A0125B34B4F88B6B /* ImageDescriptions.swift */; };
 		0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92981EF5B411046392600481 /* RichPresence.swift */; };
 		1A7F4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift */; };
+		D1A0C0DE0000000000000201 /* ServerOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000200 /* ServerOnboarding.swift */; };
 		1A7F501E161E4DAD6C94F7C8 /* InvitePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */; };
 		1A7F7D8F22A9583785112D86 /* VideoEmbedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E7D8F22A9583785112D86 /* VideoEmbedView.swift */; };
 		1A7FB8862910F45731B26854 /* AddFriend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7EB8862910F45731B26854 /* AddFriend.swift */; };
@@ -111,6 +112,8 @@
 		AA67FD152EF4A7F4004676A1 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */; };
 		AA6C77472F1A6B9E006BF281 /* AttachmentViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6C77462F1A6B95006BF281 /* AttachmentViewer.swift */; };
 		AA70EFB12EA1B3BD00344D98 /* InputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA70EFB02EA1B3BA00344D98 /* InputBar.swift */; };
+		D1A0C0DE0000000000000213 /* SlashCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000212 /* SlashCommands.swift */; };
+		D1A0C0DE0000000000000205 /* VoiceMessageButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000204 /* VoiceMessageButton.swift */; };
 		D1A0C0DE0000000000000105 /* CreatePollSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000104 /* CreatePollSheet.swift */; };
 		AA74E4392EBC411C0031B285 /* EntityContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74E4382EBC410B0031B285 /* EntityContextMenu.swift */; };
 		AA74E43B2EBCA9010031B285 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74E43A2EBCA8FD0031B285 /* Environment.swift */; };
@@ -175,6 +178,7 @@
 		AC04D930DC8474160A714437 /* VoiceCallBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC01D5DA1D1CC78C94BBCCC6 /* VoiceCallBar.swift */; };
 		AC0533BB00B763D598E21E8A /* AudioDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC056C49F2F9D4341D99AB1F /* AudioDevices.swift */; };
 		AC0AC9258B7782D61FF99B1C /* VoiceAudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0B4B4B4578BC80D509BBA3 /* VoiceAudioEngine.swift */; };
+		D1A0C0DE0000000000000203 /* VoiceMessageRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000202 /* VoiceMessageRecorder.swift */; };
 		AC0DC60013FF71EBBDA11DD2 /* VoiceConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0394B0AEB5CC91C895A5CC /* VoiceConnectionStore.swift */; };
 		AC0EF8DCE4F59941702225FE /* VoicePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC03E04F0CF84CFE2B61F8E3 /* VoicePreferences.swift */; };
 		AC4A7E0000000000000000C2 /* Emoticons.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC4A7E0000000000000000C1 /* Emoticons.swift */; };
@@ -227,6 +231,7 @@
 
 /* Begin PBXFileReference section */
 		1A7E4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitePeopleSheet.swift; sourceTree = "<group>"; };
+		D1A0C0DE0000000000000200 /* ServerOnboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerOnboarding.swift; sourceTree = "<group>"; };
 		1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitePreview.swift; sourceTree = "<group>"; };
 		1A7E7D8F22A9583785112D86 /* VideoEmbedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEmbedView.swift; sourceTree = "<group>"; };
 		1A7EB8862910F45731B26854 /* AddFriend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriend.swift; sourceTree = "<group>"; };
@@ -329,6 +334,8 @@
 		AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		AA6C77462F1A6B95006BF281 /* AttachmentViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentViewer.swift; sourceTree = "<group>"; };
 		AA70EFB02EA1B3BA00344D98 /* InputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputBar.swift; sourceTree = "<group>"; };
+		D1A0C0DE0000000000000212 /* SlashCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommands.swift; sourceTree = "<group>"; };
+		D1A0C0DE0000000000000204 /* VoiceMessageButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMessageButton.swift; sourceTree = "<group>"; };
 		D1A0C0DE0000000000000104 /* CreatePollSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePollSheet.swift; sourceTree = "<group>"; };
 		AA74E4382EBC410B0031B285 /* EntityContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityContextMenu.swift; sourceTree = "<group>"; };
 		AA74E43A2EBCA8FD0031B285 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
@@ -395,6 +402,7 @@
 		AC03E04F0CF84CFE2B61F8E3 /* VoicePreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePreferences.swift; sourceTree = "<group>"; };
 		AC056C49F2F9D4341D99AB1F /* AudioDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDevices.swift; sourceTree = "<group>"; };
 		AC0B4B4B4578BC80D509BBA3 /* VoiceAudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAudioEngine.swift; sourceTree = "<group>"; };
+		D1A0C0DE0000000000000202 /* VoiceMessageRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMessageRecorder.swift; sourceTree = "<group>"; };
 		AC0FAE13CCBACC320FF89B36 /* VoiceChannelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceChannelButton.swift; sourceTree = "<group>"; };
 		AC4A7E0000000000000000C1 /* Emoticons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Emoticons.swift; sourceTree = "<group>"; };
 		AE06616E3A64D492BD0B59AA /* IntelligenceSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceSource.swift; sourceTree = "<group>"; };
@@ -523,6 +531,7 @@
 				C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */,
 				1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */,
 				1A7E4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift */,
+				D1A0C0DE0000000000000200 /* ServerOnboarding.swift */,
 				F34F85AD5CC5B7FA6C495015 /* SafariExtensionGuide.swift */,
 				E4A4EB17D56C7699B48F04A8 /* ServerInvitesView.swift */,
 				C0FFEE012F00000000000001 /* PlaceContextMenus.swift */,
@@ -781,6 +790,8 @@
 				AACADCB42F336EE60007F705 /* macOS */,
 				AA06247F2F0A04DA007F28EB /* MessageDrainView.swift */,
 				AA70EFB02EA1B3BA00344D98 /* InputBar.swift */,
+				D1A0C0DE0000000000000212 /* SlashCommands.swift */,
+				D1A0C0DE0000000000000204 /* VoiceMessageButton.swift */,
 				D1A0C0DE0000000000000104 /* CreatePollSheet.swift */,
 				AA67FD142EF4A7F4004676A1 /* CameraPicker.swift */,
 				AA9F7A522EF96308008BB452 /* AttachmentBar.swift */,
@@ -1147,6 +1158,7 @@
 				AC03E04F0CF84CFE2B61F8E3 /* VoicePreferences.swift */,
 				AC056C49F2F9D4341D99AB1F /* AudioDevices.swift */,
 				AC0B4B4B4578BC80D509BBA3 /* VoiceAudioEngine.swift */,
+				D1A0C0DE0000000000000202 /* VoiceMessageRecorder.swift */,
 			);
 			path = Audio;
 			sourceTree = "<group>";
@@ -1352,6 +1364,7 @@
 				AC0EF8DCE4F59941702225FE /* VoicePreferences.swift in Sources */,
 				AC0533BB00B763D598E21E8A /* AudioDevices.swift in Sources */,
 				AC0AC9258B7782D61FF99B1C /* VoiceAudioEngine.swift in Sources */,
+				D1A0C0DE0000000000000203 /* VoiceMessageRecorder.swift in Sources */,
 				AC0DC60013FF71EBBDA11DD2 /* VoiceConnectionStore.swift in Sources */,
 				AC04D930DC8474160A714437 /* VoiceCallBar.swift in Sources */,
 				AC018E635EC5A8ED23F275F2 /* VoiceChannelButton.swift in Sources */,
@@ -1382,6 +1395,8 @@
 				AA2278C72EA448C7002C335F /* Profile.swift in Sources */,
 				AA5F76EE2F3EA53300A7A003 /* QuickSwitcherModifier.swift in Sources */,
 				AA70EFB12EA1B3BD00344D98 /* InputBar.swift in Sources */,
+				D1A0C0DE0000000000000213 /* SlashCommands.swift in Sources */,
+				D1A0C0DE0000000000000205 /* VoiceMessageButton.swift in Sources */,
 				D1A0C0DE0000000000000105 /* CreatePollSheet.swift in Sources */,
 				AADD58652E82A95B00CBC8B6 /* GuildScrollBar.swift in Sources */,
 				AA0624802F0A04DF007F28EB /* MessageDrainView.swift in Sources */,
@@ -1390,6 +1405,7 @@
 				C0FFEE012F00000000000004 /* ServerSettingsSheet.swift in Sources */,
 				1A7F501E161E4DAD6C94F7C8 /* InvitePreview.swift in Sources */,
 				1A7F4C63FAAD7A4DF83A0226 /* InvitePeopleSheet.swift in Sources */,
+				D1A0C0DE0000000000000201 /* ServerOnboarding.swift in Sources */,
 				BDE5D9945DEAF7729CD99416 /* SafariExtensionGuide.swift in Sources */,
 				3755AD1F15283F948096ABD1 /* ServerInvitesView.swift in Sources */,
 				C0FFEE012F00000000000002 /* PlaceContextMenus.swift in Sources */,

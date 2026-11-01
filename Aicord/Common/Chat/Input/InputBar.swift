@@ -157,7 +157,21 @@ extension ChatView {
                 )
             }
 
-            messageInputBar
+            if let draft = inputVM.slashDraft {
+              SlashCommandComposer(draft: draft, channel: vm) {
+                inputVM.slashDraft = nil
+              }
+              .padding([.horizontal, .bottom], 8)
+              .transition(.opacity)
+            } else {
+              if let query = slashQuery {
+                SlashCommandSuggestions(channel: vm, query: query) { entry in
+                  inputVM.slashDraft = SlashCommandDraft(entry: entry)
+                  inputVM.content = ""
+                }
+              }
+              messageInputBar
+            }
           }
           .padding(.top, 4)
 
@@ -356,6 +370,23 @@ extension ChatView {
     @Namespace private var mediaPickerNamespace
     @State private var creatingPoll = false
 
+    /// What follows a leading `/`, while it can still be a command name.
+    private var slashQuery: String? {
+      let text = inputVM.content
+      guard text.hasPrefix("/"), !text.contains("\n"), text.count <= 64,
+        inputVM.uploadItems.isEmpty
+      else { return nil }
+      if case .edit = inputVM.messageAction { return nil }
+      return String(text.dropFirst())
+    }
+    @State private var voiceRecorder = VoiceMessageRecorder()
+
+    /// Voice messages need Send Voice Messages, and aren't for edits.
+    private var canSendVoice: Bool {
+      if case .edit = inputVM.messageAction { return false }
+      return vm.hasPermission(.sendVoiceMessages)
+    }
+
     /// Polls need Create Polls in servers; DMs and groups always allow them.
     private var canCreatePoll: Bool {
       vm.hasPermission(.sendPolls)
@@ -478,6 +509,10 @@ extension ChatView {
             onPasteFiles: handlePastedFiles
           )
           .padding(8)
+          if canSendVoice, inputVM.content.isEmpty, inputVM.uploadItems.isEmpty {
+            VoiceMessageButton(recorder: voiceRecorder, channel: vm.channelId)
+              .padding(.vertical, 6)
+          }
         #endif
         Button {
           #if os(iOS)
@@ -513,10 +548,15 @@ extension ChatView {
       }
       .background(.background.secondary.opacity(0.8))
       .clipShape(.rect(cornerRadius: 18))
+      .overlay {
+        if voiceRecorder.state != .idle {
+          VoiceRecordingBar(recorder: voiceRecorder, channel: vm.channelId)
+        }
+      }
 
       #if os(iOS)
-        if inputVM.content.isEmpty == false
-          || inputVM.uploadItems.isEmpty == false
+        if voiceRecorder.state == .idle
+          && (inputVM.content.isEmpty == false || inputVM.uploadItems.isEmpty == false)
         {
           Button(action: sendMessage) {
             Image(systemName: "paperplane.fill")
@@ -531,6 +571,9 @@ extension ChatView {
           .transition(
             .move(edge: .trailing).combined(with: .opacity).animation(.default)
           )
+        } else if canSendVoice {
+          VoiceMessageButton(recorder: voiceRecorder, channel: vm.channelId)
+            .padding(.bottom, 1)
         }
       #endif
     }

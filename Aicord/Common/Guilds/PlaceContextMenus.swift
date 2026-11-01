@@ -29,6 +29,8 @@ struct GuildContextMenu: ViewModifier {
   @State private var showsSettings = false
   @State private var showsInvite = false
   @State private var showsCatchUp = false
+  @State private var showsEvents = false
+  @State private var showsOnboarding = false
   @State private var showsLeave = false
   @State private var error: String?
 
@@ -59,6 +61,13 @@ struct GuildContextMenu: ViewModifier {
         }
         .disabled(InvitePeople.channels(in: guild.id, gw: gw).isEmpty)
 
+        Button("Events", systemImage: "calendar") {
+          showsEvents = true
+        }
+        Button("Channels & Roles", systemImage: "checklist") {
+          showsOnboarding = true
+        }
+
         Divider()
 
         PlaceNotificationMenus(guild: guild, channelId: nil, error: $error)
@@ -85,6 +94,12 @@ struct GuildContextMenu: ViewModifier {
       .leaveServerConfirmation(isPresented: $showsLeave, guild: guild)
       .sheet(isPresented: $showsSettings) {
         ServerSettingsSheet(guildId: guild.id)
+      }
+      .sheet(isPresented: $showsEvents) {
+        ScheduledEventsSheet(guildId: guild.id)
+      }
+      .sheet(isPresented: $showsOnboarding) {
+        OnboardingSheet(guildId: guild.id)
       }
       .sheet(isPresented: $showsCatchUp) {
         CatchUpSheet(guildId: guild.id)

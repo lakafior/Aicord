@@ -18,6 +18,8 @@ struct GuildView: View {
   @Environment(\.appState) var appState
   /// Categories start expanded; only the ones the user collapses are remembered.
   @State private var collapsedCategories: Set<ChannelSnowflake> = []
+  @State private var places = GuildPlaces()
+  @Environment(\.gateway) var gw
 
   var body: some View {
     // pinned channels show at the top of the list, out of their category
@@ -31,6 +33,8 @@ struct GuildView: View {
 
     List(selection: ChannelButton.selection(appState)) {
       header
+
+      GuildPlacesSection(guild: guild, places: places)
 
       if !pinnedChannels.isEmpty || !uncategorized.isEmpty {
         Section {
@@ -61,6 +65,7 @@ struct GuildView: View {
     .channelListStyle()
     .environment(\.guildStore, guild)
     .task(id: guild.guildId) { loadCollapsedCategories() }
+    .task(id: guild.guildId) { await places.load(guild.guildId, client: gw.client) }
   }
 
   /// The banner, and on iPhone the server's name, which Mac and iPad show in the toolbar.

@@ -55,6 +55,10 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Create Poll in the message field's + menu: a question, up to ten answers, how long it stays open and whether people can pick more than one
 - **New** · Pinned Messages in the chat's toolbar menu, and Pin or Unpin Message in a message's menu; tapping a pin jumps to it
 - **New** · Threads in a text or announcement channel's toolbar menu: active and archived threads, each opening in the chat with a button back to the channel
+- **New** · Slash commands: type `/` for the commands of the server's bots, the DM's bots and apps on your account, then fill in the options (text, numbers, choices, people, channels, roles, with the bot's suggestions where it offers them) and Send runs it like Discord's own apps
+- **New** · Voice messages: hold the microphone next to the message field on iPhone and iPad (slide left to cancel), or click it on the Mac and press Send; sent as Opus with a waveform and length, like Discord's apps
+- **New** · Server rules and Channels & Roles: a server that asks you to agree to its rules shows that above its channels, and its onboarding questions give you roles and channels; both open by themselves the first day after joining and Channels & Roles stays in the server menu
+- **New** · Server events in the server menu and above the channels when there are any: when and where, the picture and description, how many are interested, and Interested to add or take back yours
 
 ### Settings
 
@@ -412,13 +416,19 @@ Szczegóły, sekrety i kroki: `docs/OVERNIGHT.md`, punkt 4. Nic nie zostało uru
 
 ---
 
-### 🧪 Etap 13: Brakujące funkcje Discorda — Paczka 1
-Szczegóły, decyzje i testy: `docs/PACK1_NOTES.md`. Zapisy testowane tylko na NAScin.
+### 🧪 Etap 13: Brakujące funkcje Discorda — Paczki 1 i 2
+Szczegóły, decyzje i testy: `docs/PACK1_NOTES.md` i `docs/PACK2_NOTES.md`. Zapisy testowane tylko na NAScin.
 1. **Paczka 1:**
    - [x] Wiadomości systemowe: `MessageCell.SystemMessage` z linią i ikoną dla przypięcia (skok do wiadomości), utworzenia wątku (otwiera wątek), startera wątku (wiadomość z kanału nadrzędnego), boostów i poziomów, zmiany nazwy i ikony, obserwowania kanału, połączeń w DM (czas, nieodebrane), dodania i usunięcia z grupy, AutoMod, Stage, zamkniętej ankiety, alertów bezpieczeństwa serwera i nowej emoji; komenda z menu kontekstowego jak slash-komenda; każdy inny typ to szara neutralna linia.
    - [x] Ankiety: `PollView` w treści wiadomości (pytanie, emoji, paski z liczbą i procentem, czas do końca, wiele odpowiedzi, Show Results, Vote, Remove Vote), głos przez `PUT /channels/{c}/polls/{m}/answers/@me` (`UserAPIEndpoint.createPollVote`), aktualizacja z `MESSAGE_POLL_VOTE_ADD`/`REMOVE`; tworzenie ankiety z menu „+” paska wiadomości.
    - [x] Przypięte: arkusz z listą (`GET /channels/{c}/pins`) i skokiem do wiadomości; Pin/Unpin w menu wiadomości.
    - [x] Przeglądarka wątków kanału tekstowego i ogłoszeniowego (aktywne i zarchiwizowane przez `threads/search`), wątek w zwykłym czacie z przyciskiem powrotu do kanału.
+2. **Paczka 2:**
+   - [x] Onboarding: `GET /guilds/{id}/onboarding` i `PUT …/onboarding-responses` (wybrane opcje i czasy wyświetlenia), arkusz Channels & Roles z pytaniami, emoji i wymaganymi odpowiedziami; reguły serwera (member verification): `GET …/member-verification`, `PUT …/requests/@me` z polem TERMS (zgoda), pytaniami tekstowymi i wyboru; oba otwierają się same w pierwszej dobie po dołączeniu, wiersze nad kanałami i pozycje w menu serwera.
+   - [x] Slash-komendy: indeks komend serwera, DM i konta (`…/application-command-index`), podkomendy i grupy spłaszczone, opcje z typami, autouzupełnianie (`POST /interactions` typ 4 i `APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE`), wysłanie typu 2 z `session_id` i wynik z `INTERACTION_SUCCESS`/`FAILURE`.
+   - [x] Głosówki: AVAudioEngine → 48 kHz mono → libopus z AicordKit → Ogg (OpusHead, OpusTags, strony co sekundę, CRC), fala 256 słupków w base64 i `duration_secs`, upload do chmury Discorda i wiadomość z flagą `IS_VOICE_MESSAGE`.
+   - [x] Wydarzenia: lista z `with_user_count`, własne „Interested” z `GET /users/@me/scheduled-events`, `PUT`/`DELETE …/users/@me`, link do kanału lub miejsca, obrazek.
+
 
 ### ✅ Etap 10: Intelligence (faza 1 i 2)
 Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tylko do odczytu; przez zewnętrzne API testowane wyłącznie na treści z NAScin.

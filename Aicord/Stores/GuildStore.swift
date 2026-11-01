@@ -86,6 +86,11 @@ class GuildStore: DiscordDataStore {
     roleBoxes.count
   }
 
+  /// Every role, in the server's order.
+  var allRoles: [Role] {
+    roleBoxes.values.map(\.value)
+  }
+
   /// Get role data directly, non-updating.
   func role(_ id: RoleSnowflake) -> Role? {
     roleBoxes[id]?.value

@@ -66,17 +66,18 @@ Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI,
 ---
 
 ### 🔜 Etap 13: Brakujące funkcje Discorda
-Paczka 1 zrobiona (szczegóły w SHIPPED i `docs/PACK1_NOTES.md`): wiadomości systemowe, ankiety, przypięte i przeglądarka wątków.
+Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK2_NOTES.md`): wiadomości systemowe, ankiety, przypięte, przeglądarka wątków, onboarding i reguły serwera, slash-komendy, nagrywanie głosówek, wydarzenia.
 1. **Paczka 1, sprawdzenie:**
    - [ ] Przeklikać na Macu (sprawdzone tylko w symulatorze iOS): ankieta, tworzenie ankiety, Pinned Messages, Threads, Pin Message w menu pod prawym przyciskiem.
    - [ ] Zobaczyć na żywo typy, których nie było pod ręką: połączenie w DM (czas i nieodebrane), grupa (dodanie, usunięcie, nazwa, ikona), boost, Stage, AutoMod, zamknięta ankieta (typ 46), utworzenie wątku.
-2. **Paczka 2:**
-   - [ ] Onboarding serwera: pytania i wybór ról po dołączeniu (pokazuje się prawie zawsze na nowym serwerze).
-   - [ ] Slash-komendy z podpowiedziami po `/`.
-   - [ ] Nagrywanie wiadomości głosowych (odtwarzanie już jest).
-   - [ ] Wydarzenia serwera: lista i „Zainteresowany”.
+2. **Paczka 2, sprawdzenie:**
+   - [ ] Slash-komenda bota z opcjami (tekst, liczba, wybór, osoba, kanał, rola) i autouzupełnianiem: na NAScin nie ma bota, sprawdzone tylko `/wordle` (aplikacja na koncie, bez opcji). Do zrobienia po dodaniu bota testowego na NAScin.
+   - [ ] Wydarzenia z danymi i „Interested” / cofnięcie: NAScin nie ma wydarzeń, a Aicord ich nie tworzy; sprawdzony tylko pusty stan.
+   - [ ] Zapisanie odpowiedzi w Channels & Roles i wysłanie reguł serwera: widoki sprawdzone na LimeWire i Polish Debrid bez zapisu; NAScin nie ma onboardingu ani reguł.
+   - [ ] Nagrywanie głosówki na Macu (przycisk i pasek Send/Cancel); na iOS sprawdzone.
 3. **Później albo wcale:**
    - [ ] Stage, soundboard, super-reakcje.
+   - [ ] Modale i odpowiedzi botów po komendzie (Activities, modale `INTERACTION_MODAL_CREATE`), opcje typu załącznik.
    - Nie robimy: Questy, Activities i sklep Nitro.
 
 ---

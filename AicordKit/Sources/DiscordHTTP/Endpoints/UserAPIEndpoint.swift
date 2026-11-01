@@ -60,6 +60,18 @@ public enum UserAPIEndpoint: Endpoint {
   // MARK: - Polls
   case createPollVote(channelId: ChannelSnowflake, messageId: MessageSnowflake)
 
+  // MARK: - Commands, onboarding and events
+  case getGuildApplicationCommandIndex(guildId: GuildSnowflake)
+  case getChannelApplicationCommandIndex(channelId: ChannelSnowflake)
+  case getUserApplicationCommandIndex
+  case createInteraction
+  case updateOnboardingResponses(guildId: GuildSnowflake)
+  case getMemberVerification(guildId: GuildSnowflake)
+  case submitMemberVerification(guildId: GuildSnowflake)
+  case addScheduledEventInterest(guildId: GuildSnowflake, eventId: GuildScheduledEventSnowflake)
+  case removeScheduledEventInterest(guildId: GuildSnowflake, eventId: GuildScheduledEventSnowflake)
+  case listOwnScheduledEventRSVPs
+
   // MARK: - Directory Entries
 
   // MARK: - Discovery
@@ -379,6 +391,26 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "channels/recipients/@me/batch-reject"
     case .createPollVote(let channelId, let messageId):
       suffix = "channels/\(channelId.rawValue)/polls/\(messageId.rawValue)/answers/@me"
+    case .getGuildApplicationCommandIndex(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/application-command-index"
+    case .getChannelApplicationCommandIndex(let channelId):
+      suffix = "channels/\(channelId.rawValue)/application-command-index"
+    case .getUserApplicationCommandIndex:
+      suffix = "users/@me/application-command-index"
+    case .createInteraction:
+      suffix = "interactions"
+    case .updateOnboardingResponses(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/onboarding-responses"
+    case .getMemberVerification(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/member-verification"
+    case .submitMemberVerification(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/requests/@me"
+    case .addScheduledEventInterest(let guildId, let eventId):
+      suffix = "guilds/\(guildId.rawValue)/scheduled-events/\(eventId.rawValue)/users/@me"
+    case .removeScheduledEventInterest(let guildId, let eventId):
+      suffix = "guilds/\(guildId.rawValue)/scheduled-events/\(eventId.rawValue)/users/@me"
+    case .listOwnScheduledEventRSVPs:
+      suffix = "users/@me/scheduled-events"
     case .getMessageRequestSupplementalData:
       suffix = "users/@me/message-requests/supplemental-data"
 
@@ -573,6 +605,26 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "channels/recipients/@me/batch-reject"
     case .createPollVote(let channelId, let messageId):
       suffix = "channels/\(channelId.rawValue)/polls/\(messageId.rawValue)/answers/@me"
+    case .getGuildApplicationCommandIndex(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/application-command-index"
+    case .getChannelApplicationCommandIndex(let channelId):
+      suffix = "channels/\(channelId.rawValue)/application-command-index"
+    case .getUserApplicationCommandIndex:
+      suffix = "users/@me/application-command-index"
+    case .createInteraction:
+      suffix = "interactions"
+    case .updateOnboardingResponses(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/onboarding-responses"
+    case .getMemberVerification(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/member-verification"
+    case .submitMemberVerification(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/requests/@me"
+    case .addScheduledEventInterest(let guildId, let eventId):
+      suffix = "guilds/\(guildId.rawValue)/scheduled-events/\(eventId.rawValue)/users/@me"
+    case .removeScheduledEventInterest(let guildId, let eventId):
+      suffix = "guilds/\(guildId.rawValue)/scheduled-events/\(eventId.rawValue)/users/@me"
+    case .listOwnScheduledEventRSVPs:
+      suffix = "users/@me/scheduled-events"
     case .getMessageRequestSupplementalData:
       suffix = "users/@me/message-requests/supplemental-data"
     case .createRemoteAuthSession:
@@ -666,6 +718,16 @@ public enum UserAPIEndpoint: Endpoint {
     case .batchRejectMessageRequests: return .PUT
     case .getMessageRequestSupplementalData: return .GET
     case .createPollVote: return .PUT
+    case .getGuildApplicationCommandIndex: return .GET
+    case .getChannelApplicationCommandIndex: return .GET
+    case .getUserApplicationCommandIndex: return .GET
+    case .createInteraction: return .POST
+    case .updateOnboardingResponses: return .PUT
+    case .getMemberVerification: return .GET
+    case .submitMemberVerification: return .PUT
+    case .addScheduledEventInterest: return .PUT
+    case .removeScheduledEventInterest: return .DELETE
+    case .listOwnScheduledEventRSVPs: return .GET
     case .createRemoteAuthSession: return .POST
     case .finishRemoteAuthSession: return .POST
     case .cancelRemoteAuthSession: return .POST
@@ -747,6 +809,16 @@ public enum UserAPIEndpoint: Endpoint {
     case .batchRejectMessageRequests: return true
     case .getMessageRequestSupplementalData: return true
     case .createPollVote: return true
+    case .getGuildApplicationCommandIndex: return true
+    case .getChannelApplicationCommandIndex: return true
+    case .getUserApplicationCommandIndex: return true
+    case .createInteraction: return true
+    case .updateOnboardingResponses: return true
+    case .getMemberVerification: return true
+    case .submitMemberVerification: return true
+    case .addScheduledEventInterest: return true
+    case .removeScheduledEventInterest: return true
+    case .listOwnScheduledEventRSVPs: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -828,6 +900,16 @@ public enum UserAPIEndpoint: Endpoint {
     case .batchRejectMessageRequests: return true
     case .getMessageRequestSupplementalData: return true
     case .createPollVote: return true
+    case .getGuildApplicationCommandIndex: return true
+    case .getChannelApplicationCommandIndex: return true
+    case .getUserApplicationCommandIndex: return true
+    case .createInteraction: return true
+    case .updateOnboardingResponses: return true
+    case .getMemberVerification: return true
+    case .submitMemberVerification: return true
+    case .addScheduledEventInterest: return true
+    case .removeScheduledEventInterest: return true
+    case .listOwnScheduledEventRSVPs: return true
     case .createRemoteAuthSession: return true
     case .finishRemoteAuthSession: return true
     case .cancelRemoteAuthSession: return true
@@ -943,6 +1025,16 @@ public enum UserAPIEndpoint: Endpoint {
     case .getMessageRequestSupplementalData: return []
     case .createPollVote(let channelId, let messageId):
       return [channelId.rawValue, messageId.rawValue]
+    case .getGuildApplicationCommandIndex(let guildId): return [guildId.rawValue]
+    case .getChannelApplicationCommandIndex(let channelId): return [channelId.rawValue]
+    case .getUserApplicationCommandIndex: return []
+    case .createInteraction: return []
+    case .updateOnboardingResponses(let guildId): return [guildId.rawValue]
+    case .getMemberVerification(let guildId): return [guildId.rawValue]
+    case .submitMemberVerification(let guildId): return [guildId.rawValue]
+    case .addScheduledEventInterest(let guildId, let eventId): return [guildId.rawValue, eventId.rawValue]
+    case .removeScheduledEventInterest(let guildId, let eventId): return [guildId.rawValue, eventId.rawValue]
+    case .listOwnScheduledEventRSVPs: return []
     case .createRemoteAuthSession: return []
     case .finishRemoteAuthSession: return []
     case .cancelRemoteAuthSession: return []
@@ -1036,6 +1128,16 @@ public enum UserAPIEndpoint: Endpoint {
     case .batchRejectMessageRequests: return 141
     case .getMessageRequestSupplementalData: return 142
     case .createPollVote: return 144
+    case .getGuildApplicationCommandIndex: return 145
+    case .getChannelApplicationCommandIndex: return 146
+    case .getUserApplicationCommandIndex: return 147
+    case .createInteraction: return 148
+    case .updateOnboardingResponses: return 149
+    case .getMemberVerification: return 150
+    case .submitMemberVerification: return 151
+    case .addScheduledEventInterest: return 152
+    case .removeScheduledEventInterest: return 153
+    case .listOwnScheduledEventRSVPs: return 154
     case .__DO_NOT_USE_THIS_CASE:
       fatalError(
         "If the case name wasn't already clear enough: '__DO_NOT_USE_THIS_CASE' MUST NOT be used"
@@ -1183,6 +1285,26 @@ public enum UserAPIEndpoint: Endpoint {
     case .getMessageRequestSupplementalData: return "getMessageRequestSupplementalData"
     case .createPollVote(let channelId, let messageId):
       return "createPollVote(channelId: \(channelId.rawValue), messageId: \(messageId.rawValue))"
+    case .getGuildApplicationCommandIndex(let guildId):
+      return "getGuildApplicationCommandIndex(guildId: \(guildId.rawValue))"
+    case .getChannelApplicationCommandIndex(let channelId):
+      return "getChannelApplicationCommandIndex(channelId: \(channelId.rawValue))"
+    case .getUserApplicationCommandIndex:
+      return "getUserApplicationCommandIndex"
+    case .createInteraction:
+      return "createInteraction"
+    case .updateOnboardingResponses(let guildId):
+      return "updateOnboardingResponses(guildId: \(guildId.rawValue))"
+    case .getMemberVerification(let guildId):
+      return "getMemberVerification(guildId: \(guildId.rawValue))"
+    case .submitMemberVerification(let guildId):
+      return "submitMemberVerification(guildId: \(guildId.rawValue))"
+    case .addScheduledEventInterest(let guildId, let eventId):
+      return "addScheduledEventInterest(guildId: \(guildId.rawValue), eventId: \(eventId.rawValue))"
+    case .removeScheduledEventInterest(let guildId, let eventId):
+      return "removeScheduledEventInterest(guildId: \(guildId.rawValue), eventId: \(eventId.rawValue))"
+    case .listOwnScheduledEventRSVPs:
+      return "listOwnScheduledEventRSVPs"
     case .createRemoteAuthSession: return "createRemoteAuthSession"
     case .finishRemoteAuthSession: return "finishRemoteAuthSession"
     case .cancelRemoteAuthSession: return "cancelRemoteAuthSession"

@@ -653,7 +653,7 @@ extension Guild {
         public var id: OnboardingPromptOptionSnowflake
         public var channel_ids: [ChannelSnowflake]
         public var role_ids: [RoleSnowflake]
-        public var emoji: Emoji
+        public var emoji: Emoji?
         public var title: String
         public var description: String?
 
@@ -661,7 +661,7 @@ extension Guild {
           id: OnboardingPromptOptionSnowflake,
           channel_ids: [ChannelSnowflake],
           role_ids: [RoleSnowflake],
-          emoji: Emoji,
+          emoji: Emoji? = nil,
           title: String,
           description: String? = nil
         ) {
@@ -727,7 +727,12 @@ extension Guild {
     public var prompts: [Prompt]
     public var default_channel_ids: [ChannelSnowflake]
     public var enabled: Bool
-    public var mode: Mode
+    public var mode: Mode?
+    /// The option IDs the current user picked (user accounts only).
+    public var responses: [OnboardingPromptOptionSnowflake]?
+    /// Prompt ID → Unix time in milliseconds the current user saw it.
+    public var onboarding_prompts_seen: [String: Int64]?
+    public var onboarding_responses_seen: [String: Int64]?
   }
 
   /// https://discord.com/developers/docs/resources/guild#guild-preview-object-guild-preview-structure

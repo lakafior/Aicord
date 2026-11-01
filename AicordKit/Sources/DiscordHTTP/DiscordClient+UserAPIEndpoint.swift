@@ -866,6 +866,114 @@ extension DiscordClient {
     )
   }
 
+  // MARK: - Application commands
+
+  /// The commands members can run in a guild, with their applications.
+  /// https://docs.discord.food/interactions/application-commands#get-guild-application-command-index
+  @inlinable
+  public func getGuildApplicationCommandIndex(
+    guildId: GuildSnowflake
+  ) async throws -> DiscordClientResponse<ApplicationCommandIndex> {
+    try await self.send(request: .init(to: UserAPIEndpoint.getGuildApplicationCommandIndex(guildId: guildId)))
+  }
+
+  /// The commands of the bots in a DM or group DM.
+  /// https://docs.discord.food/interactions/application-commands#get-channel-application-command-index
+  @inlinable
+  public func getChannelApplicationCommandIndex(
+    channelId: ChannelSnowflake
+  ) async throws -> DiscordClientResponse<ApplicationCommandIndex> {
+    try await self.send(request: .init(to: UserAPIEndpoint.getChannelApplicationCommandIndex(channelId: channelId)))
+  }
+
+  /// The commands of apps the user installed to their account.
+  /// https://docs.discord.food/interactions/application-commands#get-user-application-command-index
+  @inlinable
+  public func getUserApplicationCommandIndex() async throws -> DiscordClientResponse<ApplicationCommandIndex> {
+    try await self.send(request: .init(to: UserAPIEndpoint.getUserApplicationCommandIndex))
+  }
+
+  /// Runs an application command or asks for autocomplete choices. The result
+  /// arrives over the gateway (INTERACTION_SUCCESS/FAILURE, autocomplete response).
+  /// https://docs.discord.food/interactions/receiving-and-responding#create-interaction
+  @inlinable
+  public func createInteraction(
+    payload: Payloads.CreateInteraction
+  ) async throws -> DiscordHTTPResponse {
+    try await self.send(request: .init(to: UserAPIEndpoint.createInteraction), payload: payload)
+  }
+
+  // MARK: - Onboarding and member verification
+
+  /// Saves the options the user picked in a guild's onboarding.
+  /// https://docs.discord.food/resources/guild#modify-guild-onboarding-responses
+  @inlinable
+  public func updateOnboardingResponses(
+    guildId: GuildSnowflake,
+    payload: Payloads.UpdateOnboardingResponses
+  ) async throws -> DiscordHTTPResponse {
+    try await self.send(
+      request: .init(to: UserAPIEndpoint.updateOnboardingResponses(guildId: guildId)), payload: payload)
+  }
+
+  /// A guild's rules screen and questions for new members.
+  /// https://docs.discord.food/resources/guild#get-guild-member-verification
+  @inlinable
+  public func getMemberVerification(
+    guildId: GuildSnowflake
+  ) async throws -> DiscordClientResponse<MemberVerification> {
+    try await self.send(
+      request: .init(
+        to: UserAPIEndpoint.getMemberVerification(guildId: guildId),
+        queries: [("with_guild", "false")]))
+  }
+
+  /// Agrees to the rules (and answers the questions) of member verification.
+  /// https://docs.discord.food/resources/guild#create-guild-join-request
+  @inlinable
+  public func submitMemberVerification(
+    guildId: GuildSnowflake,
+    payload: Payloads.SubmitMemberVerification
+  ) async throws -> DiscordClientResponse<GuildJoinRequestResult> {
+    try await self.send(
+      request: .init(to: UserAPIEndpoint.submitMemberVerification(guildId: guildId)), payload: payload)
+  }
+
+  // MARK: - Scheduled events
+
+  /// Marks the current user interested in a scheduled event.
+  /// https://docs.discord.food/resources/guild-scheduled-event#create-guild-scheduled-event-user
+  @inlinable
+  public func addScheduledEventInterest(
+    guildId: GuildSnowflake,
+    eventId: GuildScheduledEventSnowflake
+  ) async throws -> DiscordHTTPResponse {
+    try await self.send(
+      request: .init(to: UserAPIEndpoint.addScheduledEventInterest(guildId: guildId, eventId: eventId)))
+  }
+
+  /// Takes back the current user's interest in a scheduled event.
+  @inlinable
+  public func removeScheduledEventInterest(
+    guildId: GuildSnowflake,
+    eventId: GuildScheduledEventSnowflake
+  ) async throws -> DiscordHTTPResponse {
+    try await self.send(
+      request: .init(to: UserAPIEndpoint.removeScheduledEventInterest(guildId: guildId, eventId: eventId)))
+  }
+
+  /// The events the current user is interested in, in the given guilds.
+  /// https://docs.discord.food/resources/guild-scheduled-event#get-user-guild-scheduled-events
+  @inlinable
+  public func listOwnScheduledEventRSVPs(
+    guildIds: [GuildSnowflake]
+  ) async throws -> DiscordClientResponse<[ScheduledEventRSVP]> {
+    try await self.send(
+      request: .init(
+        to: UserAPIEndpoint.listOwnScheduledEventRSVPs,
+        queries: guildIds.map { ("guild_ids", $0.rawValue) }))
+  }
+
   /// Accepts a message request; it moves out of Requests (or Spam) into your DMs.
   /// Fires a Channel Update Gateway event.
   /// https://docs.discord.food/resources/channel#update-message-request

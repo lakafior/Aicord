@@ -217,6 +217,10 @@ public struct Gateway: Sendable, Codable {
       case integrationDelete(IntegrationDelete)
 
       //			case interactionCreate(Interaction) // bot gets full interaction object
+      case interactionCreate(InteractionStatus)
+      case interactionSuccess(InteractionStatus)
+      case interactionFailure(InteractionStatus)
+      case applicationCommandAutocompleteResponse(ApplicationCommandAutocompleteResponse)
 
       case inviteCreate(InviteCreate)
       case inviteDelete(InviteDelete)
@@ -471,6 +475,14 @@ public struct Gateway: Sendable, Codable {
           self.data = try .guildScheduledEventUserAdd(decodeData())
         case "GUILD_SCHEDULED_EVENT_USER_REMOVE":
           self.data = try .guildScheduledEventUserRemove(decodeData())
+        case "INTERACTION_CREATE":
+          self.data = try .interactionCreate(decodeData())
+        case "INTERACTION_SUCCESS":
+          self.data = try .interactionSuccess(decodeData())
+        case "INTERACTION_FAILURE":
+          self.data = try .interactionFailure(decodeData())
+        case "APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE":
+          self.data = try .applicationCommandAutocompleteResponse(decodeData())
         case "INTEGRATION_CREATE":
           self.data = try .integrationCreate(decodeData())
         case "INTEGRATION_UPDATE":
@@ -624,7 +636,6 @@ public struct Gateway: Sendable, Codable {
           "ENTITLEMENT_UPDATE",
           "ENTITLEMENT_DELETE",
           "GUILD_AUDIT_LOG_ENTRY_CREATE",
-          "INTERACTION_CREATE",
           "WEBHOOKS_UPDATE",
           "APPLICATION_COMMAND_PERMISSIONS_UPDATE",
           "AUTO_MODERATION_RULE_CREATE",
@@ -633,9 +644,6 @@ public struct Gateway: Sendable, Codable {
           "AUTO_MODERATION_ACTION_EXECUTION",
           "AUTO_MODERATION_MENTION_RAID_DETECTION",
           "GUILD_APPLICATION_COMMAND_INDEX_UPDATE",
-          "INTERACTION_FAILURE",
-          "INTERACTION_SUCCESS",
-          "APPLICATION_COMMAND_AUTOCOMPLETE_RESPONSE",
           "INTERACTION_MODAL_CREATE",
           "INTERACTION_IFRAME_MODAL_CREATE":
           self.data = nil

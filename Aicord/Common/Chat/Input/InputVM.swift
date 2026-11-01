@@ -27,6 +27,9 @@ extension ChatView.InputBar {
       self.channelStore = channelStore
     }
 
+    /// A slash command picked from the suggestions, being filled in.
+    var slashDraft: SlashCommandDraft?
+
     /// The text field content
     var content: String = "" {
       didSet {
