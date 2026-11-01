@@ -42,6 +42,10 @@ class NotificationStore: DiscordDataStore {
           observeBadge()
         case .messageCreate(let message):
           handleMessageCreate(message)
+        case .messageDelete(let delete):
+          handleDeleted([delete.id])
+        case .messageDeleteBulk(let delete):
+          handleDeleted(delete.ids)
         case .relationshipAdd(let relationship):
           handleRelationshipAdd(relationship)
         default:
@@ -97,11 +101,12 @@ class NotificationStore: DiscordDataStore {
   private func handleMessageCreate(_ message: Gateway.MessageCreate) {
     guard let gw = gateway, let me = gw.user.currentUser?.id else { return }
     guard let author = message.author, author.id != me else { return }
+    if gw.user.relationships[author.id]?.type == .blocked { return }
+    rememberMention(message, me: me)
     guard Prefs.bool(Prefs.enabledKey) else { return }
     guard message.type == .default || message.type == .reply else { return }
     // @silent messages never notify, like in Discord
     if message.flags?.contains(.suppressNotifications) == true { return }
-    if gw.user.relationships[author.id]?.type == .blocked { return }
     if isViewing(message.channel_id) { return }
 
     let isDM = message.guild_id == nil && gw.user.privateChannels[message.channel_id] != nil
@@ -116,8 +121,9 @@ class NotificationStore: DiscordDataStore {
     let text = plainText(of: message)
     let origin = gw.origin(authorId: author.id, inServer: !isDM)
     if WordFilter.hides(text, origin: origin) { return }
+    let alert = alertReason(message, author: author, text: text)
 
-    guard notifies else {
+    guard notifies || alert != nil else {
       // a muted channel may still have something for you: the on-device model decides
       if let guildId = message.guild_id, isMuted(message, guildId: guildId) {
         checkImportance(message, author: author, text: text)
@@ -125,7 +131,78 @@ class NotificationStore: DiscordDataStore {
       return
     }
 
-    post(content(for: message, author: author, text: text, isDM: isDM), id: message.id.rawValue)
+    var content = content(for: message, author: author, text: text, isDM: isDM)
+    if let alert, Prefs.preview != .hidden {
+      content.subtitle = [alert, content.subtitle].filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+    post(content, id: message.id.rawValue)
+  }
+
+  // MARK: - Alerts
+
+  /// Why one of Aicord's own alerts wants this message, even where Discord's
+  /// settings stay quiet: someone you watch wrote, or a keyword rule matched.
+  private func alertReason(_ message: Gateway.MessageCreate, author: DiscordUser, text: String)
+    -> String?
+  {
+    if AlertRules.watchedUsers.contains(author.id.rawValue) {
+      return String(localized: "Watched person")
+    }
+    let parentId = message.guild_id.flatMap { channel(message.channel_id, in: $0)?.parent_id }
+      .map { ChannelSnowflake($0) }
+    if let rule = AlertRules.shared.matchingRule(
+      message.content, channelId: message.channel_id, parentId: parentId, guildId: message.guild_id)
+    {
+      return String(localized: "Keyword: \(rule.pattern)")
+    }
+    return nil
+  }
+
+  /// Messages that mentioned you, you, your role or everyone, kept for a while
+  /// so a deletion can be told apart as a ghost ping.
+  @ObservationIgnored private var recentMentions: [MessageSnowflake: (MessageSnapshot, Date)] = [:]
+
+  private func rememberMention(_ message: Gateway.MessageCreate, me: UserSnowflake) {
+    guard AlertRules.watchesGhostPings, let gw = gateway else { return }
+    var mentioned = message.mentions.contains { $0.id == me } || message.mention_everyone
+    if !mentioned, let guildId = message.guild_id, !message.mention_roles.isEmpty {
+      let mine = gw.existingGuildStore(for: guildId)?.member(me)?.roles ?? []
+      mentioned = mine.contains { message.mention_roles.contains($0) }
+    }
+    guard mentioned else { return }
+    // a ghost ping is deleted within minutes; keep six hours at most
+    let cutoff = Date.now.addingTimeInterval(-6 * 3_600)
+    recentMentions = recentMentions.filter { $0.value.1 > cutoff }
+    if recentMentions.count >= 300,
+      let oldest = recentMentions.min(by: { $0.value.1 < $1.value.1 })?.key
+    {
+      recentMentions.removeValue(forKey: oldest)
+    }
+    recentMentions[message.id] = (gw.snapshot(of: message), .now)
+  }
+
+  private func handleDeleted(_ ids: [MessageSnowflake]) {
+    for id in ids {
+      guard let (snapshot, _) = recentMentions.removeValue(forKey: id),
+        AlertRules.watchesGhostPings
+      else { continue }
+      SavedItemsStore.shared.addGhostPing(snapshot)
+      guard Prefs.bool(Prefs.enabledKey) else { continue }
+      var info = ["channel": snapshot.channelID]
+      info["guild"] = snapshot.guildID
+      post(
+        Content(
+          title: String(localized: "Ghost Ping"),
+          subtitle: [snapshot.authorName, snapshot.place].filter { !$0.isEmpty }
+            .joined(separator: " · "),
+          body: Prefs.preview == .full
+            ? snapshot.text : String(localized: "A message that mentioned you was deleted"),
+          thread: "ghost-pings",
+          userInfo: info
+        ),
+        id: "ghost-\(id.rawValue)"
+      )
+    }
   }
 
   /// Someone's looking at the channel already: the app is in front and it's open.
@@ -340,14 +417,31 @@ class NotificationStore: DiscordDataStore {
   /// The message as it would read in a notification: mentions, channels and
   /// emoji spelled out, and a note for messages with only files or stickers.
   func plainText(of message: Gateway.MessageCreate) -> String {
-    var text = message.content
-    for user in message.mentions {
+    plainText(
+      content: message.content, mentions: message.mentions, roles: message.mention_roles,
+      guildId: message.guild_id, hasAttachments: !message.attachments.isEmpty,
+      hasStickers: message.sticker_items?.isEmpty == false, hasEmbeds: !message.embeds.isEmpty)
+  }
+
+  func plainText(of message: DiscordChannel.Message, guildId: GuildSnowflake?) -> String {
+    plainText(
+      content: message.content, mentions: message.mentions, roles: message.mention_roles,
+      guildId: guildId ?? message.guild_id, hasAttachments: !message.attachments.isEmpty,
+      hasStickers: message.sticker_items?.isEmpty == false, hasEmbeds: !message.embeds.isEmpty)
+  }
+
+  private func plainText(
+    content: String, mentions: [MentionUser], roles: [RoleSnowflake], guildId: GuildSnowflake?,
+    hasAttachments: Bool, hasStickers: Bool, hasEmbeds: Bool
+  ) -> String {
+    var text = content
+    for user in mentions {
       let name = user.global_name ?? user.username
       text = text.replacingOccurrences(of: "<@\(user.id.rawValue)>", with: "@\(name)")
       text = text.replacingOccurrences(of: "<@!\(user.id.rawValue)>", with: "@\(name)")
     }
-    if let guildId = message.guild_id {
-      for role in message.mention_roles {
+    if let guildId {
+      for role in roles {
         let name = gateway?.user.guilds[guildId]?.roles.first { $0.id == role }?.name ?? "role"
         text = text.replacingOccurrences(of: "<@&\(role.rawValue)>", with: "@\(name)")
       }
@@ -359,11 +453,11 @@ class NotificationStore: DiscordDataStore {
     text = text.replacing(/<a?(:\w+:)\d+>/) { String($0.output.1) }
     text = text.trimmingCharacters(in: .whitespacesAndNewlines)
     if text.isEmpty {
-      if !message.attachments.isEmpty {
+      if hasAttachments {
         text = String(localized: "Sent an attachment")
-      } else if message.sticker_items?.isEmpty == false {
+      } else if hasStickers {
         text = String(localized: "Sent a sticker")
-      } else if !message.embeds.isEmpty {
+      } else if hasEmbeds {
         text = String(localized: "Sent an embed")
       }
     }
@@ -509,7 +603,11 @@ class NotificationStore: DiscordDataStore {
         await markRead(channelId: channelId, messageId: message.id.rawValue)
       }
     case UNNotificationDefaultActionIdentifier:
-      open(guildId: guildId, channelId: channelId)
+      if userInfo["jump"] == "1", let messageId = userInfo["message"] {
+        open(guildId: guildId, channelId: channelId, messageId: MessageSnowflake(messageId))
+      } else {
+        open(guildId: guildId, channelId: channelId)
+      }
     default:
       break
     }
@@ -526,11 +624,20 @@ class NotificationStore: DiscordDataStore {
     }
   }
 
-  private func open(guildId: GuildSnowflake?, channelId: ChannelSnowflake) {
-    guard let appState = AicordAppState.instances.values.first else { return }
-    appState.selectedGuild = guildId
-    appState.selectedChannel = channelId
-    appState.chatOpen = true
+  private func open(
+    guildId: GuildSnowflake?, channelId: ChannelSnowflake, messageId: MessageSnowflake? = nil
+  ) {
+    guard
+      let appState = AicordAppState.main
+        ?? AicordAppState.instances.values.first(where: { $0 !== AicordAppState.sharedEphemeral })
+    else { return }
+    if let messageId {
+      appState.open(guild: guildId, channel: channelId, message: messageId)
+    } else {
+      appState.selectedGuild = guildId
+      appState.selectedChannel = channelId
+      appState.chatOpen = true
+    }
     appState.openedFromNotification += 1
     #if os(macOS)
       NSApp.activate()

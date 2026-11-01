@@ -59,9 +59,11 @@ struct RootView: View {
         .attachmentViewer()
         .reactionPicker()
         .forwardSheet()
+        .reminderSheet()
         .messageIntelligenceSheet()
         .settingsSheet()
         .task {
+          AicordAppState.main = appState
           appState.loadPrevGuild()
           #if os(iOS)
             self.hasLaunchedAlready = true

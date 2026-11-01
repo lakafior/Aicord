@@ -24,6 +24,7 @@ struct ChatView: View {
   @State private var indexingChannel = false
   @State private var showsPins = false
   @State private var showsThreads = false
+  @State private var showsGallery = false
   @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
 
@@ -245,6 +246,12 @@ struct ChatView: View {
     .sheet(isPresented: $showsThreads) {
       ThreadBrowserSheet(vm: vm)
     }
+    .sheet(isPresented: $showsGallery) {
+      ChannelGallerySheet(
+        channelId: vm.channelId, guildId: vm.guildStore?.guildId, title: channelTitle
+      )
+      .galleryFrame()
+    }
     .sheet(isPresented: $indexingChannel) {
       ChannelIndexSheet(
         channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
@@ -316,32 +323,29 @@ struct ChatView: View {
     }
   }
 
-  /// Pins, and the threads of a text or announcement channel.
-  @ViewBuilder
+  /// Pins, the gallery, and the threads of a text or announcement channel.
   private var channelMenu: some View {
     let hasThreads = vm.channel?.type == .guildText || vm.channel?.type == .guildAnnouncement
-    if hasThreads {
-      Menu {
-        Button {
-          showsPins = true
-        } label: {
-          Label("Pinned Messages", systemImage: "pin")
-        }
-        Button {
-          showsThreads = true
-        } label: {
-          Label("Threads", systemImage: "number.square")
-        }
-      } label: {
-        Label("Channel", systemImage: "ellipsis.circle")
-      }
-    } else {
+    return Menu {
       Button {
         showsPins = true
       } label: {
         Label("Pinned Messages", systemImage: "pin")
       }
-      .help(Text("Pinned Messages"))
+      Button {
+        showsGallery = true
+      } label: {
+        Label("Media, Links and Files", systemImage: "photo.on.rectangle")
+      }
+      if hasThreads {
+        Button {
+          showsThreads = true
+        } label: {
+          Label("Threads", systemImage: "number.square")
+        }
+      }
+    } label: {
+      Label("Channel", systemImage: "ellipsis.circle")
     }
   }
 

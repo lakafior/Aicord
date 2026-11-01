@@ -186,6 +186,7 @@ struct ProfilePopoutView: View {
       }
 
       AddFriendProfileButton(user: user)
+      DMGalleryProfileButton(user: user)
     }
   }
 

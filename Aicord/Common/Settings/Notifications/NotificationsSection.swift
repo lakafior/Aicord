@@ -74,6 +74,7 @@ struct NotificationSettings: View {
       directMessagesSection
       serversSection
       quietSection
+      AlertSettingsSection()
 
       Section {
         toggle("Friend Requests", isOn: $friendRequests)

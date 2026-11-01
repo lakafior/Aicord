@@ -105,10 +105,9 @@ Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK
 
 ### 🔜 Etap 15: Lepsze niż Discord
 Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z tokenem konta (automatyczne wysyłanie, masowe pobieranie z wielu serwerów w tle, zaplanowane wiadomości), bo Discord traktuje to jak self-bota. Wtyczki w stylu Vencorda (np. niewidoczne pisanie) też podnoszą ryzyko blokady.
-1. **Paczka A (tanio, wyraźna różnica):**
-   - [ ] Galeria kanału i DM: wszystkie zdjęcia, filmy, linki i pliki w jednym widoku, z filtrami i skokiem do wiadomości.
-   - [ ] Przypomnienia i zakładki: „Przypomnij mi o tej wiadomości” (za 1 h, jutro, własny czas) przez lokalne powiadomienie, lista zapisanych wiadomości.
-   - [ ] Alerty: ghost pingi (wzmianka w wiadomości, która zniknęła; usunięte wiadomości już widzimy), słowa kluczowe i regexy na wybranych kanałach, „daj znać, gdy X coś napisze”.
+1. **Paczka A:** zrobiona 1.11 (galeria, przypomnienia i zapisane, alerty), szczegóły w `SHIPPED.md` i `docs/STAGE15A_NOTES.md`. Zostało:
+   - [ ] Ghost ping sprawdzić z drugiego konta (z jednego się nie da: własne wiadomości są pomijane).
+   - [ ] Ghost ping przez edycję (wzmianka usunięta z treści wiadomości), dziś tylko usunięcie całej wiadomości.
 2. **Paczka B (system Apple):**
    - [ ] Spotlight dla DM-ów, kanałów i zapisanych wiadomości.
    - [ ] Widżety: nieprzeczytane i wzmianki; Live Activity z trwającym połączeniem głosowym.

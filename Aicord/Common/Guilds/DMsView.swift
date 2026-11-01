@@ -24,11 +24,12 @@ struct DMsView: View {
 
   /// What the shortcuts above the list open on Mac and iPad.
   enum Panel: Identifiable {
-    case friends, search, folder(MessageFolder)
+    case friends, search, saved, folder(MessageFolder)
     var id: String {
       switch self {
       case .friends: "friends"
       case .search: "search"
+      case .saved: "saved"
       case .folder(let folder): "folder-\(folder)"
       }
     }
@@ -73,6 +74,7 @@ struct DMsView: View {
         panel = .friends
       }
       shortcut("Search", symbol: "magnifyingglass", count: 0) { panel = .search }
+      shortcut("Saved", symbol: "bookmark", count: 0) { panel = .saved }
       shortcut(
         "Message Requests", symbol: MessageFolder.requests.symbol,
         count: gw.user.messageRequests().count
@@ -115,6 +117,18 @@ struct DMsView: View {
       FriendsSheet(open: open(user:))
     case .search:
       SearchSheet()
+    case .saved:
+      NavigationStack {
+        SavedItemsView { message in
+          self.panel = nil
+          appState.open(guild: message.guild, channel: message.channel, message: message.messageID)
+        }
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Done") { self.panel = nil }
+          }
+        }
+      }
     case .folder(let folder):
       NavigationStack {
         MessageFolderView(folder: folder) { channel in

@@ -74,11 +74,23 @@ private struct AttachmentViewerModifier: ViewModifier {
 }
 
 /// Le attachment viewer, a fullscreen sheet or an overlay that shows the attachments.
-private struct AttachmentViewer: View {
+struct AttachmentViewer: View {
   var contextMessage: DiscordChannel.PartialMessage? = nil
   @Binding var attachments: [DiscordMedia]
   @Binding var selectedIndex: Int?
   @Binding var isPresented: Bool
+
+  init(
+    contextMessage: DiscordChannel.PartialMessage? = nil,
+    attachments: Binding<[DiscordMedia]>,
+    selectedIndex: Binding<Int?>,
+    isPresented: Binding<Bool>
+  ) {
+    self.contextMessage = contextMessage
+    self._attachments = attachments
+    self._selectedIndex = selectedIndex
+    self._isPresented = isPresented
+  }
 
   @FocusState private var isFocused: Bool
   @State private var showsControls = true
@@ -220,7 +232,8 @@ private struct AttachmentViewer: View {
             onSingleTap: toggleControls
           )
           .ignoresSafeArea(.container)
-          .tag(index)
+          // tagged with the selection's own optional type
+          .tag(Int?.some(index))
         }
       }
       .tabViewStyle(.page(indexDisplayMode: .never))

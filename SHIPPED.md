@@ -29,6 +29,9 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Messages, search and chat
 
+- **New** · Media, Links and Files: every image, video, link and file of a channel or DM in one place, from the chat's … menu, a channel's long-press menu or the person's profile. It starts with the loaded messages and pages through Discord's search as you scroll; images and videos open in the viewer, and each item jumps to its message
+- **New** · Remind Me in the message menu (in 1 hour, in 3 hours, tomorrow morning or a custom time): a local notification that opens the channel on the message. Save Message keeps messages in a list with the author, channel and a preview. Both, and the ghost pings, live under Saved (in Messages on iPhone, above the direct messages on Mac and iPad), only on this device
+- **New** · Aicord Alerts in Settings → Notifications: ghost pings (a message that mentioned you, your role or everyone was deleted) with a notification and a list, keywords and regular expressions for everywhere or chosen servers and channels, and people to watch. They notify even where Discord stays quiet, from messages Aicord already receives
 - **New** · YouTube and other video links show a card with the channel, title and a thumbnail with a play button; tapping opens the video in its app or the browser. Poll results and AutoMod alerts get cards too, so no more “Unsupported embed type”
 - **New** · Add Friend by username from Messages → Friends, with clear errors, and from people's profiles
 - **New** · Invite People from the server menu and Server Settings: pick the channel, expiry and use limit, then copy or share the link
@@ -108,6 +111,9 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Fixed
 
+- **Fixed** · The attachment viewer on iPhone and iPad opened on the first image instead of the one tapped when a message had several
+- **Fixed** · Tapping a notification sometimes did nothing: it could reach a window state that wasn't on screen
+- **Fixed** · Deprecated `Text` concatenation in system messages, now string interpolation
 - **Fixed** · A message right after a system line from the same person no longer joins onto it as if it were the same message
 - **Fixed** · Messages with components no longer show “ComponentsV2 unsupported”, and forum, media and stage channels are no longer greyed out rows that don't open
 - **Fixed** · A message's components decode properly: v1 action rows were always mistaken for v2, and one unknown component no longer breaks the message

@@ -177,6 +177,7 @@ struct EntityContextMenu<Entity>: ViewModifier {
       } label: {
         Label("Mark Unread", systemImage: "envelope.badge")
       }
+      SavedItemsMenuItems(message: message, guildId: guild?.guildId)
       if hasPermission(.pinMessages) || hasPermission(.manageMessages) {
         pinButton(message)
       }

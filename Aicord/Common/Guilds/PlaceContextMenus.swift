@@ -133,6 +133,7 @@ struct ChannelContextMenu: ViewModifier {
   @State private var summary: SummaryRange?
   @State private var asking = false
   @State private var indexing = false
+  @State private var showsGallery = false
 
   func body(content: Content) -> some View {
     content
@@ -155,6 +156,10 @@ struct ChannelContextMenu: ViewModifier {
           ChannelIntelligenceActions(
             channelId: channel.id, includesCatchUp: false, summary: $summary, asking: $asking,
             indexing: $indexing)
+        }
+
+        Button("Media, Links and Files", systemImage: "photo.on.rectangle") {
+          showsGallery = true
         }
 
         #if os(macOS)
@@ -191,6 +196,10 @@ struct ChannelContextMenu: ViewModifier {
       }
       .sheet(isPresented: $indexing) {
         ChannelIndexSheet(channelId: channel.id, guildId: guildId, channelName: channelName)
+      }
+      .sheet(isPresented: $showsGallery) {
+        ChannelGallerySheet(channelId: channel.id, guildId: guildId, title: channelName)
+          .galleryFrame()
       }
       .saveErrorAlert($error)
   }

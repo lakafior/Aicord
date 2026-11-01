@@ -16,6 +16,9 @@ final class AicordAppState {
   static var instances: [UUID: AicordAppState] = [:]
 
   static var sharedEphemeral = AicordAppState()
+  /// The main window's state, where notifications open channels. `instances`
+  /// also holds the environment default and states SwiftUI made and dropped.
+  static weak var main: AicordAppState?
 
   /// `remembersSelection: false` for a window that shouldn't change which
   /// server and channel the main window opens on next time.
@@ -63,6 +66,10 @@ final class AicordAppState {
   // MARK: - Forward
   /// The message the forward sheet is open for, if any.
   var forwardTarget: ForwardTarget? = nil
+
+  // MARK: - Reminders
+  /// A message the custom reminder time sheet is open for.
+  var reminderTarget: MessageSnapshot? = nil
 
   // MARK: - Intelligence
   /// A message an Intelligence sheet is open for (Explain Context, Explain, replies).

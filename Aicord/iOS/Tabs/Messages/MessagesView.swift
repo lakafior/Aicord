@@ -109,6 +109,11 @@ struct MessagesView: View {
   /// Rows for the Requests and Spam folders above the conversations.
   var folders: some View {
     Section {
+      NavigationLink {
+        SavedItemsView(open: open(message:))
+      } label: {
+        Label("Saved, Reminders and Ghost Pings", systemImage: "bookmark")
+      }
       ForEach(MessageFolder.allCases) { folder in
         let count =
           folder == .requests ? gw.user.messageRequests().count : gw.user.spamChannels.count
@@ -145,6 +150,12 @@ struct MessagesView: View {
     appState.selectedGuild = guild
     appState.selectedChannel = channel
     withAnimation { appState.chatOpen = true }
+  }
+
+  func open(message: MessageSnapshot) {
+    withAnimation {
+      appState.open(guild: message.guild, channel: message.channel, message: message.messageID)
+    }
   }
 
   func open(channel: ChannelSnowflake) {
