@@ -88,6 +88,40 @@ Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK
 
 ---
 
+### 🔜 Etap 14: Reszta do Discorda 1:1
+1. **Powiadomienia:**
+   - [ ] Opisać w README granicę: prawdziwy push na iOS idzie przez certyfikat APNs Discorda tylko do jego aplikacji, więc Aicord powiadamia tylko, gdy działa (iOS szybko usypia aplikacje w tle). Na Macu bez tego problemu. Sprawdzić, ile da się wycisnąć z odświeżania w tle bez łamania zasad.
+2. **Wideo:** (nadawanie wideo i ekranu jest w Etapie 9)
+   - [ ] Najpierw oglądanie cudzego Go Live i kamer w kanale głosowym, potem własna kamera.
+   - [ ] Redukcja szumów mikrofonu w voice (odpowiednik Krisp, np. przetwarzanie głosu z `AVAudioEngine`).
+3. **Zarządzanie serwerem (dla moderatorów):**
+   - [ ] Moderacja z profilu i menu wiadomości: timeout, kick, ban, usuwanie wiadomości z ostatnich godzin.
+   - [ ] Tworzenie i edycja kanałów i kategorii, kolejność, uprawnienia kanału.
+   - [ ] Role: lista, edycja (nazwa, kolor, uprawnienia), nadawanie i odbieranie członkom.
+   - [ ] Dziennik audytu, ustawienia AutoModa, wgrywanie emoji i naklejek.
+   - [ ] Tworzenie serwera (z szablonu albo od zera).
+
+---
+
+### 🔜 Etap 15: Lepsze niż Discord
+Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z tokenem konta (automatyczne wysyłanie, masowe pobieranie z wielu serwerów w tle, zaplanowane wiadomości), bo Discord traktuje to jak self-bota. Wtyczki w stylu Vencorda (np. niewidoczne pisanie) też podnoszą ryzyko blokady.
+1. **Paczka A (tanio, wyraźna różnica):**
+   - [ ] Galeria kanału i DM: wszystkie zdjęcia, filmy, linki i pliki w jednym widoku, z filtrami i skokiem do wiadomości.
+   - [ ] Przypomnienia i zakładki: „Przypomnij mi o tej wiadomości” (za 1 h, jutro, własny czas) przez lokalne powiadomienie, lista zapisanych wiadomości.
+   - [ ] Alerty: ghost pingi (wzmianka w wiadomości, która zniknęła; usunięte wiadomości już widzimy), słowa kluczowe i regexy na wybranych kanałach, „daj znać, gdy X coś napisze”.
+2. **Paczka B (system Apple):**
+   - [ ] Spotlight dla DM-ów, kanałów i zapisanych wiadomości.
+   - [ ] Widżety: nieprzeczytane i wzmianki; Live Activity z trwającym połączeniem głosowym.
+   - [ ] App Intents: Skróty i Siri („co nowego na serwerze X” przez Intelligence, otwórz kanał).
+   - [ ] Handoff: kanał otwarty na iPhonie otwiera się na Macu i odwrotnie.
+3. **Paczka C:**
+   - [ ] Codzienny skrót z wybranych kanałów wielu serwerów (rozszerzenie Catch Up), o wybranej porze, z powiadomieniem.
+   - [ ] Prywatne notatki i tagi przy osobach (kto to, skąd się znamy, wspólne serwery), tylko lokalnie.
+   - [ ] Eksport kanału lub DM do Markdown albo PDF, na żądanie.
+   - [ ] Tryb offline: czytanie pobranych wiadomości bez sieci.
+
+---
+
 ### 🔜 Etap 12: Wydania — macOS i iOS w GitHub Releases
 Na końcu, gdy aplikacja jest stabilna. Przygotowane w nocy 30/31.10 (niczego nie uruchomiono na GitHubie): `release.yml` (iOS, `.ipa`, Release, źródło AltStore na Pages), `release_macos.yml` (szkic podpisu i notaryzacji) i `scripts/altstore_source.py`. Kroki i sekrety: `docs/OVERNIGHT.md`, punkt 4.
 1. **macOS: podpisana aplikacja z aktualizacjami:**
