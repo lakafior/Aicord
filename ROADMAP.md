@@ -89,37 +89,34 @@ Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK
 ---
 
 ### 🔜 Etap 14: Reszta do Discorda 1:1
-1. **Powiadomienia:**
-   - [ ] Opisać w README granicę: prawdziwy push na iOS idzie przez certyfikat APNs Discorda tylko do jego aplikacji, więc Aicord powiadamia tylko, gdy działa (iOS szybko usypia aplikacje w tle). Na Macu bez tego problemu. Sprawdzić, ile da się wycisnąć z odświeżania w tle bez łamania zasad.
+1. **Powiadomienia:** (granica opisana w README 1.11)
+   - [ ] Sprawdzić, ile da się wycisnąć z odświeżania w tle na iOS bez łamania zasad.
 2. **Wideo:** (nadawanie wideo i ekranu jest w Etapie 9)
    - [ ] Najpierw oglądanie cudzego Go Live i kamer w kanale głosowym, potem własna kamera.
    - [ ] Redukcja szumów mikrofonu w voice (odpowiednik Krisp, np. przetwarzanie głosu z `AVAudioEngine`).
-3. **Zarządzanie serwerem (dla moderatorów):** moderacja, kanały, role, bany, dziennik audytu i tworzenie serwera zrobione 1.11 (SHIPPED, `docs/PL_ONBOARDING_ADMIN_NOTES.md`). Zostało:
+3. **Zarządzanie serwerem (dla moderatorów):** całość zrobiona 1.11 (SHIPPED, `docs/PL_ONBOARDING_ADMIN_NOTES.md`, `docs/OVERNIGHT2_NOTES.md`). Zostało:
    - [ ] Sprawdzić kick, ban i timeout z drugim kontem na serwerze testowym (z jednego konta się nie da).
-   - [ ] Uprawnienia kanału (nadpisania dla ról i osób), kolejność kategorii i ról.
-   - [ ] Ustawienia AutoModa, wgrywanie emoji i naklejek.
-   - [ ] Pełna lista uprawnień roli (dziś najczęstsze) i ikony ról.
-   - [ ] Usuwanie serwera przez właściciela (z potwierdzeniem i kodem 2FA).
+   - [ ] Usunięcie serwera do końca z kodem 2FA: arkusz MFA pojawia się (sprawdzone), kodu nikt nie wpisał. Serwer „Aicord Delete Test” czeka na usunięcie.
+   - [ ] Ikony ról na serwerze z funkcją `ROLE_ICONS` (Aicord Test jej nie ma) i nadpisania członka (na serwerze z drugą osobą).
+   - [ ] Przeklikać zarządzanie na Macu (przeciąganie ról i kategorii, wybór plików emoji i naklejek).
+   - [ ] Sekcja „Zarządzanie serwerem” pojawia się dopiero, gdy serwer był otwarty w tej sesji (bez danych o rolach uprawnienia nie są znane).
 
 ---
 
 ### 🔜 Etap 15: Lepsze niż Discord
 Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z tokenem konta (automatyczne wysyłanie, masowe pobieranie z wielu serwerów w tle, zaplanowane wiadomości), bo Discord traktuje to jak self-bota. Wtyczki w stylu Vencorda (np. niewidoczne pisanie) też podnoszą ryzyko blokady.
-1. **Paczka A:** zrobiona 1.11 (galeria, przypomnienia i zapisane, alerty), szczegóły w `SHIPPED.md` i `docs/STAGE15A_NOTES.md`. Zostało:
-   - [ ] Ghost ping sprawdzić z drugiego konta (z jednego się nie da: własne wiadomości są pomijane).
-   - [ ] Ghost ping przez edycję (wzmianka usunięta z treści wiadomości), dziś tylko usunięcie całej wiadomości.
+1. **Paczka A:** zrobiona 1.11 (galeria, przypomnienia i zapisane, alerty, ghost ping przez usunięcie i przez edycję), szczegóły w `SHIPPED.md` i `docs/STAGE15A_NOTES.md`. Zostało:
+   - [ ] Ghost ping (usunięcie i edycja) sprawdzić z drugiego konta (z jednego się nie da: własne wiadomości są pomijane).
 2. **Paczka B (system Apple):** zrobiona 1.11 (Spotlight, widżet, Live Activity, Skróty, Handoff), szczegóły w `SHIPPED.md` i `docs/PACK_B_NOTES.md`. Zostało:
    - [ ] Sprawdzić na żywo: „What's New in Server” i „Open Channel” uruchomione do końca ze Skrótów i przez Siri, Handoff między dwoma urządzeniami, widżet na Macu, Live Activity na ekranie blokady.
    - [ ] Sprawdzić App Group po podpisaniu przez AltStore (zmienia ID grup; widżet może zostać pusty). Rozszerzenie widżetów to trzeci App ID, czyli limit darmowego konta.
    - [ ] Wybór kanału w „Open Channel” przy uruchomieniu nie ma wyszukiwarki i pokazuje tylko 60 pierwszych (DM-y, potem serwery alfabetycznie); przydałby się najpierw wybór serwera.
-3. **Paczka C:**
+3. **Paczka C:** notatki i tagi, eksport do Markdown i PDF, tryb offline zrobione 1.11 (`docs/OVERNIGHT2_NOTES.md`). Zostało:
    - [ ] Codzienny skrót z wybranych kanałów wielu serwerów (rozszerzenie Catch Up), o wybranej porze, z powiadomieniem.
-   - [ ] Prywatne notatki i tagi przy osobach (kto to, skąd się znamy, wspólne serwery), tylko lokalnie.
-   - [ ] Eksport kanału lub DM do Markdown albo PDF, na żądanie.
-   - [ ] Tryb offline: czytanie pobranych wiadomości bez sieci.
-4. **Formatowanie wiadomości (markdown Discorda, działa na każdym kanale i w DM-ach):**
-   - [ ] Szybkie formatowanie zaznaczenia w polu wiadomości: na iOS podmenu „Formatowanie” w systemowym menu edycji, na Macu w menu pod prawym przyciskiem plus skróty ⌘B, ⌘I, ⌘U, ⌘⇧X, ⌘K (pogrubienie, kursywa, podkreślenie, przekreślenie, spoiler, kod, link z tekstem). Bez stałego paska nad polem.
-   - [ ] „Formatted Message” pod plusem: arkusz z edytorem i podglądem na żywo przez Textual. Nagłówki, mały tekst `-#`, listy, cytat, blok kodu z wyborem języka, znacznik czasu `<t:…>` z wyborem daty, wzmianki i emoji serwera. Przyciski „Wyślij” i „Do pola tekstowego”. Później w tym arkuszu tryb embed z Etapu 16.
+   - [ ] Sprawdzić: tryb offline przy prawdziwym braku sieci (przycisk na ekranie łączenia, kapsuła „Offline”), eksport do Markdown i wielostronicowy PDF, eksport i notatki na Macu, tagi na liście członków.
+4. **Formatowanie wiadomości:** formatowanie zaznaczenia i „Formatted Message” zrobione 1.11. Zostało:
+   - [ ] Przeklikać na Macu: podmenu Formatowanie pod prawym przyciskiem, skróty ⌘B/⌘I/⌘U/⌘⇧X/⌘K (⌘K bez zaznaczenia zostaje Quick Switcherem), arkusz z edytorem obok podglądu; skróty z klawiatury na iPadzie; wysłanie z arkusza.
+   - [ ] Później w arkuszu tryb embed z Etapu 16.
 
 ---
 
@@ -141,7 +138,7 @@ Pomysł na kiedyś. Webhook kanału albo token własnego bota pozwala wysyłać 
 Na końcu, gdy aplikacja jest stabilna. Przygotowane w nocy 30/31.10 (niczego nie uruchomiono na GitHubie): `release.yml` (iOS, `.ipa`, Release, źródło AltStore na Pages), `release_macos.yml` (szkic podpisu i notaryzacji) i `scripts/altstore_source.py`. Kroki i sekrety: `docs/OVERNIGHT.md`, punkt 4.
 1. **macOS: podpisana aplikacja z aktualizacjami:**
    - [ ] Dodać sekrety (certyfikat Developer ID jako .p12, klucz API App Store Connect) i sprawdzić `release_macos.yml` na pierwszym tagu (wymaga płatnego konta Apple Developer).
-   - [ ] Powiadomienie o aktualizacji przez API GitHuba (wybrane zamiast Sparkle, uzasadnienie w `docs/OVERNIGHT.md`): sprawdzanie najnowszego wydania przy starcie najwyżej raz dziennie, baner z linkiem do pobrania, wyłącznik w Settings → Advanced.
+   - [ ] Powiadomienie o aktualizacji (zrobione 1.11): zobaczyć baner na pierwszym prawdziwym wydaniu.
 2. **iOS: niepodpisana `.ipa` i źródło AltStore:**
    - [ ] Włączyć GitHub Pages (Source: GitHub Actions) i wypchnąć pierwszy tag `v*`; sprawdzić, że AltStore i SideStore przyjmują źródło i instalują `.ipa`.
    - [ ] Ikona źródła w większym rozmiarze (dziś 128 px z rozszerzenia Safari) i zrzuty ekranu w źródle.

@@ -67,6 +67,12 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Server rules and Channels & Roles: a server that asks you to agree to its rules shows that above its channels, and its onboarding questions give you roles and channels; both open by themselves the first day after joining and Channels & Roles stays in the server menu
 - **New** · Server events in the server menu and above the channels when there are any: when and where, the picture and description, how many are interested, and Interested to add or take back yours
 - **New** · Apps that open an Activity (Wordle and the like) no longer leave silence: the chat shows the app with its icon, how many are playing and Open in Discord, and game invites in messages get the same card
+- **New** · Message formatting: select text in the message field for a Formatting submenu (bold, italic, underline, strikethrough, spoiler, code, link) in the system edit menu on iPhone and the right-click menu on the Mac, with ⌘B, ⌘I, ⌘U, ⌘⇧X and ⌘K; doing it again takes the formatting off
+- **New** · Formatted Message under the + next to the message field: a bigger editor with a live preview, and buttons for headings, small text, lists, quotes, code blocks with a language, timestamps (date and style, shown in each reader's time zone), mentions and server emoji; Send, or Move to Message Field
+- **New** · Export Channel… in the chat's … menu: the last 100 to 5,000 messages or everything since a date, as Markdown or PDF, with attachments as links, for the share sheet. Fetched one page at a time, about a second apart
+- **New** · Private notes and tags about people, in their profile, only on this device; tags show next to names in the member list, and the profile lists the servers you share
+- **New** · Offline reading: the newest 100 messages of the last 40 channels you opened stay on the device, readable from Settings → Advanced → Offline or from the connecting screen; the chat says Offline when there's no network
+- **New** · Ghost pings also catch a mention edited out of a message, not only deleted messages
 
 ### Apple system integration
 
@@ -82,12 +88,18 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Moderate from a member's profile (also opened from the member list) or a message's menu: timeout (60 seconds to a week), remove a timeout, kick and ban (deleting their messages from the last hour to 7 days), each with a confirmation and an optional reason for the audit log. Shown only with the permission and for people below your highest role, never for yourself or the owner
 - **New** · Roles… for a member: give and take the roles below yours
 - **New** · Server Settings → Server Management, for moderators: Channels (create channels and categories; edit name, topic, slowmode, age restriction and category; delete after a confirmation; drag to reorder within a category), Roles (create; name, colour, display options and the common permissions; delete after a confirmation), Bans (with reasons, unban after a confirmation) and the Audit Log (who did what, with reasons, 50 at a time)
+- **New** · Channel and category permissions: allow, inherit or deny each permission for a role or a member, and remove an override
+- **New** · Drag roles into a new order, and categories in Category Order; every permission Discord has in the role editor, grouped like Discord's list, and role icons (an emoji or an image) on servers with the perk
+- **New** · AutoMod: custom keywords and regular expressions, commonly flagged words, mention spam with raid protection and suspected spam; block with a message, alert a channel or time the member out, with roles and channels it skips
+- **New** · Emoji and Stickers: upload, list and delete the server's emoji and stickers, with Discord's size limits checked first
+- **New** · Delete Server for the owner, after typing the server's name; with two-factor authentication Discord asks for a code first
 
 ### Settings
 
 - **New** · Settings → Content & Social: sensitive and graphic media (show, blur or block), keyword filters, DM spam filter, message requests and who can send you friend requests, saved to your Discord account
 - **New** · Settings → Data & Privacy: activity privacy (share your activity, in new servers, who can join without asking, recent games), how Discord may use your data, and requesting a copy of your data
 - **New** · Settings → Authorised Apps: the bots and sites you signed in to with Discord, what each may do in plain words, and deauthorising one after a confirmation
+- **New** · Settings → Advanced → Updates: once a day at launch Aicord asks GitHub for the newest release and shows a banner with a download link; a switch turns it off and Check Now asks right away
 - **New** · Settings → Devices: where your account is logged in (system, client, approximate location, last used), with this device marked, and logging out one device or all others after a confirmation
 - **New** · Settings → Connections: your linked accounts (Spotify, Steam, GitHub…) with toggles for showing each on your profile, its details and its activity as your status, removing one after a confirmation, and a link to add new ones on discord.com
 - **New** · Settings → Appearance: Light, Dark or Automatic, an accent colour that can also tint the tab bar and icons, text size and font (System, Rounded, Serif, Monospaced), Reduce Motion, and Discord's animated emoji, GIF autoplay, sticker animation and image description settings, saved to your account
@@ -499,3 +511,20 @@ Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tyl
    - [x] Kanały i kategorie: tworzenie, nazwa, temat, slowmode, NSFW, kategoria, usuwanie z potwierdzeniem, kolejność przeciąganiem w kategorii (`PATCH /guilds/{id}/channels`).
    - [x] Role: lista, tworzenie, nazwa, kolor (próbki Discorda i własny), osobno na liście, wzmianki, podstawowe uprawnienia, usuwanie; nadawanie i odbieranie członkom.
    - [x] Dziennik audytu (`GET /guilds/{id}/audit-logs`, nowy model `GuildAuditLog`), lista banów.
+   - [x] Uprawnienia kanału i kategorii (nadpisania dla ról i osób, trzy stany), kolejność kategorii (arkusz) i ról (przeciąganie, `PATCH /guilds/{id}/roles`), pełna lista uprawnień roli, ikony ról (emoji albo obraz, przy funkcji `ROLE_ICONS`), AutoMod (`/auto-moderation/rules`), emoji i naklejki, usuwanie serwera przez właściciela (`POST /guilds/{id}/delete`, z MFA). Noc 1/2.11, `docs/OVERNIGHT2_NOTES.md`.
+
+### 🧪 Etap 15: Lepsze niż Discord — Paczka C i formatowanie (noc 1/2.11)
+Szczegóły i testy w `docs/OVERNIGHT2_NOTES.md`.
+1. **Paczka A, dokończenie:**
+   - [x] Ghost ping przez edycję: wzmianka usunięta z treści wiadomości (z drugiego konta niesprawdzone).
+3. **Paczka C:**
+   - [x] Prywatne notatki i tagi przy osobach, tylko lokalnie (profil, lista członków, wspólne serwery).
+   - [x] Eksport kanału do Markdown albo PDF, na żądanie (do 5000 wiadomości, strona co 0,9 s).
+   - [x] Tryb offline: ostatnie 100 wiadomości z 40 ostatnio otwartych kanałów na dysku, czytnik i stan „Offline”.
+4. **Formatowanie wiadomości:**
+   - [x] Formatowanie zaznaczenia (menu edycji na iOS, menu pod prawym przyciskiem i skróty na Macu).
+   - [x] „Formatted Message”: edytor z podglądem przez Textual, nagłówki, `-#`, listy, cytat, blok kodu z językiem, znacznik czasu, wzmianki, emoji.
+
+### 🧪 Etap 12 i 14.1 (noc 1/2.11)
+   - [x] Powiadomienie o aktualizacji przez `releases/latest` (raz dziennie, baner, wyłącznik, 404 = brak wydań).
+   - [x] README: granica powiadomień push na iOS.

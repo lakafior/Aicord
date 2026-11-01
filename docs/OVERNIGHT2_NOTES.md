@@ -48,3 +48,39 @@ Kod: `Aicord/Common/Chat/Input/MessageFormatting.swift` (logika), `FormattedMess
 
 ### README
 - Sekcja „About notifications”: push idzie przez APNs Discorda tylko do jego aplikacji; Aicord powiadamia, gdy działa (Mac bez problemu, iOS usypia w tle).
+
+## 3. Zarządzanie serwerem (Etap 14.3)
+
+Kod: `Aicord/Common/Guilds/Admin/ServerAdminMore.swift` (nowe widoki), zmiany w `ServerAdmin.swift` i `ServerSettingsSheet.swift`. W `AicordKit`: model i payload AutoModa (`Types/AutoMod.swift`), endpointy `/auto-moderation/rules` i `POST /guilds/{id}/delete`, `clearGuildRoleIcon` (jawne `null`), poprawka walidacji naklejki (pusty opis jest dozwolony).
+
+- **Nadpisania uprawnień:** w edytorze kanału i kategorii „Uprawnienia” (z Manage Roles). Lista nadpisań z liczbą dozwolonych i zabronionych, „+” dodaje rolę albo osobę (wczytaną w pamięci serwera). Edytor ma dla każdego uprawnienia kanału trzy stany (zabroń, dziedzicz, zezwól); uprawnienia tylko serwerowe są pominięte. „Usuń nadpisanie” z potwierdzeniem.
+- **Kolejność:** kategorie w arkuszu „Kolejność kategorii” (menu „+” w Kanałach), role przeciąganiem na liście ról. Ról na i ponad twoją najwyższą nie da się przesunąć (komunikat), @everyone jest osobno na dole (jego uprawnienia nadal się edytuje).
+- **Pełna lista uprawnień roli:** wszystkie 50 w grupach jak w Discordzie (`PermissionCatalog`), także w nadpisaniach.
+- **Ikony ról:** emoji albo obraz PNG/JPEG do 256 KB, „Usuń ikonę”. Tylko na serwerach z funkcją `ROLE_ICONS`.
+- **AutoMod:** lista reguł z wł./wył., nowe reguły czterech rodzajów (własne słowa do 6, często zgłaszane słowa, spam wzmiankami, podejrzany spam), reakcje (blokada z komunikatem, alert na kanał, timeout przy słowach i wzmiankach), pomijane role i kanały, usuwanie z potwierdzeniem.
+- **Emoji i naklejki:** lista, wgrywanie z plików (emoji: PNG, JPEG, GIF, WebP do 256 KB; naklejki: PNG, GIF do 512 KB z tagiem), nazwa w alercie, usuwanie (przesunięcie albo menu) z potwierdzeniem.
+- **Usuwanie serwera:** sekcja tylko dla właściciela, alert z wpisaniem nazwy (przycisk aktywny dopiero przy zgodnej nazwie). **Ważne:** `DELETE /guilds/{id}` z konta użytkownika kończy się zerwaniem połączenia (-1005); klient Discorda używa `POST /guilds/{id}/delete`, przy 2FA Discord odsyła 60003 i aplikacja pokazuje wspólny arkusz MFA.
+
+**Sprawdzone w symulatorze na „Aicord Test”** (mój serwer, jedyny członek): reguła AutoModa utworzona, odczytana i usunięta; nadpisanie roli Tester (zabronione „Tworzenie zaproszeń” na #general) zapisane i usunięte; kategorie zamienione miejscami i przywrócone; nowa rola przeciągnięta nad Tester i usunięta; emoji wgrane i usunięte; naklejka wgrana i usunięta (pierwsza próba odrzucona przez walidację pustego opisu, poprawione); pełna lista uprawnień w edytorze roli.
+
+**Usuwanie:** utworzyłam osobny serwer „Aicord Delete Test” (od zera). Pierwsza próba (`DELETE`) dała „Połączenie sieciowe zostało utracone”, druga (`POST …/delete`) doszła do arkusza MFA. Kodu z aplikacji uwierzytelniającej nie mam, więc zamknęłam arkusz; **serwer „Aicord Delete Test” został** (do usunięcia rano z kodem: Ustawienia serwera → Usuń serwer, albo w Discordzie). „Aicord Test” i NAScin nietknięte poza testami wyżej (wszystko przywrócone).
+
+**Niesprawdzone:** ikony ról (Aicord Test nie ma `ROLE_ICONS`), nadpisanie dla osoby (jestem jedynym członkiem, właściciela nadpisania nie dotyczą), Mac, usunięcie do końca z kodem.
+
+**Znalezione przy okazji:** sekcja „Zarządzanie serwerem” w ustawieniach serwera pokazuje się dopiero po otwarciu serwera w tej sesji (wcześniej też tak było). Selektor plików na iOS potrafił się nie otworzyć, gdy prosiło o niego menu jeszcze w trakcie zamykania: start po 0,4 s.
+
+## Stan symulatora po nocy
+
+- Wyłącznik powiadomień Aicorda (wyłączony na czas testów, bo banery z innych serwerów przechwytywały stuknięcia i raz otworzyły regulamin FashionReps, nic nie zaakceptowałam) przywrócony.
+- Pliki testowe PNG i PDF usunięte. Zostały: 2 zapisane kanały offline (funkcja), data ostatniego sprawdzenia aktualizacji.
+- Na koncie: serwer „Aicord Delete Test” (patrz wyżej). Na NAScin nic nie zmieniałam i nic nie wysłałam.
+
+## Podsumowanie
+
+| Część | Commity | Stan |
+|---|---|---|
+| 1. Formatowanie | `f6ebea2`, `39f3ec4` | zrobione; iOS sprawdzony, Mac nie |
+| 2. Paczka C i drobiazgi | `37041a1` | zrobione; offline bez prawdziwego braku sieci, ghost ping przez edycję bez drugiego konta |
+| 3. Zarządzanie serwerem | `26c2216`, `23f0e13` | zrobione; usuwanie zatrzymane na kodzie 2FA, ikony ról niesprawdzone |
+
+Każdy commit: build macOS i iOS Simulator bez nowych ostrzeżeń. `swift test`: AicordKit 152, Textual 187. Polskie napisy: ok. 180 nowych, z odmianą liczby mnogiej tam, gdzie jest liczba.
