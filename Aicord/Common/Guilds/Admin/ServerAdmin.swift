@@ -22,7 +22,9 @@ struct ServerAdminSection: View {
   }
 
   var body: some View {
-    if can(.manageChannels) || can(.manageRoles) || can(.banMembers) || can(.viewAuditLog) {
+    if can(.manageChannels) || can(.manageRoles) || can(.banMembers) || can(.viewAuditLog)
+      || can(.manageGuild) || can(.manageGuildExpressions) || can(.createGuildExpressions)
+    {
       Section {
         if can(.manageChannels) {
           NavigationLink {
@@ -36,6 +38,20 @@ struct ServerAdminSection: View {
             RolesAdminView(guildId: guildId)
           } label: {
             Label("Roles", systemImage: "tag")
+          }
+        }
+        if can(.manageGuildExpressions) || can(.createGuildExpressions) {
+          NavigationLink {
+            ExpressionsAdminView(guildId: guildId)
+          } label: {
+            Label("Emoji and Stickers", systemImage: "face.smiling")
+          }
+        }
+        if can(.manageGuild) {
+          NavigationLink {
+            AutoModView(guildId: guildId)
+          } label: {
+            Label("AutoMod", systemImage: "shield.checkered")
           }
         }
         if can(.banMembers) {
@@ -70,6 +86,7 @@ struct ChannelsAdminView: View {
   @Environment(\.gateway) var gw
 
   @State private var newKind: NewChannelSheet.Kind?
+  @State private var reorderingCategories = false
   @State private var error: String?
 
   private var guild: GuildStore? { gw.existingGuildStore(for: guildId) }
@@ -121,7 +138,7 @@ struct ChannelsAdminView: View {
       }
       Section {
       } footer: {
-        Text("Drag a channel to move it within its category.")
+        Text("Drag a channel to move it within its category. Categories are reordered from the + menu.")
       }
     }
     #if os(iOS)
@@ -135,6 +152,9 @@ struct ChannelsAdminView: View {
         Menu {
           Button("New Channel", systemImage: "number") { newKind = .channel }
           Button("New Category", systemImage: "folder") { newKind = .category }
+          Divider()
+          Button("Category Order", systemImage: "arrow.up.arrow.down") { reorderingCategories = true }
+            .disabled(categories.count < 2)
         } label: {
           Label("Add", systemImage: "plus")
         }
@@ -142,6 +162,9 @@ struct ChannelsAdminView: View {
     }
     .sheet(item: $newKind) { kind in
       NewChannelSheet(guildId: guildId, kind: kind)
+    }
+    .sheet(isPresented: $reorderingCategories) {
+      CategoryOrderView(guildId: guildId)
     }
     .saveErrorAlert($error)
   }
@@ -248,6 +271,19 @@ struct ChannelEditorView: View {
             ForEach(categories, id: \.id) { category in
               Text(category.name ?? "").tag(Optional(category.id))
             }
+          }
+        }
+      }
+      if guild?.hasPermission(channel: nil as DiscordChannel?, .manageRoles) == true {
+        Section {
+          NavigationLink {
+            ChannelPermissionsView(guildId: guildId, channelId: channelId)
+          } label: {
+            Label("Permissions", systemImage: "lock.shield")
+          }
+        } footer: {
+          if isCategory {
+            Text("Channels synced with the category follow its permissions.")
           }
         }
       }
@@ -450,10 +486,35 @@ struct RolesAdminView: View {
     (guild?.allRoles ?? []).sorted { $0.position > $1.position }
   }
 
+  /// Every role but @everyone, which always stays at the bottom.
+  private var movableRoles: [Role] {
+    roles.filter { $0.id.rawValue != guildId.rawValue }
+  }
+
+  private func canMove(_ role: Role) -> Bool {
+    guard let guild else { return false }
+    return Moderation.isOwner(guild) || role.position < Moderation.myRank(in: guild)
+  }
+
+  private func moveRoles(from source: IndexSet, to destination: Int) {
+    let original = movableRoles
+    var reordered = original
+    reordered.move(fromOffsets: source, toOffset: destination)
+    guard let payload = RoleOrder.positions(after: reordered, original: original, editable: canMove)
+    else {
+      error = String(localized: "You can only move roles below your highest role.")
+      return
+    }
+    guard !payload.isEmpty else { return }
+    saveInBackground($error) {
+      try await gw.client.updateGuildRolePositions(guildId: guildId, payload: payload).guardSuccess()
+    }
+  }
+
   var body: some View {
     List {
       Section {
-        ForEach(roles, id: \.id) { role in
+        ForEach(movableRoles, id: \.id) { role in
           NavigationLink {
             RoleEditorView(guildId: guildId, roleId: role.id)
           } label: {
@@ -469,8 +530,20 @@ struct RolesAdminView: View {
             }
           }
         }
+        .onMove(perform: moveRoles)
       } footer: {
-        Text("You can edit roles below your highest one. Roles made by bots and integrations are managed by them.")
+        Text("You can edit and drag roles below your highest one. Roles made by bots and integrations are managed by them.")
+      }
+      if let everyone = roles.first(where: { $0.id.rawValue == guildId.rawValue }) {
+        Section {
+          NavigationLink {
+            RoleEditorView(guildId: guildId, roleId: everyone.id)
+          } label: {
+            Text(verbatim: everyone.name)
+          }
+        } footer: {
+          Text("Everyone on the server has these permissions.")
+        }
       }
     }
     #if os(iOS)
@@ -522,59 +595,8 @@ struct RoleEditorView: View {
     0x1ABC9C, 0x2ECC71, 0x3498DB, 0x9B59B6, 0xE91E63, 0xF1C40F, 0xE67E22, 0xE74C3C, 0x95A5A6, 0x607D8B,
   ]
 
-  /// The permissions most servers set, grouped like Discord's own list.
-  static let permissionGroups: [(LocalizedStringKey, [(Permission, LocalizedStringKey)])] = [
-    (
-      "General",
-      [
-        (.viewChannel, "View Channels"),
-        (.manageChannels, "Manage Channels"),
-        (.manageRoles, "Manage Roles"),
-        (.manageGuildExpressions, "Manage Expressions"),
-        (.viewAuditLog, "View Audit Log"),
-        (.manageGuild, "Manage Server"),
-      ]
-    ),
-    (
-      "Membership",
-      [
-        (.createInstantInvite, "Create Invite"),
-        (.changeNickname, "Change Nickname"),
-        (.manageNicknames, "Manage Nicknames"),
-        (.kickMembers, "Kick Members"),
-        (.banMembers, "Ban Members"),
-        (.moderateMembers, "Timeout Members"),
-      ]
-    ),
-    (
-      "Text",
-      [
-        (.sendMessages, "Send Messages"),
-        (.embedLinks, "Embed Links"),
-        (.attachFiles, "Attach Files"),
-        (.addReactions, "Add Reactions"),
-        (.mentionEveryone, "Mention @everyone, @here and All Roles"),
-        (.manageMessages, "Manage Messages"),
-        (.pinMessages, "Pin Messages"),
-        (.readMessageHistory, "Read Message History"),
-      ]
-    ),
-    (
-      "Voice",
-      [
-        (.connect, "Connect"),
-        (.speak, "Speak"),
-        (.muteMembers, "Mute Members"),
-        (.moveMembers, "Move Members"),
-      ]
-    ),
-    (
-      "Advanced",
-      [
-        (.administrator, "Administrator")
-      ]
-    ),
-  ]
+  /// Every permission, grouped like Discord's own list.
+  static var permissionGroups: [PermissionCatalog.Group] { PermissionCatalog.groups }
 
   @State private var name = ""
   @State private var color: Color = .gray
@@ -629,6 +651,9 @@ struct RoleEditorView: View {
         Section {
           Toggle("Show Separately in the Member List", isOn: $hoist)
           Toggle("Anyone Can @mention This Role", isOn: $mentionable)
+        }
+        if let role, gw.user.guilds[guildId]?.features.contains(.roleIcons) == true {
+          RoleIconSection(guildId: guildId, role: role, error: $error)
         }
       }
       ForEach(Self.permissionGroups.indices, id: \.self) { index in

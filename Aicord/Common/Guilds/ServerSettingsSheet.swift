@@ -63,6 +63,10 @@ struct ServerSettingsSheet: View {
           Text("Your nickname and pronouns on this server, also in Settings → Profiles.")
         }
 
+        if let store = gw.existingGuildStore(for: guildId), Moderation.isOwner(store) {
+          DeleteServerSection(guildId: guildId) { dismiss() }
+        }
+
         if let guild, LeaveServer.canLeave(guild, gw: gw) {
           Section {
             Button("Leave Server", role: .destructive) { showsLeave = true }

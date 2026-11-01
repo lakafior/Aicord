@@ -1921,8 +1921,9 @@ public enum Payloads {
 
     public func validate() -> [ValidationFailure] {
       validateCharacterCountInRange(name, min: 2, max: 30, name: "name")
+      // empty or 2-100 characters
       validateCharacterCountInRangeOrNil(
-        description,
+        description.isEmpty ? nil : description,
         min: 2,
         max: 100,
         name: "description"

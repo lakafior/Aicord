@@ -1157,3 +1157,56 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint), payload: payload)
   }
 }
+
+// MARK: - Auto Moderation Rules
+
+extension DiscordClient {
+  /// A server's AutoMod rules. Requires Manage Server.
+  /// https://docs.discord.food/resources/auto-moderation#get-guild-automod-rules
+  @inlinable
+  public func listAutoModRules(guildId: GuildSnowflake) async throws
+    -> DiscordClientResponse<[AutoModRule]>
+  {
+    try await self.send(request: .init(to: UserAPIEndpoint.listAutoModRules(guildId: guildId)))
+  }
+
+  /// https://docs.discord.food/resources/auto-moderation#create-guild-automod-rule
+  @inlinable
+  public func createAutoModRule(guildId: GuildSnowflake, payload: Payloads.AutoModRule)
+    async throws -> DiscordClientResponse<AutoModRule>
+  {
+    try await self.send(
+      request: .init(to: UserAPIEndpoint.createAutoModRule(guildId: guildId)), payload: payload)
+  }
+
+  /// https://docs.discord.food/resources/auto-moderation#modify-guild-automod-rule
+  @inlinable
+  public func updateAutoModRule(
+    guildId: GuildSnowflake, ruleId: String, payload: Payloads.AutoModRule
+  ) async throws -> DiscordClientResponse<AutoModRule> {
+    try await self.send(
+      request: .init(to: UserAPIEndpoint.updateAutoModRule(guildId: guildId, ruleId: ruleId)),
+      payload: payload)
+  }
+
+  /// https://docs.discord.food/resources/auto-moderation#delete-guild-automod-rule
+  @inlinable
+  public func deleteAutoModRule(guildId: GuildSnowflake, ruleId: String) async throws
+    -> DiscordHTTPResponse
+  {
+    try await self.send(
+      request: .init(to: UserAPIEndpoint.deleteAutoModRule(guildId: guildId, ruleId: ruleId)))
+  }
+}
+
+extension DiscordClient {
+  /// Removes a role's icon (image and emoji).
+  @inlinable
+  public func clearGuildRoleIcon(guildId: GuildSnowflake, roleId: RoleSnowflake) async throws
+    -> DiscordClientResponse<Role>
+  {
+    try await self.send(
+      request: .init(to: APIEndpoint.updateGuildRole(guildId: guildId, roleId: roleId)),
+      payload: Payloads.ClearRoleIcon())
+  }
+}

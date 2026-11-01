@@ -18912,6 +18912,1098 @@
           }
         }
       }
+    },
+    "General Server Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogólne uprawnienia serwera"
+          }
+        }
+      }
+    },
+    "Create Expressions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tworzenie wyrażeń"
+          }
+        }
+      }
+    },
+    "View Server Insights" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyświetlanie statystyk serwera"
+          }
+        }
+      }
+    },
+    "Manage Webhooks" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zarządzanie webhookami"
+          }
+        }
+      }
+    },
+    "Membership Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uprawnienia członkowskie"
+          }
+        }
+      }
+    },
+    "Kick, Approve and Reject Members" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyrzucanie, zatwierdzanie i odrzucanie członków"
+          }
+        }
+      }
+    },
+    "Text Channel Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uprawnienia kanałów tekstowych"
+          }
+        }
+      }
+    },
+    "Send Messages and Create Posts" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysyłanie wiadomości i tworzenie postów"
+          }
+        }
+      }
+    },
+    "Send Messages in Threads and Posts" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysyłanie wiadomości w wątkach i postach"
+          }
+        }
+      }
+    },
+    "Create Public Threads" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tworzenie wątków publicznych"
+          }
+        }
+      }
+    },
+    "Create Private Threads" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tworzenie wątków prywatnych"
+          }
+        }
+      }
+    },
+    "Use External Emoji" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używanie zewnętrznych emoji"
+          }
+        }
+      }
+    },
+    "Use External Stickers" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używanie zewnętrznych naklejek"
+          }
+        }
+      }
+    },
+    "Manage Threads and Posts" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zarządzanie wątkami i postami"
+          }
+        }
+      }
+    },
+    "Send Text-to-Speech Messages" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysyłanie wiadomości zamiany tekstu na mowę"
+          }
+        }
+      }
+    },
+    "Send Voice Messages" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysyłanie wiadomości głosowych"
+          }
+        }
+      }
+    },
+    "Create Polls" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tworzenie ankiet"
+          }
+        }
+      }
+    },
+    "Voice Channel Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uprawnienia kanałów głosowych"
+          }
+        }
+      }
+    },
+    "Use Activities" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używanie aktywności"
+          }
+        }
+      }
+    },
+    "Use Soundboard" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używanie soundboardu"
+          }
+        }
+      }
+    },
+    "Use External Sounds" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używanie zewnętrznych dźwięków"
+          }
+        }
+      }
+    },
+    "Use Voice Activity" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używanie wykrywania głosu"
+          }
+        }
+      }
+    },
+    "Priority Speaker" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priorytetowy mówca"
+          }
+        }
+      }
+    },
+    "Deafen Members" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogłuszanie członków"
+          }
+        }
+      }
+    },
+    "Set Voice Channel Status" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ustawianie statusu kanału głosowego"
+          }
+        }
+      }
+    },
+    "Apps Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uprawnienia aplikacji"
+          }
+        }
+      }
+    },
+    "Use Application Commands" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używanie komend aplikacji"
+          }
+        }
+      }
+    },
+    "Use External Apps" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używanie zewnętrznych aplikacji"
+          }
+        }
+      }
+    },
+    "Stage Channel Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uprawnienia kanałów Stage"
+          }
+        }
+      }
+    },
+    "Request to Speak" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prośba o głos"
+          }
+        }
+      }
+    },
+    "Events Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uprawnienia wydarzeń"
+          }
+        }
+      }
+    },
+    "Create Events" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tworzenie wydarzeń"
+          }
+        }
+      }
+    },
+    "Manage Events" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zarządzanie wydarzeniami"
+          }
+        }
+      }
+    },
+    "Advanced Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uprawnienia zaawansowane"
+          }
+        }
+      }
+    },
+    "Deleted Role" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunięta rola"
+          }
+        }
+      }
+    },
+    "Allowed: %lld" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dozwolone: %lld"
+          }
+        }
+      }
+    },
+    "Denied: %lld" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zabronione: %lld"
+          }
+        }
+      }
+    },
+    "Overrides change what a role or a person can do in this channel only. Member overrides win over role overrides." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nadpisania zmieniają, co rola albo osoba może robić tylko na tym kanale. Nadpisanie osoby wygrywa z nadpisaniem roli."
+          }
+        }
+      }
+    },
+    "Permissions" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uprawnienia"
+          }
+        }
+      }
+    },
+    "Add Role or Member" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj rolę lub osobę"
+          }
+        }
+      }
+    },
+    "Deny" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zabroń"
+          }
+        }
+      }
+    },
+    "Inherit" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dziedzicz"
+          }
+        }
+      }
+    },
+    "Allow" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zezwól"
+          }
+        }
+      }
+    },
+    "Remove Override" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń nadpisanie"
+          }
+        }
+      }
+    },
+    "Remove the override for %@?" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć nadpisanie dla %@?"
+          }
+        }
+      }
+    },
+    "Category Order" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kolejność kategorii"
+          }
+        }
+      }
+    },
+    "Custom Keywords" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Własne słowa kluczowe"
+          }
+        }
+      }
+    },
+    "Suspected Spam" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podejrzany spam"
+          }
+        }
+      }
+    },
+    "Commonly Flagged Words" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Często zgłaszane słowa"
+          }
+        }
+      }
+    },
+    "Mention Spam" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam wzmiankami"
+          }
+        }
+      }
+    },
+    "Member Profile Names" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nazwy w profilach członków"
+          }
+        }
+      }
+    },
+    "No rules yet. AutoMod blocks or flags messages before anyone sees them." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie ma jeszcze reguł. AutoMod blokuje albo oznacza wiadomości, zanim ktokolwiek je zobaczy."
+          }
+        }
+      }
+    },
+    "New Rule" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nowa reguła"
+          }
+        }
+      }
+    },
+    "Rule Name" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nazwa reguły"
+          }
+        }
+      }
+    },
+    "Enabled" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włączona"
+          }
+        }
+      }
+    },
+    "Block the Message" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zablokuj wiadomość"
+          }
+        }
+      }
+    },
+    "Message Shown to the Member" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Komunikat dla członka"
+          }
+        }
+      }
+    },
+    "Send an Alert To" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyślij alert na"
+          }
+        }
+      }
+    },
+    "No Alert" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez alertu"
+          }
+        }
+      }
+    },
+    "Timeout the Member" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daj członkowi timeout"
+          }
+        }
+      }
+    },
+    "Response" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reakcja"
+          }
+        }
+      }
+    },
+    "Roles AutoMod Skips" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Role pomijane przez AutoModa"
+          }
+        }
+      }
+    },
+    "Channels AutoMod Skips" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanały pomijane przez AutoModa"
+          }
+        }
+      }
+    },
+    "Delete Rule" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń regułę"
+          }
+        }
+      }
+    },
+    "Delete the rule %@?" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć regułę %@?"
+          }
+        }
+      }
+    },
+    "Words, One per Line or Separated by Commas" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Słowa, każde w osobnej linii albo po przecinku"
+          }
+        }
+      }
+    },
+    "Regular Expressions, One per Line" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyrażenia regularne, każde w osobnej linii"
+          }
+        }
+      }
+    },
+    "Allowed Words" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dozwolone słowa"
+          }
+        }
+      }
+    },
+    "Trigger" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyzwalacz"
+          }
+        }
+      }
+    },
+    "Use * for partial matches: cat* matches catapult, *cat matches bobcat." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gwiazdka dopasowuje część słowa: kot* złapie „kotlet”, a *kot złapie „szkot”."
+          }
+        }
+      }
+    },
+    "Insults and Slurs" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obelgi i obraźliwe określenia"
+          }
+        }
+      }
+    },
+    "Severe Profanity" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wulgaryzmy"
+          }
+        }
+      }
+    },
+    "At Most %lld Mentions per Message" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "At Most %lld Mention per Message"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "At Most %lld Mentions per Message"
+                }
+              }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Najwyżej %lld wzmianka w wiadomości"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Najwyżej %lld wzmianki w wiadomości"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Najwyżej %lld wzmianek w wiadomości"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Najwyżej %lld wzmianki w wiadomości"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Raid Protection" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ochrona przed rajdem"
+          }
+        }
+      }
+    },
+    "Discord decides what counts as spam." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tym, co jest spamem, decyduje Discord."
+          }
+        }
+      }
+    },
+    "PNG, JPEG, GIF or WebP, up to 256 KB. Names use letters, numbers and underscores." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PNG, JPEG, GIF albo WebP, do 256 KB. Nazwa: litery, cyfry i podkreślenia."
+          }
+        }
+      }
+    },
+    "Delete Emoji" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń emoji"
+          }
+        }
+      }
+    },
+    "Delete Sticker" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń naklejkę"
+          }
+        }
+      }
+    },
+    "PNG, APNG or GIF, 320 × 320, up to 512 KB. The tag is an emoji name, like smile." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PNG, APNG albo GIF, 320 × 320, do 512 KB. Tag to nazwa emoji, np. smile."
+          }
+        }
+      }
+    },
+    "Emoji and Stickers" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji i naklejki"
+          }
+        }
+      }
+    },
+    "Upload Emoji" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wgraj emoji"
+          }
+        }
+      }
+    },
+    "Upload Sticker" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wgraj naklejkę"
+          }
+        }
+      }
+    },
+    "Upload" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wgraj"
+          }
+        }
+      }
+    },
+    "Name the Emoji" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nazwij emoji"
+          }
+        }
+      }
+    },
+    "Name the Sticker" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nazwij naklejkę"
+          }
+        }
+      }
+    },
+    "Emoji Tag" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag emoji"
+          }
+        }
+      }
+    },
+    "Delete :%@:?" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć :%@:?"
+          }
+        }
+      }
+    },
+    "Delete the sticker %@?" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć naklejkę %@?"
+          }
+        }
+      }
+    },
+    "The file is larger than %@." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plik jest większy niż %@."
+          }
+        }
+      }
+    },
+    "Current Icon" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obecna ikona"
+          }
+        }
+      }
+    },
+    "No Icon" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez ikony"
+          }
+        }
+      }
+    },
+    "Use Emoji" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj emoji"
+          }
+        }
+      }
+    },
+    "Upload Image…" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wgraj obraz…"
+          }
+        }
+      }
+    },
+    "Remove Icon" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń ikonę"
+          }
+        }
+      }
+    },
+    "Role Icon" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikona roli"
+          }
+        }
+      }
+    },
+    "Shown next to names in chat. An image should be at least 64 × 64 and under 256 KB." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widoczna obok nazw na czacie. Obraz najlepiej co najmniej 64 × 64 i poniżej 256 KB."
+          }
+        }
+      }
+    },
+    "Delete Server" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń serwer"
+          }
+        }
+      }
+    },
+    "Only the owner can delete a server. Its channels, messages and roles are gone for everyone." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwer może usunąć tylko właściciel. Kanały, wiadomości i role znikną dla wszystkich."
+          }
+        }
+      }
+    },
+    "Delete %@?" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć %@?"
+          }
+        }
+      }
+    },
+    "Type the server's name to confirm. This can't be undone." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz nazwę serwera, żeby potwierdzić. Tego nie da się cofnąć."
+          }
+        }
+      }
+    },
+    "Drag a channel to move it within its category. Categories are reordered from the + menu." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij kanał, żeby przenieść go w obrębie kategorii. Kolejność kategorii zmienisz w menu +."
+          }
+        }
+      }
+    },
+    "Channels synced with the category follow its permissions." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanały zsynchronizowane z kategorią mają jej uprawnienia."
+          }
+        }
+      }
+    },
+    "You can edit and drag roles below your highest one. Roles made by bots and integrations are managed by them." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Możesz edytować i przeciągać role poniżej swojej najwyższej. Rolami botów i integracji zarządzają one same."
+          }
+        }
+      }
+    },
+    "You can only move roles below your highest role." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Możesz przenosić tylko role poniżej swojej najwyższej roli."
+          }
+        }
+      }
+    },
+    "Everyone on the server has these permissions." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te uprawnienia ma każdy na serwerze."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

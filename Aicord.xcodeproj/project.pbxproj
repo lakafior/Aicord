@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E2C0DE00000000000000010 /* ServerAdminMore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE0000000000000000F /* ServerAdminMore.swift */; };
 		0E2C0DE0000000000000000E /* ChannelExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE0000000000000000D /* ChannelExportSheet.swift */; };
 		0E2C0DE0000000000000000C /* PersonNotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE0000000000000000B /* PersonNotesStore.swift */; };
 		0E2C0DE0000000000000000A /* OfflineReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE00000000000000009 /* OfflineReaderView.swift */; };
@@ -481,6 +482,7 @@
 		AED92A80890A6328BD415CDD /* Intelligence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Intelligence.swift; sourceTree = "<group>"; };
 		C0FFEE012F00000000000001 /* PlaceContextMenus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceContextMenus.swift; sourceTree = "<group>"; };
 		C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerSettingsSheet.swift; sourceTree = "<group>"; };
+		0E2C0DE0000000000000000F /* ServerAdminMore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Admin/ServerAdminMore.swift; sourceTree = "<group>"; };
 		C0FFEE0A5000000000000001 /* ServerAdmin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Admin/ServerAdmin.swift; sourceTree = "<group>"; };
 		C0FFEE0A5000000000000003 /* ServerModeration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Admin/ServerModeration.swift; sourceTree = "<group>"; };
 		C0FFEE0A5000000000000005 /* CreateServerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Admin/CreateServerSheet.swift; sourceTree = "<group>"; };
@@ -635,6 +637,7 @@
 				AA9C81822E6660BE0086B1DA /* GuildButton.swift */,
 				C0FFEE012F00000000000003 /* ServerSettingsSheet.swift */,
 				C0FFEE0A5000000000000001 /* ServerAdmin.swift */,
+				0E2C0DE0000000000000000F /* ServerAdminMore.swift */,
 				C0FFEE0A5000000000000003 /* ServerModeration.swift */,
 				C0FFEE0A5000000000000005 /* CreateServerSheet.swift */,
 				1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */,
@@ -1578,6 +1581,7 @@
 				AA9C81832E6660BE0086B1DA /* GuildButton.swift in Sources */,
 				C0FFEE012F00000000000004 /* ServerSettingsSheet.swift in Sources */,
 				C0FFEE0A5000000000000002 /* ServerAdmin.swift in Sources */,
+				0E2C0DE00000000000000010 /* ServerAdminMore.swift in Sources */,
 				C0FFEE0A5000000000000004 /* ServerModeration.swift in Sources */,
 				C0FFEE0A5000000000000006 /* CreateServerSheet.swift in Sources */,
 				1A7F501E161E4DAD6C94F7C8 /* InvitePreview.swift in Sources */,
