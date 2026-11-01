@@ -108,11 +108,10 @@ Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z token
 1. **Paczka A:** zrobiona 1.11 (galeria, przypomnienia i zapisane, alerty), szczegóły w `SHIPPED.md` i `docs/STAGE15A_NOTES.md`. Zostało:
    - [ ] Ghost ping sprawdzić z drugiego konta (z jednego się nie da: własne wiadomości są pomijane).
    - [ ] Ghost ping przez edycję (wzmianka usunięta z treści wiadomości), dziś tylko usunięcie całej wiadomości.
-2. **Paczka B (system Apple):**
-   - [ ] Spotlight dla DM-ów, kanałów i zapisanych wiadomości.
-   - [ ] Widżety: nieprzeczytane i wzmianki; Live Activity z trwającym połączeniem głosowym.
-   - [ ] App Intents: Skróty i Siri („co nowego na serwerze X” przez Intelligence, otwórz kanał).
-   - [ ] Handoff: kanał otwarty na iPhonie otwiera się na Macu i odwrotnie.
+2. **Paczka B (system Apple):** zrobiona 1.11 (Spotlight, widżet, Live Activity, Skróty, Handoff), szczegóły w `SHIPPED.md` i `docs/PACK_B_NOTES.md`. Zostało:
+   - [ ] Sprawdzić na żywo: „What's New in Server” i „Open Channel” uruchomione do końca ze Skrótów i przez Siri, Handoff między dwoma urządzeniami, widżet na Macu, Live Activity na ekranie blokady.
+   - [ ] Sprawdzić App Group po podpisaniu przez AltStore (zmienia ID grup; widżet może zostać pusty). Rozszerzenie widżetów to trzeci App ID, czyli limit darmowego konta.
+   - [ ] Wybór kanału w „Open Channel” przy uruchomieniu nie ma wyszukiwarki i pokazuje tylko 60 pierwszych (DM-y, potem serwery alfabetycznie); przydałby się najpierw wybór serwera.
 3. **Paczka C:**
    - [ ] Codzienny skrót z wybranych kanałów wielu serwerów (rozszerzenie Catch Up), o wybranej porze, z powiadomieniem.
    - [ ] Prywatne notatki i tagi przy osobach (kto to, skąd się znamy, wspólne serwery), tylko lokalnie.

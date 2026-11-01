@@ -64,6 +64,14 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Server events in the server menu and above the channels when there are any: when and where, the picture and description, how many are interested, and Interested to add or take back yours
 - **New** · Apps that open an Activity (Wordle and the like) no longer leave silence: the chat shows the app with its icon, how many are playing and Open in Discord, and game invites in messages get the same card
 
+### Apple system integration
+
+- **New** · Spotlight finds your DMs, channels and saved messages and opens them in Aicord, a saved message right at the message. Only names go in, plus the text of messages you saved; Settings → Advanced → Spotlight turns it off, and turning it off or logging out removes everything
+- **New** · An Unread widget for the Home Screen, the Lock Screen and the Mac: mentions, unread DMs and servers with unread, and the channels with the most mentions, as of the last time Aicord was open. The widget never connects to Discord and holds no token; tapping a channel opens it
+- **New** · A Live Activity for voice calls on iPhone: the channel or DM and how long you've been in it on the Lock Screen and in the Dynamic Island, with mute and disconnect buttons
+- **New** · Shortcuts and Siri: Open Channel (any server channel or DM) and What's New in Server, which summarises a server's unread channels with Intelligence, like Catch Up
+- **New** · Handoff: the channel open on one device can be picked up on the other
+
 ### Server management
 
 - **New** · Create a Server from the + at the end of the server list: empty, or from a template link (discord.new/…) after a look at the template; the new server opens at once
