@@ -117,6 +117,23 @@ Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z token
    - [ ] Prywatne notatki i tagi przy osobach (kto to, skąd się znamy, wspólne serwery), tylko lokalnie.
    - [ ] Eksport kanału lub DM do Markdown albo PDF, na żądanie.
    - [ ] Tryb offline: czytanie pobranych wiadomości bez sieci.
+4. **Formatowanie wiadomości (markdown Discorda, działa na każdym kanale i w DM-ach):**
+   - [ ] Szybkie formatowanie zaznaczenia w polu wiadomości: na iOS podmenu „Formatowanie” w systemowym menu edycji, na Macu w menu pod prawym przyciskiem plus skróty ⌘B, ⌘I, ⌘U, ⌘⇧X, ⌘K (pogrubienie, kursywa, podkreślenie, przekreślenie, spoiler, kod, link z tekstem). Bez stałego paska nad polem.
+   - [ ] „Formatted Message” pod plusem: arkusz z edytorem i podglądem na żywo przez Textual. Nagłówki, mały tekst `-#`, listy, cytat, blok kodu z wyborem języka, znacznik czasu `<t:…>` z wyborem daty, wzmianki i emoji serwera. Przyciski „Wyślij” i „Do pola tekstowego”. Później w tym arkuszu tryb embed z Etapu 16.
+
+---
+
+### 💤 Etap 16: Własny bot w Aicordzie (niski priorytet)
+Pomysł na kiedyś. Webhook kanału albo token własnego bota pozwala wysyłać to, czego konto użytkownika nie może (embedy, przyciski, Components V2), i legalnie automatyzować. To zwykły bot, nie self-bot. Wada: działa tylko na serwerach, gdzie można dodać bota albo webhook, więc przyda się głównie właścicielom i moderatorom.
+1. **Jednorazowe, uruchamiane przez użytkownika (iOS i macOS):** jedno wywołanie REST, bez gatewaya i bez pracy w tle.
+   - [ ] Tryb embed w arkuszu „Formatted Message” (Etap 15.4), w stylu Discohooka: embedy, Components V2, przyciski-linki, obrazki, z podglądem na żywo. Tylko tam, gdzie jest webhook (wklejony URL albo utworzony przez Aicord przy Manage Webhooks, z własną nazwą i awatarem) albo twój bot; konto użytkownika embedów nie wysyła.
+   - [ ] Intelligence → wiadomość: podsumowanie kanału albo szkic ogłoszenia z modelu, wysłany jako embed przez webhook lub bota.
+2. **Nasłuchujące (tylko Mac włączony całą dobę, drugie połączenie z gatewayem z tokenem bota; na iOS system usypia aplikację):**
+   - [ ] Zaplanowane ogłoszenia i przypomnienia, powitania, automatyczne role, role za przyciski lub reakcje.
+   - [ ] Intelligence dla wszystkich na serwerze: `/ask`, `/summarize`, `/translate`, odpowiedzi ephemeral.
+   - [ ] Logi usuniętych i edytowanych wiadomości dla moderatorów, skrót z kanałów i alerty po słowach w tle, oficjalnie przez intent Message Content.
+   - [ ] Prosty kreator komend bez kodu (komenda, odpowiedź, przyciski).
+- Podstawa: obsługa interakcji z sesji bot-interactions (`tools/testbot/`, `POST /interactions`). Część modeli bota wycięta w Etapie 7 trzeba przywrócić w `AicordKit`.
 
 ---
 
