@@ -41,9 +41,11 @@ struct SmallBaseplate: View {
         }
         .badge(messagesBadge)
         Tab("Search", systemImage: "magnifyingglass", value: CurrentTab.search) {
-          SearchView {
-            withAnimation { appState.chatOpen = true }
-          }
+          SearchView(
+            onOpen: { withAnimation { appState.chatOpen = true } },
+            // a server has no chat to slide in until a channel is picked
+            onOpenServer: { currentTab = .home }
+          )
           .tint(nil)
         }
         Tab("Settings", systemImage: "gearshape", value: CurrentTab.settings) {

@@ -84,3 +84,11 @@ Kod: `Aicord/Common/Guilds/Admin/ServerAdminMore.swift` (nowe widoki), zmiany w 
 | 3. Zarządzanie serwerem | `26c2216`, `23f0e13` | zrobione; usuwanie zatrzymane na kodzie 2FA, ikony ról niesprawdzone |
 
 Każdy commit: build macOS i iOS Simulator bez nowych ostrzeżeń. `swift test`: AicordKit 152, Textual 187. Polskie napisy: ok. 180 nowych, z odmianą liczby mnogiej tam, gdzie jest liczba.
+
+## Dodatkowo: czarny ekran po wybraniu serwera z wyszukiwarki
+
+- **Przyczyna:** wynik „serwer” w Szukaj wołał `open(guild:channel: nil)`, a na iPhonie `onOpen` zawsze wysuwał czat (`chatOpen = true`). Serwer bez zapamiętanego kanału ma `selectedChannel == nil`, więc w panelu czatu był `Color.clear` („never shown”), czyli czarny ekran nad zakładką Szukaj. Gdy kanał był zapamiętany, otwierał się on zamiast serwera.
+- **Poprawka:** `SearchView` ma osobne `onOpenServer`; na iPhonie przełącza na zakładkę Home z listą kanałów wybranego serwera, bez wysuwania czatu. Wyniki-kanały i wiadomości działają jak wcześniej.
+- **Mac i iPad:** Szukaj jest tam arkuszem, `onOpen` tylko go zamyka, a bez kanału baseplate pokazuje `ContentUnavailableView`, więc czarnego ekranu nie było; ścieżka bez zmian (build macOS zielony, nie klikane).
+- Sprawdzone w symulatorze: Szukaj → „Aicord Delete” → serwer → Home z kanałami „Aicord Delete Test”.
+- Przy okazji zauważone (nie poprawiane): na świeżym serwerze kategorie z tą samą pozycją (0) potrafią zamienić się miejscami między uruchomieniami, bo sortowanie nie ma drugiego klucza.

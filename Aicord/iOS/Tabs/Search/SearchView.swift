@@ -18,6 +18,9 @@ struct SearchView: View {
   var onOpen: () -> Void
   /// Shows a Done button, for Search in a sheet on Mac and iPad.
   var onClose: (() -> Void)? = nil
+  /// Called after a server (no channel) is picked; on iPhone it shows Home
+  /// with the server's channels instead of sliding in an empty chat.
+  var onOpenServer: (() -> Void)? = nil
 
   @State var text = ""
   @State var tokens: [SearchToken] = []
@@ -572,8 +575,14 @@ struct SearchView: View {
 
   func open(guild: GuildSnowflake?, channel: ChannelSnowflake?) {
     appState.selectedGuild = guild
-    if let channel { appState.selectedChannel = channel }
-    onOpen()
+    if let channel {
+      appState.selectedChannel = channel
+      onOpen()
+    } else if let onOpenServer {
+      onOpenServer()
+    } else {
+      onOpen()
+    }
   }
 
   /// Opens the channel scrolled to the message, which is briefly highlighted.
