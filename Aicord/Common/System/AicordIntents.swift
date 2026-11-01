@@ -218,19 +218,15 @@ struct AicordShortcuts: AppShortcutsProvider {
   static var appShortcuts: [AppShortcut] {
     AppShortcut(
       intent: OpenChannelIntent(),
-      phrases: [
-        "Open a channel in \(.applicationName)",
-        "Open \(\.$channel) in \(.applicationName)",
-      ],
+      // no phrase with the channel in it: the system would make a tile for
+      // every suggested channel and DM
+      phrases: ["Open a channel in \(.applicationName)"],
       shortTitle: "Open Channel",
       systemImageName: "number"
     )
     AppShortcut(
       intent: WhatsNewInServerIntent(),
-      phrases: [
-        "What's new in \(.applicationName)",
-        "What's new on \(\.$server) in \(.applicationName)",
-      ],
+      phrases: ["What's new in \(.applicationName)"],
       shortTitle: "What's New",
       systemImageName: "sparkles"
     )

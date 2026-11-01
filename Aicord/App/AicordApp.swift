@@ -64,7 +64,9 @@ struct AicordApp: App {
       #if os(iOS)
         .onChange(of: scenePhase) { _, phase in
           switch phase {
-          case .background: gatewayStore.notifications.enterBackground()
+          case .background:
+            gatewayStore.notifications.enterBackground()
+            SystemIntegration.shared.flushWidgetSnapshot()
           case .active: gatewayStore.notifications.endBackground()
           default: break
           }

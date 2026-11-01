@@ -11,32 +11,12 @@
         }
       }
     },
-    "Open ${channel} in ${applicationName}" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otwórz ${channel} w ${applicationName}"
-          }
-        }
-      }
-    },
     "What's new in ${applicationName}" : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Co nowego w ${applicationName}"
-          }
-        }
-      }
-    },
-    "What's new on ${server} in ${applicationName}" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Co nowego na ${server} w ${applicationName}"
           }
         }
       }

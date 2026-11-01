@@ -188,7 +188,6 @@ final class SystemIntegration {
       guard !Task.isCancelled else { return }
       let entries = liveDirectory()
       writeDirectory(entries)
-      AicordShortcuts.updateAppShortcutParameters()
       guard Self.spotlightEnabled else { return }
       await indexChannels(entries)
       await indexSaved()
@@ -306,6 +305,14 @@ final class SystemIntegration {
       guard !snapshot.hasSameContent(as: lastWidgetSnapshot) else { return }
       write(snapshot)
     }
+  }
+
+  /// Leaving the app: the widgets' "as of" time becomes now, even when the
+  /// counts haven't changed.
+  func flushWidgetSnapshot() {
+    guard gateway.accounts.currentAccountID != nil, lastWidgetSnapshot != nil else { return }
+    widgetTask?.cancel()
+    write(makeWidgetSnapshot())
   }
 
   private func write(_ snapshot: WidgetSnapshot) {
