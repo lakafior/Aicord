@@ -362,6 +362,8 @@ struct NotificationPlaceList: View {
   @State private var search = ""
   @State private var saving: Set<String> = []
   @State private var error: String?
+  /// Each server's channels you can see, worked out when the list opens.
+  @State private var visible: [GuildSnowflake: [DiscordChannel]] = [:]
 
   /// What a server or channel was set to before it was silenced, to go back to.
   @AppStorage("Paicord.Notifications.LevelsBeforeSilencing") private var previousLevels = ""
@@ -382,6 +384,11 @@ struct NotificationPlaceList: View {
     .formStyle(.grouped)
     .modifier(PickerSearch(text: $search))
     .navigationTitle(isSilenced ? "Silenced in Discord" : "Servers and Channels")
+    .task {
+      visible = Dictionary(
+        gw.user.guilds.values.map { ($0.id, Self.visibleTextChannels(of: $0, gw: gw)) },
+        uniquingKeysWith: { first, _ in first })
+    }
     .alert(
       "Couldn't Save", isPresented: .init(get: { error != nil }, set: { if !$0 { error = nil } })
     ) {
@@ -481,8 +488,25 @@ struct NotificationPlaceList: View {
   }
 
   private func textChannels(of guild: Guild) -> [DiscordChannel] {
-    (guild.channels ?? [])
-      .filter { $0.type == .guildText || $0.type == .guildAnnouncement }
+    visible[guild.id] ?? []
+  }
+
+  /// Text channels you can see. Permissions need the server's store; for a
+  /// server never opened a throwaway one does the sums, without subscribing
+  /// to it or listening to the gateway.
+  private static func visibleTextChannels(of guild: Guild, gw: GatewayStore) -> [DiscordChannel] {
+    let store =
+      gw.existingGuildStore(for: guild.id)
+      ?? {
+        let store = GuildStore(id: guild.id, from: guild)
+        store.gateway = gw
+        return store
+      }()
+    return (guild.channels ?? [])
+      .filter {
+        ($0.type == .guildText || $0.type == .guildAnnouncement)
+          && store.hasPermission(channel: $0, .viewChannel)
+      }
       .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
   }
 }

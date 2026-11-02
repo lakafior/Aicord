@@ -17,6 +17,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 ### Fixed
 
 - **Fixed** · On the Mac, Settings → Notifications no longer crashes when you open the list of servers and channels (Only Selected) or of people for direct messages; the list's search field sits above it
+- **Fixed** · The servers and channels lists in Settings → Notifications show only channels you can see, also in servers you haven't opened
 
 ## 0.1.0 (November 2026)
 
@@ -478,6 +479,7 @@ Szczegóły i lista do sprawdzenia na Macu: [OVERNIGHT](https://github.com/lakaf
    - [x] Kanał w osobnym oknie (`WindowGroup(for: ChannelWindowValue.self)`) z menu kanału i z menu Go; okno ma własny `AicordAppState`, który nie zapisuje wyboru, więc główne okno otwiera się dalej na swoim kanale.
    - [x] Ustawienia jako systemowa scena `Settings` (⌘, i Aicord → Settings…) zamiast zwykłego okna.
    - [x] Poprawka (2.11): Settings → Notifications → Only Selected nie wysypuje aplikacji przy otwieraniu listy serwerów i kanałów ani listy osób. Drugie `.searchable` w otwartej stronie dokładało do paska narzędzi okna Settings element, który już tam był (wyszukiwarka paska bocznego), i `NSToolbar` rzucał wyjątek; na Macu pole wyszukiwania stoi teraz nad listą.
+   - [x] Poprawka (2.11): listy serwerów i kanałów w Settings → Notifications (Only Selected i Silenced in Discord) pokazują tylko kanały, które widzisz. Uprawnienia liczone raz przy otwarciu listy, dla serwera nieotwartego na tymczasowym `GuildStore` bez subskrypcji i bez nasłuchu bramki.
 2. **Serwer MCP:**
    - [x] `AicordMCP/` (pakiet SwiftPM, tylko Foundation i Network): program `aicord-mcp` mówiący MCP (JSON-RPC 2.0) przez stdio, narzędzia `list_servers`, `list_channels`, `list_direct_messages`, `read_messages`, `search_messages`, wszystkie z `readOnlyHint`.
    - [x] Most w aplikacji (`MCPBridge`, tylko macOS): nasłuch tylko na `127.0.0.1:47823`, jedno zapytanie na połączenie, klucz porównywany w stałym czasie, najwyżej 30 wywołań na minutę, te same filtry co dla modelu, DM-y osobnym przełącznikiem. Domyślnie wyłączony (Settings → Advanced → Allow MCP Server, Copy Configuration for Claude, Reset Key).
