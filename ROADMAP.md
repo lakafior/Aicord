@@ -77,12 +77,13 @@ Paczki 1 i 2 zrobione (szczegóły w CHANGELOG, [PACK1_NOTES](https://github.com
 1. **Paczka 1, sprawdzenie:**
    - [ ] Przeklikać na Macu (sprawdzone tylko w symulatorze iOS): ankieta, tworzenie ankiety, Pinned Messages, Threads, Pin Message w menu pod prawym przyciskiem.
    - [ ] Zobaczyć na żywo typy, których nie było pod ręką: połączenie w DM (czas i nieodebrane), grupa (dodanie, usunięcie, nazwa, ikona), boost, Stage, AutoMod, zamknięta ankieta (typ 46), utworzenie wątku.
+   - [ ] Stage, do sprawdzenia z drugą osobą: słyszenie mówcy z widowni, zaproszenie do mówienia od moderatora (stan `suppress: false` z `request_to_speak_timestamp`) i „Join as Speaker” / „Stay in Audience”, „Request to Speak” bez uprawnień moderatora, zaproszenie i przeniesienie innej osoby z menu kontekstowego, zmiana tematu, panel sceny na iPhonie i iPadzie, wiadomość o zakończeniu Stage (po zakończeniu nie pojawiła się).
 2. **Paczka 2, sprawdzenie:**
    - [ ] Wydarzenia z danymi i „Interested” / cofnięcie: NAScin nie ma wydarzeń, a Aicord ich nie tworzy; sprawdzony tylko pusty stan.
    - [ ] Zapisanie odpowiedzi w Channels & Roles i wysłanie reguł serwera: widoki sprawdzone na LimeWire i Polish Debrid bez zapisu; NAScin nie ma onboardingu ani reguł.
    - [ ] Nagrywanie głosówki na Macu (przycisk i pasek Send/Cancel); na iOS sprawdzone.
 3. **Później albo wcale:**
-   - [ ] Stage, soundboard, super-reakcje.
+   - [ ] Soundboard, super-reakcje.
    - [ ] Modale botów: pola wyboru osób, ról i kanałów oraz upload pliku (typ 19) w modalu; dziś pokazujemy tylko tekst, menu tekstowe i napisy. Stan wypełnionego modala ginie po przejściu do innego kanału.
    - [ ] Activities, eksperyment (dziś jest tylko karta „Open in Discord”): Activity to strona `https://<application_id>.discordsays.com` w WebView, która rozmawia z klientem przez Embedded App SDK (`postMessage`, ramki RPC). Plan:
      - najpierw zmierzyć, ilu komend SDK naprawdę potrzebują popularne aktywności (np. Wordle, Gartic): zalogować ruch `postMessage` z jednej sesji;

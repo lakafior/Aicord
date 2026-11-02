@@ -2,6 +2,13 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### Voice
+
+- **New** · Stage channels: they open their text chat with a Stage panel above it (topic, speakers with speaking rings, the audience with raised hands), you listen from the audience, request to speak or lower your hand, take up an invitation to speak or stay in the audience, and go back to the audience; the call panel shows the Stage and puts the hand where the microphone was, and the channel list shows the topic, the speakers and how many listen
+- **New** · Stage moderators start a Stage with a topic, change the topic, end it, go on stage themselves, and invite people to speak or move them back to the audience; Stage is a channel type in New Channel (it needs a Community server)
+
 ## 0.1.1 (November 2026)
 
 ### MCP server
@@ -571,3 +578,12 @@ Szczegóły i testy w [OVERNIGHT2_NOTES](https://github.com/lakafior/Aicord/blob
 ### 🧪 Etap 12 i 14.1 (noc 1/2.11)
    - [x] Powiadomienie o aktualizacji przez `releases/latest` (raz dziennie, baner, wyłącznik, 404 = brak wydań).
    - [x] README: granica powiadomień push na iOS.
+
+### 🧪 Etap 16: Kanały Stage (2.11)
+Stage był odłożony do „Później albo wcale”; zrobiony na prośbę po zobaczeniu Stage na cudzym serwerze. Testy tylko na Aicord Test.
+   - [x] Kanał Stage otwiera czat jak kanał głosowy, a nad czatem panel sceny (`StagePanel`): temat, mówcy z obwódką mówienia, widownia z podniesionymi rękami, przyciski.
+   - [x] Słuchanie przez istniejący stos głosu (`VoiceConnectionStore`): na Stage dołącza się na widownię (`suppress`), mikrofon jest zamknięty, dopóki nie wejdzie się na scenę; w pasku rozmowy ręka zamiast mikrofonu.
+   - [x] Ręka: `PATCH /guilds/{id}/voice-states/@me` z `request_to_speak_timestamp` (teraz) albo jawnym `null`; wejście na scenę i przyjęcie zaproszenia: `suppress: false`; powrót na widownię: `suppress: true`.
+   - [x] Stage instances z READY i GUILD_CREATE oraz zdarzeń `STAGE_INSTANCE_*` w `GuildStore`, a gdy ich brak, `GET /stage-instances/{kanał}`.
+   - [x] Moderator (Manage Channels, Mute Members i Move Members): rozpoczęcie z tematem, zmiana tematu, zakończenie, zaproszenie do mówienia i przeniesienie na widownię (menu kontekstowe osoby), typ „Stage” w New Channel.
+   - [x] Na żywo (Mac, Aicord Test, kanał `scena-test`, własna kompilacja obok aplikacji z /Applications): rozpoczęcie, słuchanie, podniesienie i opuszczenie ręki, wejście na scenę, powrót na widownię, zakończenie. Na Aicord Test włączona Społeczność (wymóg Stage).
