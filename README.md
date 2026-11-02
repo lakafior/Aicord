@@ -25,6 +25,62 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 
 ## Highlights
 
+<p align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/mac-chat-dark.png">
+  <img src=".github/assets/screenshots/mac-chat-light.png" alt="Aicord on the Mac: a server's channels, a conversation with code and reactions, and the member list by role">
+</picture>
+
+</p>
+
+<table align="center">
+<tr>
+<td align="center" valign="top">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/iphone-server-dark.png">
+  <img src=".github/assets/screenshots/iphone-server-light.png" width="180" alt="Swift Studio's channels on iPhone, with three people in a voice channel">
+</picture>
+
+<sub>Channels and voice</sub>
+
+</td>
+<td align="center" valign="top">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/iphone-chat-dark.png">
+  <img src=".github/assets/screenshots/iphone-chat-light.png" width="180" alt="A conversation on iPhone with a reply, a mention and reactions">
+</picture>
+
+<sub>Replies, mentions and reactions</sub>
+
+</td>
+<td align="center" valign="top">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/iphone-showcase-dark.png">
+  <img src=".github/assets/screenshots/iphone-showcase-light.png" width="180" alt="Images posted in a channel on iPhone">
+</picture>
+
+<sub>Images in the chat</sub>
+
+</td>
+<td align="center" valign="top">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/screenshots/iphone-dm-dark.png">
+  <img src=".github/assets/screenshots/iphone-dm-light.png" width="180" alt="A direct message on iPhone">
+</picture>
+
+<sub>Direct messages</sub>
+
+</td>
+</tr>
+</table>
+
+<p align="center"><sub>Screenshots use made-up demo data (see <a href=".github/CONTRIBUTING.md#demo-mode">demo mode</a>).</sub></p>
+
 - **Voice and calls** — server voice channels and DM or group calls, end-to-end encrypted with DAVE, with push-to-talk and device choice
 - **Nearly all of Discord's settings** — privacy, content filters, devices, connections, appearance, chat and notifications, saved to your account so the official apps see them too
 - **One search for everything** — servers, channels, people and messages, with date and regex filters, opening a result right at the message

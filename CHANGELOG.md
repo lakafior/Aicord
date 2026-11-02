@@ -304,6 +304,7 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
    - [x] `README.md`: tylko najciekawsze rzeczy jako krótkie zajawki, zrzuty ekranu z iPhone'a i Maca, link do pełnej listy w `SHIPPED.md`. Sekcje Building, Contributing i Credits zostają.
    - [x] Notatki z sesji ([VOICE_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/VOICE_NOTES.md), [MESSAGES_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/MESSAGES_NOTES.md)) do katalogu `docs/`, a otwarte testy z nich jako punkty w ROADMAP.
    - [x] Przed publikacją (2.11): `SHIPPED.md` → `CHANGELOG.md`, katalog `docs/` usunięty (linki prowadzą do notatek w historii gita), nowy `ARCHITECTURE.md` z mapą kodu i decyzjami, w `CONTRIBUTING.md` test voice z drugą osobą i wydania (workflowy, sekrety). Notatki z sesji idą odtąd do opisu PR albo do ignorowanego `notes/`, nie do repo.
+   - [x] Zrzuty ekranu do README (2.11): zamiast prawdziwego konta tryb demo w buildzie Debug (`-AicordDemo YES`, zmyślony serwer, ludzie i rozmowy w `Aicord/Demo/`, gateway odtwarzany przez `GatewayReplaySource`), skrypt `scripts/screenshots.sh` robi zrzuty z iPhone'a i Maca w jasnym i ciemnym motywie; galeria na górze Highlights podmienia się z motywem czytającego. Ustawienia prawdziwego konta odkładane na czas demo i przywracane przy zamknięciu.
 
 ---
 

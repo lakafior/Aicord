@@ -6,9 +6,13 @@ Kierunek: czysty **Swift 6**, **iOS 26 i macOS 26**, natywne **SwiftUI** z **Liq
 
 ---
 
-### 🔜 Etap 6: Tożsamość Aicord, poprawki i dokumentacja
-4. **Porządek w dokumentacji:**
-   - [ ] Zrzuty ekranu do README z iPhone'a i Maca, zrobione na NAScin (bez cudzych wiadomości i nicków).
+### 🔜 Zrzuty ekranu: dalsze ekrany w trybie demo
+Galeria w README pokazuje na razie czat, serwer i DM-y. Dane demo (`Aicord/Demo/`) i ujęcia w `scripts/screenshots.sh` do dopisania:
+   - [ ] Panel rozmowy głosowej z mówiącymi (stan połączenia bez prawdziwego voice).
+   - [ ] Intelligence: podsumowanie kanału albo Catch Up z linkami do wiadomości (gotowa odpowiedź zamiast modelu).
+   - [ ] Narzędzia moderatora: ustawienia serwera, role i uprawnienia.
+   - [ ] Galeria kanału, wyszukiwarka i ustawienia.
+   - [ ] Widżet i Live Activity.
 
 ---
 
