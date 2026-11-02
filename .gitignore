@@ -20,3 +20,5 @@ __pycache__/
 
 # session notes from autonomous work: go in the PR description, not the repo
 notes/
+/build/
+/screenshots/

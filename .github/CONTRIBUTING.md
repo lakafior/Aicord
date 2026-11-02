@@ -39,6 +39,12 @@ app's settings aside while it runs and puts them back when the app quits. If
 it didn't quit cleanly, the next normal launch puts them back, or run the app
 once with `-AicordRestoreSettings YES`, which only does that and quits.
 
+`scripts/screenshots.sh [ios|mac|all]` takes the README screenshots in demo
+mode, light and dark, into `screenshots/`. It uses its own simulator ("Aicord
+Demo") and needs Screen Recording for the terminal to save the Mac window.
+`-AicordDemoOpen` picks the screen: `server`, a channel name such as
+`swiftui`, or a DM such as `@leopark`.
+
 ## Testing voice
 
 Voice needs a second person on the official Discord client, and headphones on

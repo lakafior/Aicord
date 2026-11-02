@@ -89,6 +89,36 @@ enum DemoSettingsBackup {
       }
     }
 
+    /// Opens the place named by the launch argument `-AicordDemoOpen`, once
+    /// the demo is ready: `server` for Swift Studio's channel list, a Swift
+    /// Studio channel by name (`swiftui`), or a DM by username with an @
+    /// (`@leopark`). For screenshots.
+    @MainActor
+    static func openRequestedPlace() {
+      guard let name = UserDefaults.standard.string(forKey: "AicordDemoOpen") else { return }
+      if name == "server" {
+        AicordAppState.externalTarget?.selectedGuild = GuildSnowflake(DemoWorld.swiftStudioID)
+        return
+      }
+      let guild: String?
+      let channel: String?
+      if name.hasPrefix("@") {
+        let username = name.dropFirst()
+        let person = DemoWorld.people.first { $0.username == username }
+        guild = nil
+        channel = DemoWorld.privateChannels.first { dm in
+          (dm["recipients"] as? [DemoWorld.JSON])?.count == 1
+            && (dm["recipients"] as? [DemoWorld.JSON])?.first?["id"] as? String == person?.id
+        }?["id"] as? String
+      } else {
+        guild = DemoWorld.swiftStudioID
+        channel = DemoWorld.swiftStudio.channels.first { $0.name == name }?.id
+      }
+      guard let channel else { return }
+      AicordAppState.openExternally(
+        guild: guild.map(GuildSnowflake.init), channel: ChannelSnowflake(channel))
+    }
+
     /// The demo account, as the account list holds it.
     static var account: TokenStore.AccountData? {
       guard

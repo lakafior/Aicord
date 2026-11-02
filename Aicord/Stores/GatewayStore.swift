@@ -269,6 +269,9 @@ final class GatewayStore {
     }
 
     SystemIntegration.shared.gatewayReady()
+    #if DEBUG
+      if DemoMode.isEnabled { DemoMode.openRequestedPlace() }
+    #endif
 
     // update user data in account storage
     accounts.updateProfile(for: data.user.id, data.user)
