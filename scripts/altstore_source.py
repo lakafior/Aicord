@@ -42,7 +42,10 @@ APP = {
     "iconURL": SOURCE["iconURL"],
     "tintColor": "#5865F2",
     "category": "social",
-    "screenshots": [],
+    "screenshots": [
+        f"https://raw.githubusercontent.com/{REPO}/main/.github/assets/screenshots/iphone-{name}-light.png"
+        for name in ("server", "chat", "showcase", "dm")
+    ],
     "appPermissions": {
         "entitlements": [],
         "privacy": {
@@ -75,7 +78,6 @@ def versions(releases):
         result.append(
             {
                 "version": version,
-                "buildVersion": version,
                 "date": release.get("published_at") or release.get("created_at"),
                 "localizedDescription": (release.get("body") or "").strip()[:4000],
                 "downloadURL": ipa["browser_download_url"],

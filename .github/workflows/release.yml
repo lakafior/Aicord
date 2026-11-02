@@ -32,6 +32,10 @@ jobs:
       - name: Disable Swift macro plugin consent prompt
         run: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 
+      - name: Force Git to use HTTPS
+        # DaveKit's submodules point at git@github.com:, and the runner has no SSH key
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
       - name: Version from the tag
         id: version
         run: |

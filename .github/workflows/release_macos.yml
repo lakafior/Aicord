@@ -39,6 +39,11 @@ jobs:
         if: env.HAS_CERTIFICATE == 'true'
         run: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 
+      - name: Force Git to use HTTPS
+        if: env.HAS_CERTIFICATE == 'true'
+        # DaveKit's submodules point at git@github.com:, and the runner has no SSH key
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
       - name: Keychain with the Developer ID certificate
         if: env.HAS_CERTIFICATE == 'true'
         env:

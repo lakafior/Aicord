@@ -2,7 +2,7 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
-## Not yet released (October 2026)
+## 0.1.0 (November 2026)
 
 ### Voice
 
