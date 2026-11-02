@@ -127,7 +127,7 @@ port, from the screenshots of the old build:
 5. **Inspector.** Plan: the toggle moves to ⌥⌘I (the standard inspector
    shortcut), keeping the toolbar button.
 6. **Menu bar.**
-   - Plan: Previous and Next Channel (⌥↑ / ⌥↓), Next Unread Channel (⌥⇧↓),
+   - Plan: Previous and Next Channel, Next Unread Channel,
      servers ⌘1…⌘9, and Server Settings… for the open server.
    - Plan: Open Channel in New Window stays (⇧⌘O).
 7. **Sheets.** Plan: on the Mac a sheet's `navigationTitle` took over the
@@ -136,3 +136,60 @@ port, from the screenshots of the old build:
 
 The order is by impact: toolbar and title, rail, composer, density, then the
 menus and details.
+
+## Stage 3: what was done
+
+What ended up different from the plan:
+- The search field could not shrink to a button: `searchToolbarBehavior(.minimize)` doesn't exist on macOS. It stays a field, as in Mail.
+- Previous and Next Channel use ⌥⌘↑ and ⌥⌘↓, and Next Unread uses ⇧⌥⌘↓. ⌥↑ and ⌥↓ alone move by paragraph in the message field, and a menu shortcut would take them over.
+- `SearchView` got `initialText`, set in `onAppear`, because passing the `@State` text through the initializer didn't reach the field. It defaults to empty, so iOS is unchanged.
+
+What changed:
+- **Title and toolbar** (`MacBaseplate`, `ChatView`):
+  - the title is `#channel`. Channels from READY have no `guild_id`, so the open server decides whether it gets a `#`.
+  - the subtitle is the first line of the topic, or the server.
+  - the `# channel ⌄` menu is gone from the Mac toolbar. Intelligence (✨ menu), Pinned Messages and Threads are buttons there, and `…` keeps Media and Export.
+- **Search:** `.searchable` in the toolbar. ⌘F focuses the field, and Return opens Search with the text.
+- **Inspector:** ⌥⌘I.
+- **Go menu:**
+  - ⌘1…⌘9 open servers in the server bar's order: pinned, then servers in no folder (newest joined first), then the folders.
+  - Previous, Next and Next Unread Channel go in the sidebar's order.
+  - Server Settings… opens the open server's settings.
+- **Server rail:**
+  - 52 pt wide with 36 pt icons (65 and 48 on iOS, unchanged).
+  - the selection pill scales with the icon.
+  - server icons have accessibility labels; before, VoiceOver and the accessibility tree saw no name.
+- **Sidebar:** column width 260–400 (was 300–420).
+- **Message field:**
+  - a bordered field (15 pt radius, separator stroke) instead of the filled 18 pt pill.
+  - the attach button is a plain `plus.circle.fill`, and the padding is tighter.
+- **Chat density:** 10 pt between message groups (was 15) and 4 pt between compact ones (was 6).
+- **Member rows:** a hover highlight on the Mac.
+
+Screenshots, in the session scratchpad (`shots/`):
+- before: `before-1.png`, `before-main-aicordtest.png`, `before-server-settings.png`, `before-delete-alert.png`
+- after: `after1-settings-top.png`, `after1-delete-visible.png`, `after-main-aicordtest.png`, `after-search.png`, `stage2-nascin.png`, `stage2-fake-after.png`, `ios-after.png`
+
+Checked:
+- Both builds pass with no new warnings: `platform=macOS` and `generic/platform=iOS Simulator`.
+- On the Mac:
+  - the title and subtitle, ⌥⌘I, ⌥⌘↑ and ⌥⌘↓, the Go menu's contents and order.
+  - search: typed text with Return opens Search filled in.
+  - switching channels and servers keeps the member list.
+- iOS in the simulator (iPhone 18 Pro): Home with the server rail and channels looks as before.
+
+Not checked:
+- A channel in its own window, the Settings window, and Server Settings… from the Go menu (only seen in the menu).
+- Next Unread Channel with real unread channels.
+- ⌘1…⌘9 pressed.
+- The new message field while recording a voice message, and with attachments.
+- Light mode.
+- On iOS, only Home was looked at; the member list and chat on iOS weren't opened. They share the Stage 2 store changes.
+
+Not done:
+- Sheets as popovers or windows.
+- Tabs in the Settings window.
+- A sheet's title replacing the window title (seen with Server Settings).
+- A chat background that differs from the window's.
+
+These are in the roadmap.

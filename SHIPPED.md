@@ -130,6 +130,18 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Settings is a tab on iPhone; the empty Notifications tab is gone
 - **New** · Channel categories start expanded and have cleaner headers with a hairline between them
 - **New** · Logging goes through `os.Logger` instead of capturing stdout into memory
+- **New** · A more native Mac window:
+  - the title is `#channel` and the subtitle is its topic (or the server), and the duplicate channel menu is gone from the toolbar
+  - Intelligence, Pinned Messages and Threads are toolbar buttons
+  - search is a toolbar field: ⌘F focuses it, and Return opens Search with the text
+  - the member list toggles with ⌥⌘I
+  - the server rail is narrower, with smaller icons
+  - the message field is a bordered field like the one in Messages, not an iPhone pill
+  - message groups sit closer together, and member rows highlight on hover
+- **New** · More of the Mac menu bar:
+  - Go menu: ⌘1…⌘9 open servers in the server bar's order
+  - Previous and Next Channel (⌥⌘↑ / ⌥⌘↓) and Next Unread Channel (⇧⌥⌘↓)
+  - Server Settings… for the open server
 
 ### Library
 
@@ -143,6 +155,9 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Fixed
 
+- **Fixed** · Delete Server and server management were missing from a server's settings on the Mac when they were opened from the server icon's menu before the server had been opened; Delete Server is also red there now
+- **Fixed** · The member list sometimes stayed empty. Opening a server dropped the member list subscription a channel had just sent, nothing asked for the list again after Discord invalidated it or after a reconnect, and on the Mac a channel could be opened before its server was known
+- **Fixed** · The member list scrolls smoothly with many members: a change to one member or one presence now refreshes only that row, not every row and the whole list (measured with 600 members: 8 row refreshes instead of 4,800 per 8 updates)
 - **Fixed** · Picking a server in Search on iPhone opened a black screen instead of the server; it now shows the server's channels on Home
 - **Fixed** · Scrolling the chat jumped: rows no longer re-render when a scroll starts or ends, the scroll position no longer redraws the whole chat, and only a new message animates, not every reaction or embed that arrives
 - **Fixed** · The chat loads older history again as you scroll up, a page at a time, through to the start of the channel, with a small spinner at the top; the messages on screen stay where they are when a page comes in (it used to jump, which is why Paicord turned paging off)

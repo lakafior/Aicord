@@ -60,7 +60,9 @@ Zrobione (szczegóły w SHIPPED i `docs/INTELLIGENCE_NOTES.md`): ustawienia, tł
 ### 🔜 Etap 11: Aicord dla macOS
 Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI, nie Mac Catalyst), ale dzieli szkielet `LargeBaseplate` z iPadem i przez to wygląda jak aplikacja na iPada. Etap 7 i zmiana nazw (5.4) są już zrobione, więc można zaczynać. Listy kanałów i członków są już systemowe (styl `.sidebar` na Macu), więc szkielet może z nich korzystać.
 1. **Interfejs Maca:**
-   - [ ] Przeklikać resztę na Macu: menu Go, kanał w osobnym oknie i okno `Settings` (kroki w `docs/OVERNIGHT.md`, punkt 5). Szkielet z danymi i menu pod prawym przyciskiem sprawdzone 31.10, więc Classic Window Layout jest usunięty.
+   - [ ] Przeklikać resztę na Macu: kanał w osobnym oknie i okno `Settings` (kroki w `docs/OVERNIGHT.md`, punkt 5). Menu Go, ⌥⌘I, ⌥⌘↑/↓ i pole wyszukiwania w pasku sprawdzone 2.11 (`docs/MACOS_PASS_NOTES.md`).
+   - [ ] Lista członków na prawdziwym dużym serwerze (tysiące osób): płynność przewijania i ponowne wczytanie po zerwaniu połączenia (READY). Zmierzone tylko na 600 sztucznych członkach; ponowna prośba po INVALIDATE nie została wywołana na żywo.
+   - [ ] Mac, dalsze dopracowanie wyglądu: arkusze jako popovery lub osobne okna, karty w oknie `Settings`, tytuł arkusza ustawień serwera nie powinien zastępować tytułu okna, kolor tła czatu zgodny z oknem (`docs/MACOS_PASS_NOTES.md`).
 2. **Serwer MCP (połączenie Claude z Discordem):**
    - [ ] Sprawdzić na odblokowanym Macu z prawdziwą aplikacją: włączyć Allow MCP Server, wkleić na nowo skopiowaną konfigurację (ścieżka prowadzi teraz do helpera w `.app`) do Claude Desktop, `list_servers` i `read_messages` na NAScin (kroki w `docs/OVERNIGHT.md`, punkt 5b).
    - [ ] Podsumowania jako narzędzie MCP (z modelu wybranego w Intelligence). Wysyłanie najwyżej z potwierdzeniem każdej akcji w aplikacji: działanie przez token użytkownika to automatyzacja konta, której Discord zabrania (self-bot), więc ryzyko blokady trzeba ograniczyć.
