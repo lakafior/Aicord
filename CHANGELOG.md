@@ -14,6 +14,10 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
   - Channels come under their categories with their kind, topic, unread and mention counts; every message has its author's ID; dates are in the Mac's time zone
 - **Fixed** · The MCP server lists only the channels you can see in a server, even one you haven't opened in Aicord, and says what Discord answered (403, 404, rate limit) instead of "DiscordHTTPError error 1"
 
+### Fixed
+
+- **Fixed** · On the Mac, Settings → Notifications no longer crashes when you open the list of servers and channels (Only Selected) or of people for direct messages; the list's search field sits above it
+
 ## 0.1.0 (November 2026)
 
 ### Voice
@@ -473,6 +477,7 @@ Szczegóły i lista do sprawdzenia na Macu: [OVERNIGHT](https://github.com/lakaf
    - [x] Menu: `SidebarCommands`, View → Show Member List (⌥⌘M), Edit → Search… (⌘F), nowe menu Go: Direct Messages (⌘0), Open Channel in New Window (⇧⌘O), Mark Channel as Read (⇧⎋).
    - [x] Kanał w osobnym oknie (`WindowGroup(for: ChannelWindowValue.self)`) z menu kanału i z menu Go; okno ma własny `AicordAppState`, który nie zapisuje wyboru, więc główne okno otwiera się dalej na swoim kanale.
    - [x] Ustawienia jako systemowa scena `Settings` (⌘, i Aicord → Settings…) zamiast zwykłego okna.
+   - [x] Poprawka (2.11): Settings → Notifications → Only Selected nie wysypuje aplikacji przy otwieraniu listy serwerów i kanałów ani listy osób. Drugie `.searchable` w otwartej stronie dokładało do paska narzędzi okna Settings element, który już tam był (wyszukiwarka paska bocznego), i `NSToolbar` rzucał wyjątek; na Macu pole wyszukiwania stoi teraz nad listą.
 2. **Serwer MCP:**
    - [x] `AicordMCP/` (pakiet SwiftPM, tylko Foundation i Network): program `aicord-mcp` mówiący MCP (JSON-RPC 2.0) przez stdio, narzędzia `list_servers`, `list_channels`, `list_direct_messages`, `read_messages`, `search_messages`, wszystkie z `readOnlyHint`.
    - [x] Most w aplikacji (`MCPBridge`, tylko macOS): nasłuch tylko na `127.0.0.1:47823`, jedno zapytanie na połączenie, klucz porównywany w stałym czasie, najwyżej 30 wywołań na minutę, te same filtry co dla modelu, DM-y osobnym przełącznikiem. Domyślnie wyłączony (Settings → Advanced → Allow MCP Server, Copy Configuration for Claude, Reset Key).

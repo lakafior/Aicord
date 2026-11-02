@@ -316,7 +316,7 @@ struct NotificationPeopleList: View {
       }
     }
     .formStyle(.grouped)
-    .searchable(text: $search)
+    .modifier(PickerSearch(text: $search))
     .navigationTitle("People")
   }
 
@@ -380,7 +380,7 @@ struct NotificationPlaceList: View {
       }
     }
     .formStyle(.grouped)
-    .searchable(text: $search)
+    .modifier(PickerSearch(text: $search))
     .navigationTitle(isSilenced ? "Silenced in Discord" : "Servers and Channels")
     .alert(
       "Couldn't Save", isPresented: .init(get: { error != nil }, set: { if !$0 { error = nil } })
@@ -484,5 +484,26 @@ struct NotificationPlaceList: View {
     (guild.channels ?? [])
       .filter { $0.type == .guildText || $0.type == .guildAnnouncement }
       .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+  }
+}
+
+/// The pickers' search. On the Mac the Settings window's toolbar already has
+/// the sidebar's search field, and a second `.searchable` in a pushed page
+/// makes NSToolbar throw (the app crashed opening these lists), so the field
+/// sits above the list there.
+private struct PickerSearch: ViewModifier {
+  @Binding var text: String
+
+  func body(content: Content) -> some View {
+    #if os(macOS)
+      content.safeAreaInset(edge: .top, spacing: 0) {
+        TextField("Search", text: $text, prompt: Text("Search"))
+          .textFieldStyle(.roundedBorder)
+          .padding(.horizontal, 20)
+          .padding(.top, 12)
+      }
+    #else
+      content.searchable(text: $text)
+    #endif
   }
 }
