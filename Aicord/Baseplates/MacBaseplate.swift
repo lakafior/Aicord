@@ -23,6 +23,10 @@ import SwiftUI
     @State private var currentChannelStore: ChannelStore? = nil
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var showingSearch = false
+    @State private var showingServerSettings = false
+    /// What's typed in the toolbar's search field; Return opens Search with it.
+    @State private var searchQuery = ""
+    @FocusState private var searchFieldFocused: Bool
 
     var body: some View {
       NavigationSplitView(columnVisibility: $columnVisibility) {
@@ -35,33 +39,38 @@ import SwiftUI
               ProfileBar()
             }
           }
-          .navigationSplitViewColumnWidth(min: 300, ideal: 330, max: 420)
+          .navigationSplitViewColumnWidth(min: 260, ideal: 290, max: 400)
       } detail: {
         detail
       }
       .navigationTitle(windowTitle)
       .navigationSubtitle(windowSubtitle)
+      // the toolbar's search field, like Mail's; Return opens Search with the text
+      .searchable(text: $searchQuery, placement: .toolbar, prompt: Text("Search"))
+      .searchFocused($searchFieldFocused)
+      .onSubmit(of: .search) { showingSearch = true }
       .toolbar {
-        ToolbarItemGroup(placement: .primaryAction) {
-          Button {
-            showingSearch = true
-          } label: {
-            Label("Search", systemImage: "magnifyingglass")
-          }
-          .help("Search servers, channels, people and messages (⌘F)")
-
+        ToolbarItem(placement: .primaryAction) {
           Button {
             showingInspector.toggle()
           } label: {
             Label("Member List", systemImage: "sidebar.right")
           }
-          .help("Show or hide the member list (⌥⌘M)")
+          .help("Show or hide the member list (⌥⌘I)")
           .disabled(currentChannelStore == nil)
         }
       }
-      .sheet(isPresented: $showingSearch) {
-        SearchView(onOpen: { showingSearch = false }, onClose: { showingSearch = false })
-          .frame(minWidth: 520, idealWidth: 600, minHeight: 520, idealHeight: 640)
+      .sheet(isPresented: $showingSearch, onDismiss: { searchQuery = "" }) {
+        SearchView(
+          onOpen: { showingSearch = false }, onClose: { showingSearch = false },
+          initialText: searchQuery
+        )
+        .frame(minWidth: 520, idealWidth: 600, minHeight: 520, idealHeight: 640)
+      }
+      .sheet(isPresented: $showingServerSettings) {
+        if let guildId = appState.selectedGuild {
+          ServerSettingsSheet(guildId: guildId)
+        }
       }
       .focusedSceneValue(\.macWindowActions, actions)
       .frame(minWidth: 900, minHeight: 540)
@@ -109,16 +118,26 @@ import SwiftUI
       }
     }
 
+    /// The channel, like a mailbox in Mail; the server's name without one.
     private var windowTitle: String {
-      guard let channel = currentChannelStore?.channel else { return "Aicord" }
+      guard let channel = currentChannelStore?.channel else {
+        return currentGuildStore?.guild?.name ?? "Aicord"
+      }
       if let name = channel.name, !name.isEmpty {
-        return channel.guild_id == nil ? name : "#" + name
+        // channels from READY carry no guild_id; the open server tells
+        return currentGuildStore == nil ? name : "#" + name
       }
       return channel.recipients?.map { $0.global_name ?? $0.username }.joined(separator: ", ")
         ?? "Aicord"
     }
 
+    /// The channel's topic on one line, or the server when there's none.
     private var windowSubtitle: String {
+      if let topic = currentChannelStore?.channel?.topic?
+        .split(whereSeparator: \.isNewline).first.map(String.init), !topic.isEmpty
+      {
+        return topic
+      }
       if let guild = currentGuildStore?.guild { return guild.name }
       return currentChannelStore == nil ? "" : String(localized: "Direct Messages")
     }
@@ -126,14 +145,62 @@ import SwiftUI
     private var actions: MacWindowActions {
       MacWindowActions(
         toggleMembers: { showingInspector.toggle() },
-        search: { showingSearch = true },
+        search: { searchFieldFocused = true },
         currentChannel: currentChannelStore.map {
           ChannelWindowValue(guildId: currentGuildStore?.guildId, channelId: $0.channelId)
         },
         markCurrentRead: currentChannelStore?.channel.map { channel in
           { [gw] in Task { try? await gw.readStates.markRead([channel]) } }
+        },
+        serverSettings: appState.selectedGuild == nil ? nil : { showingServerSettings = true },
+        goToChannel: currentGuildStore.map { guild in
+          { [appState] step, unreadOnly in
+            if let next = Self.channel(after: appState.selectedChannel, in: guild, step: step, unreadOnly: unreadOnly) {
+              appState.selectedChannel = next
+            }
+          }
         }
       )
+    }
+
+    /// The server's chat channels in the sidebar's order: channels outside a
+    /// category first, then each category's, as `GuildView` lists them.
+    static func chatChannels(in guild: GuildStore) -> [DiscordChannel] {
+      let all = guild.channels.values.filter {
+        ($0.type == .guildText || $0.type == .guildAnnouncement)
+          && guild.hasPermission(channel: $0, .viewChannel)
+      }
+      let byPosition: (DiscordChannel, DiscordChannel) -> Bool = {
+        ($0.position ?? 0) < ($1.position ?? 0)
+      }
+      let categories = guild.channels.values.filter { $0.type == .guildCategory }.sorted(by: byPosition)
+      var ordered = all.filter { $0.parent_id == nil }.sorted(by: byPosition)
+      for category in categories {
+        let id = AnySnowflake(category.id)
+        ordered += all.filter { $0.parent_id == id }.sorted(by: byPosition)
+      }
+      return ordered
+    }
+
+    /// The channel `step` places away from `current`, wrapping round; with
+    /// `unreadOnly` the next unread one.
+    static func channel(
+      after current: ChannelSnowflake?, in guild: GuildStore, step: Int, unreadOnly: Bool
+    ) -> ChannelSnowflake? {
+      let channels = chatChannels(in: guild)
+      guard !channels.isEmpty else { return nil }
+      let start = channels.firstIndex { $0.id == current } ?? (step > 0 ? -1 : 0)
+      for offset in 1...channels.count {
+        let index = ((start + offset * step) % channels.count + channels.count) % channels.count
+        let channel = channels[index]
+        if !unreadOnly
+          || guild.gateway?.readStates.isUnread(
+            channelId: channel.id, lastMessageId: channel.last_message_id) == true
+        {
+          return channel.id
+        }
+      }
+      return nil
     }
   }
 
@@ -145,6 +212,9 @@ import SwiftUI
     var search: () -> Void
     var currentChannel: ChannelWindowValue?
     var markCurrentRead: (() -> Void)?
+    var serverSettings: (() -> Void)?
+    /// Moves to another channel of the open server: a step of ±1, unread only or not.
+    var goToChannel: ((Int, Bool) -> Void)?
   }
 
   extension FocusedValues {
@@ -161,8 +231,9 @@ import SwiftUI
       SidebarCommands()
 
       CommandGroup(after: .sidebar) {
+        // the standard inspector shortcut
         Button("Show Member List") { actions?.toggleMembers() }
-          .keyboardShortcut("m", modifiers: [.command, .option])
+          .keyboardShortcut("i", modifiers: [.command, .option])
           .disabled(actions?.currentChannel == nil)
       }
 
@@ -179,6 +250,25 @@ import SwiftUI
         .keyboardShortcut("0", modifiers: [.command])
         .disabled(appState == nil)
 
+        // ⌘1…⌘9: the first servers of the server bar
+        ForEach(Array(serverShortcuts.enumerated()), id: \.element.id) { index, guild in
+          Button(guild.name) { appState?.selectedGuild = guild.id }
+            .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: [.command])
+        }
+
+        Divider()
+
+        // with ⌘: ⌥↑ and ⌥↓ alone move by paragraph in the message field
+        Button("Previous Channel") { actions?.goToChannel?(-1, false) }
+          .keyboardShortcut(.upArrow, modifiers: [.command, .option])
+          .disabled(actions?.goToChannel == nil)
+        Button("Next Channel") { actions?.goToChannel?(1, false) }
+          .keyboardShortcut(.downArrow, modifiers: [.command, .option])
+          .disabled(actions?.goToChannel == nil)
+        Button("Next Unread Channel") { actions?.goToChannel?(1, true) }
+          .keyboardShortcut(.downArrow, modifiers: [.command, .option, .shift])
+          .disabled(actions?.goToChannel == nil)
+
         Divider()
 
         Button("Open Channel in New Window") {
@@ -192,7 +282,36 @@ import SwiftUI
         Button("Mark Channel as Read") { actions?.markCurrentRead?() }
           .keyboardShortcut(.escape, modifiers: [.shift])
           .disabled(actions?.markCurrentRead == nil)
+
+        Divider()
+
+        Button("Server Settings…") { actions?.serverSettings?() }
+          .disabled(actions?.serverSettings == nil)
       }
+    }
+
+    /// The servers ⌘1…⌘9 open, in the server bar's order: pinned ones, then
+    /// ones in no folder (newest joined first), then the folders'.
+    private var serverShortcuts: [Guild] {
+      let gw = GatewayStore.shared
+      let pinned = PinnedPlacesStore.shared.guilds
+      let inFolders = gw.settings.userSettings.guildFolders.folders.flatMap { folder in
+        folder.guildIds.map { GuildSnowflake($0.description) }
+      }
+      let me = gw.user.currentUser?.id
+      let joined: (Guild) -> Date = { guild in
+        guild.members?.first { $0.user?.id == me }?.joined_at.date ?? .now
+      }
+      let unlisted = gw.user.guilds.values
+        .filter { !pinned.contains($0.id) && !inFolders.contains($0.id) }
+        .sorted { joined($0) > joined($1) }
+        .map(\.id)
+      var seen = Set<GuildSnowflake>()
+      return (pinned + unlisted + inFolders)
+        .filter { seen.insert($0).inserted }
+        .compactMap { gw.user.guilds[$0] }
+        .prefix(9)
+        .map { $0 }
     }
   }
 

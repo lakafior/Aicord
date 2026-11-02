@@ -17,7 +17,12 @@ struct SidebarView: View {
   var body: some View {
     HStack(spacing: 0) {
       guildScroller
-        .frame(width: 65)
+        #if os(macOS)
+          // a narrow column of small icons, like a Mac source list's
+          .frame(width: GuildButton.railWidth)
+        #else
+          .frame(width: 65)
+        #endif
       if let guild = currentGuildStore {
         GuildView(guild: guild)
       } else {

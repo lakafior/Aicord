@@ -21,6 +21,8 @@ struct SearchView: View {
   /// Called after a server (no channel) is picked; on iPhone it shows Home
   /// with the server's channels instead of sliding in an empty chat.
   var onOpenServer: (() -> Void)? = nil
+  /// What to search for when it opens: the Mac toolbar's search field.
+  var initialText = ""
 
   @State var text = ""
   @State var tokens: [SearchToken] = []
@@ -91,6 +93,9 @@ struct SearchView: View {
       .searchable(text: $text, tokens: $tokens, placement: Self.fieldPlacement, prompt: prompt) {
         token in
         Label(token.title(gw), systemImage: token.symbol)
+      }
+      .onAppear {
+        if !initialText.isEmpty, text.isEmpty { text = initialText }
       }
       .task(id: RankingKey(sentence: ranking ? rankingSentence : nil, ids: messages.items.map(\.id))) {
         await rankResults()

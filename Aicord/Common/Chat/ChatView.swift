@@ -237,10 +237,27 @@ struct ChatView: View {
         }
         .sharedBackgroundVisibility(.hidden)
       #else
-        ToolbarItem(placement: .navigation) {
-          titleMenu
+        // the window's title and subtitle name the channel (MacBaseplate), so
+        // the toolbar carries the channel's actions as buttons, like Mail's
+        ToolbarItemGroup(placement: .primaryAction) {
+          if !isPrivateChannel || intelligenceInDMs {
+            intelligenceMenu
+          }
+          Button {
+            showsPins = true
+          } label: {
+            Label("Pinned Messages", systemImage: "pin")
+          }
+          .help("Pinned messages")
+          if vm.channel?.type == .guildText || vm.channel?.type == .guildAnnouncement {
+            Button {
+              showsThreads = true
+            } label: {
+              Label("Threads", systemImage: "number.square")
+            }
+            .help("Threads")
+          }
         }
-        .sharedBackgroundVisibility(.hidden)
       #endif
       ToolbarItem(placement: .primaryAction) {
         channelMenu
@@ -373,6 +390,20 @@ struct ChatView: View {
       ChannelHeader(vm: vm)
     }
   }
+
+  #if os(macOS)
+    /// The Intelligence actions as a toolbar menu with a symbol.
+    private var intelligenceMenu: some View {
+      Menu {
+        ChannelIntelligenceActions(
+          channelId: vm.channelId, summary: $summaryRange, asking: $askingChannel,
+          indexing: $indexingChannel)
+      } label: {
+        Label("Intelligence", systemImage: "sparkles")
+      }
+      .help("Summarise or ask about this channel")
+    }
+  #endif
 
   /// Pins, the gallery, and the threads of a text or announcement channel.
   private var channelMenu: some View {

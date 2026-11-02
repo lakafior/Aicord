@@ -98,7 +98,7 @@ struct GuildScrollBar: View {
         Image(systemName: "plus")
           .font(.title3.weight(.semibold))
           .foregroundStyle(.green)
-          .frame(width: 48, height: 48)
+          .frame(width: GuildButton.iconSize, height: GuildButton.iconSize)
           .background(.fill.tertiary, in: .circle)
       }
       .buttonStyle(.plain)
@@ -106,7 +106,7 @@ struct GuildScrollBar: View {
       .accessibilityLabel(Text("Create a Server"))
       .padding(.top, 4)
     }
-    .safeAreaPadding(.all, 10)
+    .safeAreaPadding(.all, GuildButton.railPadding)
     .sheet(isPresented: $showsCreateServer) {
       CreateServerSheet()
     }

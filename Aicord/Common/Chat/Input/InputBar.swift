@@ -503,14 +503,18 @@ extension ChatView {
             Label("Formatted Message", systemImage: "textformat")
           }
         } label: {
-          Image(systemName: "plus")
-            .imageScale(.large)
-            .padding(7.5)
-            .background(.background.secondary.opacity(0.8))
-            .clipShape(.circle)
+          // a plain symbol beside the field, as in Messages on the Mac
+          Image(systemName: "plus.circle.fill")
+            .font(.system(size: 20))
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(.secondary)
+            .frame(width: 28, height: 30)
+            .contentShape(.rect)
         }
         .menuStyle(.button)
         .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .help("Attach files, create a poll or write a formatted message")
       #endif
     }
 
@@ -533,10 +537,11 @@ extension ChatView {
             submit: sendMessage,
             onPasteFiles: handlePastedFiles
           )
-          .padding(8)
+          .padding(.vertical, 5)
+          .padding(.leading, 10)
           if canSendVoice, inputVM.content.isEmpty, inputVM.uploadItems.isEmpty {
             VoiceMessageButton(recorder: voiceRecorder, channel: vm.channelId)
-              .padding(.vertical, 6)
+              .padding(.vertical, 4)
           }
         #endif
         Button {
@@ -562,7 +567,11 @@ extension ChatView {
         }
         .buttonStyle(.borderless)
         .tint(iconTint(.secondary))
-        .padding(.vertical, 6)
+        #if os(macOS)
+          .padding(.vertical, 4)
+        #else
+          .padding(.vertical, 6)
+        #endif
         #if !os(iOS)
           .popover(isPresented: $showingEmojiPicker, arrowEdge: .bottom) {
             EmojiPicker()
@@ -571,8 +580,18 @@ extension ChatView {
           }
         #endif
       }
-      .background(.background.secondary.opacity(0.8))
-      .clipShape(.rect(cornerRadius: 18))
+      #if os(macOS)
+        // a bordered field on the window's background, like Messages, not a filled pill
+        .background(.background.opacity(0.6), in: .rect(cornerRadius: 15, style: .continuous))
+        .overlay {
+          RoundedRectangle(cornerRadius: 15, style: .continuous)
+            .strokeBorder(.separator)
+        }
+        .clipShape(.rect(cornerRadius: 15, style: .continuous))
+      #else
+        .background(.background.secondary.opacity(0.8))
+        .clipShape(.rect(cornerRadius: 18))
+      #endif
       .overlay {
         if voiceRecorder.state != .idle {
           VoiceRecordingBar(recorder: voiceRecorder, channel: vm.channelId)

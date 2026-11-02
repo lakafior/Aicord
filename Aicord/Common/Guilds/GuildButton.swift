@@ -21,6 +21,21 @@ struct GuildButton: View {
   @Environment(\.theme) var theme
   @State var isHovering: Bool = false
 
+  #if os(macOS)
+    static let railWidth: CGFloat = 52
+    static let railPadding: CGFloat = 8
+  #else
+    static let railPadding: CGFloat = 10
+  #endif
+  /// The icon fills the rail between its padding.
+  static var iconSize: CGFloat {
+    #if os(macOS)
+      railWidth - 2 * railPadding
+    #else
+      48
+    #endif
+  }
+
   init(guild: Guild?) {
     self.guild = guild
     self.guilds = nil
@@ -53,12 +68,14 @@ struct GuildButton: View {
         }
         .onHover { isHovering = $0 }
         .overlay(alignment: .leading) {
+          // the pill's heights follow the icon's size (38 of 48 on iOS)
+          let scale = Self.iconSize / 48
           let height: CGFloat = {
             // if the guild is selected
             if appState.selectedGuild == guild?.id {
-              return 38
+              return 38 * scale
             } else if isHovering {
-              return 20
+              return 20 * scale
             } else if let guild, hasUnreadChannels(guild) {
               return 8
             } else {
@@ -66,11 +83,12 @@ struct GuildButton: View {
             }
           }()
 
+          // half of the pill shows at the rail's edge
           Capsule()
             .fill(.primary)
             .frame(width: 8)
             .frame(height: height)
-            .offset(x: -14 + (height == 0 ? -8 : 0))
+            .offset(x: -(Self.railPadding + 4) + (height == 0 ? -8 : 0))
             .animation(.default, value: height)
         }
         .overlay(alignment: .bottomTrailing) {
@@ -361,6 +379,7 @@ struct GuildButton: View {
       .animation(.default, value: isSelected)
     }
     .help(guild == nil ? "Direct Messages" : guild!.name)
+    .accessibilityLabel(guild?.name ?? String(localized: "Direct Messages"))
     .buttonStyle(.borderless)
     .modifier(OptionalGuildContextMenu(guild: guild))
   }

@@ -93,6 +93,16 @@ extension MemberSidebarView {
           }
         }
         .opacity(isOffline && !isHovering ? isOfflineGroupMember ? 0.3 : 1 : 1)
+        #if os(macOS)
+          // a hover highlight like a Mac list row's
+          .background {
+            if isHovering, user.collectibles?.nameplate == nil {
+              RoundedRectangle(cornerRadius: 5, style: .continuous)
+                .fill(.fill.quaternary)
+                .padding(.horizontal, -4)
+            }
+          }
+        #endif
         .contentShape(.rect)
       }
       .buttonStyle(.plain)

@@ -142,7 +142,12 @@ struct MessageCell: View {
     .modifier(DeletedAwareContextMenu(message: message, isDeleted: isDeleted) {
       withAnimation { channelStore.hideDeletedMessage(message.id) }
     })
-    .padding(.top, inline ? 0 : compact ? 6 : 15)  // adds space between message groups
+    // adds space between message groups; the Mac is denser, like its other apps
+    #if os(macOS)
+      .padding(.top, inline ? 0 : compact ? 4 : 10)
+    #else
+      .padding(.top, inline ? 0 : compact ? 6 : 15)
+    #endif
   }
 
   /// What an edited message said before, kept by the Chat setting.
