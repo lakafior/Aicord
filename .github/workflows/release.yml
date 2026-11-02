@@ -29,6 +29,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Xcode 27
+        # the app uses the iOS and macOS 27 SDKs; the runner's default Xcode is older
+        run: |
+          xcode="$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -1)"
+          [[ -n "$xcode" ]] || { ls -d /Applications/Xcode*.app; echo "::error::No Xcode 27 on this runner"; exit 1; }
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+
       - name: Disable Swift macro plugin consent prompt
         run: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 
@@ -46,7 +54,6 @@ jobs:
 
       - name: Build
         run: |
-          set -o pipefail
           xcodebuild -workspace Aicord.xcworkspace \
             -scheme Aicord \
             -configuration Release \
@@ -56,8 +63,9 @@ jobs:
             MARKETING_VERSION='${{ steps.version.outputs.version }}' \
             CURRENT_PROJECT_VERSION='${{ github.run_number }}' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            build 2>&1 | tee build-ios.log | grep -E '(error|warning: .*deprecated)|BUILD' || true
-          test -d build/Build/Products/Release-iphoneos/Aicord.app
+            build > build-ios.log 2>&1 \
+            || { grep -E 'error:|\*\* BUILD' build-ios.log; exit 1; }
+          grep -E '\*\* BUILD' build-ios.log
 
       - name: Package .ipa
         run: |
