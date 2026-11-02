@@ -2,17 +2,19 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## 0.1.3 (November 2026)
+
+### Fixed
+
+- **Fixed** · On the Mac, opening a forum no longer crashes the app (moving between forums, announcement and text channels quit it); the forum's post search sits above the posts
+- **Fixed** · On the Mac, the server management pages (Channels, Roles, Emoji and Stickers, AutoMod, channel permissions) show their add button again, in a bar under the list, so New Channel and New Category can be reached
+
 ## 0.1.2 (November 2026)
 
 ### Voice
 
 - **New** · Stage channels: they open their text chat with a Stage panel above it (topic, speakers with speaking rings, the audience with raised hands), you listen from the audience, request to speak or lower your hand, take up an invitation to speak or stay in the audience, and go back to the audience; the call panel shows the Stage and puts the hand where the microphone was, and the channel list shows the topic, the speakers and how many listen
 - **New** · Stage moderators start a Stage with a topic, change the topic, end it, go on stage themselves, and invite people to speak or move them back to the audience; Stage is a channel type in New Channel (it needs a Community server)
-
-### Fixed
-
-- **Fixed** · On the Mac, opening a forum no longer crashes the app (moving between forums, announcement and text channels quit it); the forum's post search sits above the posts
-- **Fixed** · On the Mac, the server management pages (Channels, Roles, Emoji and Stickers, AutoMod, channel permissions) show their add button again, in a bar under the list, so New Channel and New Category can be reached
 
 ## 0.1.1 (November 2026)
 
