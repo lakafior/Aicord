@@ -23,18 +23,15 @@ concurrency:
 jobs:
   ios:
     name: Unsigned iOS app
-    runs-on: macos-26
+    runs-on: xcode-27  # macos-26 has no Xcode 27; this image is a public preview
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Xcode 27
-        # the app uses the iOS and macOS 27 SDKs; the runner's default Xcode is older
+        # the app uses the iOS and macOS 27 SDKs: the image's default Xcode 27
         run: |
-          xcode="$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -1)"
-          [[ -n "$xcode" ]] || { ls -d /Applications/Xcode*.app; echo "::error::No Xcode 27 on this runner"; exit 1; }
-          sudo xcode-select -s "$xcode"
           xcodebuild -version
 
       - name: Disable Swift macro plugin consent prompt
