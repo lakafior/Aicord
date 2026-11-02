@@ -53,7 +53,8 @@ public struct Guild: Sendable, Decodable, Hashable, Equatable, Identifiable {
     members: [Guild.Member]? = nil,
     version: Int? = nil,
     guild_id: GuildSnowflake? = nil,
-    voice_states: [VoiceState]? = nil
+    voice_states: [VoiceState]? = nil,
+    stage_instances: [StageInstance]? = nil
   ) {
     self.id = id
     self.name = name
@@ -107,6 +108,7 @@ public struct Guild: Sendable, Decodable, Hashable, Equatable, Identifiable {
     self.version = version
     self.guild_id = guild_id
     self.voice_states = voice_states
+    self.stage_instances = stage_instances
   }
 
   /// https://discord.com/developers/docs/resources/guild#guild-member-object-guild-member-structure
@@ -527,6 +529,8 @@ public struct Guild: Sendable, Decodable, Hashable, Equatable, Identifiable {
   public var guild_id: GuildSnowflake?
   /// Present in Ready and Guild Create for user accounts.
   public var voice_states: [VoiceState]?
+  /// Live stages, present in Ready and Guild Create.
+  public var stage_instances: [StageInstance]?
 }
 
 /// https://discord.com/developers/docs/resources/guild#guild-object-guild-structure

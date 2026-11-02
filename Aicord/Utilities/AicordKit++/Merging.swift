@@ -166,7 +166,8 @@ extension Gateway.GuildCreate {
       application_command_counts: application_command_counts,
       embedded_activities: embedded_activities,
       version: version,
-      guild_id: guild_id
+      guild_id: guild_id,
+      stage_instances: stage_instances
     )
   }
 }

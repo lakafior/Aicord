@@ -52,6 +52,8 @@ class GuildStore: DiscordDataStore {
   private var roleBoxes: OrderedDictionary<RoleSnowflake, RoleBox> = [:]
   var presences: [UserSnowflake: Gateway.PresenceUpdate] = [:]
   var voiceStates: [UserSnowflake: VoiceState] = [:]
+  /// Live stages by their channel: the topic and who started them.
+  var stageInstances: [ChannelSnowflake: StageInstance] = [:]
 
   // MARK: - Member boxed helpers
 
@@ -180,6 +182,11 @@ class GuildStore: DiscordDataStore {
       )
     }
 
+    if let stages = guild.stage_instances {
+      stageInstances = Dictionary(
+        stages.map { ($0.channel_id, $0) }, uniquingKeysWith: { _, new in new })
+    }
+
     // members (usually the connected user only)
     guild.members?.forEach { member in
       if let user = member.user {
@@ -272,6 +279,16 @@ class GuildStore: DiscordDataStore {
             handleMessageCreate(message)
           }
 
+        case .stageInstanceCreate(let stage), .stageInstanceUpdate(let stage):
+          if stage.guild_id == guildId {
+            stageInstances[stage.channel_id] = stage
+          }
+
+        case .stageInstanceDelete(let stage):
+          if stage.guild_id == guildId {
+            stageInstances.removeValue(forKey: stage.channel_id)
+          }
+
         default:
           break
         }
@@ -301,6 +318,7 @@ class GuildStore: DiscordDataStore {
     roleBoxes.removeAll()
     presences.removeAll()
     voiceStates.removeAll()
+    stageInstances.removeAll()
   }
 
   private func handleChannelCreate(_ channel: DiscordChannel) {
