@@ -312,7 +312,9 @@ struct OnboardingSheet: View {
     do {
       let loaded = try await gw.client.getGuildOnboarding(guildId: guildId).decode()
       onboarding = loaded
-      selected = Set(loaded.responses ?? [])
+      // answers to options the server has since removed would be rejected on save
+      let optionIds = Set(loaded.prompts.flatMap { $0.options.map(\.id) })
+      selected = Set(loaded.responses ?? []).intersection(optionIds)
     } catch {
       self.error = error.localizedDescription
     }
@@ -321,12 +323,15 @@ struct OnboardingSheet: View {
   private func save() {
     guard let onboarding else { return }
     let now = Int64(Date.now.timeIntervalSince1970 * 1000)
-    var promptsSeen = onboarding.onboarding_prompts_seen ?? [:]
-    var optionsSeen = onboarding.onboarding_responses_seen ?? [:]
+    // only prompts and options the server still has: stale IDs fail the request
+    let oldPromptsSeen = onboarding.onboarding_prompts_seen ?? [:]
+    let oldOptionsSeen = onboarding.onboarding_responses_seen ?? [:]
+    var promptsSeen: [String: Int64] = [:]
+    var optionsSeen: [String: Int64] = [:]
     for prompt in onboarding.prompts {
-      promptsSeen[prompt.id.rawValue] = promptsSeen[prompt.id.rawValue] ?? now
+      promptsSeen[prompt.id.rawValue] = oldPromptsSeen[prompt.id.rawValue] ?? now
       for option in prompt.options {
-        optionsSeen[option.id.rawValue] = optionsSeen[option.id.rawValue] ?? now
+        optionsSeen[option.id.rawValue] = oldOptionsSeen[option.id.rawValue] ?? now
       }
     }
     let payload = Payloads.UpdateOnboardingResponses(
@@ -338,11 +343,24 @@ struct OnboardingSheet: View {
     Task {
       defer { isSaving = false }
       do {
-        try await gw.client.updateOnboardingResponses(guildId: guildId, payload: payload).guardSuccess()
+        let response = try await gw.client.updateOnboardingResponses(guildId: guildId, payload: payload)
+        if let failure = response.asError() { throw failure }
         dismiss()
       } catch {
-        self.error = error.localizedDescription
+        self.error = Self.text(for: error)
       }
+    }
+  }
+
+  /// Discord's own message, with any per-field reasons, instead of "DiscordHTTPError error 1".
+  static func text(for error: any Error) -> String {
+    guard let response = error as? DiscordHTTPErrorResponse else { return error.localizedDescription }
+    switch response {
+    case .jsonError(let json):
+      let reasons = (json.errors?.fieldErrors.values.flatMap { $0 } ?? []).map(\.message)
+      return ([json.message] + reasons).joined(separator: "\n")
+    case .badStatusCode(let http):
+      return String(localized: "Discord refused the change (HTTP \(http.status.code)).")
     }
   }
 }
