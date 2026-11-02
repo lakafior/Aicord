@@ -13,7 +13,23 @@ import UserNotifications
 
 @main
 struct AicordApp: App {
-  let gatewayStore = GatewayStore.shared
+  let gatewayStore: GatewayStore = {
+    // before any store reads the settings
+    #if DEBUG
+      if DemoMode.isEnabled {
+        DemoMode.prepare()
+      } else {
+        DemoSettingsBackup.restore()
+      }
+    #else
+      DemoSettingsBackup.restore()
+    #endif
+    if UserDefaults.standard.bool(forKey: "AicordRestoreSettings") {
+      // only puts the settings back from demo mode, without connecting
+      exit(0)
+    }
+    return GatewayStore.shared
+  }()
   var challenges = Challenges()
   let console = StdOutInterceptor.shared
 

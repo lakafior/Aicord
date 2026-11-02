@@ -69,15 +69,24 @@ final class GatewayStore {
       // don't connect from previews
       return
     }
+    let stateCallback: @Sendable (GatewayState) -> Void = { [weak self] state in
+      Task { @MainActor in
+        self?.state = state
+      }
+    }
+    #if DEBUG
+      if DemoMode.isEnabled {
+        gateway = await DemoMode.makeGateway(stateCallback: stateCallback)
+        setupEventHandling()
+        await gateway?.connect()
+        return
+      }
+    #endif
     gateway = await UserGatewayManager(
       token: account.token,
       captchaCallback: captchaCallback,
       mfaCallback: mfaCallback,
-      stateCallback: { [weak self] state in
-        Task { @MainActor in
-          self?.state = state
-        }
-      }
+      stateCallback: stateCallback
     )
     setupEventHandling()
     await gateway?.connect()

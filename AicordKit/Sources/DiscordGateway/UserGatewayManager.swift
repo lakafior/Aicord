@@ -34,6 +34,9 @@ public actor UserGatewayManager: GatewayManager {
   let session: URLSession
   /// A client to send requests to Discord.
   public nonisolated let client: any DiscordClient
+  /// Stands in for Discord when set: no web socket is opened, events come
+  /// from here and what the app sends goes to it.
+  nonisolated let replaySource: (any GatewayReplaySource)?
   /// Max frame size we accept to receive through the web-socket connection.
   let maxFrameSize: Int
   /// Generator of `UserGatewayManager` ids.
@@ -125,6 +128,7 @@ public actor UserGatewayManager: GatewayManager {
   ) async {
     self.session = session
     self.stateCallback = stateCallback
+    self.replaySource = nil
     self.client = await DefaultDiscordClient(
       session: session,
       header: .userToken(token),
@@ -146,10 +150,43 @@ public actor UserGatewayManager: GatewayManager {
     self.logger = logger
   }
 
+  /// A manager that never connects to Discord: `source` sends the events and
+  /// answers what the app sends, and `client` answers HTTP requests. Used for
+  /// demo data.
+  public init(
+    replaying source: any GatewayReplaySource,
+    client: any DiscordClient,
+    stateCallback: (@Sendable (GatewayState) -> Void)? = nil
+  ) async {
+    self.session = .shared
+    self.stateCallback = stateCallback
+    self.replaySource = source
+    self.client = client
+    self.maxFrameSize = 1 << 28
+    self.identifyPayload = .init(
+      token: Secret("replay"),
+      properties: .init(ws: true),
+      large_threshold: nil,
+      presence: nil,
+      capabilities: []
+    )
+    var logger = DiscordGlobalConfiguration.makeLogger("GatewayManager")
+    logger[metadataKey: "gateway-id"] = .string("\(self.id)")
+    self.logger = logger
+  }
+
   /// Connects to Discord.
   /// `state` must be set to an appropriate value before triggering this function.
   public func connect() async {
     logger.debug("Connect method triggered")
+    if let replaySource {
+      self.state.store(.connected, ordering: .relaxed)
+      self.stateCallback?(.connected)
+      for frame in replaySource.initialFrames() {
+        self.deliver(frame)
+      }
+      return
+    }
     if let connectIn = connectionBackoff.canPerformIn() {
       logger.warning(
         "Cannot try to connect immediately due to backoff",
@@ -547,6 +584,11 @@ extension UserGatewayManager {
       return
     }
 
+    self.deliver(data)
+  }
+
+  /// Decodes one frame and hands the event to the streams.
+  private func deliver(_ data: Data) {
     do {
       let event = try DiscordGlobalConfiguration.decoder.decode(
         Gateway.Event.self,
@@ -763,6 +805,11 @@ extension UserGatewayManager {
   }
 
   private nonisolated func send(message: Message) {
+    if let replaySource {
+      let frames = replaySource.frames(answering: message.payload)
+      Task { await self.deliver(frames) }
+      return
+    }
     self.sendQueue.perform { [weak self] in
       guard let self = self else { return }
       let state = self.state.load(ordering: .relaxed)
@@ -867,6 +914,23 @@ extension UserGatewayManager {
   public func getSessionID() -> String? {
     return self.sessionId
   }
+
+  private func deliver(_ frames: [Data]) {
+    for frame in frames {
+      self.deliver(frame)
+    }
+  }
+}
+
+/// Plays Discord's side of a gateway connection, for a ``UserGatewayManager``
+/// made with `init(replaying:client:stateCallback:)`. Frames are raw JSON
+/// gateway payloads, decoded the same way as frames from Discord.
+public protocol GatewayReplaySource: Sendable {
+  /// Sent right after connecting, `READY` first.
+  func initialFrames() -> [Data]
+  /// Sent in answer to a payload the app sends, such as a member list
+  /// subscription or a voice state update.
+  func frames(answering payload: Gateway.Event) -> [Data]
 }
 
 extension UserGatewayManager {

@@ -26,6 +26,19 @@ Before your pull request can be merged, please follow these guidelines:
 [ARCHITECTURE.md](../ARCHITECTURE.md) maps the repository and explains the
 decisions that aren't obvious from the code.
 
+## Demo mode
+
+Debug builds can run on made-up data instead of a Discord account, for
+screenshots and for trying the UI without signing in. Pass the launch argument
+`-AicordDemo YES` (in Xcode: Edit Scheme → Run → Arguments). The servers,
+people and messages live in `Aicord/Demo/`, written as the JSON Discord would
+send. Message times are set to end at 9:41 today.
+
+Demo mode never touches the real account: it skips the keychain, puts the
+app's settings aside while it runs and puts them back when the app quits. If
+it didn't quit cleanly, the next normal launch puts them back, or run the app
+once with `-AicordRestoreSettings YES`, which only does that and quits.
+
 ## Testing voice
 
 Voice needs a second person on the official Discord client, and headphones on

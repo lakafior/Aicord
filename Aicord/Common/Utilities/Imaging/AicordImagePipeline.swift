@@ -67,6 +67,11 @@ actor ImagePipeline {
     config.urlCache = urlCache
     self.diskCache = urlCache
     config.requestCachePolicy = .returnCacheDataElseLoad
+    #if DEBUG
+      if DemoMode.isEnabled {
+        config.protocolClasses = [DemoImages.self] + (config.protocolClasses ?? [])
+      }
+    #endif
     self.session = URLSession(configuration: config)
   }
 

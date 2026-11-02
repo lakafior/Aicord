@@ -75,6 +75,13 @@ final class TokenStore {
   }
 
   init() {
+    #if DEBUG
+      if DemoMode.isEnabled, let account = DemoMode.account {
+        accounts = [account]
+        currentAccountID = account.user.id
+        return
+      }
+    #endif
     accounts = Self.load()
     // safeguard against cases where keychain is empty but UserDefaults has an ID
     // this would usually softlock people.
@@ -135,6 +142,10 @@ final class TokenStore {
   }
 
   private static func save(_ data: [AccountData]) {
+    #if DEBUG
+      // the demo account never reaches the keychain
+      guard !DemoMode.isEnabled else { return }
+    #endif
     // dedupe via id
     let dedupedData = Array(data.uniqued(on: \.user.id))
     guard let encoded = try? DiscordGlobalConfiguration.encoder.encode(dedupedData)
