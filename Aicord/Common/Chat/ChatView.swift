@@ -124,7 +124,12 @@ struct ChatView: View {
       // macos 26/27 bug workaround
       .safeAreaPadding(.top, 1)
       .safeAreaInset(edge: .top, spacing: 0) {
-        ScamWarningBanner(vm: vm)
+        VStack(spacing: 0) {
+          ScamWarningBanner(vm: vm)
+          if vm.channel?.type == .guildStageVoice {
+            StagePanel(vm: vm)
+          }
+        }
       }
       .overlay(alignment: .top) { OfflinePill() }
       #if os(macOS)

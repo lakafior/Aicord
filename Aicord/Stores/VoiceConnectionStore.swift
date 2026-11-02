@@ -41,6 +41,8 @@ final class VoiceConnectionStore: DiscordDataStore {
     var channelID: ChannelSnowflake
     /// `nil` for DM and group calls.
     var guildID: GuildSnowflake?
+    /// A Stage: you join in the audience and speak only once let on stage.
+    var isStage = false
     var startedAt = Date()
   }
 
@@ -64,6 +66,10 @@ final class VoiceConnectionStore: DiscordDataStore {
   private(set) var microphoneDenied = false
   /// Last microphone level in dBFS (for Settings and the call bar).
   private(set) var inputLevel: Float = -100
+  /// Our own voice state in the call, as Discord last sent it.
+  private(set) var ownState: VoiceState?
+  /// Discord turned down the last Stage action (raise hand, go on stage).
+  private(set) var stageError: String?
 
   @ObservationIgnored private var manager: VoiceGatewayManager?
   @ObservationIgnored private var managerTask: Task<Void, Never>?
@@ -129,7 +135,10 @@ final class VoiceConnectionStore: DiscordDataStore {
       microphoneDenied = true
       isMuted = true
     }
-    call = Call(channelID: channelID, guildID: guildID)
+    let isStage = guildID.flatMap { gateway?.existingGuildStore(for: $0) }?
+      .channels[channelID]?.type == .guildStageVoice
+    call = Call(channelID: channelID, guildID: guildID, isStage: isStage)
+    ownState = nil
     phase = .joining
     ringsWhenConnected = ring && guildID == nil
     pendingSessionID = nil
@@ -172,6 +181,8 @@ final class VoiceConnectionStore: DiscordDataStore {
     Task { await manager?.disconnect() }
     audio.stop()
     call = nil
+    ownState = nil
+    stageError = nil
     phase = reason
     speaking = []
     participants = []
@@ -184,6 +195,9 @@ final class VoiceConnectionStore: DiscordDataStore {
 
   private func handleVoiceState(_ state: VoiceState) {
     guard state.user_id == gateway?.user.currentUser?.id, let call else { return }
+    let wasSuppressed = isSuppressed
+    ownState = state.channel_id == nil ? nil : state
+    if wasSuppressed != isSuppressed { applyAudioGates() }
     guard let channelID = state.channel_id else {
       // Disconnected by a moderator, or left from another device.
       if phase != .joining || pendingSessionID != nil {
@@ -206,6 +220,8 @@ final class VoiceConnectionStore: DiscordDataStore {
       // Moved by a moderator: Discord sends a new voice server next.
       logger.info("Moved to another voice channel")
       self.call?.channelID = channelID
+      self.call?.isStage = call.guildID.flatMap { gateway?.existingGuildStore(for: $0) }?
+        .channels[channelID]?.type == .guildStageVoice
       restartForNewServer()
     }
   }
@@ -343,6 +359,62 @@ final class VoiceConnectionStore: DiscordDataStore {
     }
   }
 
+  // MARK: Stage
+
+  /// On a Stage in the audience: Discord drops anything we would send.
+  /// Until our voice state arrives we count as audience, as we join there.
+  var isSuppressed: Bool {
+    guard call?.isStage == true else { return false }
+    return ownState?.suppress ?? true
+  }
+
+  /// In the audience with a raised hand.
+  var isHandRaised: Bool {
+    isSuppressed && ownState?.request_to_speak_timestamp != nil
+  }
+
+  /// A moderator let us on stage; Discord marks it with a request timestamp
+  /// on an unsuppressed state until we take it up.
+  var isInvitedToSpeak: Bool {
+    call?.isStage == true && ownState?.suppress == false
+      && ownState?.request_to_speak_timestamp != nil
+  }
+
+  /// Raises or lowers our hand.
+  func setHandRaised(_ raised: Bool) {
+    updateStageState(
+      raised
+        ? .init(request_to_speak_timestamp: .init(date: .now))
+        : .init(clearsRequestToSpeak: true))
+  }
+
+  /// Steps on stage: takes up an invitation, or as a moderator just goes up.
+  func becomeSpeaker() {
+    updateStageState(.init(suppress: false, clearsRequestToSpeak: true))
+  }
+
+  /// Goes back to the audience (also declines an invitation).
+  func moveToAudience() {
+    updateStageState(.init(suppress: true))
+  }
+
+  private func updateStageState(_ change: Payloads.ModifyCurrentUserVoiceState) {
+    guard let call, call.isStage, let guildID = call.guildID else { return }
+    var payload = change
+    payload.channel_id = call.channelID
+    stageError = nil
+    Task { [gateway, logger] in
+      do {
+        let response = try await gateway?.client.updateSelfVoiceState(
+          guildId: guildID, payload: payload)
+        try response?.guardSuccess()
+      } catch {
+        logger.error("Stage voice state change failed: \(error, privacy: .public)")
+        self.stageError = String(localized: "Discord didn't allow that on this Stage.")
+      }
+    }
+  }
+
   // MARK: Mute, deafen, push-to-talk
 
   func toggleMute() { setMuted(!isMuted) }
@@ -396,7 +468,7 @@ final class VoiceConnectionStore: DiscordDataStore {
   }
 
   private func applyAudioGates() {
-    let open = !isMuted && !isDeafened && !microphoneDenied
+    let open = !isMuted && !isDeafened && !microphoneDenied && !isSuppressed
       && (!usesPushToTalk || isPushToTalkHeld)
     audio.setTransmitting(open)
     audio.setDeafened(isDeafened)

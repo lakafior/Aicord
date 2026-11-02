@@ -206,6 +206,7 @@
 		AB0C0A110000000000000004 /* ContentFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0C0A110000000000000003 /* ContentFilter.swift */; };
 		AC018E635EC5A8ED23F275F2 /* VoiceChannelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0FAE13CCBACC320FF89B36 /* VoiceChannelButton.swift */; };
 		AC04D930DC8474160A714437 /* VoiceCallBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC01D5DA1D1CC78C94BBCCC6 /* VoiceCallBar.swift */; };
+		AC0F5A6E1B2C3D4E5F607182 /* StagePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */; };
 		AC0533BB00B763D598E21E8A /* AudioDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC056C49F2F9D4341D99AB1F /* AudioDevices.swift */; };
 		AC0AC9258B7782D61FF99B1C /* VoiceAudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0B4B4B4578BC80D509BBA3 /* VoiceAudioEngine.swift */; };
 		D1A0C0DE0000000000000203 /* VoiceMessageRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A0C0DE0000000000000202 /* VoiceMessageRecorder.swift */; };
@@ -468,6 +469,7 @@
 		AB0C0A110000000000000001 /* WordLists */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WordLists; sourceTree = "<group>"; };
 		AB0C0A110000000000000003 /* ContentFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFilter.swift; sourceTree = "<group>"; };
 		AC01D5DA1D1CC78C94BBCCC6 /* VoiceCallBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCallBar.swift; sourceTree = "<group>"; };
+		AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StagePanel.swift; sourceTree = "<group>"; };
 		AC0394B0AEB5CC91C895A5CC /* VoiceConnectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceConnectionStore.swift; sourceTree = "<group>"; };
 		AC03E04F0CF84CFE2B61F8E3 /* VoicePreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePreferences.swift; sourceTree = "<group>"; };
 		AC056C49F2F9D4341D99AB1F /* AudioDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDevices.swift; sourceTree = "<group>"; };
@@ -1314,6 +1316,7 @@
 		AC09DCE335D5D346D644EE0D /* Voice */ = {
 			isa = PBXGroup;
 			children = (
+				AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */,
 				AC01D5DA1D1CC78C94BBCCC6 /* VoiceCallBar.swift */,
 				AC0FAE13CCBACC320FF89B36 /* VoiceChannelButton.swift */,
 			);
@@ -1563,6 +1566,7 @@
 				D1A0C0DE0000000000000203 /* VoiceMessageRecorder.swift in Sources */,
 				AC0DC60013FF71EBBDA11DD2 /* VoiceConnectionStore.swift in Sources */,
 				AC04D930DC8474160A714437 /* VoiceCallBar.swift in Sources */,
+				AC0F5A6E1B2C3D4E5F607182 /* StagePanel.swift in Sources */,
 				AC018E635EC5A8ED23F275F2 /* VoiceChannelButton.swift in Sources */,
 				AAC07FC32F2D9E460077B8FA /* DownloadButton.swift in Sources */,
 				571AE5B12FFD7726006D609C /* ObservableBox.swift in Sources */,

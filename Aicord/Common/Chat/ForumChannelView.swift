@@ -10,7 +10,7 @@ extension DiscordChannel.Kind {
   /// Channels whose content is a message list `ChatView` can show.
   var opensAsChat: Bool {
     switch self {
-    case .guildText, .dm, .groupDm, .guildAnnouncement, .guildVoice,
+    case .guildText, .dm, .groupDm, .guildAnnouncement, .guildVoice, .guildStageVoice,
       .announcementThread, .publicThread, .privateThread:
       true
     default:
@@ -67,7 +67,7 @@ struct ChannelContentView: View {
   }
 }
 
-/// A channel type Aicord has no view for (stage, directory, store, new ones).
+/// A channel type Aicord has no view for (directory, store, new ones).
 struct UnsupportedChannelView: View {
   var vm: ChannelStore
   @Environment(\.openURL) var openURL

@@ -145,7 +145,8 @@ final class SystemIntegration {
 
   private static func isIndexable(_ channel: DiscordChannel) -> Bool {
     switch channel.type {
-    case .guildText, .guildAnnouncement, .guildForum, .guildMedia, .guildVoice: true
+    case .guildText, .guildAnnouncement, .guildForum, .guildMedia, .guildVoice, .guildStageVoice:
+      true
     default: false
     }
   }

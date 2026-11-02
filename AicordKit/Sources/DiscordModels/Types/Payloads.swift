@@ -1675,15 +1675,38 @@ public enum Payloads {
     public var channel_id: ChannelSnowflake?
     public var suppress: Bool?
     public var request_to_speak_timestamp: DiscordTimestamp?
+    /// Sends `request_to_speak_timestamp: null`: lowers a raised hand or
+    /// takes up an invitation to speak.
+    public var clearsRequestToSpeak: Bool
 
     public init(
       channel_id: ChannelSnowflake? = nil,
       suppress: Bool? = nil,
-      request_to_speak_timestamp: DiscordTimestamp? = nil
+      request_to_speak_timestamp: DiscordTimestamp? = nil,
+      clearsRequestToSpeak: Bool = false
     ) {
       self.channel_id = channel_id
       self.suppress = suppress
       self.request_to_speak_timestamp = request_to_speak_timestamp
+      self.clearsRequestToSpeak = clearsRequestToSpeak
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case channel_id
+      case suppress
+      case request_to_speak_timestamp
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encodeIfPresent(channel_id, forKey: .channel_id)
+      try container.encodeIfPresent(suppress, forKey: .suppress)
+      if clearsRequestToSpeak {
+        try container.encodeNil(forKey: .request_to_speak_timestamp)
+      } else {
+        try container.encodeIfPresent(
+          request_to_speak_timestamp, forKey: .request_to_speak_timestamp)
+      }
     }
 
     public func validate() -> [ValidationFailure] {}

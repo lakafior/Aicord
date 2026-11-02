@@ -3,7 +3,9 @@
 //  Aicord
 //
 //  A server voice channel in the channel list: joins on click and lists
-//  who is connected, with speaking rings for the channel we are in.
+//  who is connected, with speaking rings for the channel we are in. A Stage
+//  opens its chat and panel, joins as a listener while it is live, and lists
+//  its speakers and how many listen.
 //
 
 import AicordKit
@@ -12,12 +14,15 @@ import SwiftUI
 struct VoiceChannelButton: View {
   @Environment(\.gateway) var gw
   @Environment(\.guildStore) var guild
+  @Environment(\.appState) var appState
   @AppStorage(ChannelButton.showsHiddenChannelsKey) private var showsHiddenChannels = false
   @State private var showsHiddenInfo = false
   var channel: DiscordChannel
 
   var voice: VoiceConnectionStore { gw.voice }
   var isCurrent: Bool { voice.call?.channelID == channel.id }
+  var isStage: Bool { channel.type == .guildStageVoice }
+  var stage: StageInstance? { guild?.stageInstances[channel.id] }
 
   var canView: Bool {
     guild?.hasPermission(channel: channel, .viewChannel) != false
@@ -31,22 +36,35 @@ struct VoiceChannelButton: View {
       .sorted { displayName($0) .localizedCaseInsensitiveCompare(displayName($1)) == .orderedAscending }
   }
 
+  /// On a Stage only the speakers get rows; the audience is a count.
+  var rows: [VoiceState] {
+    isStage ? participants.filter(\.isStageSpeaker) : participants
+  }
+
+  var listenerCount: Int {
+    isStage ? participants.count - rows.count : 0
+  }
+
   /// The channel and everyone in it, each its own list row.
   var body: some View {
     if canView {
       Button {
         guard let guildID = guild?.guildId else { return }
+        if isStage {
+          ChannelButton.selection(appState).wrappedValue = channel.id
+          if stage == nil || !canConnect { return }
+        }
         voice.join(channelID: channel.id, guildID: guildID)
       } label: {
         HStack(spacing: 4) {
           Label {
             Text(channel.name ?? "unknown")
           } icon: {
-            Image(systemName: "speaker.wave.2.fill")
+            Image(systemName: ChannelButton.symbol(for: channel.type))
           }
           .lineLimit(1)
           Spacer(minLength: 4)
-          if let limit = channel.user_limit, limit > 0 {
+          if !isStage, let limit = channel.user_limit, limit > 0 {
             Text(verbatim: "\(participants.count)/\(limit)")
               .font(.caption2.monospacedDigit())
               .foregroundStyle(.secondary)
@@ -57,14 +75,29 @@ struct VoiceChannelButton: View {
         .contentShape(.rect)
       }
       .buttonStyle(.plain)
-      .disabled(!canConnect)
+      .disabled(!canConnect && !isStage)
       .selectionDisabled()
-      .help(canConnect ? Text("Join Voice") : Text("You can't connect to this channel"))
-      .accessibilityHint(canConnect ? Text("Join Voice") : Text("You can't connect to this channel"))
+      .help(hint)
+      .accessibilityHint(hint)
       .channelContextMenu(channel, in: guild?.guildId ?? .init("0"))
 
-      ForEach(participants, id: \.user_id) { state in
+      if let stage {
+        Text(stage.topic)
+          .font(.caption)
+          .foregroundStyle(.green)
+          .lineLimit(1)
+          .padding(.leading, 28)
+          .selectionDisabled()
+      }
+      ForEach(rows, id: \.user_id) { state in
         participantRow(state)
+          .selectionDisabled()
+      }
+      if listenerCount > 0 {
+        Label("\(listenerCount) listening", systemImage: "person.2.fill")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+          .padding(.leading, 28)
           .selectionDisabled()
       }
     } else if showsHiddenChannels {
@@ -75,7 +108,7 @@ struct VoiceChannelButton: View {
           Label {
             Text(channel.name ?? "unknown")
           } icon: {
-            Image(systemName: "speaker.wave.2.fill")
+            Image(systemName: ChannelButton.symbol(for: channel.type))
           }
           .lineLimit(1)
           Spacer(minLength: 4)
@@ -94,6 +127,12 @@ struct VoiceChannelButton: View {
           .presentationDetents([.medium, .large])
       }
     }
+  }
+
+  var hint: Text {
+    if !canConnect { return Text("You can't connect to this channel") }
+    if isStage { return stage == nil ? Text("Open Stage") : Text("Listen to Stage") }
+    return Text("Join Voice")
   }
 
   func participantRow(_ state: VoiceState) -> some View {

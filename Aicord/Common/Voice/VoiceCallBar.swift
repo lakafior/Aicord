@@ -80,17 +80,24 @@ struct VoiceCallBar: View {
       }
 
       HStack(spacing: 6) {
-        Button {
-          voice.toggleMute()
-        } label: {
-          Image(systemName: voice.isMuted || voice.isDeafened ? "mic.slash.fill" : "mic.fill")
+        if voice.isSuppressed {
+          // in a Stage audience the microphone can't reach anyone
+          StageHandButton(voice: voice)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 6)
+        } else {
+          Button {
+            voice.toggleMute()
+          } label: {
+            Image(systemName: voice.isMuted || voice.isDeafened ? "mic.slash.fill" : "mic.fill")
+              .frame(maxWidth: .infinity)
+              .padding(.vertical, 6)
+          }
+          .foregroundStyle(voice.isMuted || voice.isDeafened ? .red : .primary)
+          .keyboardShortcut("m", modifiers: [.command, .shift])
+          .help(Text(voice.isMuted ? "Unmute" : "Mute"))
+          .accessibilityLabel(Text(voice.isMuted ? "Unmute" : "Mute"))
         }
-        .foregroundStyle(voice.isMuted || voice.isDeafened ? .red : .primary)
-        .keyboardShortcut("m", modifiers: [.command, .shift])
-        .help(Text(voice.isMuted ? "Unmute" : "Mute"))
-        .accessibilityLabel(Text(voice.isMuted ? "Unmute" : "Mute"))
 
         Button {
           voice.toggleDeafen()
@@ -104,7 +111,7 @@ struct VoiceCallBar: View {
         .help(Text(voice.isDeafened ? "Undeafen" : "Deafen"))
         .accessibilityLabel(Text(voice.isDeafened ? "Undeafen" : "Deafen"))
 
-        if voice.usesPushToTalk {
+        if voice.usesPushToTalk, !voice.isSuppressed {
           PushToTalkButton(voice: voice)
         }
       }
@@ -127,7 +134,9 @@ struct VoiceCallBar: View {
     switch voice.phase {
     case .idle, .joining, .connecting: "Connecting…"
     case .encrypting: "Securing…"
-    case .connected: "Voice Connected"
+    case .connected:
+      voice.call?.isStage == true
+        ? (voice.isSuppressed ? "Listening on Stage" : "On Stage") : "Voice Connected"
     case .reconnecting: "Reconnecting…"
     case .failed: "Disconnected"
     }
@@ -283,25 +292,35 @@ struct VoiceCallAccessory: View {
 
   var voice: VoiceConnectionStore { gw.voice }
 
+  var statusText: LocalizedStringKey {
+    guard voice.phase == .connected else { return "Connecting…" }
+    guard voice.call?.isStage == true else { return "Voice Connected" }
+    return voice.isSuppressed ? "Listening on Stage" : "On Stage"
+  }
+
   var body: some View {
     HStack(spacing: 12) {
       Image(systemName: voice.phase == .connected ? "waveform" : "antenna.radiowaves.left.and.right")
         .foregroundStyle(voice.phase == .connected ? .green : .orange)
-      Text(voice.phase == .connected ? "Voice Connected" : "Connecting…")
+      Text(statusText)
         .font(.subheadline.bold())
         .lineLimit(1)
       Spacer()
-      if voice.usesPushToTalk {
-        PushToTalkButton(voice: voice)
-          .frame(width: 36)
+      if voice.isSuppressed {
+        StageHandButton(voice: voice)
+      } else {
+        if voice.usesPushToTalk {
+          PushToTalkButton(voice: voice)
+            .frame(width: 36)
+        }
+        Button {
+          voice.toggleMute()
+        } label: {
+          Image(systemName: voice.isMuted || voice.isDeafened ? "mic.slash.fill" : "mic.fill")
+        }
+        .foregroundStyle(voice.isMuted || voice.isDeafened ? .red : .primary)
+        .accessibilityLabel(Text(voice.isMuted ? "Unmute" : "Mute"))
       }
-      Button {
-        voice.toggleMute()
-      } label: {
-        Image(systemName: voice.isMuted || voice.isDeafened ? "mic.slash.fill" : "mic.fill")
-      }
-      .foregroundStyle(voice.isMuted || voice.isDeafened ? .red : .primary)
-      .accessibilityLabel(Text(voice.isMuted ? "Unmute" : "Mute"))
       Button {
         voice.toggleDeafen()
       } label: {
@@ -319,6 +338,22 @@ struct VoiceCallAccessory: View {
     }
     .buttonStyle(.plain)
     .padding(.horizontal, 16)
+  }
+}
+
+/// Raises or lowers the hand in a Stage audience.
+struct StageHandButton: View {
+  let voice: VoiceConnectionStore
+
+  var body: some View {
+    Button {
+      voice.setHandRaised(!voice.isHandRaised)
+    } label: {
+      Image(systemName: voice.isHandRaised ? "hand.raised.fill" : "hand.raised")
+    }
+    .foregroundStyle(voice.isHandRaised ? .yellow : .primary)
+    .help(voice.isHandRaised ? Text("Lower Hand") : Text("Request to Speak"))
+    .accessibilityLabel(voice.isHandRaised ? Text("Lower Hand") : Text("Request to Speak"))
   }
 }
 
