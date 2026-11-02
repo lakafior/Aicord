@@ -403,13 +403,14 @@ struct NewChannelSheet: View {
               Label("Voice", systemImage: "speaker.wave.2.fill").tag(DiscordChannel.Kind.guildVoice)
               Label("Forum", systemImage: "bubble.left.and.text.bubble.right").tag(DiscordChannel.Kind.guildForum)
               Label("Announcement", systemImage: "megaphone.fill").tag(DiscordChannel.Kind.guildAnnouncement)
+              Label("Stage", systemImage: "person.wave.2").tag(DiscordChannel.Kind.guildStageVoice)
             }
             #if os(iOS)
               .pickerStyle(.inline)
               .labelsHidden()
             #endif
           } footer: {
-            Text("Announcement channels need a Community server.")
+            Text("Announcement and Stage channels need a Community server.")
           }
         }
         Section {

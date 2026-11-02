@@ -64,7 +64,7 @@ struct VoiceChannelButton: View {
           }
           .lineLimit(1)
           Spacer(minLength: 4)
-          if let limit = channel.user_limit, limit > 0 {
+          if !isStage, let limit = channel.user_limit, limit > 0 {
             Text(verbatim: "\(participants.count)/\(limit)")
               .font(.caption2.monospacedDigit())
               .foregroundStyle(.secondary)

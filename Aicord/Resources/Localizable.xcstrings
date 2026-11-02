@@ -4,6 +4,16 @@
     "" : {
 
     },
+    "%lld listening" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Słuchający: %lld"
+          }
+        }
+      }
+    },
     ", " : {
       "localizations" : {
         "pl" : {
@@ -30,6 +40,306 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":3"
+          }
+        }
+      }
+    },
+    "A moderator starts the Stage." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scenę rozpoczyna moderator."
+          }
+        }
+      }
+    },
+    "Announcement and Stage channels need a Community server." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kanały ogłoszeń i sceny wymagają serwera społeczności."
+          }
+        }
+      }
+    },
+    "Discord didn't allow that on this Stage." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord nie pozwolił na to na tej scenie."
+          }
+        }
+      }
+    },
+    "Edit Topic" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytuj temat"
+          }
+        }
+      }
+    },
+    "Edit Topic…" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytuj temat…"
+          }
+        }
+      }
+    },
+    "End Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończ scenę"
+          }
+        }
+      }
+    },
+    "Hand raised" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podniesiona ręka"
+          }
+        }
+      }
+    },
+    "Hides the audience" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukrywa publiczność"
+          }
+        }
+      }
+    },
+    "Invite to Speak" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaproś do mówienia"
+          }
+        }
+      }
+    },
+    "Invited to speak" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaproszony do mówienia"
+          }
+        }
+      }
+    },
+    "Join as Speaker" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dołącz jako mówca"
+          }
+        }
+      }
+    },
+    "Leave Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opuść scenę"
+          }
+        }
+      }
+    },
+    "Listen" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Słuchaj"
+          }
+        }
+      }
+    },
+    "Listen to Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Słuchaj sceny"
+          }
+        }
+      }
+    },
+    "Listening on Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Słuchasz sceny"
+          }
+        }
+      }
+    },
+    "Live Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scena na żywo"
+          }
+        }
+      }
+    },
+    "Lower Hand" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opuść rękę"
+          }
+        }
+      }
+    },
+    "Move to Audience" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przenieś na widownię"
+          }
+        }
+      }
+    },
+    "No Stage is live" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Żadna scena nie trwa"
+          }
+        }
+      }
+    },
+    "On Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na scenie"
+          }
+        }
+      }
+    },
+    "Open Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz scenę"
+          }
+        }
+      }
+    },
+    "Shows the audience" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokazuje publiczność"
+          }
+        }
+      }
+    },
+    "Speaker" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mówca"
+          }
+        }
+      }
+    },
+    "Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scena"
+          }
+        }
+      }
+    },
+    "Stage Settings" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ustawienia sceny"
+          }
+        }
+      }
+    },
+    "Start one to let people listen in." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozpocznij ją, żeby inni mogli słuchać."
+          }
+        }
+      }
+    },
+    "Start Stage" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozpocznij scenę"
+          }
+        }
+      }
+    },
+    "Start Stage…" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozpocznij scenę…"
+          }
+        }
+      }
+    },
+    "Stay in Audience" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zostań na widowni"
+          }
+        }
+      }
+    },
+    "What the Stage is about, shown to everyone in the server." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O czym jest scena; widzą to wszyscy na serwerze."
           }
         }
       }
@@ -3331,16 +3641,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ogłoszenia"
-          }
-        }
-      }
-    },
-    "Announcement channels need a Community server." : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kanały ogłoszeń wymagają serwera społeczności."
           }
         }
       }
