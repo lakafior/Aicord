@@ -972,6 +972,18 @@ extension DiscordClient {
       request: .init(to: UserAPIEndpoint.updateOnboardingResponses(guildId: guildId)), payload: payload)
   }
 
+  /// Saves the options picked the first time, which completes onboarding.
+  /// Changing them before that is refused, so this comes first for new members.
+  /// https://docs.discord.food/resources/guild#create-guild-onboarding-responses
+  @inlinable
+  public func createOnboardingResponses(
+    guildId: GuildSnowflake,
+    payload: Payloads.UpdateOnboardingResponses
+  ) async throws -> DiscordHTTPResponse {
+    try await self.send(
+      request: .init(to: UserAPIEndpoint.createOnboardingResponses(guildId: guildId)), payload: payload)
+  }
+
   /// A guild's rules screen and questions for new members.
   /// https://docs.discord.food/resources/guild#get-guild-member-verification
   @inlinable

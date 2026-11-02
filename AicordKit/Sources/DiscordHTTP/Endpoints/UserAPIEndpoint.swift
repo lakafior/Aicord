@@ -72,6 +72,7 @@ public enum UserAPIEndpoint: Endpoint {
   case getUserApplicationCommandIndex
   case createInteraction
   case updateOnboardingResponses(guildId: GuildSnowflake)
+  case createOnboardingResponses(guildId: GuildSnowflake)
   case getMemberVerification(guildId: GuildSnowflake)
   case submitMemberVerification(guildId: GuildSnowflake)
   case addScheduledEventInterest(guildId: GuildSnowflake, eventId: GuildScheduledEventSnowflake)
@@ -415,6 +416,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "interactions"
     case .updateOnboardingResponses(let guildId):
       suffix = "guilds/\(guildId.rawValue)/onboarding-responses"
+    case .createOnboardingResponses(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/onboarding-responses"
     case .getMemberVerification(let guildId):
       suffix = "guilds/\(guildId.rawValue)/member-verification"
     case .submitMemberVerification(let guildId):
@@ -637,6 +640,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "interactions"
     case .updateOnboardingResponses(let guildId):
       suffix = "guilds/\(guildId.rawValue)/onboarding-responses"
+    case .createOnboardingResponses(let guildId):
+      suffix = "guilds/\(guildId.rawValue)/onboarding-responses"
     case .getMemberVerification(let guildId):
       suffix = "guilds/\(guildId.rawValue)/member-verification"
     case .submitMemberVerification(let guildId):
@@ -751,6 +756,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserApplicationCommandIndex: return .GET
     case .createInteraction: return .POST
     case .updateOnboardingResponses: return .PUT
+    case .createOnboardingResponses: return .POST
     case .getMemberVerification: return .GET
     case .submitMemberVerification: return .PUT
     case .addScheduledEventInterest: return .PUT
@@ -846,6 +852,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserApplicationCommandIndex: return true
     case .createInteraction: return true
     case .updateOnboardingResponses: return true
+    case .createOnboardingResponses: return true
     case .getMemberVerification: return true
     case .submitMemberVerification: return true
     case .addScheduledEventInterest: return true
@@ -941,6 +948,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserApplicationCommandIndex: return true
     case .createInteraction: return true
     case .updateOnboardingResponses: return true
+    case .createOnboardingResponses: return true
     case .getMemberVerification: return true
     case .submitMemberVerification: return true
     case .addScheduledEventInterest: return true
@@ -1071,6 +1079,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserApplicationCommandIndex: return []
     case .createInteraction: return []
     case .updateOnboardingResponses(let guildId): return [guildId.rawValue]
+    case .createOnboardingResponses(let guildId): return [guildId.rawValue]
     case .getMemberVerification(let guildId): return [guildId.rawValue]
     case .submitMemberVerification(let guildId): return [guildId.rawValue]
     case .addScheduledEventInterest(let guildId, let eventId): return [guildId.rawValue, eventId.rawValue]
@@ -1179,6 +1188,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .getUserApplicationCommandIndex: return 147
     case .createInteraction: return 148
     case .updateOnboardingResponses: return 149
+    case .createOnboardingResponses: return 161
     case .getMemberVerification: return 150
     case .submitMemberVerification: return 151
     case .addScheduledEventInterest: return 152
@@ -1354,6 +1364,8 @@ public enum UserAPIEndpoint: Endpoint {
       return "createInteraction"
     case .updateOnboardingResponses(let guildId):
       return "updateOnboardingResponses(guildId: \(guildId.rawValue))"
+    case .createOnboardingResponses(let guildId):
+      return "createOnboardingResponses(guildId: \(guildId.rawValue))"
     case .getMemberVerification(let guildId):
       return "getMemberVerification(guildId: \(guildId.rawValue))"
     case .submitMemberVerification(let guildId):

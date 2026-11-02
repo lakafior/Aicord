@@ -343,8 +343,13 @@ struct OnboardingSheet: View {
     Task {
       defer { isSaving = false }
       do {
+        // PUT changes answers once onboarding is done; before that Discord
+        // refuses it and the first answers go through POST, which completes it
         let response = try await gw.client.updateOnboardingResponses(guildId: guildId, payload: payload)
-        if let failure = response.asError() { throw failure }
+        if response.asError() != nil {
+          let created = try await gw.client.createOnboardingResponses(guildId: guildId, payload: payload)
+          if let failure = created.asError() { throw failure }
+        }
         dismiss()
       } catch {
         self.error = Self.text(for: error)
