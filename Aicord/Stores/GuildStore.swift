@@ -25,7 +25,30 @@ class GuildStore: DiscordDataStore {
   var channels: [ChannelSnowflake: DiscordChannel] = [:]
   /// Forum and media posts opened from their channel; threads aren't in `channels`.
   var threads: [ChannelSnowflake: DiscordChannel] = [:]
-  private var memberBoxes: [UserSnowflake: MemberBox] = [:]
+  /// Not observed directly: `memberCount` and `loadedMembers` follow
+  /// `memberSetVersion`, and a view that looks one member up follows that
+  /// member's slot, so members loading for others don't refresh it.
+  @ObservationIgnored private var memberBoxes: [UserSnowflake: MemberBox] = [:]
+  private var memberSetVersion = 0
+  /// One slot per member looked up, holding their box while there is one.
+  @ObservationIgnored private var memberSlots: [UserSnowflake: ObservableBox<MemberBox?>] = [:]
+
+  private func memberSlot(_ id: UserSnowflake) -> ObservableBox<MemberBox?> {
+    if let slot = memberSlots[id] { return slot }
+    let slot = ObservableBox(memberBoxes[id])
+    memberSlots[id] = slot
+    return slot
+  }
+
+  private func storeMemberBox(_ box: MemberBox?, for id: UserSnowflake) {
+    if let box {
+      if memberBoxes.updateValue(box, forKey: id) == nil { memberSetVersion &+= 1 }
+    } else if memberBoxes.removeValue(forKey: id) != nil {
+      memberSetVersion &+= 1
+    }
+    memberSlots[id]?.value = box
+  }
+
   private var roleBoxes: OrderedDictionary<RoleSnowflake, RoleBox> = [:]
   var presences: [UserSnowflake: Gateway.PresenceUpdate] = [:]
   var voiceStates: [UserSnowflake: VoiceState] = [:]
@@ -34,22 +57,24 @@ class GuildStore: DiscordDataStore {
 
   /// Get a box for this member data. Store the box and read the underlying value.
   func memberBox(for id: UserSnowflake) -> MemberBox? {
-    memberBoxes[id]
+    memberSlot(id).value
   }
 
   /// Members loaded so far (member list, chunks, messages), for local search.
   var loadedMembers: [Guild.PartialMember] {
-    memberBoxes.values.map(\.value)
+    _ = memberSetVersion
+    return memberBoxes.values.map(\.value)
   }
 
   /// Number of stored members
   var memberCount: Int {
-    memberBoxes.count
+    _ = memberSetVersion
+    return memberBoxes.count
   }
 
   /// Get member data directly, non-updating.
   func member(_ id: UserSnowflake) -> Guild.PartialMember? {
-    memberBoxes[id]?.value
+    memberSlot(id).value?.value
   }
 
   /// Set the member data of a box.
@@ -60,7 +85,7 @@ class GuildStore: DiscordDataStore {
       return box
     } else {
       let box = MemberBox(member)
-      memberBoxes[id] = box
+      storeMemberBox(box, for: id)
       return box
     }
   }
@@ -70,7 +95,7 @@ class GuildStore: DiscordDataStore {
     if let box = memberBoxes[id] {
       box.value.update(with: incoming)
     } else {
-      memberBoxes[id] = MemberBox(incoming)
+      storeMemberBox(MemberBox(incoming), for: id)
     }
   }
 
@@ -271,6 +296,8 @@ class GuildStore: DiscordDataStore {
     guild = nil
     channels.removeAll()
     memberBoxes.removeAll()
+    memberSetVersion &+= 1
+    for slot in memberSlots.values { slot.value = nil }
     roleBoxes.removeAll()
     presences.removeAll()
     voiceStates.removeAll()
@@ -303,7 +330,7 @@ class GuildStore: DiscordDataStore {
   private func handleGuildMemberRemove(
     _ memberRemove: Gateway.GuildMemberRemove
   ) {
-    memberBoxes.removeValue(forKey: memberRemove.user.id)
+    storeMemberBox(nil, for: memberRemove.user.id)
   }
 
   private func handleGuildMembersChunk(

@@ -168,7 +168,9 @@ final class GatewayStore {
   func getChannelStore(for id: ChannelSnowflake, from guild: GuildStore? = nil)
     -> ChannelStore
   {
-    if let store = channels[id] {
+    // a store made before its server was known (it has no member list and
+    // no permissions) is made again once the server is passed
+    if let store = channels[id], !(store.guildStore == nil && guild != nil) {
       return store
     } else {
       let channel = guild?.channels[id] ?? guild?.threads[id] ?? user.privateChannels[id]
@@ -214,7 +216,10 @@ final class GatewayStore {
                   activities: false,
                   threads: true,
                   member_updates: true,
-                  channels: [:],
+                  // left out rather than empty: an empty list would drop the
+                  // member list a channel asked for meanwhile (Discord answers
+                  // with INVALIDATE and the member list goes blank)
+                  channels: nil,
                   thread_member_lists: nil
                 )
               ])
@@ -324,6 +329,12 @@ final class GatewayStore {
       if let guild = data.guilds.first(where: { $0.id == guildStore.guildId }) {
         guildStore.populate(with: guild)
       }
+    }
+
+    // a new session starts without member list subscriptions; ask again for
+    // the lists that were open, or they stay as they were at the disconnect
+    for guildStore in self.guilds.values where !guildStore.subscribedMemberListIDs.isEmpty {
+      Task { await guildStore.updateSubscriptions() }
     }
 
   }

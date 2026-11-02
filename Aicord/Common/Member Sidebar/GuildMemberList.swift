@@ -15,7 +15,8 @@ extension MemberSidebarView {
     var channelStore: ChannelStore
     var accumulator: ChannelStore.MemberListAccumulator
 
-    /// The member row that last scrolled into view.
+    /// The block of 100 rows that last scrolled into view. Only the block is
+    /// kept, so scrolling within one doesn't refresh the whole list.
     @State var upperBound: Int? = nil
 
     var scrollPairs: [IntPair] {
@@ -27,7 +28,7 @@ extension MemberSidebarView {
       guard maxIndex >= 100 else {
         return pairs.map(IntPair.init)
       }
-      let currentBlock = upperBound / 100
+      let currentBlock = upperBound
       let maxBlock = maxIndex / 100
       let clampedBlock = min(currentBlock, maxBlock)
       var blocks: [Int] = []
@@ -62,14 +63,21 @@ extension MemberSidebarView {
           Section {
             ForEach(section.members, id: \.self) { itemIndex in
               MemberListCell(
-                row: accumulator.row(at: itemIndex),
+                index: itemIndex,
                 accumulator: accumulator,
                 guildStore: guildStore
               )
+              #if os(macOS)
+                // one height for every row, loaded or not, so the list can
+                // place rows without measuring them
+                .frame(height: 32)
+              #endif
               .environment(\.memberListItemIndex, itemIndex)
               .environment(\.memberListAccumulator, accumulator)
-              // rows load as they scroll in; the last one seen picks the ranges to ask for
-              .onAppear { upperBound = itemIndex }
+              // rows load as they scroll in; the last block seen picks the ranges to ask for
+              .onAppear {
+                if upperBound != itemIndex / 100 { upperBound = itemIndex / 100 }
+              }
               .channelListRow()
             }
           } header: {
@@ -91,11 +99,13 @@ extension MemberSidebarView {
   }
 
   private struct MemberListCell: View {
-    let row: ChannelStore.MemberListRow?
+    let index: Int
     let accumulator: ChannelStore.MemberListAccumulator
     let guildStore: GuildStore
 
     var body: some View {
+      // looked up here, not in the list: a changed row then refreshes only itself
+      let row = accumulator.row(at: index)
       switch row?.value {
       case .member(let member):
         if let user = member.user {

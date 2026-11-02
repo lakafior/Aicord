@@ -74,7 +74,11 @@ import SwiftUI
       }
       .task(id: appState.selectedChannel) {
         if let selected = appState.selectedChannel {
-          currentChannelStore = gw.getChannelStore(for: selected, from: currentGuildStore)
+          // the server comes from the selection, not `currentGuildStore`: the
+          // two tasks run in either order, and a channel store made with the
+          // previous server (or none) has no member list
+          let guild = appState.selectedGuild.map { gw.getGuildStore(for: $0) }
+          currentChannelStore = gw.getChannelStore(for: selected, from: guild)
         } else {
           currentChannelStore = nil
         }

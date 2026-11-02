@@ -175,7 +175,14 @@ class ChannelStore: DiscordDataStore {
     self.channel = channel
     self.guildStore = guildStore
 
-    // check if the guildStore contains a reference to an existing channel with a matching member list id, if so use the same member list instance for consistency across channels, otherwise make a new one
+    attachMemberListIfNeeded()
+  }
+
+  /// Finds or makes the member list for this channel. Channels with the same
+  /// member list id share one instance. Done again from the member list view
+  /// when the channel or its server weren't known yet when the store was made.
+  func attachMemberListIfNeeded() {
+    guard memberList == nil else { return }
     guard let memberListID else { return }  // if this doesnt exist then the channel probably doesnt need a member list.
     if let list = guildStore?.memberLists[memberListID] {
       self.memberList = list
@@ -643,12 +650,35 @@ class ChannelStore: DiscordDataStore {
       let accumulator = self.memberList,
       let guild = self.guildStore?.guild, update.guild_id == guild.id,
       let channel,
-      channel.id == accumulator.primaryChannelStore.channelId,  // ensure only the channel that owns the accumulator can update it, otherwise we might have multiple channels with the same member list id updating the same accumulator (race condition)
+      // only the store that last asked for the list applies updates; channels
+      // sharing the list would otherwise apply each op twice
+      accumulator.primaryChannelStore === self,
       let currentMemberListID = channel.getMemberListID(with: guild),
       update.id == currentMemberListID
     else { return }
 
     accumulator.update(with: update)
+
+    // Discord drops a range it stops sending (a resubscription without it, a
+    // server-side resync); ask for what the list still shows, or it stays blank
+    if update.ops.contains(where: { if case .invalidate = $0 { true } else { false } }) {
+      resubscribeAfterInvalidate()
+    }
+  }
+
+  @ObservationIgnored private var lastInvalidateResend = Date.distantPast
+
+  private func resubscribeAfterInvalidate() {
+    guard Date.now.timeIntervalSince(lastInvalidateResend) > 3,
+      let memberListID, let guildStore,
+      let subscription = guildStore.subscribedMemberListIDs[memberListID],
+      subscription.channelID == channelId
+    else { return }
+    lastInvalidateResend = .now
+    Task {
+      try? await Task.sleep(for: .milliseconds(500))
+      await requestMemberListRange(subscription.ranges)
+    }
   }
 
   // MARK: - Helpers
@@ -1181,6 +1211,8 @@ extension ChannelStore {
         "[ChannelStore MemberList] Requested range invalid: \(threeIntPairs)"
       )
     }
+    // the channel asking now owns the shared list's updates
+    memberList?.primaryChannelStore = self
     // max 3 ranges, first one is always the top of the list
     // the other two are wherever the user is scrolled to.
     guildStore.subscribedMemberListIDs[memberListID] = (
@@ -1233,13 +1265,18 @@ extension ChannelStore {
       self.primaryChannelStore = primaryChannelStore
     }
 
-    private var items: [Int: MemberListRow] = [:]
+    /// The rows by index. Not observed as a whole: a changed row updates its
+    /// own box, so only that row's view refreshes; `layoutVersion` changes
+    /// when rows are added, removed or moved.
+    @ObservationIgnored private var items: [Int: MemberListRow] = [:]
+    private(set) var layoutVersion = 0
 
     /// Get the row of member list.
     /// - Parameter index: The index of the row to retrieve.
     /// - Returns: A mixed item, either group heading or member data.
     func row(at index: Int) -> MemberListRow? {
-      items[index]
+      _ = layoutVersion
+      return items[index]
     }
 
     /// Get the group a row index belongs to.
@@ -1262,26 +1299,42 @@ extension ChannelStore {
       return result
     }
 
+    /// Whether this update added, removed or moved rows.
+    @ObservationIgnored private var layoutChanged = false
+
     private func setItem(_ item: MixedItem, at index: Int) {
       if let existing = items[index] {
         existing.value = item
       } else {
         items[index] = MemberListRow(item)
+        layoutChanged = true
       }
     }
 
     func update(with update: Gateway.GuildMemberListUpdate) {
-      self.memberCount = update.member_count
-      self.onlineCount = update.online_count
-      self.groups = update.groups.reduce(into: [:]) { partial, group in
-        partial[group.id] = group
+      // set only when they change: every presence change in the list comes
+      // with the counts and groups, and each set refreshes the whole list
+      if memberCount != update.member_count { memberCount = update.member_count }
+      if onlineCount != update.online_count { onlineCount = update.online_count }
+      let newGroups: OrderedDictionary<RoleSnowflake, Gateway.GuildMemberListUpdate.GroupCount> =
+        update.groups.reduce(into: [:]) { partial, group in
+          partial[group.id] = group
+        }
+      if newGroups.map({ "\($0.key.rawValue):\($0.value.count)" })
+        != groups.map({ "\($0.key.rawValue):\($0.value.count)" })
+      {
+        groups = newGroups
       }
+
+      layoutChanged = false
+      defer { if layoutChanged { layoutVersion &+= 1 } }
 
       for op in update.ops {
         switch op {
         case .sync(let pair, let newItems):
-          for i in pair.first...pair.second {
-            items.removeValue(forKey: i)
+          // rows already there keep their box and only change their value
+          for i in pair.first...pair.second where i - pair.first >= newItems.count {
+            if items.removeValue(forKey: i) != nil { layoutChanged = true }
           }
           for (i, item) in newItems.enumerated() {
             setItem(item, at: pair.first + i)
@@ -1302,6 +1355,7 @@ extension ChannelStore {
           }
           updated[index] = MemberListRow(item)
           items = updated
+          layoutChanged = true
           if case .member(let member) = item {
             handleMemberData(member)
           }
@@ -1322,9 +1376,10 @@ extension ChannelStore {
             }
           }
           items = updated
+          layoutChanged = true
         case .invalidate(let range):
           for i in range.first...range.second {
-            items.removeValue(forKey: i)
+            if items.removeValue(forKey: i) != nil { layoutChanged = true }
           }
         }
       }

@@ -35,5 +35,7 @@ struct MemberSidebarView: View {
         EmptyView()
       }
     }
+    // a channel opened before its details arrived has no member list yet
+    .task(id: channelStore?.channelId) { channelStore?.attachMemberListIfNeeded() }
   }
 }

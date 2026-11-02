@@ -23,7 +23,18 @@ class CurrentUserStore: DiscordDataStore {
   var guilds: [GuildSnowflake: Guild] = [:]
   var privateChannels: OrderedDictionary<ChannelSnowflake, DiscordChannel> = [:]
   var relationships: [UserSnowflake: DiscordRelationship] = [:]
-  private var presenceBoxes: [UserSnowflake: PresenceBox] = [:]
+  /// Not observed as a whole: a view that looks one person up follows that
+  /// person's slot, so presences arriving for others don't refresh it.
+  @ObservationIgnored private var presenceBoxes: [UserSnowflake: PresenceBox] = [:]
+  /// One slot per person looked up, holding their box once a presence arrives.
+  @ObservationIgnored private var presenceSlots: [UserSnowflake: ObservableBox<PresenceBox?>] = [:]
+
+  private func presenceSlot(_ id: UserSnowflake) -> ObservableBox<PresenceBox?> {
+    if let slot = presenceSlots[id] { return slot }
+    let slot = ObservableBox(presenceBoxes[id])
+    presenceSlots[id] = slot
+    return slot
+  }
   var users: [UserSnowflake: PartialUser] = [:]
   var sessions: [Gateway.Session] = []
   /// Hash of the auth session this client is logged in with, to mark it in Devices.
@@ -36,12 +47,12 @@ class CurrentUserStore: DiscordDataStore {
 
   /// Get a box for this presence data. Store the box and read the underlying value.
   func presenceBox(for id: UserSnowflake) -> PresenceBox? {
-    presenceBoxes[id]
+    presenceSlot(id).value
   }
 
   /// Get presence data directly, non-updating.
   func presence(_ id: UserSnowflake) -> Gateway.PresenceUpdate? {
-    presenceBoxes[id]?.value
+    presenceSlot(id).value?.value
   }
 
   /// Set the presence data of a box.
@@ -53,6 +64,7 @@ class CurrentUserStore: DiscordDataStore {
     } else {
       let box = PresenceBox(presence)
       presenceBoxes[id] = box
+      presenceSlots[id]?.value = box
       return box
     }
   }
