@@ -1,6 +1,6 @@
 # Aicord — Roadmap
 
-Co jeszcze przed nami. To, co już zrobione, jest w [SHIPPED.md](SHIPPED.md): lista zmian i pełna historia etapów, z tą samą numeracją etapów i punktów co tutaj. Notatki z dużych prac (decyzje, testy) leżą w [`docs/`](docs/).
+Co jeszcze przed nami. To, co już zrobione, jest w [CHANGELOG.md](CHANGELOG.md): lista zmian i pełna historia etapów, z tą samą numeracją etapów i punktów co tutaj. Notatki z dawnych sesji (decyzje, testy, kroki do przeklikania) są w historii gita, linki prowadzą do nich wprost; mapa kodu jest w [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Kierunek: czysty **Swift 6**, **iOS 26 i macOS 26**, natywne **SwiftUI** z **Liquid Glass**, prawie wyłącznie frameworki Apple.
 
@@ -13,9 +13,9 @@ Kierunek: czysty **Swift 6**, **iOS 26 i macOS 26**, natywne **SwiftUI** z **Liq
 ---
 
 ### 🔜 Etap 7: Własne biblioteki zamiast forków (`AicordKit`, `Textual`)
-Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`). Zostały propozycje z tamtej pracy:
+Biblioteka to już `AicordKit` (zrobione: patrz CHANGELOG i [SLIM_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/SLIM_NOTES.md)). Zostały propozycje z tamtej pracy:
 4. **Dalej:**
-   - [ ] Dalsze odchudzanie `DiscordModels` (4,15 MB po nocy 30/31.10): `CodingKeys` to nadal ~0,9 MB, prawie w całości metadane (5 konformancji na każdy z 385 enumów). Zejść z tego może tylko własne dekodowanie ze wspólnym typem klucza (makro generujące `init(from:)`), co jest dużą i ryzykowną zmianą; `SwiftProtobuf` to 1,15 MB. Szczegóły i pomiary: `docs/OVERNIGHT.md`.
+   - [ ] Dalsze odchudzanie `DiscordModels` (4,15 MB po nocy 30/31.10): `CodingKeys` to nadal ~0,9 MB, prawie w całości metadane (5 konformancji na każdy z 385 enumów). Zejść z tego może tylko własne dekodowanie ze wspólnym typem klucza (makro generujące `init(from:)`), co jest dużą i ryzykowną zmianą; `SwiftProtobuf` to 1,15 MB. Szczegóły i pomiary: [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md).
 
 ---
 
@@ -25,30 +25,30 @@ Biblioteka to już `AicordKit` (zrobione: patrz SHIPPED i `docs/SLIM_NOTES.md`).
    - Nie robimy: powiadomień push na iOS, gdy Aicord jest zamknięty. Wymagałyby własnego serwera trzymającego token konta i połączenie z gatewayem; zostają lokalne powiadomienia z działającej aplikacji.
 8. **Poprawki interfejsu (po Ustawieniach):**
    - Nie robimy: Purge (masowe usuwanie wiadomości z czatu). API Discorda pozwala usunąć tylko własne wiadomości w DM, a cudze na serwerze tylko z Manage Messages; masowe usuwanie z konta użytkownika to automatyzacja, za którą Discord blokuje konta (ostrzega przed tym nawet Undiscord).
-   - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: `docs/MESSAGES_NOTES.md`. Do tego z zaproszeń: prawdziwe Add Friend (z listy i z profilu) i rozszerzenie Safari na macOS. Kroki: `docs/INVITES_NOTES.md`. (Join na nowym serwerze przez Safari na iPhonie sprawdzony 30.10.2026.)
-   - [ ] Natywne listy: sprawdzić na iPadzie i przewijanie dużej listy członków (`docs/LISTS_NOTES.md`).
-   - [ ] Na Macu przewinąć długi kanał w górę: dociąganie starszej historii i pozycja po doklejeniu strony (sprawdzone tylko w symulatorze iOS, `docs/CHAT_HISTORY_NOTES.md`).
-   - [ ] Komponenty i forum, dalszy ciąg (`docs/COMPONENTS_V2.md`, `docs/BOT_INTERACTIONS_NOTES.md`): siatka dla kanałów media; post otwarty w osobnym oknie Maca nie przełącza okna; nowy post i wyszukiwanie po nazwie sprawdzić na serwerze z forum (NAScin go nie ma).
+   - [ ] Przeklikać na prawdziwych danych akcje, których sesja nie robiła: Accept / Ignore / Reject próśb o wiadomość, Not Spam / Delete w Spamie, zaproszenia do znajomych, Forward do DM, kilku celów naraz i z Maca. Lista kroków: [MESSAGES_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/MESSAGES_NOTES.md). Do tego z zaproszeń: prawdziwe Add Friend (z listy i z profilu) i rozszerzenie Safari na macOS. Kroki: [INVITES_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/INVITES_NOTES.md). (Join na nowym serwerze przez Safari na iPhonie sprawdzony 30.10.2026.)
+   - [ ] Natywne listy: sprawdzić na iPadzie i przewijanie dużej listy członków ([LISTS_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/LISTS_NOTES.md)).
+   - [ ] Na Macu przewinąć długi kanał w górę: dociąganie starszej historii i pozycja po doklejeniu strony (sprawdzone tylko w symulatorze iOS, [CHAT_HISTORY_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/CHAT_HISTORY_NOTES.md)).
+   - [ ] Komponenty i forum, dalszy ciąg ([COMPONENTS_V2](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/COMPONENTS_V2.md), [BOT_INTERACTIONS_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/BOT_INTERACTIONS_NOTES.md)): siatka dla kanałów media; post otwarty w osobnym oknie Maca nie przełącza okna; nowy post i wyszukiwanie po nazwie sprawdzić na serwerze z forum (NAScin go nie ma).
    - [ ] Interakcje z botami na Macu: przyciski, menu, arkusz modala, „Apps” w menu wiadomości i wybór pliku dla opcji załącznika (sprawdzone tylko w symulatorze iOS).
-   - [ ] Na Macu po poprawce z nocy 30/31.10: kliknięcie linku (także zaproszenia) w treści wiadomości, Esc po przewinięciu czatu, Safari → Extensions z ekranu instrukcji (`docs/OVERNIGHT.md`).
+   - [ ] Na Macu po poprawce z nocy 30/31.10: kliknięcie linku (także zaproszenia) w treści wiadomości, Esc po przewinięciu czatu, Safari → Extensions z ekranu instrukcji ([OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md)).
 
 ---
 
 ### 🧪 Etap 9: Voice — kanały głosowe i rozmowy w DM
-Szczegóły portu, decyzje i instrukcja testu: `docs/VOICE_NOTES.md`.
+Szczegóły portu, decyzje i instrukcja testu: [VOICE_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/VOICE_NOTES.md).
 6. **Weryfikacja:**
-   - [ ] Ręczny test na koncie (zrobione: dołączenie do pustego kanału serwera i wyjście, z DAVE v1, na symulatorze iOS; zostaje test z drugą osobą, patrz `docs/VOICE_NOTES.md`): dźwięk w obie strony z DAVE w DM, w rozmowie grupowej i na kanale serwera; dołączanie i wychodzenie uczestników; wznowienie po zerwaniu sieci.
+   - [ ] Ręczny test na koncie (zrobione: dołączenie do pustego kanału serwera i wyjście, z DAVE v1, na symulatorze iOS; zostaje test z drugą osobą, kroki w [CONTRIBUTING](.github/CONTRIBUTING.md#testing-voice)): dźwięk w obie strony z DAVE w DM, w rozmowie grupowej i na kanale serwera; dołączanie i wychodzenie uczestników; wznowienie po zerwaniu sieci.
 7. **Później:**
    - [ ] Wideo i udostępnianie ekranu. Serein ma do tego ścieżki na macOS (ScreenCaptureKit, VideoToolbox).
 
 ---
 
 ### 🧪 Etap 10: Intelligence — tłumaczenie i podsumowania
-Zrobione (szczegóły w SHIPPED i `docs/INTELLIGENCE_NOTES.md`): ustawienia, tłumaczenie, podsumowania, Catch Up, Explain Context, wyszukiwarka jako narzędzie modelu, pytanie do kanału, Wyjaśnij, podsumowanie wątku, Search with a Sentence, ważne powiadomienia, ostrzeżenie przed oszustwem, opisy obrazów. Zostało:
+Zrobione (szczegóły w CHANGELOG i [INTELLIGENCE_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/INTELLIGENCE_NOTES.md)): ustawienia, tłumaczenie, podsumowania, Catch Up, Explain Context, wyszukiwarka jako narzędzie modelu, pytanie do kanału, Wyjaśnij, podsumowanie wątku, Search with a Sentence, ważne powiadomienia, ostrzeżenie przed oszustwem, opisy obrazów. Zostało:
 1. **Weryfikacja:**
-   - [ ] Na urządzeniu: opisy obrazów z VoiceOverem (etykieta z tekstem z Vision, opcjonalnie z API), Show Conversation, Explain Slang, podsumowanie wątku i odpowiedzi, ważne powiadomienia z wyciszonych kanałów, baner oszustwa, Ask na urządzeniu z narzędziami Foundation Models (sprawdzone tylko przez API), arkusz pobierania języka i automatyczne tłumaczenie. Lista kroków: `docs/INTELLIGENCE_NOTES.md`.
+   - [ ] Na urządzeniu: opisy obrazów z VoiceOverem (etykieta z tekstem z Vision, opcjonalnie z API), Show Conversation, Explain Slang, podsumowanie wątku i odpowiedzi, ważne powiadomienia z wyciszonych kanałów, baner oszustwa, Ask na urządzeniu z narzędziami Foundation Models (sprawdzone tylko przez API), arkusz pobierania języka i automatyczne tłumaczenie. Lista kroków: [INTELLIGENCE_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/INTELLIGENCE_NOTES.md).
    - [ ] Komunikat „Apple Intelligence niedostępne” na urządzeniu bez modelu.
-   - [ ] Show Thread i Explain Context na długim wątku (ponad 50 odpowiedzi, rodzice spoza wczytanej historii) i z modelem przez API; menu pod nazwą kanału i podmenu Intelligence przeklikać na Macu (sprawdzone tylko w symulatorze iOS na krótkim wątku, `docs/THREAD_AI.md`).
+   - [ ] Show Thread i Explain Context na długim wątku (ponad 50 odpowiedzi, rodzice spoza wczytanej historii) i z modelem przez API; menu pod nazwą kanału i podmenu Intelligence przeklikać na Macu (sprawdzone tylko w symulatorze iOS na krótkim wątku, [THREAD_AI](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/THREAD_AI.md)).
 2. **Dokończenia:**
 3. **Wyszukiwanie po sensie:**
    - [ ] Index Channel: aktualizacja indeksu o nowe wiadomości z gatewaya w tle (dziś przycisk „Add New Messages”) i, opcjonalnie, mały wielojęzyczny model embeddingowy w Core ML zamiast średniej z `NLContextualEmbedding` (lepsza jakość, aplikacja większa o kilkadziesiąt–sto MB). Sprawdzić wyszukiwanie po sensie na urządzeniu z modelem (w symulatorze modelu nie ma, działało tylko po słowach).
@@ -60,17 +60,17 @@ Zrobione (szczegóły w SHIPPED i `docs/INTELLIGENCE_NOTES.md`): ustawienia, tł
 ### 🔜 Etap 11: Aicord dla macOS
 Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI, nie Mac Catalyst), ale dzieli szkielet `LargeBaseplate` z iPadem i przez to wygląda jak aplikacja na iPada. Etap 7 i zmiana nazw (5.4) są już zrobione, więc można zaczynać. Listy kanałów i członków są już systemowe (styl `.sidebar` na Macu), więc szkielet może z nich korzystać.
 1. **Interfejs Maca:**
-   - [ ] Przeklikać resztę na Macu: kanał w osobnym oknie i okno `Settings` (kroki w `docs/OVERNIGHT.md`, punkt 5). Menu Go, ⌥⌘I, ⌥⌘↑/↓ i pole wyszukiwania w pasku sprawdzone 2.11 (`docs/MACOS_PASS_NOTES.md`).
+   - [ ] Przeklikać resztę na Macu: kanał w osobnym oknie i okno `Settings` (kroki w [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md), punkt 5). Menu Go, ⌥⌘I, ⌥⌘↑/↓ i pole wyszukiwania w pasku sprawdzone 2.11 ([MACOS_PASS_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/MACOS_PASS_NOTES.md)).
    - [ ] Lista członków na prawdziwym dużym serwerze (tysiące osób): płynność przewijania i ponowne wczytanie po zerwaniu połączenia (READY). Zmierzone tylko na 600 sztucznych członkach; ponowna prośba po INVALIDATE nie została wywołana na żywo.
-   - [ ] Mac, dalsze dopracowanie wyglądu: arkusze jako popovery lub osobne okna, karty w oknie `Settings`, tytuł arkusza ustawień serwera nie powinien zastępować tytułu okna, kolor tła czatu zgodny z oknem (`docs/MACOS_PASS_NOTES.md`).
+   - [ ] Mac, dalsze dopracowanie wyglądu: arkusze jako popovery lub osobne okna, karty w oknie `Settings`, tytuł arkusza ustawień serwera nie powinien zastępować tytułu okna, kolor tła czatu zgodny z oknem ([MACOS_PASS_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/MACOS_PASS_NOTES.md)).
 2. **Serwer MCP (połączenie Claude z Discordem):**
-   - [ ] Sprawdzić na odblokowanym Macu z prawdziwą aplikacją: włączyć Allow MCP Server, wkleić na nowo skopiowaną konfigurację (ścieżka prowadzi teraz do helpera w `.app`) do Claude Desktop, `list_servers` i `read_messages` na NAScin (kroki w `docs/OVERNIGHT.md`, punkt 5b).
+   - [ ] Sprawdzić na odblokowanym Macu z prawdziwą aplikacją: włączyć Allow MCP Server, wkleić na nowo skopiowaną konfigurację (ścieżka prowadzi teraz do helpera w `.app`) do Claude Desktop, `list_servers` i `read_messages` na NAScin (kroki w [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md), punkt 5b).
    - [ ] Podsumowania jako narzędzie MCP (z modelu wybranego w Intelligence). Wysyłanie najwyżej z potwierdzeniem każdej akcji w aplikacji: działanie przez token użytkownika to automatyzacja konta, której Discord zabrania (self-bot), więc ryzyko blokady trzeba ograniczyć.
 
 ---
 
 ### 🔜 Etap 13: Brakujące funkcje Discorda
-Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK2_NOTES.md`): wiadomości systemowe, ankiety, przypięte, przeglądarka wątków, onboarding i reguły serwera, slash-komendy, nagrywanie głosówek, wydarzenia.
+Paczki 1 i 2 zrobione (szczegóły w CHANGELOG, [PACK1_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PACK1_NOTES.md) i [PACK2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PACK2_NOTES.md)): wiadomości systemowe, ankiety, przypięte, przeglądarka wątków, onboarding i reguły serwera, slash-komendy, nagrywanie głosówek, wydarzenia.
 1. **Paczka 1, sprawdzenie:**
    - [ ] Przeklikać na Macu (sprawdzone tylko w symulatorze iOS): ankieta, tworzenie ankiety, Pinned Messages, Threads, Pin Message w menu pod prawym przyciskiem.
    - [ ] Zobaczyć na żywo typy, których nie było pod ręką: połączenie w DM (czas i nieodebrane), grupa (dodanie, usunięcie, nazwa, ikona), boost, Stage, AutoMod, zamknięta ankieta (typ 46), utworzenie wątku.
@@ -97,7 +97,7 @@ Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK
 2. **Wideo:** (nadawanie wideo i ekranu jest w Etapie 9)
    - [ ] Najpierw oglądanie cudzego Go Live i kamer w kanale głosowym, potem własna kamera.
    - [ ] Redukcja szumów mikrofonu w voice (odpowiednik Krisp, np. przetwarzanie głosu z `AVAudioEngine`).
-3. **Zarządzanie serwerem (dla moderatorów):** całość zrobiona 1.11 (SHIPPED, `docs/PL_ONBOARDING_ADMIN_NOTES.md`, `docs/OVERNIGHT2_NOTES.md`). Zostało:
+3. **Zarządzanie serwerem (dla moderatorów):** całość zrobiona 1.11 (CHANGELOG, [PL_ONBOARDING_ADMIN_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PL_ONBOARDING_ADMIN_NOTES.md), [OVERNIGHT2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT2_NOTES.md)). Zostało:
    - [ ] Sprawdzić kick, ban i timeout z drugim kontem na serwerze testowym (z jednego konta się nie da).
    - [ ] Usunięcie serwera do końca z kodem 2FA: arkusz MFA pojawia się (sprawdzone), kodu nikt nie wpisał. Serwer „Aicord Delete Test” czeka na usunięcie.
    - [ ] Ikony ról na serwerze z funkcją `ROLE_ICONS` (Aicord Test jej nie ma) i nadpisania członka (na serwerze z drugą osobą).
@@ -108,13 +108,13 @@ Paczki 1 i 2 zrobione (szczegóły w SHIPPED, `docs/PACK1_NOTES.md` i `docs/PACK
 
 ### 🔜 Etap 15: Lepsze niż Discord
 Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z tokenem konta (automatyczne wysyłanie, masowe pobieranie z wielu serwerów w tle, zaplanowane wiadomości), bo Discord traktuje to jak self-bota. Wtyczki w stylu Vencorda (np. niewidoczne pisanie) też podnoszą ryzyko blokady.
-1. **Paczka A:** zrobiona 1.11 (galeria, przypomnienia i zapisane, alerty, ghost ping przez usunięcie i przez edycję), szczegóły w `SHIPPED.md` i `docs/STAGE15A_NOTES.md`. Zostało:
+1. **Paczka A:** zrobiona 1.11 (galeria, przypomnienia i zapisane, alerty, ghost ping przez usunięcie i przez edycję), szczegóły w `CHANGELOG.md` i [STAGE15A_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/STAGE15A_NOTES.md). Zostało:
    - [ ] Ghost ping (usunięcie i edycja) sprawdzić z drugiego konta (z jednego się nie da: własne wiadomości są pomijane).
-2. **Paczka B (system Apple):** zrobiona 1.11 (Spotlight, widżet, Live Activity, Skróty, Handoff), szczegóły w `SHIPPED.md` i `docs/PACK_B_NOTES.md`. Zostało:
+2. **Paczka B (system Apple):** zrobiona 1.11 (Spotlight, widżet, Live Activity, Skróty, Handoff), szczegóły w `CHANGELOG.md` i [PACK_B_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PACK_B_NOTES.md). Zostało:
    - [ ] Sprawdzić na żywo: „What's New in Server” i „Open Channel” uruchomione do końca ze Skrótów i przez Siri, Handoff między dwoma urządzeniami, widżet na Macu, Live Activity na ekranie blokady.
    - [ ] Sprawdzić App Group po podpisaniu przez AltStore (zmienia ID grup; widżet może zostać pusty). Rozszerzenie widżetów to trzeci App ID, czyli limit darmowego konta.
    - [ ] Wybór kanału w „Open Channel” przy uruchomieniu nie ma wyszukiwarki i pokazuje tylko 60 pierwszych (DM-y, potem serwery alfabetycznie); przydałby się najpierw wybór serwera.
-3. **Paczka C:** notatki i tagi, eksport do Markdown i PDF, tryb offline zrobione 1.11 (`docs/OVERNIGHT2_NOTES.md`). Zostało:
+3. **Paczka C:** notatki i tagi, eksport do Markdown i PDF, tryb offline zrobione 1.11 ([OVERNIGHT2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT2_NOTES.md)). Zostało:
    - [ ] Codzienny skrót z wybranych kanałów wielu serwerów (rozszerzenie Catch Up), o wybranej porze, z powiadomieniem.
    - [ ] Sprawdzić: tryb offline przy prawdziwym braku sieci (przycisk na ekranie łączenia, kapsuła „Offline”), eksport do Markdown i wielostronicowy PDF, eksport i notatki na Macu, tagi na liście członków.
 4. **Formatowanie wiadomości:** formatowanie zaznaczenia i „Formatted Message” zrobione 1.11. Zostało:
@@ -138,7 +138,7 @@ Pomysł na kiedyś. Webhook kanału albo token własnego bota pozwala wysyłać 
 ---
 
 ### 🔜 Etap 12: Wydania — macOS i iOS w GitHub Releases
-Na końcu, gdy aplikacja jest stabilna. Przygotowane w nocy 30/31.10 (niczego nie uruchomiono na GitHubie): `release.yml` (iOS, `.ipa`, Release, źródło AltStore na Pages), `release_macos.yml` (szkic podpisu i notaryzacji) i `scripts/altstore_source.py`. Kroki i sekrety: `docs/OVERNIGHT.md`, punkt 4.
+Na końcu, gdy aplikacja jest stabilna. Przygotowane w nocy 30/31.10 (niczego nie uruchomiono na GitHubie): `release.yml` (iOS, `.ipa`, Release, źródło AltStore na Pages), `release_macos.yml` (szkic podpisu i notaryzacji) i `scripts/altstore_source.py`. Kroki i sekrety: [CONTRIBUTING](.github/CONTRIBUTING.md#releasing).
 1. **macOS: podpisana aplikacja z aktualizacjami:**
    - [ ] Dodać sekrety (certyfikat Developer ID jako .p12, klucz API App Store Connect) i sprawdzić `release_macos.yml` na pierwszym tagu (wymaga płatnego konta Apple Developer).
    - [ ] Powiadomienie o aktualizacji (zrobione 1.11): zobaczyć baner na pierwszym prawdziwym wydaniu.
@@ -147,4 +147,4 @@ Na końcu, gdy aplikacja jest stabilna. Przygotowane w nocy 30/31.10 (niczego ni
    - [ ] Ikona źródła w większym rozmiarze (dziś 128 px z rozszerzenia Safari) i zrzuty ekranu w źródle.
    - [ ] Sprawdzić uprawnienia i rozszerzenia pod darmowe konto: AltStore podpisuje kontem użytkownika, a darmowe konto ma limit 3 App ID, więc każde rozszerzenie (np. Safari z Etapu 8) zjada jedno miejsce. Push i inne uprawnienia płatnego konta nie zadziałają.
 3. **Opis wydań:**
-   - [ ] Instrukcja instalacji w README (link do źródła AltStore). Notatki do wydania są brane z najnowszej sekcji `SHIPPED.md` automatycznie.
+   - [ ] Instrukcja instalacji w README (link do źródła AltStore). Notatki do wydania są brane z najnowszej sekcji `CHANGELOG.md` automatycznie.

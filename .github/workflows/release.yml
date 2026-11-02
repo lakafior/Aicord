@@ -86,10 +86,10 @@ jobs:
         with:
           name: ipa
 
-      - name: Release notes from SHIPPED.md
+      - name: Release notes from CHANGELOG.md
         run: |
           # the changelog's newest section, up to the next "## " heading
-          awk '/^## /{n++} n==1' SHIPPED.md > notes.md
+          awk '/^## /{n++} n==1' CHANGELOG.md > notes.md
           {
             echo
             echo "**Install on iPhone:** add the AltStore or SideStore source"

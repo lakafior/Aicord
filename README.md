@@ -38,7 +38,7 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 - **Native on iPhone and Mac** — system lists and Liquid Glass throughout, Swift 6 with strict concurrency, iOS 26 and macOS 26, and almost only Apple's own frameworks
 - **Swapped for system APIs or removed** — SwiftUIX, Nuke, Sparkle, Lottie, SettingsKit, SwiftUIIntrospect, HCaptcha, KeychainAccess, CodeScanner, MijickCamera, MeshGradient, ColorCube, SwiftEmoji, FLEX, Loupe, Conditionals, SwiftPrettyPrint, UInt128, Yams, swift-crypto, multipart-kit and the whole SwiftNIO stack. What's left: swift-log, swift-protobuf, zstd, swift-syntax (build-time macros only), and for voice DaveKit (end-to-end encryption, which brings OpenSSL) and swift-opus.
 
-Everything else that's new or fixed is in **[SHIPPED.md](SHIPPED.md)**, and what's next in the [roadmap](ROADMAP.md).
+Everything else that's new or fixed is in **[the changelog](CHANGELOG.md)**, and what's next in the [roadmap](ROADMAP.md).
 
 ## Building
 
@@ -53,7 +53,7 @@ Pick the **Aicord** scheme, choose a Mac or an iOS 26 device or simulator, and r
 
 ## Contributing
 
-AI-assisted contributions are welcome. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for how to help out.
+AI-assisted contributions are welcome. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for how to help out, and [ARCHITECTURE.md](ARCHITECTURE.md) for a map of the code.
 
 ## About notifications
 

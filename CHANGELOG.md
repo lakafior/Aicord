@@ -1,4 +1,4 @@
-# Shipped
+# Changelog
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
@@ -284,7 +284,7 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
    - [x] Usunięcie zewnętrznych odznak sponsorów/telemetrii w `ExternalBadgeStore.swift`.
    - [x] Zmiana identyfikatora Bundle ID (`net.smigi.aicord`).
 4. **Rebranding `Paicord` → `Aicord` (dokończenie):**
-   - [x] Target, schematy (`Aicord`, `Aicord Release`) i produkt `Aicord.app`, katalogi `Aicord/` i `AicordKit/`, `Aicord.xcodeproj` i `Aicord.xcworkspace`; nazwa w menu i Docku na macOS. Identyfikator `net.smigi.aicord`, pęk kluczy, cache, klucze `Paicord.*` w `UserDefaults` i schemat `paicord://` zostają, więc logowanie i ustawienia przetrwały. Szczegóły: `docs/SLIM_NOTES.md`.
+   - [x] Target, schematy (`Aicord`, `Aicord Release`) i produkt `Aicord.app`, katalogi `Aicord/` i `AicordKit/`, `Aicord.xcodeproj` i `Aicord.xcworkspace`; nazwa w menu i Docku na macOS. Identyfikator `net.smigi.aicord`, pęk kluczy, cache, klucze `Paicord.*` w `UserDefaults` i schemat `paicord://` zostają, więc logowanie i ustawienia przetrwały. Szczegóły: [SLIM_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/SLIM_NOTES.md).
 
 ---
 
@@ -302,7 +302,8 @@ Dzięki ustawieniu **iOS 26 / macOS 26** oraz **Swift 6**, zyskujemy dostęp do 
    - [x] `ROADMAP.md`: tylko to, co jeszcze do zrobienia. Odhaczone punkty wychodzą z niego do `SHIPPED.md`.
    - [x] `SHIPPED.md`: obecna lista „New & fixed” z README, po wersji lub dacie, razem z historią zrobionych etapów przeniesioną z ROADMAP.
    - [x] `README.md`: tylko najciekawsze rzeczy jako krótkie zajawki, zrzuty ekranu z iPhone'a i Maca, link do pełnej listy w `SHIPPED.md`. Sekcje Building, Contributing i Credits zostają.
-   - [x] Notatki z sesji (`docs/VOICE_NOTES.md`, `docs/MESSAGES_NOTES.md`) do katalogu `docs/`, a otwarte testy z nich jako punkty w ROADMAP.
+   - [x] Notatki z sesji ([VOICE_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/VOICE_NOTES.md), [MESSAGES_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/MESSAGES_NOTES.md)) do katalogu `docs/`, a otwarte testy z nich jako punkty w ROADMAP.
+   - [x] Przed publikacją (2.11): `SHIPPED.md` → `CHANGELOG.md`, katalog `docs/` usunięty (linki prowadzą do notatek w historii gita), nowy `ARCHITECTURE.md` z mapą kodu i decyzjami, w `CONTRIBUTING.md` test voice z drugą osobą i wydania (workflowy, sekrety). Notatki z sesji idą odtąd do opisu PR albo do ignorowanego `notes/`, nie do repo.
 
 ---
 
@@ -322,7 +323,7 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [x] Messages: rozmowy prywatne i grupowe od najnowszych (nieprzeczytane, wzmianki, wyszukiwanie), znajomi (oczekujące, online z aktywnością, offline), nowa wiadomość z wyborem znajomego (`createDm`). Otwarcie rozmowy odznacza serwer, a powrót na Home przywraca ostatni serwer; ikonka DM zniknęła z listy serwerów na iPhonie.
    - [x] Inbox jako przełącznik „Mentions” w Messages zamiast osobnej zakładki: wzmianki i odpowiedzi ze wszystkich serwerów (nowy `getRecentMentions` w PaicordLib), z serwerem i kanałem, kropką nieprzeczytanych, filtrami „tylko odpowiedzi” i „bez @everyone/@here”, „Mark All as Read” i doładowywaniem starszych. Znajomi przeniesieni do arkusza pod przyciskiem w rogu (plakietka z zaproszeniami). Plakietka na zakładce Messages liczy nieprzeczytane DM-y; wzmianki z serwerów zostają w liście, bo potrafią iść w tysiące.
    - [x] Search jako własna funkcja, zakładka przed Ustawieniami: jedno pole szuka serwerów, kanałów, osób i wiadomości. Stuknięcie w serwer, kanał lub osobę zamienia je w token filtra (zawęża następne wyniki), strzałka otwiera. Serwery, kanały i osoby lokalnie i od razu (osoby na serwerze dociągane przez gateway op 8), wiadomości przez nowe `searchGuildMessages` / `searchChannelMessages` w PaicordLib z filtrem „zawiera” (link, obraz, plik…). Wiadomości wymagają serwera, kanału albo osoby z DM. Przy okazji: wartości w zapytaniach URL są poprawnie escapowane (`&`, `=`, `+`, `#`).
-   - [x] Search: stuknięcie w wynik wiadomości otwiera kanał przewinięty do tej wiadomości i podświetla ją (gdy nie jest wczytana, czat wczytuje wiadomości wokół niej, a strzałka w dół wraca do najnowszych). Daty od–do jako `min_id`/`max_id` w zapytaniu do Discorda i regex po stronie aplikacji na wczytanych wynikach („Dates and Regex…” w menu filtrów i nad wynikami). Sprawdzone na NAScin na iOS i macOS. Szczegóły w `docs/MESSAGES_NOTES.md`.
+   - [x] Search: stuknięcie w wynik wiadomości otwiera kanał przewinięty do tej wiadomości i podświetla ją (gdy nie jest wczytana, czat wczytuje wiadomości wokół niej, a strzałka w dół wraca do najnowszych). Daty od–do jako `min_id`/`max_id` w zapytaniu do Discorda i regex po stronie aplikacji na wczytanych wynikach („Dates and Regex…” w menu filtrów i nad wynikami). Sprawdzone na NAScin na iOS i macOS. Szczegóły w [MESSAGES_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/MESSAGES_NOTES.md).
    - [x] Zaproszenia do znajomych: Messages → Friends ma zakładki Friends / Incoming / Sent z akceptacją, ignorowaniem przychodzących i anulowaniem wysłanych (za potwierdzeniem). Badge liczy przychodzące bez zignorowanych i oznaczonych jako spam; lista i badge zmieniają się na żywo z `RELATIONSHIP_ADD/UPDATE/REMOVE`. Prawdziwe konto nie ma zaproszeń: wygląd i ścieżka błędu sprawdzone na lokalnych danych testowych, prawdziwa akceptacja do sprawdzenia przez użytkownika.
    - [x] Foldery „Message Requests” i „Spam” w Messages (na Macu i iPadzie skróty nad listą DM-ów): podgląd pierwszej wiadomości, Accept / Ignore / Reject dla próśb, Not Spam / Delete dla spamu, Reject All / Delete All. W rozmowie z prośbą lub spamem zamiast pola wiadomości jest pasek z tymi wyborami. Nowe endpointy `acceptMessageRequest`, `rejectMessageRequest`, `batchRejectMessageRequests`, `getMessageRequestSupplementalData` w PaicordLib; `CurrentUserStore` obsługuje Channel Update kanałów prywatnych. Spam (2 prawdziwe wiadomości) tylko oglądany; akcje sprawdzone na lokalnych danych testowych (404 od Discorda na fałszywym kanale), prawdziwe do sprawdzenia przez użytkownika.
 3. **Profil:**
@@ -393,12 +394,12 @@ Przed pracą nad voice. Plan zaakceptowany 30.10.2026.
    - [x] Menu wiadomości od nowa (przytrzymanie na iOS, prawy przycisk na Macu). Na górze rząd szybkich reakcji (`ControlGroup` w stylu `.palette`, przy uprawnieniu `addReactions`): 5 emoji unicode z ulubionych, potem z najczęściej używanych w reakcjach i ogólnie (`frecencySettings`), uzupełnione domyślnymi 👍 ❤️ 😂 😮 😢, oraz „Add Reaction”, które otwiera picker. Wysyłanie reakcji jest wspólne z pickerem (`ReactionPickerTarget.react`). Dalej grupy: Reply, Edit Message, Mention; Copy Text, Copy Message Link (oraz Copy Message ID i Copy Author ID w Developer Mode); Mark Unread; Delete Message (na iOS z potwierdzeniem). „Mark Unread” działa: ack z ID o jeden mniejszym i `manual: true`, a czat nie oznacza kanału jako przeczytanego, dopóki go nie opuścisz (`ReadStateStore.manuallyUnread`). Usunięte: puste „Apps”, „Thread” (Aicord nie ma widoku wątków) i „Forward” (brak wyboru kanału docelowego i wyświetlania przekazanych wiadomości, czyli `message_snapshots`; osobne zadanie). Podgląd na iOS zostaje domyślny (uniesiona komórka).
    - [x] Forward: „Forward” w menu wiadomości otwiera wybór do pięciu celów (DM-y, grupy, kanały serwerów) z wyszukiwaniem i opcjonalnym komentarzem (wysyłanym jako osobna wiadomość). Wysyłka przez `message_reference` typu `forward`; przekazane wiadomości mają „Forwarded” i źródło (kanał, serwer, data), które otwiera oryginał. Sprawdzone z NAScin na NAScin w symulatorze; nie sprawdzone: forward do DM, kilka celów naraz, wysyłka z Maca.
    - [x] Menu serwera i kanału (przytrzymanie, prawy przycisk na Macu): „Mark as Read” (serwer jednym `POST /read-states/ack-bulk`, nowy endpoint `bulkAckReadStates`), „Pin to Top” (lokalnie w Aicord, `PinnedPlacesStore`: przypięte serwery nad folderami, kanały nad listą swojego serwera), „Mute” na 15 min, 1 h, 8 h, 24 h lub do odwołania (doszło `mute_config` w `ModifyUserGuildSettings`) i „Notify” (All Messages / Only @mentions / Nothing, przy kanale też „Use Server Default”; przy serwerze przełączniki @everyone/@here i wzmianek ról). Mute i Notify zapisywane na koncie przez `UserGuildSettingsStore`. Z menu serwera arkusz „Server Settings” (`ServerSettingsSheet`): powiadomienia i wyciszenie, wyjątki per serwer z Content & Social (`restrictedGuildIds`, `messageRequestRestrictedGuildIds`) i Data & Privacy (`activityRestrictedGuildIds`, `activityJoiningRestrictedGuildIds`) zapisywane przez `patchUserSettings`, oraz link do istniejącego edytora profilu serwera. Menu, przypinanie i arkusz sprawdzone w symulatorze; ustawień konta na prawdziwych serwerach nie zmieniano.
-   - [x] Natywne listy: Home (kanały) i lista członków na systemowym `List`, bez własnego kontenera, tła i masek, więc niespójne rogi w ciemnym motywie zniknęły. Na Macu i iPadzie styl `.sidebar`, na iPhonie gęstsza zwykła lista jak w Apple Music. Kategorie jako sekcje zwijane systemowo z zapamiętaniem stanu (`GuildCategory.<id>.Collapsed`), systemowe zaznaczenie, lista członków z sekcjami ról. Zachowane: nieprzeczytane i wzmianki, ukryte kanały, przypięte, kanały głosowe z uczestnikami, wątki i forum, menu kontekstowe. Szczegóły i zrzuty: `docs/LISTS_NOTES.md`.
+   - [x] Natywne listy: Home (kanały) i lista członków na systemowym `List`, bez własnego kontenera, tła i masek, więc niespójne rogi w ciemnym motywie zniknęły. Na Macu i iPadzie styl `.sidebar`, na iPhonie gęstsza zwykła lista jak w Apple Music. Kategorie jako sekcje zwijane systemowo z zapamiętaniem stanu (`GuildCategory.<id>.Collapsed`), systemowe zaznaczenie, lista członków z sekcjami ról. Zachowane: nieprzeczytane i wzmianki, ukryte kanały, przypięte, kanały głosowe z uczestnikami, wątki i forum, menu kontekstowe. Szczegóły i zrzuty: [LISTS_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/LISTS_NOTES.md).
    - [x] Karty embedów `video` (YouTube i inne): miniatura z przyciskiem odtwarzania, tytuł, kanał, dostawca; otwiera film w aplikacji lub przeglądarce. Karty także dla wyników ankiet i alertów AutoMod, więc „Unsupported embed type” zniknęło.
    - [x] Add Friend po nazwie użytkownika w Messages → Friends (z czytelnymi błędami, np. 80004) i z profilu osoby. Prawdziwa wysyłka do sprawdzenia przez użytkownika.
    - [x] Invite People w menu serwera i w Server Settings: kanał, czas ważności (30 min do „nigdy”), limit użyć, kopiowanie i `ShareLink`. Sprawdzone na NAScin.
    - [x] Join: karta zaproszenia w czacie i podgląd po otwarciu linku (`resolveInvite`: ikona, nazwa, liczba członków), Join albo Open, gdy już jesteś na serwerze; parsowanie linków zaproszeń w AicordKit.
-   - [x] Rozszerzenie Safari „Aicord Invites” (iOS i macOS): linki `discord.gg/…` i `discord.com/invite/…` otwierane w Aicord przez `aicord://invite/…`. Przekazanie linku sprawdzone na obu systemach; włączenie w Safari do zrobienia przez użytkownika. Przy AltStore z darmowym kontem zajmuje jedno z 3 App ID. Szczegóły: `docs/INVITES_NOTES.md`.
+   - [x] Rozszerzenie Safari „Aicord Invites” (iOS i macOS): linki `discord.gg/…` i `discord.com/invite/…` otwierane w Aicord przez `aicord://invite/…`. Przekazanie linku sprawdzone na obu systemach; włączenie w Safari do zrobienia przez użytkownika. Przy AltStore z darmowym kontem zajmuje jedno z 3 App ID. Szczegóły: [INVITES_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/INVITES_NOTES.md).
    - [x] Leave Server w menu serwera i w Server Settings (`DELETE /users/@me/guilds/{id}`), za alertem z Cancel; ukryte dla właściciela. Po wyjściu z otwartego serwera wraca na Home. Sprawdzone w symulatorze tylko do alertu i Cancel (Sciwand), na NAScin opcji nie ma.
    - [x] Server Settings → Invites: lista zaproszeń serwera (kanał, kto utworzył, użycia, ważność), Revoke za potwierdzeniem, kopiowanie linku, przesunięcie na iOS. Pokazywane przy Manage Server. Na NAScin unieważnione stare `EdxGVcWd` (noc 30/31.10).
    - [x] Ekran z instrukcją włączenia rozszerzenia Safari (Settings → Advanced → Safari Extension), na macOS ze stanem rozszerzenia i przyciskiem do ustawień Safari; przy pierwszym podglądzie zaproszenia otwartym w aplikacji jednorazowa podpowiedź (znika po „Not Now”, obejrzeniu instrukcji albo pierwszym linku z rozszerzenia).
@@ -421,7 +422,7 @@ Startujemy po odświeżeniu UI. To port, nie merge. Bazą kodu jest gałąź [`u
    - [x] `aead_xchacha20_poly1305_rtpsize` (wymagany przez Discorda) jako własne HChaCha20 plus `ChaChaPoly` z CryptoKit.
    - [x] Testy z wektorami testowymi dla obu trybów rtpsize.
 4. **DAVE (E2EE):**
-   - [x] `llsc12/DaveKit` (oficjalny libdave przez C++ interop), przypięty do konkretnego commitu. `.interoperabilityMode(.Cxx)` tylko w targecie `DiscordVoice`; sprawdzić, czy nie psuje Swift 6 language mode w innych targetach. Psuł: importujący muszą dostać `-disable-cxx-interop-requirement-at-import`, szczegóły w `docs/VOICE_NOTES.md`.
+   - [x] `llsc12/DaveKit` (oficjalny libdave przez C++ interop), przypięty do konkretnego commitu. `.interoperabilityMode(.Cxx)` tylko w targecie `DiscordVoice`; sprawdzić, czy nie psuje Swift 6 language mode w innych targetach. Psuł: importujący muszą dostać `-disable-cxx-interop-requirement-at-import`, szczegóły w [VOICE_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/VOICE_NOTES.md).
    - [x] Zabezpieczenia z Serein: odrzucanie nieoczekiwanego ID grupy, użytkowników spoza listy uczestników, duplikatów i propozycji innych niż Add/Remove.
    - [x] Odzyskiwanie przy nieprawidłowej grupie; żadnych mediów przed zakończeniem przejścia; logi bez sekretów.
 5. **Audio i aplikacja:**
@@ -437,7 +438,7 @@ Startujemy po odświeżeniu UI. To port, nie merge. Bazą kodu jest gałąź [`u
 ---
 
 ### ✅ Etap 7: Własne biblioteki zamiast forków (`AicordKit`, `Textual`)
-Szczegóły, decyzje i pomiary: `docs/SLIM_NOTES.md`. Binarka iOS (Release, arm64) 51,9 → 41,9 MB, skompilowany kod (`__text`) −42%; `.app` na macOS 60,9 → 51,5 MB.
+Szczegóły, decyzje i pomiary: [SLIM_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/SLIM_NOTES.md). Binarka iOS (Release, arm64) 51,9 → 41,9 MB, skompilowany kod (`__text`) −42%; `.app` na macOS 60,9 → 51,5 MB.
 1. **Odchudzenie `DiscordModels`:**
    - [x] Usunięcie modeli i endpointów tylko dla botów: interakcje, komendy aplikacji, logi audytu, automoderacja, webhooki (modele potrzebne do wyświetlania zostały).
    - [x] Usunięcie shardowania (`ShardCoordinator`), intencji i uwierzytelniania bota (`DiscordAuth`, `BotAuthManager`).
@@ -446,14 +447,14 @@ Szczegóły, decyzje i pomiary: `docs/SLIM_NOTES.md`. Binarka iOS (Release, arm6
    - [x] Scalenie prawie pustych modułów i nazwa `AicordKit`, bez pozostałości DiscordBM.
 3. **`Textual`:**
    - [x] Usunięty styl GitHub, przestarzałe API i renderowanie tabel, których aplikacja nie używa.
-4. **Dalej (noc 30/31.10, `docs/OVERNIGHT.md`):**
+4. **Dalej (noc 30/31.10, [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md)):**
    - [x] Typy tylko odbierane od Discorda (wiadomości, kanały, serwery, członkowie, komponenty, zdarzenia gatewaya…) są `Decodable` zamiast `Codable`, więc znikają ich `encode(to:)` i metadane. `Codable` zostaje dla tego, co się wysyła (payloady, gateway, aktywność) i co aplikacja zapisuje (`DiscordUser` w pęku kluczy); `Emoji` ma własne, małe kodowanie (`id`, `name`, `animated`). Z payloadów wiadomości zniknęło pole `components`, a z `CreateGuild` pola `roles` i `channels` (konto użytkownika ich nie wysyła). Binarka iOS (Release, arm64) 44,87 → 44,20 MB, `__text` 12,45 → 12,20 MB, `DiscordModels` 4,46 → 4,15 MB.
    - [x] `Textual/Tests`: target `TextualTests` z testami logiki (parser i rozszerzenia Discorda, tokenizery, formatery, model zaznaczania z nagranymi układami), 187 testów. Testy snapshotowe z PNG usunięte: wymagały swift-snapshot-testing, a wzorce nagrano dla stylów, których już nie ma. Test na 2500 fragmentów wykrył przepełnienie stosu w `TextBuilder` (sklejanie `Text` w łańcuch głębokości N); teraz sklejanie zrównoważone. Oczekiwania tokenizera i adresu emoji dopasowane do obecnego kodu (natywny tokenizer zamiast Prism.js, `.webp?size=44`).
 
 ---
 
 ### ⏳ Etap 11: Aicord dla macOS (noc 30/31.10)
-Szczegóły i lista do sprawdzenia na Macu: `docs/OVERNIGHT.md`, punkt 5.
+Szczegóły i lista do sprawdzenia na Macu: [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md), punkt 5.
 1. **Interfejs Maca:**
    - [x] `MacBaseplate`: `NavigationSplitView` z systemowym przełącznikiem paska bocznego (serwery i natywna lista kanałów), czat jako szczegóły, członkowie w inspektorze, tytuł okna = kanał, podtytuł = serwer, w pasku narzędzi Search (arkusz z wyszukiwarką) i lista członków. Stary układ zostaje pod Settings → Advanced → Classic Window Layout.
    - [x] Menu: `SidebarCommands`, View → Show Member List (⌥⌘M), Edit → Search… (⌘F), nowe menu Go: Direct Messages (⌘0), Open Channel in New Window (⇧⌘O), Mark Channel as Read (⇧⎋).
@@ -466,7 +467,7 @@ Szczegóły i lista do sprawdzenia na Macu: `docs/OVERNIGHT.md`, punkt 5.
 ---
 
 ### ⏳ Etap 12: Wydania (przygotowanie, noc 30/31.10)
-Szczegóły, sekrety i kroki: `docs/OVERNIGHT.md`, punkt 4. Nic nie zostało uruchomione na GitHubie.
+Szczegóły, sekrety i kroki: [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md), punkt 4. Nic nie zostało uruchomione na GitHubie.
 1. **iOS:**
    - [x] `.github/workflows/release.yml`: tag `v*` → build Release `generic/platform=iOS` bez podpisu (`MARKETING_VERSION` z tagu, `CURRENT_PROJECT_VERSION` = numer przebiegu), `Payload/Aicord.app` w `Aicord-<wersja>.ipa`, wydanie na GitHubie z notatkami z najnowszej sekcji `SHIPPED.md` i linkiem do źródła.
    - [x] Źródło AltStore/SideStore (`scripts/altstore_source.py`, tylko biblioteka standardowa): wszystkie wydania z `.ipa` jako wersje, uprawnienia prywatności z `Info.plist`, publikacja `altstore.json` na GitHub Pages. Sprawdzone lokalnie na przykładowych danych (paginacja, szkice pomijane) i pakowanie `.ipa` na lokalnym buildzie Release (17 MB, z rozszerzeniem Safari).
@@ -477,7 +478,7 @@ Szczegóły, sekrety i kroki: `docs/OVERNIGHT.md`, punkt 4. Nic nie zostało uru
 ---
 
 ### 🧪 Etap 13: Brakujące funkcje Discorda — Paczki 1 i 2
-Szczegóły, decyzje i testy: `docs/PACK1_NOTES.md` i `docs/PACK2_NOTES.md`. Zapisy testowane tylko na NAScin.
+Szczegóły, decyzje i testy: [PACK1_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PACK1_NOTES.md) i [PACK2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PACK2_NOTES.md). Zapisy testowane tylko na NAScin.
 1. **Paczka 1:**
    - [x] Wiadomości systemowe: `MessageCell.SystemMessage` z linią i ikoną dla przypięcia (skok do wiadomości), utworzenia wątku (otwiera wątek), startera wątku (wiadomość z kanału nadrzędnego), boostów i poziomów, zmiany nazwy i ikony, obserwowania kanału, połączeń w DM (czas, nieodebrane), dodania i usunięcia z grupy, AutoMod, Stage, zamkniętej ankiety, alertów bezpieczeństwa serwera i nowej emoji; komenda z menu kontekstowego jak slash-komenda; każdy inny typ to szara neutralna linia.
    - [x] Ankiety: `PollView` w treści wiadomości (pytanie, emoji, paski z liczbą i procentem, czas do końca, wiele odpowiedzi, Show Results, Vote, Remove Vote), głos przez `PUT /channels/{c}/polls/{m}/answers/@me` (`UserAPIEndpoint.createPollVote`), aktualizacja z `MESSAGE_POLL_VOTE_ADD`/`REMOVE`; tworzenie ankiety z menu „+” paska wiadomości.
@@ -489,13 +490,13 @@ Szczegóły, decyzje i testy: `docs/PACK1_NOTES.md` i `docs/PACK2_NOTES.md`. Zap
    - [x] Głosówki: AVAudioEngine → 48 kHz mono → libopus z AicordKit → Ogg (OpusHead, OpusTags, strony co sekundę, CRC), fala 256 słupków w base64 i `duration_secs`, upload do chmury Discorda i wiadomość z flagą `IS_VOICE_MESSAGE`.
    - [x] Wydarzenia: lista z `with_user_count`, własne „Interested” z `GET /users/@me/scheduled-events`, `PUT`/`DELETE …/users/@me`, link do kanału lub miejsca, obrazek.
    - [x] Activities: karta „Open in Discord” z nazwą i ikoną aplikacji (`GET /applications/{id}/rpc`) nad polem wiadomości, gdy w kanale działa Activity (`EMBEDDED_ACTIVITY_UPDATE_V2`, liczba uczestników), i pod wiadomością z zaproszeniem do gry (`activity` + `application`). Eksperyment z uruchamianiem aktywności przeniesiony do „Później” w roadmapie.
-3. **Interakcje z botami (1.11):** szczegóły i wynik testów w `docs/BOT_INTERACTIONS_NOTES.md`, bot testowy w `tools/testbot/`.
+3. **Interakcje z botami (1.11):** szczegóły i wynik testów w [BOT_INTERACTIONS_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/BOT_INTERACTIONS_NOTES.md), bot testowy w `tools/testbot/`.
    - [x] Przyciski i selecty (v1 i v2) wysyłają `POST /interactions` typ 3, modal typ 5 z natywnym arkuszem (`INTERACTION_MODAL_CREATE`), stany wysyłania i porażki, ephemeral z Dismiss, „thinking…”, opcja typu załącznik, komendy z menu kontekstowego w „Apps”.
    - [x] Forum: nowy post (tytuł, treść, tagi) i wyszukiwanie po nazwie (niesprawdzone na żywo, NAScin nie ma forum).
 
 
 ### ✅ Etap 10: Intelligence (faza 1 i 2)
-Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tylko do odczytu; przez zewnętrzne API testowane wyłącznie na treści z NAScin.
+Szczegóły, decyzje, testy i ryzyka: [INTELLIGENCE_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/INTELLIGENCE_NOTES.md). Wszystko tylko do odczytu; przez zewnętrzne API testowane wyłącznie na treści z NAScin.
 1. **Ustawienia:**
    - [x] Settings → Intelligence: Apple Intelligence na urządzeniu (z mapowaniem powodów niedostępności) albo API zgodne z OpenAI (klucz w pęku kluczy, lista modeli z `/models`, Test Connection), prywatność z notką „dokąd idą wiadomości”, DM domyślnie wyłączone.
 2. **Tłumaczenie:**
@@ -515,7 +516,7 @@ Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tyl
    - [x] Ostrzeżenie przed oszustwem w DM od nieznajomych (na urządzeniu).
    - [x] Describe Images: tekst z obrazka przez Vision na urządzeniu, opis przez model API.
    - [x] Filtr słów, zablokowani, spoilery i ukryte media wrażliwe nigdy nie trafiają do modelu.
-7. **Dokończenia (noc 30/31.10, `docs/OVERNIGHT.md`):**
+7. **Dokończenia (noc 30/31.10, [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md)):**
    - [x] `SemanticRanker` w AicordKit: wektory zdań z `NLContextualEmbedding` (model dla pisma łacińskiego, 512 wymiarów, m.in. PL i EN, na urządzeniu) i wspólne słowa (bez diakrytyków, z odciętymi końcówkami, prefiksy liczone częściowo). Bez modelu wektorów działa samo dopasowanie słów. 6 testów.
    - [x] Search with a Sentence: wyniki od najtrafniejszych względem całego zdania (przełącznik Most Relevant / Newest), w tym nazwy plików i tytuły embedów; gdy żadna wiadomość nie ma wszystkich słów kluczowych, ostatnie wiadomości z zakresu uszeregowane według zdania. Serwer nazwany w zdaniu jest rozpoznawany także wtedy, gdy model go pominie.
    - [x] Opisy obrazów dla VoiceOver: gdy VoiceOver działa, obraz bez tekstu alternatywnego dostaje etykietę z tekstem odczytanym przez Vision na urządzeniu (Settings → Intelligence → Accessibility, domyślnie włączone), a opcjonalnie opis od modelu API (domyślnie wyłączone; w DM tylko z „Use in Direct Messages”). Alt text od nadawcy ma pierwszeństwo; spoilery i ukryte media wrażliwe to „Hidden image”. Wynik zapamiętany na sesję.
@@ -525,16 +526,16 @@ Szczegóły, decyzje, testy i ryzyka: `docs/INTELLIGENCE_NOTES.md`. Wszystko tyl
    - [x] Rerankowanie bez indeksu: narzędzie `search` modelu z 25 wyników Discorda oddaje te najbliższe pytaniu (6 na urządzeniu, 15 przez API), a Ask na urządzeniu bierze 5 najnowszych i 15 najlepiej pasujących z ostatnich 50 wiadomości.
 
 ### 🧪 Etap 14: Reszta do Discorda 1:1 — punkt 3 (1.11)
-3. **Zarządzanie serwerem (dla moderatorów):** szczegóły i testy w `docs/PL_ONBOARDING_ADMIN_NOTES.md`.
+3. **Zarządzanie serwerem (dla moderatorów):** szczegóły i testy w [PL_ONBOARDING_ADMIN_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PL_ONBOARDING_ADMIN_NOTES.md).
    - [x] Tworzenie serwera od zera (`POST /guilds`) i z szablonu (`GET /guilds/templates/{code}` z podglądem, `POST /guilds/templates/{code}`), przycisk „+” na końcu listy serwerów.
    - [x] Moderacja z profilu (także z listy członków) i z menu wiadomości: timeout (`communication_disabled_until`), zdjęcie timeoutu (jawne `null`), kick, ban z `delete_message_seconds`, unban; potwierdzenie i powód w `X-Audit-Log-Reason`. Widoczne z uprawnieniem i hierarchią ról jak w Discordzie. Na żywo sprawdzone tylko arkusze i role na sobie; kick, ban i timeout drugiej osoby niesprawdzone.
    - [x] Kanały i kategorie: tworzenie, nazwa, temat, slowmode, NSFW, kategoria, usuwanie z potwierdzeniem, kolejność przeciąganiem w kategorii (`PATCH /guilds/{id}/channels`).
    - [x] Role: lista, tworzenie, nazwa, kolor (próbki Discorda i własny), osobno na liście, wzmianki, podstawowe uprawnienia, usuwanie; nadawanie i odbieranie członkom.
    - [x] Dziennik audytu (`GET /guilds/{id}/audit-logs`, nowy model `GuildAuditLog`), lista banów.
-   - [x] Uprawnienia kanału i kategorii (nadpisania dla ról i osób, trzy stany), kolejność kategorii (arkusz) i ról (przeciąganie, `PATCH /guilds/{id}/roles`), pełna lista uprawnień roli, ikony ról (emoji albo obraz, przy funkcji `ROLE_ICONS`), AutoMod (`/auto-moderation/rules`), emoji i naklejki, usuwanie serwera przez właściciela (`POST /guilds/{id}/delete`, z MFA). Noc 1/2.11, `docs/OVERNIGHT2_NOTES.md`.
+   - [x] Uprawnienia kanału i kategorii (nadpisania dla ról i osób, trzy stany), kolejność kategorii (arkusz) i ról (przeciąganie, `PATCH /guilds/{id}/roles`), pełna lista uprawnień roli, ikony ról (emoji albo obraz, przy funkcji `ROLE_ICONS`), AutoMod (`/auto-moderation/rules`), emoji i naklejki, usuwanie serwera przez właściciela (`POST /guilds/{id}/delete`, z MFA). Noc 1/2.11, [OVERNIGHT2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT2_NOTES.md).
 
 ### 🧪 Etap 15: Lepsze niż Discord — Paczka C i formatowanie (noc 1/2.11)
-Szczegóły i testy w `docs/OVERNIGHT2_NOTES.md`.
+Szczegóły i testy w [OVERNIGHT2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT2_NOTES.md).
 1. **Paczka A, dokończenie:**
    - [x] Ghost ping przez edycję: wzmianka usunięta z treści wiadomości (z drugiego konta niesprawdzone).
 3. **Paczka C:**
