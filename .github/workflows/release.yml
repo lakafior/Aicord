@@ -1,10 +1,11 @@
 name: Release
 
 # A tag like v0.2.0 builds an unsigned iOS app (.ipa) for AltStore and
-# SideStore, attaches it to a GitHub release and publishes the AltStore source
-# on GitHub Pages. The signed Mac app is in release_macos.yml.
+# SideStore and attaches it to a GitHub release. The signed Mac app is in
+# release_macos.yml, the AltStore source on GitHub Pages in altstore.yml.
 #
-# Before the first tag: Settings → Pages → Source: GitHub Actions.
+# Assets keep the same names in every release (Aicord.ipa, Aicord-mac.zip), so
+# the README links to releases/latest/download/... stay valid.
 
 on:
   push:
@@ -13,8 +14,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -68,13 +67,13 @@ jobs:
         run: |
           mkdir -p ipa/Payload
           cp -R build/Build/Products/Release-iphoneos/Aicord.app ipa/Payload/
-          (cd ipa && zip -qry "../Aicord-${{ steps.version.outputs.version }}.ipa" Payload)
-          ls -l Aicord-*.ipa
+          (cd ipa && zip -qry ../Aicord.ipa Payload)
+          ls -l Aicord.ipa
 
       - uses: actions/upload-artifact@v4
         with:
           name: ipa
-          path: Aicord-*.ipa
+          path: Aicord.ipa
 
       - name: Upload log on failure
         if: failure()
@@ -101,8 +100,8 @@ jobs:
           awk '/^## /{n++} n==1' CHANGELOG.md > notes.md
           {
             echo
-            echo "**Install on iPhone:** add the AltStore or SideStore source"
-            echo "https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/altstore.json"
+            echo "**Install on iPhone:** add the AltStore or SideStore source from"
+            echo "https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"
           } >> notes.md
 
       - name: Create the release
@@ -111,35 +110,4 @@ jobs:
         run: |
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
             || gh release create "$GITHUB_REF_NAME" --title "Aicord ${{ needs.ios.outputs.version }}" --notes-file notes.md
-          gh release upload "$GITHUB_REF_NAME" Aicord-*.ipa --clobber
-
-  altstore-source:
-    name: AltStore source on Pages
-    needs: release
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build the source from all releases
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p site
-          gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
-            | python3 scripts/altstore_source.py > site/altstore.json
-          python3 -m json.tool site/altstore.json > /dev/null
-          cat > site/index.html <<'HTML'
-          <!doctype html><meta charset="utf-8"><title>Aicord</title>
-          <p>Add <code>altstore.json</code> from this address to AltStore or SideStore.
-          <p><a href="https://github.com/lakafior/Aicord">github.com/lakafior/Aicord</a>
-          HTML
-
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-      - id: deploy
-        uses: actions/deploy-pages@v4
+          gh release upload "$GITHUB_REF_NAME" Aicord.ipa --clobber

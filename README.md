@@ -15,6 +15,12 @@ A native Discord client for iOS and macOS, written in pure Swift 6 and SwiftUI.
 ![Dependencies](https://img.shields.io/badge/dependencies-6-EA6532)
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 
+[![Download for Mac](https://img.shields.io/badge/Download_for_Mac-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/lakafior/Aicord/releases/latest/download/Aicord-mac.zip)
+[![Add to AltStore](https://img.shields.io/badge/Add_to_AltStore-1BB3A6?style=for-the-badge&logo=appstore&logoColor=white)](https://lakafior.github.io/Aicord/)
+[![Download IPA](https://img.shields.io/badge/Download_IPA-5865F2?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/lakafior/Aicord/releases/latest/download/Aicord.ipa)
+
+<sub>The Mac app is signed and notarized. On iPhone and iPad, add the source to <a href="https://lakafior.github.io/Aicord/">AltStore or SideStore</a> for updates, or sideload the IPA yourself.</sub>
+
 </div>
 
 ---

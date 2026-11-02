@@ -110,7 +110,7 @@ jobs:
             --issuer '${{ secrets.NOTARY_ISSUER_ID }}'
           xcrun stapler staple "$app"
           rm "$RUNNER_TEMP/notary.p8"
-          ditto -c -k --keepParent "$app" "Aicord-${GITHUB_REF_NAME#v}-mac.zip"
+          ditto -c -k --keepParent "$app" Aicord-mac.zip
 
       - name: Attach to the release
         if: env.HAS_CERTIFICATE == 'true' && github.ref_type == 'tag'
@@ -122,7 +122,7 @@ jobs:
             gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 && break
             sleep 30
           done
-          gh release upload "$GITHUB_REF_NAME" Aicord-*-mac.zip --clobber
+          gh release upload "$GITHUB_REF_NAME" Aicord-mac.zip --clobber
 
       - name: Upload log on failure
         if: failure() && env.HAS_CERTIFICATE == 'true'
