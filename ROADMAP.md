@@ -68,7 +68,6 @@ Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI,
    - [ ] Lista członków na prawdziwym dużym serwerze (tysiące osób): płynność przewijania i ponowne wczytanie po zerwaniu połączenia (READY). Zmierzone tylko na 600 sztucznych członkach; ponowna prośba po INVALIDATE nie została wywołana na żywo.
    - [ ] Mac, dalsze dopracowanie wyglądu: arkusze jako popovery lub osobne okna, karty w oknie `Settings`, tytuł arkusza ustawień serwera nie powinien zastępować tytułu okna, kolor tła czatu zgodny z oknem ([MACOS_PASS_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/MACOS_PASS_NOTES.md)).
 2. **Serwer MCP (połączenie Claude z Discordem):**
-   - [ ] Sprawdzić na odblokowanym Macu z prawdziwą aplikacją: włączyć Allow MCP Server, wkleić na nowo skopiowaną konfigurację (ścieżka prowadzi teraz do helpera w `.app`) do Claude Desktop, `list_servers` i `read_messages` na NAScin (kroki w [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md), punkt 5b).
    - [ ] Podsumowania jako narzędzie MCP (z modelu wybranego w Intelligence). Wysyłanie najwyżej z potwierdzeniem każdej akcji w aplikacji: działanie przez token użytkownika to automatyzacja konta, której Discord zabrania (self-bot), więc ryzyko blokady trzeba ograniczyć.
 
 ---

@@ -2,6 +2,18 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### MCP server
+
+- **New** · More for assistants through the MCP server:
+  - Search by person (a name or user ID), mentioned person, kind (`has`: image, link, file, poll…), people, bots or webhooks, pinned, date range and oldest first, 25 a page with paging, and a regular expression on top of the results
+  - Reading before or after a message or date, around a message, or from a pasted message link, and looking through up to 1,000 messages for a regular expression
+  - Threads and forum posts: listed with their opening message, and readable like channels
+  - New tools: find members, recent mentions, unread servers and channels, pinned messages, scheduled events, and who is in voice and streaming
+  - Channels come under their categories with their kind, topic, unread and mention counts; every message has its author's ID; dates are in the Mac's time zone
+- **Fixed** · The MCP server lists only the channels you can see in a server, even one you haven't opened in Aicord, and says what Discord answered (403, 404, rate limit) instead of "DiscordHTTPError error 1"
+
 ## 0.1.0 (November 2026)
 
 ### Voice
@@ -464,6 +476,8 @@ Szczegóły i lista do sprawdzenia na Macu: [OVERNIGHT](https://github.com/lakaf
 2. **Serwer MCP:**
    - [x] `AicordMCP/` (pakiet SwiftPM, tylko Foundation i Network): program `aicord-mcp` mówiący MCP (JSON-RPC 2.0) przez stdio, narzędzia `list_servers`, `list_channels`, `list_direct_messages`, `read_messages`, `search_messages`, wszystkie z `readOnlyHint`.
    - [x] Most w aplikacji (`MCPBridge`, tylko macOS): nasłuch tylko na `127.0.0.1:47823`, jedno zapytanie na połączenie, klucz porównywany w stałym czasie, najwyżej 30 wywołań na minutę, te same filtry co dla modelu, DM-y osobnym przełącznikiem. Domyślnie wyłączony (Settings → Advanced → Allow MCP Server, Copy Configuration for Claude, Reset Key).
+   - [x] Sprawdzone na żywo 2.11 z Claude na Macu: konfiguracja z Settings → Advanced działa, `list_servers`, `list_channels`, `read_messages` i `search_messages` odpowiadają z otwartej aplikacji.
+   - [x] Więcej narzędzi (2.11): wyszukiwanie z filtrami (osoba po nazwie albo ID, wzmianka, `has`, `author_type`, przypięte, zakres dat, kolejność, strony po 25, regex na wynikach do pięciu stron), `read_messages` z `before`/`after`/`around`, linkiem do wiadomości i regexem do 1000 wiadomości, wątki i posty forów (`list_threads`, czytanie wątku po sprawdzeniu kanału nadrzędnego), `find_members`, `list_mentions`, `list_unread`, `list_pinned`, `list_events`, `list_voice`. Kanały z kategoriami, typem, tematem i nieprzeczytanymi; przy każdej wiadomości `author_id`, w wynikach z serwera też `channel_id`; daty w strefie Maca. Błędy HTTP opisane słowami. Uprawnienia liczone ze sklepu serwera, także dla serwera nieotwartego w aplikacji.
 
 ---
 

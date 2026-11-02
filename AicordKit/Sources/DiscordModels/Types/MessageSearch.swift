@@ -11,6 +11,12 @@ public struct MessageSearchQuery: Sendable {
   public var content: String?
   public var channelIDs: [ChannelSnowflake]
   public var authorIDs: [UserSnowflake]
+  /// "user", "bot" or "webhook"; a leading "-" leaves that kind out.
+  public var authorTypes: [String]
+  public var mentionIDs: [UserSnowflake]
+  public var pinned: Bool?
+  /// Newest first unless set.
+  public var oldestFirst: Bool
   /// e.g. "link", "embed", "file", "image", "video", "sound", "sticker", "poll"
   public var has: [String]
   public var offset: Int
@@ -24,6 +30,10 @@ public struct MessageSearchQuery: Sendable {
     content: String? = nil,
     channelIDs: [ChannelSnowflake] = [],
     authorIDs: [UserSnowflake] = [],
+    authorTypes: [String] = [],
+    mentionIDs: [UserSnowflake] = [],
+    pinned: Bool? = nil,
+    oldestFirst: Bool = false,
     has: [String] = [],
     offset: Int = 0,
     includeNSFW: Bool = true,
@@ -33,6 +43,10 @@ public struct MessageSearchQuery: Sendable {
     self.content = content
     self.channelIDs = channelIDs
     self.authorIDs = authorIDs
+    self.authorTypes = authorTypes
+    self.mentionIDs = mentionIDs
+    self.pinned = pinned
+    self.oldestFirst = oldestFirst
     self.has = has
     self.offset = offset
     self.includeNSFW = includeNSFW
@@ -51,7 +65,11 @@ public struct MessageSearchQuery: Sendable {
     if let content, !content.isEmpty { items.append(("content", content)) }
     items += channelIDs.map { ("channel_id", $0.rawValue) }
     items += authorIDs.map { ("author_id", $0.rawValue) }
+    items += authorTypes.map { ("author_type", $0) }
+    items += mentionIDs.map { ("mentions", $0.rawValue) }
     items += has.map { ("has", $0) }
+    if let pinned { items.append(("pinned", pinned ? "true" : "false")) }
+    if oldestFirst { items += [("sort_by", "timestamp"), ("sort_order", "asc")] }
     if let minID { items.append(("min_id", minID.rawValue)) }
     if let maxID { items.append(("max_id", maxID.rawValue)) }
     if offset > 0 { items.append(("offset", String(offset))) }
