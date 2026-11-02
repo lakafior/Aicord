@@ -9,6 +9,11 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 - **New** · Stage channels: they open their text chat with a Stage panel above it (topic, speakers with speaking rings, the audience with raised hands), you listen from the audience, request to speak or lower your hand, take up an invitation to speak or stay in the audience, and go back to the audience; the call panel shows the Stage and puts the hand where the microphone was, and the channel list shows the topic, the speakers and how many listen
 - **New** · Stage moderators start a Stage with a topic, change the topic, end it, go on stage themselves, and invite people to speak or move them back to the audience; Stage is a channel type in New Channel (it needs a Community server)
 
+### Fixed
+
+- **Fixed** · On the Mac, opening a forum no longer crashes the app (moving between forums, announcement and text channels quit it); the forum's post search sits above the posts
+- **Fixed** · On the Mac, the server management pages (Channels, Roles, Emoji and Stickers, AutoMod, channel permissions) show their add button again, in a bar under the list, so New Channel and New Category can be reached
+
 ## 0.1.1 (November 2026)
 
 ### MCP server
@@ -487,6 +492,8 @@ Szczegóły i lista do sprawdzenia na Macu: [OVERNIGHT](https://github.com/lakaf
    - [x] Ustawienia jako systemowa scena `Settings` (⌘, i Aicord → Settings…) zamiast zwykłego okna.
    - [x] Poprawka (2.11): Settings → Notifications → Only Selected nie wysypuje aplikacji przy otwieraniu listy serwerów i kanałów ani listy osób. Drugie `.searchable` w otwartej stronie dokładało do paska narzędzi okna Settings element, który już tam był (wyszukiwarka paska bocznego), i `NSToolbar` rzucał wyjątek; na Macu pole wyszukiwania stoi teraz nad listą.
    - [x] Poprawka (2.11): listy serwerów i kanałów w Settings → Notifications (Only Selected i Silenced in Discord) pokazują tylko kanały, które widzisz. Uprawnienia liczone raz przy otwarciu listy, dla serwera nieotwartego na tymczasowym `GuildStore` bez subskrypcji i bez nasłuchu bramki.
+   - [x] Poprawka (2.11): otwarcie forum nie wysypuje aplikacji na Macu. Forum miało własne `.searchable` obok pola wyszukiwania w pasku okna i własny tytuł w pasku; przy przełączaniu kanałów `NSToolbar` rzucał wyjątek przy wstawianiu elementu (po kilku przełączeniach między forum, ogłoszeniami i kanałami tekstowymi). Na Macu wyszukiwanie postów stoi nad listą, a tytuł forum daje okno.
+   - [x] Poprawka (2.11): strony zarządzania serwerem (Channels, Roles, Emoji and Stickers, AutoMod, uprawnienia kanału) pokazują na Macu przycisk dodawania. W arkuszu ustawień serwera element paska `.primaryAction` otwartej strony się nie pojawiał, więc nie dało się utworzyć kanału; wspólny modyfikator `adminAction` stawia przycisk w pasku pod listą (na iOS zostaje w pasku narzędzi).
 2. **Serwer MCP:**
    - [x] `AicordMCP/` (pakiet SwiftPM, tylko Foundation i Network): program `aicord-mcp` mówiący MCP (JSON-RPC 2.0) przez stdio, narzędzia `list_servers`, `list_channels`, `list_direct_messages`, `read_messages`, `search_messages`, wszystkie z `readOnlyHint`.
    - [x] Most w aplikacji (`MCPBridge`, tylko macOS): nasłuch tylko na `127.0.0.1:47823`, jedno zapytanie na połączenie, klucz porównywany w stałym czasie, najwyżej 30 wywołań na minutę, te same filtry co dla modelu, DM-y osobnym przełącznikiem. Domyślnie wyłączony (Settings → Advanced → Allow MCP Server, Copy Configuration for Claude, Reset Key).

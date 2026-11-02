@@ -204,19 +204,17 @@ struct ChannelPermissionsView: View {
       }
     }
     .navigationTitle("Permissions")
-    .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        Menu {
-          ForEach(candidates) { candidate in
-            Button(candidate.name, systemImage: candidate.kind == .role ? "tag" : "person") {
-              editing = candidate
-            }
+    .adminAction {
+      Menu {
+        ForEach(candidates) { candidate in
+          Button(candidate.name, systemImage: candidate.kind == .role ? "tag" : "person") {
+            editing = candidate
           }
-        } label: {
-          Label("Add Role or Member", systemImage: "plus")
         }
-        .disabled(candidates.isEmpty)
+      } label: {
+        Label("Add Role or Member", systemImage: "plus")
       }
+      .disabled(candidates.isEmpty)
     }
     .sheet(item: $editing) { target in
       OverwriteEditorView(
@@ -508,16 +506,14 @@ struct AutoModView: View {
       if isLoading { ProgressView() }
     }
     .navigationTitle("AutoMod")
-    .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        Menu {
-          ForEach(creatable, id: \.self) { kind in
-            Button(Self.title(kind) as String) { editing = .init(rule: nil, kind: kind) }
-              .disabled(rules.filter { $0.trigger_type == kind }.count >= Self.limit(kind))
-          }
-        } label: {
-          Label("New Rule", systemImage: "plus")
+    .adminAction {
+      Menu {
+        ForEach(creatable, id: \.self) { kind in
+          Button(Self.title(kind) as String) { editing = .init(rule: nil, kind: kind) }
+            .disabled(rules.filter { $0.trigger_type == kind }.count >= Self.limit(kind))
         }
+      } label: {
+        Label("New Rule", systemImage: "plus")
       }
     }
     .sheet(item: $editing, onDismiss: { Task { await load() } }) { target in
@@ -898,14 +894,12 @@ struct ExpressionsAdminView: View {
       if isWorking { ProgressView() }
     }
     .navigationTitle("Emoji and Stickers")
-    .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        Menu {
-          Button("Upload Emoji", systemImage: "face.smiling") { startImport(.emoji) }
-          Button("Upload Sticker", systemImage: "seal") { startImport(.sticker) }
-        } label: {
-          Label("Upload", systemImage: "plus")
-        }
+    .adminAction {
+      Menu {
+        Button("Upload Emoji", systemImage: "face.smiling") { startImport(.emoji) }
+        Button("Upload Sticker", systemImage: "seal") { startImport(.sticker) }
+      } label: {
+        Label("Upload", systemImage: "plus")
       }
     }
     .fileImporter(

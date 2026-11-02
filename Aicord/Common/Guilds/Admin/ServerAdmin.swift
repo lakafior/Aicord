@@ -10,6 +10,32 @@
 import AicordKit
 import SwiftUI
 
+extension View {
+  /// A management page's add button. On the Mac these pages are pushed inside
+  /// the server settings sheet, where a toolbar item never shows, so the
+  /// button sits in a bar under the list there.
+  func adminAction<Action: View>(@ViewBuilder _ action: () -> Action) -> some View {
+    #if os(macOS)
+      safeAreaInset(edge: .bottom, spacing: 0) {
+        HStack {
+          Spacer()
+          action()
+            .fixedSize()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(.bar)
+      }
+    #else
+      toolbar {
+        ToolbarItem(placement: .primaryAction) {
+          action()
+        }
+      }
+    #endif
+  }
+}
+
 /// The management links in a server's settings, for the parts you may manage.
 struct ServerAdminSection: View {
   let guildId: GuildSnowflake
@@ -147,17 +173,15 @@ struct ChannelsAdminView: View {
       .listStyle(.inset)
     #endif
     .navigationTitle("Channels")
-    .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        Menu {
-          Button("New Channel", systemImage: "number") { newKind = .channel }
-          Button("New Category", systemImage: "folder") { newKind = .category }
-          Divider()
-          Button("Category Order", systemImage: "arrow.up.arrow.down") { reorderingCategories = true }
-            .disabled(categories.count < 2)
-        } label: {
-          Label("Add", systemImage: "plus")
-        }
+    .adminAction {
+      Menu {
+        Button("New Channel", systemImage: "number") { newKind = .channel }
+        Button("New Category", systemImage: "folder") { newKind = .category }
+        Divider()
+        Button("Category Order", systemImage: "arrow.up.arrow.down") { reorderingCategories = true }
+          .disabled(categories.count < 2)
+      } label: {
+        Label("Add", systemImage: "plus")
       }
     }
     .sheet(item: $newKind) { kind in
@@ -553,13 +577,11 @@ struct RolesAdminView: View {
       .listStyle(.inset)
     #endif
     .navigationTitle("Roles")
-    .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        if isCreating {
-          ProgressView()
-        } else {
-          Button("New Role", systemImage: "plus") { create() }
-        }
+    .adminAction {
+      if isCreating {
+        ProgressView()
+      } else {
+        Button("New Role", systemImage: "plus") { create() }
       }
     }
     .navigationDestination(item: $created) { roleId in

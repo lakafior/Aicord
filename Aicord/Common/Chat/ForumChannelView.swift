@@ -173,19 +173,34 @@ struct ForumChannelView: View {
     .scrollContentBackground(.hidden)
     .background(theme.common.secondaryBackground)
     .refreshable { await load(reset: true) }
-    .searchable(text: $searchText, prompt: Text("Search posts"))
+    #if os(macOS)
+      // the window's toolbar already has the search field (MacBaseplate), and
+      // a second `.searchable` makes NSToolbar throw (the app crashed opening
+      // a forum), so the field sits above the posts
+      .safeAreaInset(edge: .top, spacing: 0) {
+        TextField("Search posts", text: $searchText, prompt: Text("Search posts"))
+          .textFieldStyle(.roundedBorder)
+          .padding(.horizontal, 20)
+          .padding(.top, 12)
+      }
+    #else
+      .searchable(text: $searchText, prompt: Text("Search posts"))
+    #endif
     .sheet(isPresented: $composing) {
       NewForumPostSheet(vm: vm, tags: tags) { post in open(post) }
     }
     .toolbar {
-      ToolbarItem(placement: .principal) {
-        Label(
-          channel?.name ?? String(localized: "Forum"),
-          systemImage: ChannelButton.symbol(for: channel?.type)
-        )
-        .labelStyle(.titleAndIcon)
-        .font(.headline)
-      }
+      // on the Mac the window's title names the forum (MacBaseplate)
+      #if os(iOS)
+        ToolbarItem(placement: .principal) {
+          Label(
+            channel?.name ?? String(localized: "Forum"),
+            systemImage: ChannelButton.symbol(for: channel?.type)
+          )
+          .labelStyle(.titleAndIcon)
+          .font(.headline)
+        }
+      #endif
       if vm.guildStore?.hasPermission(channel: vm, .sendMessages) ?? false {
         ToolbarItem(placement: .primaryAction) {
           Button {
