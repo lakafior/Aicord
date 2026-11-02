@@ -145,6 +145,8 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 - **Fixed** · Picking a server in Search on iPhone opened a black screen instead of the server; it now shows the server's channels on Home
 - **Fixed** · Scrolling the chat jumped: rows no longer re-render when a scroll starts or ends, the scroll position no longer redraws the whole chat, and only a new message animates, not every reaction or embed that arrives
+- **Fixed** · The chat loads older history again as you scroll up, a page at a time, through to the start of the channel, with a small spinner at the top; the messages on screen stay where they are when a page comes in (it used to jump, which is why Paicord turned paging off)
+- **Fixed** · Smoother chat scrolling: the whole chat no longer redraws as each row scrolls past or as server members load, link embeds no longer change height as they scroll into view, and reading older history isn't cut short when new messages arrive
 
 - **Fixed** · The attachment viewer on iPhone and iPad opened on the first image instead of the one tapped when a message had several
 - **Fixed** · Tapping a notification sometimes did nothing: it could reach a window state that wasn't on screen
