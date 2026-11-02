@@ -67,7 +67,7 @@ struct ChannelButton: View {
     case .dm, .groupDm:
       privateChannelLabel
         .tag(channel.id)
-    case .guildVoice:
+    case .guildVoice, .guildStageVoice:
       VoiceChannelButton(channel: channel)
     case .guildText, .guildAnnouncement:
       if isHidden {
