@@ -1785,7 +1785,7 @@
 				CODE_SIGN_ENTITLEMENTS = AicordWidgets/AicordWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
@@ -1806,7 +1806,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.1;
+				MARKETING_VERSION = 0.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -1827,7 +1827,7 @@
 				CODE_SIGN_ENTITLEMENTS = AicordWidgets/AicordWidgets.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
@@ -1848,7 +1848,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.1;
+				MARKETING_VERSION = 0.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -1867,7 +1867,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
@@ -1888,7 +1888,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.1;
+				MARKETING_VERSION = 0.1.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -1911,7 +1911,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
@@ -1932,7 +1932,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.1;
+				MARKETING_VERSION = 0.1.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -2088,7 +2088,7 @@
 				CODE_SIGN_ENTITLEMENTS = Aicord/Aicord.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
@@ -2131,7 +2131,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.1;
+				MARKETING_VERSION = 0.1.2;
 				OTHER_SWIFT_FLAGS = "$(inherited) -Xfrontend -disable-cxx-interop-requirement-at-import";
 				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2157,7 +2157,7 @@
 				CODE_SIGN_ENTITLEMENTS = Aicord/Aicord.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
@@ -2200,7 +2200,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.1.1;
+				MARKETING_VERSION = 0.1.2;
 				OTHER_SWIFT_FLAGS = "$(inherited) -Xfrontend -disable-cxx-interop-requirement-at-import";
 				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord;
 				PRODUCT_NAME = "$(TARGET_NAME)";
