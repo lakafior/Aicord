@@ -23,7 +23,9 @@ extension MessageCell {
     private let maxHeight: CGFloat = 300
 
     var body: some View {
-      LazyVStack(alignment: .leading, spacing: 8) {
+      // not lazy: a lazy stack inside a chat row only guesses its height until it
+      // is on screen, so the row changed size while scrolling into view
+      VStack(alignment: .leading, spacing: 8) {
         ForEach(embeds.combineEmbedRuns(), id: \.embed) { embed in
           EmbedRow(embedData: embed, message: message, showsLinkMedia: showsLinkMedia)
         }

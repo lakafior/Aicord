@@ -79,6 +79,8 @@ extension MessageCell {
         && lhs.message.flags == rhs.message.flags
         && lhs.message.content == rhs.message.content
         && lhs.compact == rhs.compact
+        // older history loading above can start or end a group
+        && lhs.inline == rhs.inline
     }
 
     var body: some View {

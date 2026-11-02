@@ -187,6 +187,20 @@ class ChannelStore: DiscordDataStore {
   }
 
   static let LoadedMessageLimit = 200
+  /// How many messages stay loaded while the user reads older history. Trimming
+  /// below this would drop the rows on screen.
+  static let HistoryMessageLimit = 1000
+
+  /// Whether the chat shows its newest messages, set by the chat as it scrolls.
+  /// New messages trim the oldest ones only then, so reading older history isn't
+  /// pulled out from under the user.
+  @ObservationIgnored var isViewingLatest = true
+  /// When the last page of older history was requested, to space out requests.
+  @ObservationIgnored private var lastHistoryFetch = Date.distantPast
+  /// How many messages of older history were just inserted above the loaded
+  /// ones and not yet scrolled by. The chat moves by the height they add, once,
+  /// then sets this back to 0.
+  @ObservationIgnored var unsettledHistoryInsertion = 0
 
   // MARK: - Protocol Methods
 
@@ -330,8 +344,10 @@ class ChannelStore: DiscordDataStore {
         insertingAt: messages.count
       )
 
-      // trim excess old messages
-      trimExtraMessagesIfNeeded(preferRemovingOldest: true)
+      // trim excess old messages, unless the user is reading them
+      trimExtraMessagesIfNeeded(
+        preferRemovingOldest: true,
+        limit: isViewingLatest ? Self.LoadedMessageLimit : Self.HistoryMessageLimit)
     }
 
     // Remove typing indicator for this user
@@ -646,17 +662,22 @@ class ChannelStore: DiscordDataStore {
     return false
   }
 
+  /// Loads the page of messages before the oldest one loaded, when the chat is
+  /// scrolled near its top. One page at a time, at most one a second.
   func tryFetchMoreMessageHistory() {
     // if theres an ongoing task to fetch history, ignore this request.
     guard loadingMessagesTask == nil else { return }
     // ensure we're not already at the start of history, though the ui cant trigger this if that is the case. nonetheless ykyk
-    guard hasMoreHistory else { return }
-    print("[ChannelStore] Trying to fetch more message history...")
+    guard hasMoreHistory, hasPermission(.readMessageHistory) else { return }
     // fetching messages into the past, get the first message id we have and fetch before that
-    let firstMessage = messages.values.first
+    guard let firstMessage = messages.values.first else { return }
+    // a request soon after the last one waits out the rest of the second
+    let wait = 1 - Date.now.timeIntervalSince(lastHistoryFetch)
     self.loadingMessagesTask = Task {
+      if wait > 0 { try? await Task.sleep(for: .seconds(wait)) }
+      self.lastHistoryFetch = .now
       do {
-        try await self.fetchMessages(before: firstMessage?.id)
+        try await self.fetchMessages(before: firstMessage.id)
       } catch {
         AicordAppState.instances.first?.value.error = error
       }
@@ -681,12 +702,15 @@ class ChannelStore: DiscordDataStore {
     }
   }
 
-  private func trimExtraMessagesIfNeeded(preferRemovingOldest: Bool = true) {
-    // if we dropped newest entries, we're going back in history hence shouldnt store latest messages
-    if !preferRemovingOldest {
+  private func trimExtraMessagesIfNeeded(
+    preferRemovingOldest: Bool = true,
+    limit: Int = LoadedMessageLimit
+  ) {
+    // if we drop newest entries, we're going back in history hence shouldnt store latest messages
+    if !preferRemovingOldest && messages.count > limit {
       hasLatestMessages = false
     }
-    while messages.count > Self.LoadedMessageLimit {
+    while messages.count > limit {
       if preferRemovingOldest {
         // keep newest messages -> drop oldest entries
         messages.removeFirst()
@@ -726,6 +750,7 @@ class ChannelStore: DiscordDataStore {
 
       // fetch messages and populate storage in the right order
       if fetchingBefore {
+        unsettledHistoryInsertion = fetched.count
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) {
@@ -742,12 +767,10 @@ class ChannelStore: DiscordDataStore {
           self.hasMoreHistory = false
         }
 
-        trimExtraMessagesIfNeeded(preferRemovingOldest: false)
-
-        // get the "newest" message from the fetched batch to scroll to
-        if let newestMessage = fetched.first {
-          requestScrollToMessage(newestMessage.id)
-        }
+        trimExtraMessagesIfNeeded(preferRemovingOldest: false, limit: Self.HistoryMessageLimit)
+        // no scroll request: the chat scrolls by the page's height itself
+        // (`unsettledHistoryInsertion`). Scrolling to the newest fetched message
+        // here moved the list each time a page came in.
       } else {
         var transaction = Transaction()
         transaction.disablesAnimations = true

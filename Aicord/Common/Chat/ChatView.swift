@@ -18,7 +18,12 @@ struct ChatView: View {
   @Environment(\.theme) var theme
   @Environment(\.scenePhase) var scenePhase
 
-  @State private var currentScrollPosition: MessageSnowflake?
+  /// Moves the list: to a message, to the bottom, or by an offset when older
+  /// history comes in above. Never read in `body`.
+  @State private var scrollPosition = ScrollPosition(idType: MessageSnowflake.self)
+  /// Whether the newest messages are scrolled out of view, from the scroll
+  /// geometry. Only read in callbacks and by `JumpToLatestButton`.
+  @State private var awayFromLatest = false
   @State private var summaryRange: SummaryRange?
   @State private var askingChannel = false
   @State private var indexingChannel = false
@@ -28,6 +33,13 @@ struct ChatView: View {
   @State private var showsExport = false
   @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
+  /// Whether the user has scrolled this chat. Older history only loads after
+  /// that: before the first layout settles on the bottom, the list briefly
+  /// starts at its top, which used to fetch page after page on open.
+  /// Only read in callbacks, never in `body`.
+  @State private var userHasScrolled = false
+  /// Whether the list is within three screens of its top. Only read in callbacks.
+  @State private var nearTop = false
 
   var drain: MessageDrainStore { gw.messageDrain }
 
@@ -61,18 +73,7 @@ struct ChatView: View {
       ScrollView {
         LazyVStack(alignment: .leading, spacing: 0) {
           if !vm.messages.isEmpty {
-            if vm.hasMoreHistory && vm.hasPermission(.readMessageHistory) {
-              //                PlaceholderMessageSet()
-              //                  .onAppear {
-              //                    vm.tryFetchMoreMessageHistory()
-              //                  }
-            } else {
-              if vm.hasPermission(.readMessageHistory) {
-                ChatHeaders.WelcomeStartOfChannelHeader()
-              } else {
-                ChatHeaders.NoHistoryPermissionHeader()
-              }
-            }
+            HistoryEdge(vm: vm)
           }
 
           ForEach(orderedMessages) { msg in
@@ -93,14 +94,6 @@ struct ChatView: View {
             }
           }
 
-          //            if !vm.messages.isEmpty {
-          //              if !vm.hasLatestMessages && vm.hasPermission(.readMessageHistory) {
-          //                PlaceholderMessageSet()
-          //                  .onAppear {
-          //                    vm.tryFetchMoreMessageHistory()
-          //                  }
-          //              }
-          //            } else {
           ForEach(pendingMessages.values) { message in
             // if there is only one message, there is no prior. use the latest message from channelstore
             if pendingMessages.count > 1,
@@ -122,11 +115,11 @@ struct ChatView: View {
               )
             }
           }
-          //          }
-
           // message drain view, represents messages being sent etc
         }
-        .scrollTargetLayout()
+        // no scrollTargetLayout: with it the scroll position tracked the row at
+        // its anchor, and each row scrolling past re-rendered the whole chat.
+        // scrollTo(id:) finds the rows without it.
       }
       // macos 26/27 bug workaround
       .safeAreaPadding(.top, 1)
@@ -149,13 +142,53 @@ struct ChatView: View {
         }
       #endif
       .onScrollPhaseChange { _, newPhase in
+        if newPhase.isScrolling { userHasScrolled = true }
         #if os(macOS)
           isScrolling = newPhase.isScrolling
           // scrolling the chat is what makes Esc jump back to the bottom
           if newPhase == .interacting { isChatFocused = true }
         #endif
       }
-      .scrollPosition(id: $currentScrollPosition, anchor: .bottom)  // causes issues with input bar height changes:
+      // older history loads once the user scrolls within three screens of the top
+      .onScrollGeometryChange(for: Bool.self) { geometry in
+        let fromTop = geometry.contentOffset.y + geometry.contentInsets.top
+        return geometry.contentSize.height > geometry.containerSize.height
+          && fromTop < geometry.containerSize.height * 3
+      } action: { _, isNearTop in
+        nearTop = isNearTop
+        loadOlderIfNeeded()
+      }
+      // a page that came in short of filling those three screens asks for the next
+      // once its load has finished
+      .onChange(of: vm.loadingMessagesTask == nil) { _, idle in
+        if idle { loadOlderIfNeeded() }
+      }
+      // SwiftUI leaves the offset alone when rows are inserted above it, so a
+      // page of older history pushed what was on screen a page down. Move by
+      // what the page added instead, so the same message stays put. The lazy
+      // stack reports the new height on a later scroll update, often with the
+      // offset moving too, so the page is recognised by its size (at least 10
+      // points a message) rather than by timing. Smaller changes are the stack
+      // refining its estimates, which it already keeps in place itself.
+      .onScrollGeometryChange(for: ScrollMetrics.self) { geometry in
+        ScrollMetrics(
+          offset: geometry.contentOffset.y, contentHeight: geometry.contentSize.height)
+      } action: { old, new in
+        let inserted = vm.unsettledHistoryInsertion
+        let grown = new.contentHeight - old.contentHeight
+        guard inserted > 0, grown > CGFloat(inserted) * 10 else { return }
+        vm.unsettledHistoryInsertion = 0
+        scrollPosition.scrollTo(y: new.offset + grown)
+      }
+      .onScrollGeometryChange(for: Bool.self) { geometry in
+        let fromBottom =
+          geometry.contentSize.height + geometry.contentInsets.bottom
+          - geometry.contentOffset.y - geometry.containerSize.height
+        return fromBottom > geometry.containerSize.height
+      } action: { _, away in
+        awayFromLatest = away
+      }
+      .scrollPosition($scrollPosition, anchor: .bottom)  // causes issues with input bar height changes:
       // currently, the input bar changing size can cause the scrollview position to jump unexpectedly.
       // not sure how to fix.
       .bottomAnchored()
@@ -164,7 +197,7 @@ struct ChatView: View {
       .overlay(alignment: .bottomTrailing) {
         // its own view, so the scroll position changing as rows pass by only
         // updates the button, not the whole chat
-        JumpToLatestButton(vm: vm, position: $currentScrollPosition) {
+        JumpToLatestButton(vm: vm, awayFromLatest: $awayFromLatest) {
           acknowledgeLatestIfVisible()
         }
       }
@@ -181,17 +214,7 @@ struct ChatView: View {
         .padding(.bottom, -12)
       }
 
-      if let channel = gw.user.privateChannels[vm.channelId],
-        channel.isPendingMessageRequest || channel.isSpam
-      {
-        // replying would accept the request, so ask first
-        MessageRequestBar(channel: channel)
-      } else if vm.hasPermission(.sendMessages) {
-        InputBar(vm: vm)
-          .id(vm.channelId)
-      } else {
-        Spacer().frame(height: 10)
-      }
+      ChatComposer(vm: vm)
     }
     // only a new newest message animates: animating on any change (a reaction, an
     // edit, an embed arriving) moved rows around while scrolling, and compared
@@ -283,11 +306,13 @@ struct ChatView: View {
         }
         let resolvedId = pending ?? orderedMessages.last?.id
         withAnimation(immediate ? .default : nil) {
-          self.currentScrollPosition = resolvedId ?? self.currentScrollPosition
+          if let resolvedId {
+            scrollPosition.scrollTo(id: resolvedId, anchor: .bottom)
+          }
         }
         acknowledgeLatestIfVisible()
       case .message(let messageId):
-        self.currentScrollPosition = messageId
+        scrollPosition.scrollTo(id: messageId, anchor: .bottom)
       }
     }
     // opening a channel whose messages are already loaded doesn't produce a scroll request
@@ -300,7 +325,10 @@ struct ChatView: View {
       guard !Task.isCancelled else { return }
       OfflineCache.shared.save(vm, gateway: gw)
     }
-    .onChange(of: vm.channelId) { old, _ in gw.readStates.manuallyUnread.remove(old) }
+    .onChange(of: vm.channelId) { old, _ in
+      gw.readStates.manuallyUnread.remove(old)
+      userHasScrolled = false
+    }
     // on iPhone the chat only slides away, so closing it counts as leaving
     .onChange(of: appState.chatOpen) { _, open in
       if open {
@@ -397,15 +425,14 @@ struct ChatView: View {
     return people.isEmpty ? String(localized: "this conversation") : people.joined(separator: ", ")
   }
 
-  /// Whether the chat is scrolled to (or near) the newest messages. A `nil` scroll position
-  /// means the user hasn't scrolled yet, so the view is still resting on its bottom anchor.
-  private var isNearBottom: Bool {
-    guard let currentScrollPosition else { return true }
-    let pendingIds = drain.pendingMessages[vm.channelId, default: [:]].values
-      .compactMap(\.nonce)
-      .map { MessageSnowflake($0.asString) }
-    return (vm.messages.values.suffix(10).map(\.id) + pendingIds)
-      .contains(currentScrollPosition)
+  /// Whether the chat is scrolled to (or within a screen of) the newest messages.
+  private var isNearBottom: Bool { !awayFromLatest }
+
+  /// Asks for the page before the oldest loaded message, when the user has
+  /// scrolled up near it.
+  private func loadOlderIfNeeded() {
+    guard nearTop, userHasScrolled, !vm.messages.isEmpty else { return }
+    vm.tryFetchMoreMessageHistory()
   }
 
   func messageAllowed(_ msg: DiscordChannel.Message) -> Bool {
@@ -475,23 +502,75 @@ extension View {
   }
 }
 
+/// What the history insertion compensation compares between scroll updates.
+private struct ScrollMetrics: Equatable {
+  var offset: CGFloat
+  var contentHeight: CGFloat
+}
+
+/// The top of the loaded messages: a spinner while older history is left to load,
+/// otherwise the start of the channel. Its own view, so the permission check,
+/// which reads the server's members, doesn't re-render the whole chat each time
+/// a member loads.
+private struct HistoryEdge: View {
+  let vm: ChannelStore
+
+  var body: some View {
+    if !vm.hasPermission(.readMessageHistory) {
+      ChatHeaders.NoHistoryPermissionHeader()
+    } else if vm.hasMoreHistory {
+      ProgressView()
+        .controlSize(.small)
+        .frame(maxWidth: .infinity)
+        .frame(height: 44)
+        .accessibilityLabel("Loading older messages")
+    } else {
+      ChatHeaders.WelcomeStartOfChannelHeader()
+    }
+  }
+}
+
+/// The input bar, or what stands in for it. Its own view for the same reason as
+/// `HistoryEdge`, and because DM channels update with every message sent anywhere.
+private struct ChatComposer: View {
+  let vm: ChannelStore
+  @Environment(\.gateway) var gw
+
+  var body: some View {
+    if let channel = gw.user.privateChannels[vm.channelId],
+      channel.isPendingMessageRequest || channel.isSpam
+    {
+      // replying would accept the request, so ask first
+      MessageRequestBar(channel: channel)
+    } else if vm.hasPermission(.sendMessages) {
+      ChatView.InputBar(vm: vm)
+        .id(vm.channelId)
+    } else {
+      Spacer().frame(height: 10)
+    }
+  }
+}
+
 /// The arrow back to the newest messages, shown once they're scrolled out of view.
 private struct JumpToLatestButton: View {
   let vm: ChannelStore
-  @Binding var position: MessageSnowflake?
-  /// Runs when the scroll position moves, e.g. to mark the latest as read.
+  @Binding var awayFromLatest: Bool
+  /// Runs when the newest messages come into or leave view, e.g. to mark them as read.
   var onPositionChange: () -> Void
 
   var body: some View {
     // a ZStack stays in the tree while the button is hidden, so onChange still runs
     ZStack { content }
-      .onChange(of: position) { onPositionChange() }
+      .onChange(of: awayFromLatest) {
+        // lets new messages trim the oldest ones only while the newest are on screen
+        vm.isViewingLatest = vm.hasLatestMessages && !awayFromLatest
+        onPositionChange()
+      }
   }
 
   @ViewBuilder
   private var content: some View {
-    let lastMessages = vm.messages.keys.suffix(10)
-    if !vm.hasLatestMessages || position.map({ !lastMessages.contains($0) }) == true {
+    if !vm.hasLatestMessages || awayFromLatest {
       Button(action: {
         if vm.hasLatestMessages {
           vm.requestScrollToBottom(immediate: true)
