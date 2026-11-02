@@ -1172,6 +1172,10 @@ struct DeleteServerSection: View {
       } label: {
         HStack {
           Text("Delete Server")
+            #if os(macOS)
+              // a Mac form draws destructive buttons in the plain button colour
+              .foregroundStyle(.red)
+            #endif
           if isDeleting {
             Spacer()
             ProgressView()

@@ -63,7 +63,7 @@ struct ServerSettingsSheet: View {
           Text("Your nickname and pronouns on this server, also in Settings → Profiles.")
         }
 
-        if let store = gw.existingGuildStore(for: guildId), Moderation.isOwner(store) {
+        if let guild, guild.owner_id == gw.user.currentUser?.id {
           DeleteServerSection(guildId: guildId) { dismiss() }
         }
 
@@ -74,6 +74,10 @@ struct ServerSettingsSheet: View {
         }
       }
       .formStyle(.grouped)
+      // opened from a server you haven't visited yet (its icon's menu on the
+      // Mac), the server has no store, and without one the management links
+      // can't check your permissions
+      .task { _ = gw.getGuildStore(for: guildId) }
       .leaveServerConfirmation(isPresented: $showsLeave, guild: guild) { dismiss() }
       .navigationTitle(guild?.name ?? String(localized: "Server Settings"))
       #if os(iOS)
