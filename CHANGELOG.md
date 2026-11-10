@@ -2,6 +2,23 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### Writing and sending
+
+- **New** · Typing privacy in Settings → Chat: send the typing indicator always, only in direct messages, or never; when it's off Aicord simply doesn't tell Discord you're typing
+- **New** · Pasted links lose tracking parameters (utm_…, fbclid, gclid, the si of YouTube and Spotify shares, X, TikTok, Amazon, Reddit and newsletter tags), with a switch for each rule in Settings → Chat → Link Rules; on unless turned off
+- **New** · Private file names: attachments go up under a random name with the same extension, spoilers stay spoilers; and Remove Location from Photos takes GPS, camera, lens and date details out of JPEG, HEIC, PNG and TIFF photos before they're sent, keeping their orientation
+- **New** · Long messages: text over 2,000 characters (4,000 with Nitro) goes as several messages, split between paragraphs, lines and sentences and never inside a code block (a block too long for one message is closed and opened again); the field and Formatted Message show how many messages it will be
+- **New** · Files too large for Discord can go to a service you choose in Settings → Chat (catbox, litterbox or your own S3 or R2 bucket), and their link goes into your message; Aicord asks before every file
+- **New** · Stickers in the picker: your servers' stickers, the server you're in first, with search; stickers you can use are sent as stickers
+- **New** · Emoji and stickers without Nitro, off unless turned on: ones you can't use go into the message as a link to their image; reactions are unchanged
+
+### Apple system integration
+
+- **New** · Focus filter: in Settings → Focus, a Focus can set your Discord status and mute chosen servers in Aicord (only direct mentions notify); your status comes back when the Focus ends
+- **New** · On the Mac, a Quick Switcher shortcut that works from any app (Settings → Keybinds → Global, ⌃⌥Space by default) brings Aicord forward with the switcher open
+
 ## 0.1.3 (November 2026)
 
 ### Fixed
@@ -596,3 +613,14 @@ Stage był odłożony do „Później albo wcale”; zrobiony na prośbę po zob
    - [x] Stage instances z READY i GUILD_CREATE oraz zdarzeń `STAGE_INSTANCE_*` w `GuildStore`, a gdy ich brak, `GET /stage-instances/{kanał}`.
    - [x] Moderator (Manage Channels, Mute Members i Move Members): rozpoczęcie z tematem, zmiana tematu, zakończenie, zaproszenie do mówienia i przeniesienie na widownię (menu kontekstowe osoby), typ „Stage” w New Channel.
    - [x] Na żywo (Mac, Aicord Test, kanał `scena-test`, własna kompilacja obok aplikacji z /Applications): rozpoczęcie, słuchanie, podniesienie i opuszczenie ręki, wejście na scenę, powrót na widownię, zakończenie. Na Aicord Test włączona Społeczność (wymóg Stage).
+
+### 🧪 Etap 15: Paczka D — opcje znane ze Swiftcorda (10.11)
+Zrobione autonomicznie na gałęzi; decyzje i lista do przeklikania w notatkach sesji. Testy tylko na NAScin; zewnętrzne serwisy uploadu nie testowane na żywo.
+   - [x] Prywatność pisania: Always / Only in Direct Messages / Never (`Aicord.Composer.TypingIndicator`), bez wywołania `typing`, gdy wyłączone. Kopie do wysłania nie wysyłają już wskaźnika.
+   - [x] Czyszczenie linków przy wklejaniu (iOS i macOS): `LinkCleaner` w `AicordKit`, 10 reguł z hostami, przełącznik każdej reguły.
+   - [x] Prywatne nazwy plików (losowe 12 znaków, rozszerzenie i `SPOILER_` zostają) i usuwanie EXIF/GPS (`ImageMetadata`, bez rekompresji, orientacja zostaje). Załączniki przygotowywane przed `createAttachments` (`MessageDrainStore.prepareUploads`).
+   - [x] Dzielenie długich wiadomości (`MessageSplitter`): akapit, linia, zdanie, słowo; blok kodu w całości albo cięty między liniami z zamknięciem i ponownym otwarciem; odpowiedź z pierwszą częścią, załączniki z ostatnią; podgląd liczby części w polu i w Formatted Message.
+   - [x] Większe pliki przez wybrany serwis (`ExternalUpload`): catbox, litterbox, własny S3/R2 (SigV4 sprawdzony wektorem AWS), sekrety w pęku kluczy, pytanie przy każdym pliku, link dopisywany do pola.
+   - [x] Emoji i naklejki bez Nitro (domyślnie wyłączone): linki CDN z pickera w polu wiadomości, reakcje bez zmian. Przy okazji zakładka Stickers (była „Coming Soon”): naklejki serwerów z wyszukiwaniem, wysyłane przez `sticker_ids`.
+   - [x] Globalny Quick Switcher na Macu: Carbon `RegisterEventHotKey` (bez Dostępności), pięć skrótów do wyboru, Settings → Keybinds → Global; otwiera switcher w głównym oknie nad innymi aplikacjami.
+   - [x] Synchronizacja z trybem skupienia: `AicordFocusFilter` (`SetFocusFilterIntent`) ze statusem i wyciszonymi serwerami; status zmienia otwarta aplikacja (albo przy następnym połączeniu) i wraca po wyłączeniu trybu, wyciszenie tylko lokalnie w powiadomieniach.
