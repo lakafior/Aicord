@@ -85,7 +85,7 @@ Paczki 1 i 2 zrobione (szczegóły w CHANGELOG, [PACK1_NOTES](https://github.com
 ---
 
 ### 🔜 Etap 15: Lepsze niż Discord
-Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z tokenem konta (automatyczne wysyłanie, masowe pobieranie z wielu serwerów w tle, zaplanowane wiadomości), bo Discord traktuje to jak self-bota. Wtyczki w stylu Vencorda (np. niewidoczne pisanie) też podnoszą ryzyko blokady.
+Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z tokenem konta (automatyczne wysyłanie, masowe pobieranie z wielu serwerów w tle, zaplanowane wiadomości), bo Discord traktuje to jak self-bota. Wtyczki w stylu Vencorda, które modyfikują klienta albo wysyłają nietypowy ruch, też podnoszą ryzyko blokady (samo niewysyłanie wskaźnika pisania do nich nie należy, patrz Paczka D).
 1. **Paczka A:** zrobiona 1.11 (galeria, przypomnienia i zapisane, alerty, ghost ping przez usunięcie i przez edycję), szczegóły w `CHANGELOG.md` i [STAGE15A_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/STAGE15A_NOTES.md).
 2. **Paczka B (system Apple):** zrobiona 1.11 (Spotlight, widżet, Live Activity, Skróty, Handoff), szczegóły w `CHANGELOG.md` i [PACK_B_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PACK_B_NOTES.md).
    - [ ] Wybór kanału w „Open Channel” przy uruchomieniu nie ma wyszukiwarki i pokazuje tylko 60 pierwszych (DM-y, potem serwery alfabetycznie); przydałby się najpierw wybór serwera.
@@ -93,6 +93,15 @@ Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z token
    - [ ] Codzienny skrót z wybranych kanałów wielu serwerów (rozszerzenie Catch Up), o wybranej porze, z powiadomieniem.
 4. **Formatowanie wiadomości:** formatowanie zaznaczenia i „Formatted Message” zrobione 1.11. Zostało:
    - [ ] Później w arkuszu tryb embed z Etapu 16.
+5. **Paczka D (opcje znane ze Swiftcorda):** tłumaczenie (Etap 10), Skróty (Paczka B) i Quick Switcher w aplikacji już są. Do zrobienia:
+   - [ ] Prywatność pisania: ustawienie, kiedy wysyłać wskaźnik pisania (zawsze, tylko w DM, nigdy). Aicord po prostu nie wywołuje wtedy endpointu `typing`, więc nie ma żadnego dodatkowego ruchu; to co innego niż wtyczki modyfikujące klienta.
+   - [ ] Czyszczenie linków: przy wklejaniu usuwać parametry śledzące (`utm_*`, `fbclid`, `gclid`, `si` z YouTube i Spotify itp.), z listą reguł i możliwością wyłączenia.
+   - [ ] Prywatne nazwy plików: opcja nadawania załącznikom losowej nazwy z zachowaniem rozszerzenia (i usuwania metadanych EXIF/GPS ze zdjęć).
+   - [ ] Dłuższe wiadomości: tekst ponad limit (2000, z Nitro 4000) dzielony na kilka wiadomości po granicach akapitów i zdań, bez rozcinania bloków kodu; podgląd liczby części przed wysłaniem.
+   - [ ] Większe pliki: plik ponad limit uploadu wysyłany przez wybrany serwis (np. własny S3/R2, catbox, litterbox), a do czatu trafia link. Tylko serwis wskazany w ustawieniach i potwierdzenie przy każdym pliku.
+   - [ ] Emoji i naklejki bez Nitro: niedostępne emoji wysyłane jako link do obrazka z CDN (`?size=48`), naklejki jako link do pliku. Zwykła wiadomość z URL-em, ale omija płatną funkcję, więc domyślnie wyłączone.
+   - [ ] Globalny Quick Switcher na Macu: skrót klawiszowy działający poza aplikacją, otwierający panel przełączania nad innymi oknami.
+   - [ ] Synchronizacja z trybem skupienia: `SetFocusFilterIntent`, który przy wybranym trybie zmienia status (np. Nie przeszkadzać) i opcjonalnie wycisza wybrane serwery.
 
 ---
 
