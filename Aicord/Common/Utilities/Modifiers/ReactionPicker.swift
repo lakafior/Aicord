@@ -54,46 +54,68 @@ private struct ReactionPickerModifier: ViewModifier {
 
   #if os(iOS)
     @State private var detent: PresentationDetent = .medium
-  #endif
 
-  func body(content: Content) -> some View {
-    @Bindable var appState = appState
-    content
-      .sheet(item: $appState.reactionPickerTarget) { target in
-        picker(for: target)
-      }
-      #if os(iOS)
+    func body(content: Content) -> some View {
+      @Bindable var appState = appState
+      content
+        .sheet(item: $appState.reactionPickerTarget) { target in
+          EmojiPicker(detent: $detent)
+            .variant(.reactions)
+            .guild(target.guildID)
+            .allowsShiftToKeepOpen(false)
+            .onPickedEmoji { emoji in
+              appState.reactionPickerTarget = nil
+              target.react(with: emoji, gw: gw, appState: appState)
+            }
+            .presentationDetents([.medium, .large], selection: $detent)
+        }
         .onChange(of: appState.reactionPickerTarget) {
           // always open at the smaller detent
           if appState.reactionPickerTarget != nil { detent = .medium }
         }
-      #endif
-  }
-
-  @ViewBuilder
-  private func picker(for target: ReactionPickerTarget) -> some View {
-    #if os(iOS)
-      EmojiPicker(detent: $detent)
-        .variant(.reactions)
-        .guild(target.guildID)
-        .allowsShiftToKeepOpen(false)
-        .onPickedEmoji { emoji in
-          appState.reactionPickerTarget = nil
-          target.react(with: emoji, gw: gw, appState: appState)
-        }
-        .presentationDetents([.medium, .large], selection: $detent)
-    #else
-      EmojiPicker()
-        .variant(.reactions)
-        .guild(target.guildID)
-        .allowsShiftToKeepOpen(false)
-        .onPickedEmoji { emoji in
-          appState.reactionPickerTarget = nil
-          target.react(with: emoji, gw: gw, appState: appState)
-        }
-    #endif
-  }
+    }
+  #else
+    // the Mac's picker is a popover on the message (`ReactionPickerAnchor`)
+    func body(content: Content) -> some View { content }
+  #endif
 }
+
+#if os(macOS)
+  /// On the Mac the picker is a popover on the message it reacts to, as the
+  /// system's emoji picker opens at the text it types into. It sits behind
+  /// every message that has the menu with Add Reaction; a view of its own, so
+  /// only it follows the picker's target, not the message.
+  struct ReactionPickerAnchor: View {
+    @Environment(\.appState) var appState
+    @Environment(\.gateway) var gw
+    let messageID: MessageSnowflake
+
+    var body: some View {
+      let target = appState.reactionPickerTarget
+      Color.clear
+        .popover(
+          isPresented: Binding(
+            get: { target?.messageID == messageID },
+            set: { if !$0, appState.reactionPickerTarget?.messageID == messageID {
+              appState.reactionPickerTarget = nil
+            } }
+          ),
+          arrowEdge: .top
+        ) {
+          if let target {
+            EmojiPicker()
+              .variant(.reactions)
+              .guild(target.guildID)
+              .allowsShiftToKeepOpen(false)
+              .onPickedEmoji { emoji in
+                appState.reactionPickerTarget = nil
+                target.react(with: emoji, gw: gw, appState: appState)
+              }
+          }
+        }
+    }
+  }
+#endif
 
 extension ReactionPickerTarget {
   /// Why this custom emoji can't be reacted with here, or nil if it can.
