@@ -284,6 +284,8 @@ class NotificationStore: DiscordDataStore {
     }
 
     let personal = message.mentions.contains { $0.id == me }
+    // muted by the Focus filter: only direct mentions get through
+    if FocusSync.mutedServerIDs.contains(guildId.rawValue), !personal { return false }
     var roles = false
     if !message.mention_roles.isEmpty, stored?.suppress_roles != true, Prefs.bool(Prefs.rolesKey) {
       let mine = gw.existingGuildStore(for: guildId)?.member(me)?.roles ?? []

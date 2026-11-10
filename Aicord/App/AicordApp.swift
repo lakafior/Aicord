@@ -67,7 +67,10 @@ struct AicordApp: App {
     SystemIntegration.shared.start()
     #if os(macOS)
       // the MCP bridge listens from launch when allowed; tools wait for the gateway
-      Task { @MainActor in MCPBridge.shared.update() }
+      Task { @MainActor in
+        MCPBridge.shared.update()
+        GlobalQuickSwitcher.shared.update()
+      }
     #endif
   }
 
