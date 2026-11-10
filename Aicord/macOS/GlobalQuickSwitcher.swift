@@ -95,6 +95,18 @@
         1, &type, nil, &handler)
     }
 
+    /// The main Aicord window, on screen or minimized: not a channel window
+    /// of its own, not Settings and not a panel. One on screen comes first.
+    private func mainWindow() -> NSWindow? {
+      let candidates = NSApp.windows.filter { window in
+        let id = window.identifier?.rawValue ?? ""
+        return !(window is NSPanel) && window.canBecomeMain
+          && !id.contains("Channel") && !id.contains("Settings")
+          && (window.isVisible || window.isMiniaturized)
+      }
+      return candidates.first { $0.isVisible } ?? candidates.first
+    }
+
     /// Brings the main window forward with the switcher open, or closes it
     /// when it's already up in front.
     func show() {
@@ -107,10 +119,8 @@
         return
       }
       NSApp.activate()
-      let window =
-        NSApp.windows.first { $0.isVisible && $0.canBecomeMain && $0.identifier?.rawValue.contains("Channel") != true }
-        ?? NSApp.windows.first { $0.canBecomeMain }
-      if let window {
+      if let window = mainWindow() {
+        // a minimized window isn't "visible", so it has to be looked for on its own
         if window.isMiniaturized { window.deminiaturize(nil) }
         window.makeKeyAndOrderFront(nil)
       }
