@@ -135,7 +135,90 @@ struct SettingsView: View {
     }
   }
 
-  var body: some View {
+  #if os(macOS)
+    /// The Settings window's toolbar tabs. Eighteen categories don't fit a
+    /// toolbar, so related ones share a tab, each under its own headings.
+    enum MacTab: String, CaseIterable, Identifiable {
+      case account, profiles, privacy, appearance, chat, voiceVideo, notifications,
+        intelligence, keybinds, advanced, about
+
+      var id: String { rawValue }
+
+      var sections: [SettingsTab] {
+        switch self {
+        case .account: [.you, .account, .devices]
+        case .profiles: [.profiles]
+        case .privacy: [.contentSocial, .dataPrivacy, .authorisedApps, .connections]
+        case .appearance: [.appearance]
+        case .chat: [.chat]
+        case .voiceVideo: [.voiceVideo]
+        case .notifications: [.notifications]
+        case .intelligence: [.intelligence]
+        case .keybinds: [.keybinds]
+        case .advanced: [.language, .advanced]
+        case .about: [.about]
+        }
+      }
+
+      var title: String {
+        let english =
+          switch self {
+          case .account: "Account"
+          case .profiles: "Profiles"
+          case .privacy: "Privacy"
+          case .appearance: "Appearance"
+          case .chat: "Chat"
+          case .voiceVideo: "Voice & Video"
+          case .notifications: "Notifications"
+          case .intelligence: "Intelligence"
+          case .keybinds: "Keybinds"
+          case .advanced: "Advanced"
+          case .about: "About Aicord"
+          }
+        return Bundle.main.localizedString(forKey: english, value: english, table: nil)
+      }
+
+      var systemImage: String {
+        switch self {
+        case .account: "person.crop.circle"
+        case .profiles: "person.2"
+        case .privacy: "hand.raised"
+        case .appearance: "paintbrush"
+        case .chat: "message"
+        case .voiceVideo: "mic"
+        case .notifications: "bell"
+        case .intelligence: "sparkles"
+        case .keybinds: "keyboard"
+        case .advanced: "gearshape.2"
+        case .about: "info.circle"
+        }
+      }
+    }
+
+    @AppStorage("Aicord.Settings.MacTab") private var macTab: MacTab = .account
+
+    /// The Mac's Settings window: toolbar tabs, like Safari's or Mail's.
+    var body: some View {
+      TabView(selection: $macTab) {
+        ForEach(MacTab.allCases) { tab in
+          Tab(tab.title, systemImage: tab.systemImage, value: tab) {
+            Form {
+              ForEach(tab.sections) { section in
+                detailContent(for: section)
+              }
+            }
+            .formStyle(.grouped)
+          }
+        }
+      }
+      // a page opened from a tab is a sheet, and its title would replace the tab's
+      .keepsWindowTitle(macTab.title)
+    }
+  #else
+    var body: some View { splitBody }
+  #endif
+
+  private var splitBody: some View {
     NavigationSplitView {
       List(selection: $selectedTab) {
         ForEach(SettingsGroupCategory.allCases, id: \.self) { category in
@@ -277,5 +360,64 @@ struct SettingsProfileCard: View {
       }
     }
     .padding(.vertical, 4)
+  }
+}
+
+/// A row that opens a further page of settings. iOS pushes it. The Mac's
+/// Settings window has its tabs in the toolbar, where a pushed page would add
+/// a back button among them, so there the page opens as a sheet with Done,
+/// as panes of System Settings do.
+struct SettingsPageLink<Label: View, Destination: View>: View {
+  private let destination: Destination
+  private let label: Label
+  #if os(macOS)
+    @State private var isPresented = false
+  #endif
+
+  init(@ViewBuilder destination: () -> Destination, @ViewBuilder label: () -> Label) {
+    self.destination = destination()
+    self.label = label()
+  }
+
+  var body: some View {
+    #if os(macOS)
+      Button {
+        isPresented = true
+      } label: {
+        HStack {
+          label
+            .frame(maxWidth: .infinity, alignment: .leading)
+          Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.tertiary)
+        }
+        .contentShape(.rect)
+      }
+      .buttonStyle(.plain)
+      .sheet(isPresented: $isPresented) {
+        // a stack, so pages inside the sheet can still push
+        NavigationStack {
+          destination
+            .toolbar {
+              ToolbarItem(placement: .confirmationAction) {
+                Button("Done") { isPresented = false }
+              }
+            }
+        }
+        .frame(width: 560, height: 520)
+      }
+    #else
+      NavigationLink {
+        destination
+      } label: {
+        label
+      }
+    #endif
+  }
+}
+
+extension SettingsPageLink where Label == Text {
+  init(_ title: LocalizedStringKey, @ViewBuilder destination: () -> Destination) {
+    self.init(destination: destination) { Text(title) }
   }
 }

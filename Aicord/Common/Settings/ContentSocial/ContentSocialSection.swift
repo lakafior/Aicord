@@ -241,7 +241,7 @@ struct WordFilterSettings: View {
           Text("DMs from Non-Friends").tag(WordFilter.Scope.nonFriendDMs)
           Text("All Messages").tag(WordFilter.Scope.everywhere)
         }
-        NavigationLink {
+        SettingsPageLink {
           WordListLanguages(languages: $languages)
         } label: {
           LabeledContent("Languages", value: languageSummary)

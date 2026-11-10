@@ -147,7 +147,7 @@ struct NotificationSettings: View {
         Text("Everyone Except").tag(Prefs.DMMode.blacklist.rawValue)
       }
       if dmMode == Prefs.DMMode.whitelist.rawValue || dmMode == Prefs.DMMode.blacklist.rawValue {
-        NavigationLink {
+        SettingsPageLink {
           NotificationPeopleList(selection: $dmUsers)
         } label: {
           LabeledContent("People", value: countLabel(dmUsers))
@@ -173,13 +173,13 @@ struct NotificationSettings: View {
         Text("All Except").tag(Prefs.ServerMode.blacklist.rawValue)
       }
       if serverMode == Prefs.ServerMode.whitelist.rawValue {
-        NavigationLink {
+        SettingsPageLink {
           NotificationPlaceList(mode: .selected(selection: $serverPlaces))
         } label: {
           LabeledContent("Servers and Channels", value: countLabel(serverPlaces))
         }
       } else if serverMode == Prefs.ServerMode.blacklist.rawValue {
-        NavigationLink {
+        SettingsPageLink {
           NotificationPlaceList(mode: .silenced)
         } label: {
           LabeledContent("Silenced in Discord", value: "\(silencedCount)")

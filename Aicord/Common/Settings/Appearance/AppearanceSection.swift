@@ -48,7 +48,7 @@ struct AppearanceSettings: View {
       AccentColorRow(accent: $theming.accentOverride)
       ColorPicker("Custom Color", selection: customAccent, supportsOpacity: false)
       toggle("Accent on Tab Bar and Icons", isOn: $theming.accentTintsChrome)
-      NavigationLink {
+      SettingsPageLink {
         Form {
           CustomThemesSection()
         }

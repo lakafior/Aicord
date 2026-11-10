@@ -45,7 +45,7 @@ struct ComposerSettings: View {
     Section {
       toggle("Clean Links When Pasting", isOn: $cleansLinks)
       if cleansLinks {
-        NavigationLink("Link Rules") { LinkRulesSettings() }
+        SettingsPageLink("Link Rules") { LinkRulesSettings() }
       }
     } header: {
       Text("Links")
