@@ -143,10 +143,11 @@ public enum ExternalUpload {
     let boundary = "aicord-" + UUID().uuidString
     let body = FileManager.default.temporaryDirectory
       .appendingPathComponent("upload-\(UUID().uuidString).multipart")
+    // removed also when writing it fails halfway
+    defer { try? FileManager.default.removeItem(at: body) }
     try Multipart.write(
       fields: fields, fileField: "fileToUpload", file: file, filename: filename,
       contentType: contentType, boundary: boundary, to: body)
-    defer { try? FileManager.default.removeItem(at: body) }
 
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
