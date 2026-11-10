@@ -254,6 +254,15 @@ import SwiftUI
               return
             }
 
+            // links lose their tracking parameters on the way in
+            if let string = pasteboard.string(forType: .string) {
+              let cleaned = ComposerPreferences.cleanedPaste(string)
+              if cleaned != string {
+                insertText(cleaned, replacementRange: selectedRange())
+                return
+              }
+            }
+
             super.paste(sender)
           }
 

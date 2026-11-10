@@ -110,9 +110,107 @@ class MessageDrainStore: DiscordDataStore {
   func send(_ vm: ChatView.InputBar.InputVM, in channel: ChannelSnowflake) {
     if case .edit = vm.messageAction {
       _editMessage(vm, in: channel)
-    } else {
-      _enqueueMessage(vm, in: channel)
+      return
     }
+    let parts = Self.parts(of: vm.content, premium: gateway?.user.premiumKind ?? .none)
+    guard parts.count > 1 else {
+      _enqueueMessage(vm, in: channel)
+      return
+    }
+    // a long message goes as several, in order: the reply is the first,
+    // the files come with the last
+    for (index, text) in parts.enumerated() {
+      let part = ChatView.InputBar.InputVM(channelStore: vm.channelStore)
+      part.sendsTypingIndicator = false
+      part.content = text
+      if index == 0 { part.messageAction = vm.messageAction }
+      if index == parts.count - 1 {
+        part.isResetting = true
+        part.uploadItems = vm.uploadItems
+        part.isResetting = false
+        part.adoptTempFiles(from: vm)
+      }
+      _enqueueMessage(part, in: channel)
+    }
+  }
+
+  /// The messages `content` is sent as: one, or several when it's over the
+  /// account's limit and splitting is on.
+  static func parts(of content: String, premium: DiscordUser.PremiumKind) -> [String] {
+    let limit = ComposerPreferences.characterLimit(for: premium)
+    guard ComposerPreferences.splitsLongMessages, MessageSplitter.length(content) > limit else {
+      return [content]
+    }
+    let parts = MessageSplitter.split(content, limit: limit)
+    return parts.isEmpty ? [content] : parts
+  }
+
+  // MARK: - Attachments
+
+  /// A file as it will be uploaded: its final name, bytes and size.
+  struct PreparedUpload: Sendable {
+    enum Payload: Sendable {
+      case data(Data)
+      case file(URL)
+    }
+    var filename: String
+    var payload: Payload
+    var size: Int
+    /// A stripped copy made for this upload, removed once it's sent.
+    var temporaryCopy: URL?
+
+    func discardCopy() {
+      if let temporaryCopy {
+        try? FileManager.default.removeItem(at: temporaryCopy.deletingLastPathComponent())
+      }
+    }
+  }
+
+  /// Names each file (randomly when that's on) and takes location and camera
+  /// details out of photos when that's on.
+  nonisolated static func prepareUploads(
+    _ items: [ChatView.InputBar.InputVM.UploadItem]
+  ) async throws -> [PreparedUpload] {
+    var prepared: [PreparedUpload] = []
+    for item in items {
+      switch item {
+      case .pickerItem(_, let pickerItem):
+        guard var data = try await pickerItem.loadTransferable(type: Data.self) else {
+          throw "Failed to load picker item data."
+        }
+        let fileExt =
+          pickerItem.supportedContentTypes.first?.preferredFilenameExtension ?? "png"
+        if let stripped = ComposerPreferences.strippedPhoto(data) { data = stripped }
+        let name = "\(pickerItem.itemIdentifier ?? UUID().uuidString).\(fileExt)"
+        prepared.append(
+          .init(
+            filename: ComposerPreferences.uploadName(for: name), payload: .data(data),
+            size: data.count))
+      case .file(_, let url, let size):
+        let name = ComposerPreferences.uploadName(for: url.lastPathComponent)
+        if let copy = ComposerPreferences.strippedPhoto(at: url) {
+          let copySize = (try? copy.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+          prepared.append(
+            .init(filename: name, payload: .file(copy), size: copySize, temporaryCopy: copy))
+        } else {
+          prepared.append(.init(filename: name, payload: .file(url), size: Int(size)))
+        }
+      #if os(iOS)
+        case .cameraPhoto(_, let image):
+          // PNG from the camera carries no location
+          guard let data = image.pngData() else { throw "Failed to encode the photo." }
+          prepared.append(
+            .init(filename: "\(UUID().uuidString).png", payload: .data(data), size: data.count))
+        case .cameraVideo(_, let url):
+          let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+          prepared.append(
+            .init(
+              filename: ComposerPreferences.uploadName(for: url.lastPathComponent),
+              payload: .file(url), size: size))
+      #endif
+      }
+    }
+    return prepared
   }
 
   /// Text as sent, with emoticons turned into emoji when Discord's setting is on.
@@ -151,6 +249,10 @@ class MessageDrainStore: DiscordDataStore {
       content: outgoing(vm.content),
       nonce: .string(nonce.rawValue)
     )
+    if !vm.stickerIDs.isEmpty {
+      message.sticker_ids = vm.stickerIDs.map(\.rawValue)
+      if vm.content.isEmpty { message.content = nil }
+    }
     if case .reply(let replyMsg, let mention) = vm.messageAction {
       message.message_reference = .init(
         type: .reply,
@@ -181,92 +283,16 @@ class MessageDrainStore: DiscordDataStore {
             "[SendTask Attachments] Preparing upload attachment metadata"
           )
 
-          let uploadAttachments = try await withThrowingTaskGroup(
-            of: Payloads.CreateAttachments.UploadAttachment
-              .self,
-            returning: [
-              Payloads.CreateAttachments.UploadAttachment
-            ].self
-          ) { group in
-            for (index, item) in vm.uploadItems.enumerated() {
-              group.addTask {
-                let idString = String(index)
-
-                switch item {
-                case .pickerItem(_, let pickerItem):
-                  let fileExt =
-                    pickerItem
-                    .supportedContentTypes
-                    .first?
-                    .preferredFilenameExtension
-                    ?? "png"
-                  let filename =
-                    "\(pickerItem.itemIdentifier ?? UUID().uuidString).\(fileExt)"
-                  let filesize =
-                    await item
-                    .filesize() ?? 0
-
-                  return .init(
-                    id: .init(idString),
-                    filename: filename,
-                    file_size: filesize
-                  )
-
-                case .file(_, let url, let size):
-                  return .init(
-                    id: .init(idString),
-                    filename: url
-                      .lastPathComponent,
-                    file_size: Int(size)
-                  )
-                #if os(iOS)
-                  case .cameraPhoto:
-                    let filesize =
-                      await item
-                      .filesize()
-                      ?? 0
-                    return .init(
-                      id: .init(
-                        idString
-                      ),
-                      filename:
-                        "\(UUID().uuidString).png",
-                      file_size:
-                        filesize
-                    )
-
-                  case .cameraVideo(
-                    _, let url):
-                    let filesize =
-                      await item
-                      .filesize()
-                      ?? 0
-                    return .init(
-                      id: .init(
-                        idString
-                      ),
-                      filename:
-                        url
-                        .lastPathComponent,
-                      file_size:
-                        filesize
-                    )
-                #endif
-                }
-              }
-            }
-
-            var results:
-              [Payloads.CreateAttachments
-                .UploadAttachment] = []
-            for try await attachment in group {
-              results.append(attachment)
-            }
-
-            print(
-              "[SendTask Attachments] Prepared \(results.count) upload attachment descriptors"
+          // names, stripped photos and sizes are settled first: Discord is told
+          // each file's size before it's uploaded
+          let prepared = try await Self.prepareUploads(vm.uploadItems)
+          defer { prepared.forEach { $0.discardCopy() } }
+          let uploadAttachments = prepared.enumerated().map { index, upload in
+            Payloads.CreateAttachments.UploadAttachment(
+              id: .init(String(index)),
+              filename: upload.filename,
+              file_size: upload.size
             )
-            return results
           }
 
           print(
@@ -299,158 +325,28 @@ class MessageDrainStore: DiscordDataStore {
             returning: [Payloads.Attachment].self
           ) { group in
             for (index, attachment) in createdAttachments {
-              let item = vm.uploadItems[index]
-
+              let upload = prepared[index]
               group.addTask {
-                print(
-                  "[SendTask Upload] Uploading attachment id=\(index) to:",
-                  attachment.upload_url
-                )
-
-                switch item {
-                case .pickerItem(_, let pickerItem):
-                  let data =
-                    try await pickerItem
-                    .loadTransferable(
-                      type: Data
-                        .self
-                    )
-                  guard let data else {
-                    throw
-                      "Failed to load picker item data."
-                  }
-
-                  var req = URLRequest(
-                    url: URL(
-                      string:
-                        attachment
-                        .upload_url
-                    )!)
-                  req.httpMethod = "PUT"
-                  let (_, res) =
-                    try await URLSession
-                    .shared.upload(
-                      for: req,
-                      from: data
-                    )
-                  print(
-                    "[SendTask Upload] pickerItem status:",
-                    (res
-                      as? HTTPURLResponse)?
-                      .statusCode
-                      ?? -1
-                  )
-
-                case .file(_, let fileURL, _):
-                  let access =
-                    fileURL
-                    .startAccessingSecurityScopedResource()
-                  var req = URLRequest(
-                    url: URL(
-                      string:
-                        attachment
-                        .upload_url
-                    )!)
-                  req.httpMethod = "PUT"
-                  let (_, res) =
-                    try await URLSession
-                    .shared.upload(
-                      for: req,
-                      fromFile:
-                        fileURL
-                    )
-                  print(
-                    "[SendTask Upload] file status:",
-                    (res
-                      as? HTTPURLResponse)?
-                      .statusCode
-                      ?? -1
-                  )
-                  if access {
-                    fileURL
-                      .stopAccessingSecurityScopedResource()
-                  }
-                #if os(iOS)
-                  case .cameraPhoto(
-                    _, let image):
-                    let data =
-                      image
-                      .pngData()!
-                    var req =
-                      URLRequest(
-                        url:
-                          URL(
-                            string:
-                              attachment
-                              .upload_url
-                          )!
-                      )
-                    req.httpMethod =
-                      "PUT"
-                    let (_, res) =
-                      try await URLSession
-                      .shared
-                      .upload(
-                        for:
-                          req,
-                        from:
-                          data
-                      )
-                    print(
-                      "[SendTask Upload] cameraPhoto status:",
-                      (res
-                        as? HTTPURLResponse)?
-                        .statusCode
-                        ?? -1
-                    )
-
-                  case .cameraVideo(
-                    _, let videoURL):
-                    var req =
-                      URLRequest(
-                        url:
-                          URL(
-                            string:
-                              attachment
-                              .upload_url
-                          )!
-                      )
-                    req.httpMethod =
-                      "PUT"
-                    let (_, res) =
-                      try await URLSession
-                      .shared
-                      .upload(
-                        for:
-                          req,
-                        fromFile:
-                          videoURL
-                      )
-                    print(
-                      "[SendTask Upload] cameraVideo status:",
-                      (res
-                        as? HTTPURLResponse)?
-                        .statusCode
-                        ?? -1
-                    )
-                #endif
+                var req = URLRequest(url: URL(string: attachment.upload_url)!)
+                req.httpMethod = "PUT"
+                let response: URLResponse
+                switch upload.payload {
+                case .data(let data):
+                  (_, response) = try await URLSession.shared.upload(for: req, from: data)
+                case .file(let fileURL):
+                  let access = fileURL.startAccessingSecurityScopedResource()
+                  defer { if access { fileURL.stopAccessingSecurityScopedResource() } }
+                  (_, response) = try await URLSession.shared.upload(for: req, fromFile: fileURL)
                 }
+                print(
+                  "[SendTask Upload] attachment id=\(index) status:",
+                  (response as? HTTPURLResponse)?.statusCode ?? -1
+                )
 
                 let payloadAttachment = Payloads.Attachment(
                   index: index,
-                  filename: URL(
-                    string:
-                      attachment
-                      .upload_url
-                  )!
-                  .lastPathComponent,
-                  uploaded_filename:
-                    attachment
-                    .upload_filename
-                )
-
-                print(
-                  "[SendTask Attachments] Added attachment to payload index=\(index)"
+                  filename: upload.filename,
+                  uploaded_filename: attachment.upload_filename
                 )
                 return (index, payloadAttachment)
               }
