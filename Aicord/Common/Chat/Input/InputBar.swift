@@ -181,13 +181,22 @@ extension ChatView {
       }
     }
 
-    /// Behind the message field. On the Mac it's the chat's own background,
-    /// so the chat and the field read as one surface, as in Messages.
-    private var composerBackground: AnyShapeStyle {
+    /// Behind the message field: the chat's own background, so the chat and
+    /// the field read as one surface, as in Messages. On iOS the last
+    /// messages fade out above it instead of ending at a bar's edge.
+    @ViewBuilder
+    private var composerBackground: some View {
       #if os(macOS)
-        AnyShapeStyle(theme.chatBackground)
+        theme.chatBackground
       #else
-        AnyShapeStyle(.bar)
+        let color = theme.chatBackground
+        VStack(spacing: 0) {
+          LinearGradient(colors: [color.opacity(0), color], startPoint: .top, endPoint: .bottom)
+            .frame(height: 16)
+          color
+        }
+        .padding(.top, -16)
+        .ignoresSafeArea(edges: .bottom)
       #endif
     }
 
@@ -231,10 +240,10 @@ extension ChatView {
           .padding(.top, 4)
 
           TypingIndicatorBar(vm: vm)
-            .background(composerBackground)
+            .background(theme.chatBackground)
             .padding(.top, -18)  // away from bar
         }
-        .background(composerBackground)
+        .background { composerBackground }
       }
       #if os(iOS)
         .animation(properties.animation, value: animatedKeyboardHeight)
@@ -511,8 +520,7 @@ extension ChatView {
             Image(systemName: "plus")
               .imageScale(.large)
               .padding(7.5)
-              .background(.background.secondary.opacity(0.8))
-              .clipShape(.circle)
+              .glassEffect(.regular.interactive(), in: .circle)
               .rotationEffect(.degrees(45))
           }
           .buttonStyle(.borderless)
@@ -563,8 +571,7 @@ extension ChatView {
             Image(systemName: "plus")
               .imageScale(.large)
               .padding(7.5)
-              .background(.background.secondary.opacity(0.8))
-              .clipShape(.circle)
+              .glassEffect(.regular.interactive(), in: .circle)
           }
           .buttonStyle(.borderless)
           .tint(iconTint(.primary))
@@ -676,8 +683,9 @@ extension ChatView {
         }
         .clipShape(.rect(cornerRadius: 15, style: .continuous))
       #else
-        .background(.background.secondary.opacity(0.8))
+        // a glass field floating over the chat, as in Messages
         .clipShape(.rect(cornerRadius: 18))
+        .glassEffect(.regular, in: .rect(cornerRadius: 18))
       #endif
       .overlay {
         if voiceRecorder.state != .idle {
