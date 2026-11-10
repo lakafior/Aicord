@@ -144,20 +144,40 @@ extension ChatView {
     @State var filesRemovedDuringSelection: Error? = nil
 
     enum SelectionError: LocalizedError {
-      case filesPastLimit(limit: Int)
+      /// `hint` says why the upload service didn't take the file instead.
+      case filesPastLimit(limit: Int, hint: String)
       case filesEmpty
 
       var errorDescription: String? {
         switch self {
-        case .filesPastLimit(let limit):
+        case .filesPastLimit(let limit, let hint):
           let formatter = ByteCountFormatter()
           formatter.allowedUnits = [.useBytes, .useKB, .useMB]
           formatter.countStyle = .file
           let formattedLimit = formatter.string(fromByteCount: Int64(limit))
-          return "Please keep files under \(formattedLimit)."
+          let limitText = String(localized: "Please keep files under \(formattedLimit).")
+          return hint.isEmpty ? limitText : limitText + "\n\n" + hint
         case .filesEmpty:
           return "Empty files cannot be uploaded."
         }
+      }
+
+      /// Why the upload service didn't take the file instead.
+      @MainActor
+      static func uploadServiceHint(for size: Int) -> String {
+        if ComposerPreferences.uploadServiceKind == .none {
+          return String(
+            localized: "To send larger files, choose an upload service in Settings → Chat → Files Too Large for Discord.")
+        }
+        guard let service = ComposerPreferences.uploadService else {
+          return String(
+            localized: "The upload service in Settings → Chat → Files Too Large for Discord isn't fully set up.")
+        }
+        if let serviceLimit = service.sizeLimit, Int64(size) > serviceLimit {
+          let formatted = ByteCountFormatter.string(fromByteCount: serviceLimit, countStyle: .file)
+          return String(localized: "It's also over the \(formatted) that \(service.host) takes.")
+        }
+        return ""
       }
     }
 
@@ -791,7 +811,7 @@ extension ChatView {
         } else if uploadMeta.allowed == false {
           url = nil
           self.filesRemovedDuringSelection = SelectionError.filesPastLimit(
-            limit: uploadMeta.limit
+            limit: uploadMeta.limit, hint: SelectionError.uploadServiceHint(for: fileSize)
           )
         }
 
