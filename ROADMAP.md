@@ -51,8 +51,10 @@ Zrobione (szczegóły w CHANGELOG i [INTELLIGENCE_NOTES](https://github.com/laka
 
 ### 🔜 Etap 11: Aicord dla macOS
 Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI, nie Mac Catalyst), ale dzieli szkielet `LargeBaseplate` z iPadem i przez to wygląda jak aplikacja na iPada. Etap 7 i zmiana nazw (5.4) są już zrobione, więc można zaczynać. Listy kanałów i członków są już systemowe (styl `.sidebar` na Macu), więc szkielet może z nich korzystać.
-1. **Interfejs Maca:**
-   - [ ] Mac, dalsze dopracowanie wyglądu: arkusze jako popovery lub osobne okna, karty w oknie `Settings`, tytuł arkusza ustawień serwera nie powinien zastępować tytułu okna, kolor tła czatu zgodny z oknem ([MACOS_PASS_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/MACOS_PASS_NOTES.md)).
+1. **Interfejs Maca:** dopracowanie wyglądu zrobione (okno `Settings` z kartami, ustawienia serwera w osobnym oknie, przypięte, wątki i reakcje jako popovery, tytuł okna nie ginie pod arkuszem, tło czatu jak tło okna; szczegóły w `CHANGELOG.md`). Zostało:
+   - [ ] Wyszukiwanie z paska narzędzi otwiera wyniki w arkuszu; lepiej pasowałyby wyniki w oknie albo w miejscu listy, jak w Mail.
+   - [ ] „Media, Links and Files” i podsumowania Intelligence to nadal arkusze (o rozmiarze Maca); galeria mogłaby być osobnym oknem.
+   - [ ] Okno pojedynczego kanału (`ChannelWindow`) nie pilnuje swojego tytułu pod arkuszem tak jak okno główne.
 2. **Serwer MCP (połączenie Claude z Discordem):**
    - [ ] Podsumowania jako narzędzie MCP (z modelu wybranego w Intelligence). Wysyłanie najwyżej z potwierdzeniem każdej akcji w aplikacji: działanie przez token użytkownika to automatyzacja konta, której Discord zabrania (self-bot), więc ryzyko blokady trzeba ograniczyć.
 

@@ -4,6 +4,19 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ## Unreleased
 
+### The Mac app
+
+- **New** · Settings on the Mac is a real Settings window: tabs in the toolbar (Account, Profiles, Privacy, Appearance, Chat, Voice & Video, Notifications, Intelligence, Keybinds, Advanced, About) instead of the iPad's sidebar, and a further page (Keywords and Patterns, Custom Themes, Link Rules…) opens as a sheet with Done
+- **New** · Server Settings on the Mac open in a window of their own, one per server, which can stay open beside the chat
+- **New** · On the Mac, Pinned Messages and Threads drop from their toolbar buttons as popovers, and Add Reaction opens the emoji picker as a popover on the message
+- **Fixed** · On the Mac, an open sheet or popover no longer replaces the window's title (the channel became "Pinned Messages" or the server's name)
+- **Fixed** · On the Mac, the chat and the message field take the window's background with the built-in themes, so the chat matches the sidebar and the member list; a custom theme keeps its colour
+- **Fixed** · On the Mac, File → New no longer offers an empty channel window
+
+### Look
+
+- **New** · On iPhone and iPad the message field and its buttons are glass floating on the chat, and the last messages fade out above it; the bar of another colour under the chat is gone
+
 ### Fixed
 
 - **Fixed** · On the Mac, the global Quick Switcher shortcut really brings back a minimized Aicord window now (0.1.5 still skipped it: a minimized window says it can't become the main one)

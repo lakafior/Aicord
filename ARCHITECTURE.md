@@ -54,6 +54,14 @@ Mac-only behaviour sits behind `#if os(macOS)`. Shared code changed for the Mac 
 - **Nothing runs with the token in the background.** No push server, and App Intents bring the app to the foreground (`supportedModes = .foreground`). The widget only shows counts the app wrote while it was open.
 - **Updates** are checked against `GET /repos/lakafior/Aicord/releases/latest` (`UpdateChecker.swift`), not Sparkle. The same check works on iOS, where AltStore installs the update, and it needs no signing keys.
 
+## The Mac's windows
+
+- **Settings** is the system `Settings` scene with toolbar tabs (`SettingsView.MacTab`); related categories share a tab. A page inside a tab is a `SettingsPageLink`: a push on iOS, a sheet on the Mac, because a pushed page puts a back button among the tabs and shifts them.
+- **Server settings** are a `WindowGroup` keyed by the server (`ServerSettingsWindow`), with app state of their own, so sheets opened there show there.
+- **Popovers hold no toolbar.** A toolbar inside a popover lands in the window's toolbar, so `PinnedMessagesSheet` and `ThreadBrowserSheet` have their Done button on iOS only. The reaction picker's popover is anchored by `ReactionPickerAnchor`, which sits behind every message that has the menu.
+- **`keepsWindowTitle`** (`MacBaseplate.swift`) sets the window's title back when presented content changes it: on the Mac a `navigationTitle` inside a sheet or a popover replaces the title of the window it is presented from.
+- **The chat's background** is `Theme.chatBackground`: the window's own with the built-in themes on the Mac, the theme's everywhere else.
+
 ## The MCP server (macOS)
 
 `aicord-mcp` speaks MCP over stdio and forwards each call to the running app. A build phase compiles it into `Aicord.app/Contents/Helpers`. In the app, `MCPBridge.swift` listens on `127.0.0.1:47823` only, checks a key from Settings → Advanced and allows 30 calls a minute. It answers through the same filtered transcript as Intelligence, so blocked users, the word filter, spoilers and hidden media stay hidden. DMs stay out unless the user turns them on. The port and key live in the settings and not in a file, because macOS keeps other apps out of the app's container. A server's readable channels come from its `GuildStore` (made if the server was never opened, as opening it would), because without one there are no permissions to check and every channel would pass. Discord's search has no regular expressions, so `regex` filters the fetched pages in the app.
