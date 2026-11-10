@@ -230,7 +230,7 @@ struct ChatView: View {
     )
     .animation(chatAnimatesMessages ? .default : nil, value: pendingMessages)
     .scrollDismissesKeyboard(.interactively)
-    .background(theme.common.secondaryBackground)
+    .background(theme.chatBackground)
     .ignoresSafeArea(.keyboard, edges: .all)
 
     .toolbar {

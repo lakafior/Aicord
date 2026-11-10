@@ -181,6 +181,16 @@ extension ChatView {
       }
     }
 
+    /// Behind the message field. On the Mac it's the chat's own background,
+    /// so the chat and the field read as one surface, as in Messages.
+    private var composerBackground: AnyShapeStyle {
+      #if os(macOS)
+        AnyShapeStyle(theme.chatBackground)
+      #else
+        AnyShapeStyle(.bar)
+      #endif
+    }
+
     var body: some View {
       VStack {
         ZStack(alignment: .top) {
@@ -221,10 +231,10 @@ extension ChatView {
           .padding(.top, 4)
 
           TypingIndicatorBar(vm: vm)
-            .background(.bar)
+            .background(composerBackground)
             .padding(.top, -18)  // away from bar
         }
-        .background(.bar)
+        .background(composerBackground)
       }
       #if os(iOS)
         .animation(properties.animation, value: animatedKeyboardHeight)
