@@ -16,6 +16,9 @@ extension SettingsView {
       KeybindRow("Quick Switcher", keys: "⌘ K")
       KeybindRow("Reload", keys: "⇧ ⌘ R")
     }
+    #if os(macOS)
+      GlobalQuickSwitcherSettings()
+    #endif
     Section("Chat") {
       KeybindRow("Send Message", keys: "↩")
       #if os(macOS)

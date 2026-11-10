@@ -256,6 +256,15 @@ import SwiftUI
             }
           }
 
+          // links lose their tracking parameters on the way in
+          if let string = pasteboard.string ?? pasteboard.url?.absoluteString {
+            let cleaned = ComposerPreferences.cleanedPaste(string)
+            if cleaned != string {
+              insertText(cleaned)
+              return
+            }
+          }
+
           super.paste(sender)
         }
       }

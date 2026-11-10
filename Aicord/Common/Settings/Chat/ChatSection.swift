@@ -116,6 +116,8 @@ struct ChatSettings: View {
       )
     }
 
+    ComposerSettings()
+
     if gw.user.premiumKind == .none {
       Section {
         Toggle("Show Emoji That Need Nitro", isOn: $showsNitroEmoji)

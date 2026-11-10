@@ -41,11 +41,17 @@ struct FormattedMessageSheet: View {
   ]
 
   private var characterLimit: Int {
-    switch gw.user.premiumKind {
-    case .nitro, .nitroClassic: 4000
-    default: 2000
-    }
+    ComposerPreferences.characterLimit(for: gw.user.premiumKind)
   }
+
+  private var length: Int { MessageSplitter.length(trimmed) }
+
+  /// How many messages the text goes as; over the limit only when splitting is on.
+  private var parts: Int {
+    MessageDrainStore.parts(of: trimmed, premium: gw.user.premiumKind).count
+  }
+
+  private var tooLong: Bool { length > characterLimit && parts < 2 }
 
   private var trimmed: String {
     text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -92,7 +98,7 @@ struct FormattedMessageSheet: View {
               .frame(maxWidth: .infinity)
           }
           .buttonStyle(.glassProminent)
-          .disabled(trimmed.isEmpty || trimmed.count > characterLimit)
+          .disabled(trimmed.isEmpty || tooLong)
           .keyboardShortcut(.return, modifiers: .command)
         }
         .controlSize(.large)
@@ -132,9 +138,14 @@ struct FormattedMessageSheet: View {
         .background(.background.secondary, in: .rect(cornerRadius: 12))
       HStack {
         Spacer()
-        Text("\(trimmed.count) / \(characterLimit)")
+        if length > characterLimit, parts > 1 {
+          Text("Sends as \(parts) messages")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        Text("\(length) / \(characterLimit)")
           .font(.caption.monospacedDigit())
-          .foregroundStyle(trimmed.count > characterLimit ? .red : .secondary)
+          .foregroundStyle(tooLong ? .red : .secondary)
       }
     }
   }

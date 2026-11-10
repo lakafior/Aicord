@@ -57,6 +57,28 @@ extension ChatView {
       inputVM.content += separator + text
     }
 
+    /// Sends a sticker the account can use, or puts its link in the message
+    /// when "Stickers Without Nitro" is on.
+    func pickSticker(_ sticker: Sticker) {
+      switch EmojiPicker.stickerUse(sticker, gw: gw, currentGuildID: vm.guildStore?.guildId) {
+      case .send:
+        guard let channelId = appState.selectedChannel else { return }
+        let message = InputVM(channelStore: vm)
+        message.sendsTypingIndicator = false
+        message.stickerIDs = [sticker.id]
+        if case .reply = inputVM.messageAction {
+          message.messageAction = inputVM.messageAction
+          inputVM.messageAction = nil
+        }
+        gw.messageDrain.send(message, in: channelId)
+      case .link(let link):
+        let separator = inputVM.content.isEmpty || inputVM.content.hasSuffix(" ") ? "" : " "
+        inputVM.content += separator + link
+      case .locked:
+        break
+      }
+    }
+
     #if os(iOS)
       struct PickerInteractionProperties {
         var storedKeyboardHeight: CGFloat = 0
@@ -148,6 +170,8 @@ extension ChatView {
                 .frame(height: 60)
             }
 
+            ExternalUploadProgress(inputVM: inputVM)
+
             if inputVM.messageAction != nil {
               messageActionBar
                 .padding(.bottom, -4)
@@ -170,6 +194,7 @@ extension ChatView {
                   inputVM.content = ""
                 }
               }
+              lengthNote
               messageInputBar
             }
           }
@@ -191,6 +216,36 @@ extension ChatView {
       .dropDestination(for: URL.self) { urls, _ in
         inputVM.selectedFiles = filterUploadableURLs(urls)
         return !urls.isEmpty
+      }
+      .modifier(ExternalUploadModifier(inputVM: inputVM))
+    }
+
+    /// "Sends as 3 messages" once the text is over the limit, or a warning
+    /// when splitting is off.
+    @ViewBuilder
+    private var lengthNote: some View {
+      let limit = ComposerPreferences.characterLimit(for: gw.user.premiumKind)
+      let length = MessageSplitter.length(inputVM.content)
+      if length > limit, inputVM.slashDraft == nil {
+        let editing: Bool = {
+          if case .edit = inputVM.messageAction { return true }
+          return false
+        }()
+        let parts =
+          editing ? 1 : MessageDrainStore.parts(of: inputVM.content, premium: gw.user.premiumKind).count
+        Group {
+          if parts > 1 {
+            Label("Sends as \(parts) messages", systemImage: "text.append")
+              .foregroundStyle(.secondary)
+          } else {
+            Label("\(length) / \(limit) characters", systemImage: "exclamationmark.triangle")
+              .foregroundStyle(.orange)
+          }
+        }
+        .font(.footnote)
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.horizontal, 16)
+        .transition(.opacity)
       }
     }
 
@@ -265,6 +320,7 @@ extension ChatView {
           EmojiPicker(detent: $emojiPickerDetent)
             .guild(vm.guildStore?.guildId)
             .onPickedEmoji { insertEmoji($0) }
+            .onPickedSticker { pickSticker($0) }
           .presentationDetents(
             [.height(emojiPickerSheetHeight), .large],
             selection: $emojiPickerDetent
@@ -577,6 +633,7 @@ extension ChatView {
             EmojiPicker()
               .guild(vm.guildStore?.guildId)
               .onPickedEmoji { insertEmoji($0) }
+            .onPickedSticker { pickSticker($0) }
           }
         #endif
       }
@@ -725,7 +782,13 @@ extension ChatView {
         }
 
         let uploadMeta = gw.user.premiumKind.fileUpload(size: fileSize, to: vm)
-        if uploadMeta.allowed == false {
+        if uploadMeta.allowed == false, let tooLarge = url,
+          InputVM.externalService(for: fileSize) != nil
+        {
+          // asked about one by one, then sent to the chosen service
+          inputVM.pendingExternalUploads.append(tooLarge)
+          url = nil
+        } else if uploadMeta.allowed == false {
           url = nil
           self.filesRemovedDuringSelection = SelectionError.filesPastLimit(
             limit: uploadMeta.limit

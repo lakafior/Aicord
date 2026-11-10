@@ -33,13 +33,29 @@ extension ChatView.InputBar {
     /// The text field content
     var content: String = "" {
       didSet {
-        guard !content.isEmpty else { return }
+        guard !content.isEmpty, sendsTypingIndicator else { return }
         sendTypingIndicatorIfNeeded()
       }
     }
 
+    /// Stickers sent with the message.
+    var stickerIDs: [StickerSnowflake] = []
+
+    /// Off for the copies made to send a message, which nobody types into.
+    @ObservationIgnored var sendsTypingIndicator = true
+
     private var lastTypingIndicatorSentAt: Date?
     private func sendTypingIndicatorIfNeeded() {
+      // with the indicator off for this kind of channel, the endpoint is simply never called
+      switch ComposerPreferences.typingIndicator {
+      case .always: break
+      case .never: return
+      case .directMessagesOnly:
+        switch channelStore.channel?.type {
+        case .dm, .groupDm: break
+        default: return
+        }
+      }
       let now = Date()
       if let lastTypingIndicatorSentAt, now.timeIntervalSince(lastTypingIndicatorSentAt) < 8 {
         return
@@ -56,6 +72,21 @@ extension ChatView.InputBar {
 
     func trackTempFile(_ url: URL) {
       appCreatedTempFiles.insert(url)
+    }
+
+    func isTempFile(_ url: URL) -> Bool { appCreatedTempFiles.contains(url) }
+
+    func discardTempFile(_ url: URL) { cleanupTempFile(url) }
+
+    /// Files over Discord's limit waiting to be confirmed for the upload service.
+    var pendingExternalUploads: [URL] = []
+    /// Files going up to the upload service right now.
+    var externalUploads: [ExternalUploadJob] = []
+    var externalUploadError: String?
+
+    /// Takes over the temporary files `other` made, so they're removed after this sends.
+    func adoptTempFiles(from other: InputVM) {
+      appCreatedTempFiles.formUnion(other.appCreatedTempFiles)
     }
 
     private func cleanupTempFile(_ url: URL) {
@@ -248,12 +279,15 @@ extension ChatView.InputBar {
 
     func copy() -> InputVM {
       let vm = InputVM(channelStore: channelStore)
+      vm.sendsTypingIndicator = false
+      vm.adoptTempFiles(from: self)
       #if os(iOS)
         vm.selectedPhotos = selectedPhotos
       #endif
       vm.uploadItems = uploadItems
       vm.messageAction = messageAction
       vm.content = content
+      vm.stickerIDs = stickerIDs
       return vm
     }
 

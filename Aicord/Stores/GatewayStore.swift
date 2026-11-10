@@ -35,6 +35,8 @@ final class GatewayStore {
   var state: GatewayState = .noConnection {
     didSet {
       print("[GatewayStore] Gateway state changed to \(state)")
+      // a Focus that changed while Aicord was away sets the status now
+      if state == .connected { FocusSync.applyIfConnected(self) }
     }
   }
 

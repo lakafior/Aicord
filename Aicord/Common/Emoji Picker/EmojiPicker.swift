@@ -78,7 +78,8 @@ struct EmojiPicker: View {
           EmojiGridView(
             guildID: guildID,
             onEmojiPicked: onEmojiPicked,
-            allowsShiftToKeepOpen: allowsShiftToKeepOpen
+            allowsShiftToKeepOpen: allowsShiftToKeepOpen,
+            forMessages: false
           )
         } else {
           switch chosenPicker {
@@ -93,7 +94,7 @@ struct EmojiPicker: View {
               onGIFPicked?(gifURL)
             }
           case .sticker:
-            StickerGridView { sticker in
+            StickerPickerGrid(guildID: guildID) { sticker in
               onStickerPicked?(sticker)
             }
           }
@@ -267,6 +268,9 @@ struct EmojiPicker: View {
     /// The server the picker was opened in, nil in direct messages.
     var currentGuildID: GuildSnowflake? = nil
     var showsNitroEmoji = false
+    /// In the message field with "Emoji Without Nitro" on: Nitro emoji are
+    /// listed and picked as a link to their image.
+    var linksLockedEmoji = false
 
     var hasNitro: Bool {
       if case .none = gw.user.premiumKind { return false }
@@ -290,9 +294,31 @@ struct EmojiPicker: View {
     private func isListed(_ item: PickerEmoji) -> Bool {
       switch lock(for: item) {
       case nil: true
-      case .nitro: showsNitroEmoji
+      case .nitro: showsNitroEmoji || linksLockedEmoji
       case .roles: false
       }
+    }
+
+    /// What picking `item` gives: the emoji, its image link when it needs
+    /// Nitro and links are on, or nil when it can't be used here.
+    func picked(_ item: PickerEmoji) -> DiscordModels.Emoji? {
+      switch lock(for: item) {
+      case nil:
+        return item.toDiscordEmoji()
+      case .nitro where linksLockedEmoji:
+        guard case .custom(let emoji, _) = item, let id = emoji.id else { return nil }
+        // a name-only emoji goes into the text as it is
+        return DiscordModels.Emoji(
+          name: NitroFreeLinks.emoji(id: id.rawValue, name: emoji.name, animated: emoji.animated == true))
+      default:
+        return nil
+      }
+    }
+
+    /// Shown in the cell: links count as usable.
+    func displayLock(for item: PickerEmoji) -> EmojiLock? {
+      let lock = lock(for: item)
+      return lock == .nitro && linksLockedEmoji ? nil : lock
     }
 
     var orderedGuildIDs: [GuildSnowflake] {
@@ -564,6 +590,9 @@ struct EmojiPicker: View {
     var guildID: GuildSnowflake? = nil
     var onEmojiPicked: ((DiscordModels.Emoji) -> Void)?
     var allowsShiftToKeepOpen: Bool = true
+    /// The message field, not reactions: Nitro emoji may go as links.
+    var forMessages = true
+    @AppStorage(ComposerPreferences.Key.nitroFreeEmoji) private var nitroFreeEmoji = false
 
     enum FocusTarget: Hashable {
       case search
@@ -614,6 +643,7 @@ struct EmojiPicker: View {
         rebuildGridSections()
       }
       .onChange(of: showsNitroEmoji) { _, _ in rebuildGridSections() }
+        .onChange(of: nitroFreeEmoji) { _, _ in rebuildGridSections() }
       .onChange(of: searchText) { _, newValue in
         highlightedIndex = 0
         Task { await performSearch(newValue) }
@@ -718,7 +748,7 @@ struct EmojiPicker: View {
     }
 
     func emojiCell(_ item: PickerEmoji) -> some View {
-      EmojiCell(item: item, lock: builder.lock(for: item))
+      EmojiCell(item: item, lock: builder.displayLock(for: item))
     }
 
     @ViewBuilder
@@ -733,8 +763,11 @@ struct EmojiPicker: View {
               .font(.title3.bold())
               .lineLimit(1)
 
-            if builder.lock(for: item) != nil {
+            if builder.displayLock(for: item) != nil {
               Text("Requires Nitro")
+                .foregroundStyle(.secondary)
+            } else if builder.lock(for: item) != nil {
+              Text("Sent as a link")
                 .foregroundStyle(.secondary)
             } else if case .custom(_, let guild) = item,
               let guild = gw.user.guilds[guild]
@@ -805,7 +838,8 @@ struct EmojiPicker: View {
       .init(
         gw: gw,
         currentGuildID: guildID ?? appState.selectedGuild,
-        showsNitroEmoji: showsNitroEmoji
+        showsNitroEmoji: showsNitroEmoji,
+        linksLockedEmoji: forMessages && nitroFreeEmoji
       )
     }
 
@@ -846,8 +880,8 @@ struct EmojiPicker: View {
     // MARK: Selection
 
     func pick(_ item: PickerEmoji, shiftHeld: Bool) {
-      guard builder.lock(for: item) == nil else { return }
-      onEmojiPicked?(item.toDiscordEmoji())
+      guard let emoji = builder.picked(item) else { return }
+      onEmojiPicked?(emoji)
       if !(allowsShiftToKeepOpen && shiftHeld) {
         dismiss()
       }
@@ -929,25 +963,6 @@ struct EmojiPicker: View {
     }
   }
 
-  struct StickerGridView: View {
-    var onStickerPicked: (Sticker) -> Void
-    @State private var searchText = ""
-    var body: some View {
-      VStack {
-        TextField("Find the perfect Sticker", text: $searchText)
-          .textFieldStyle(.roundedBorder)
-        ScrollView {
-          LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible()), count: 8),
-            spacing: 12
-          ) {
-            Text("Sticker Picker Coming Soon!")
-          }
-        }
-      }
-    }
-  }
-
   #if os(iOS)
     @ViewBuilder
     var sheetLayout: some View {
@@ -983,9 +998,10 @@ struct EmojiPicker: View {
                   onGIFPicked?(gifURL)
                 }
               case .sticker:
-                SheetStickerGridView(detent: detentBinding) { sticker in
+                StickerPickerGrid(guildID: guildID) { sticker in
                   onStickerPicked?(sticker)
                 }
+                .padding(.horizontal, 8)
               }
             }
             .animation(.default, value: chosenPicker)
@@ -1005,6 +1021,7 @@ struct EmojiPicker: View {
       var onEmojiPicked: (DiscordModels.Emoji) -> Void
 
       @AppStorage(EmojiPicker.showsNitroEmojiKey) private var showsNitroEmoji = false
+      @AppStorage(ComposerPreferences.Key.nitroFreeEmoji) private var nitroFreeEmoji = false
       @State private var searchText: String = ""
       @State private var searchResults: [PickerEmoji] = []
       @State private var cachedGridSections: [GridSection] = []
@@ -1014,7 +1031,8 @@ struct EmojiPicker: View {
         .init(
           gw: gw,
           currentGuildID: guildID ?? appState.selectedGuild,
-          showsNitroEmoji: showsNitroEmoji
+          showsNitroEmoji: showsNitroEmoji,
+          linksLockedEmoji: variant != .reactions && nitroFreeEmoji
         )
       }
 
@@ -1055,6 +1073,7 @@ struct EmojiPicker: View {
           rebuildGridSections()
         }
         .onChange(of: showsNitroEmoji) { _, _ in rebuildGridSections() }
+        .onChange(of: nitroFreeEmoji) { _, _ in rebuildGridSections() }
         .onChange(of: searchText) { _, newValue in
           Task { await performSearch(newValue) }
         }
@@ -1092,16 +1111,16 @@ struct EmojiPicker: View {
 
       @ViewBuilder
       private func emojiButton(_ item: PickerEmoji) -> some View {
-        let lock = builder.lock(for: item)
+        let picked = builder.picked(item)
         Button {
-          onEmojiPicked(item.toDiscordEmoji())
+          if let picked { onEmojiPicked(picked) }
         } label: {
-          EmojiCell(item: item, lock: lock)
+          EmojiCell(item: item, lock: builder.displayLock(for: item))
             .frame(width: 38, height: 38)
             .padding(2)
         }
         .buttonStyle(.plain)
-        .disabled(lock != nil)
+        .disabled(picked == nil)
       }
 
       private func sectionHeader(_ section: EmojiPickerSection) -> some View {
@@ -1194,33 +1213,6 @@ struct EmojiPicker: View {
           ScrollView {
             LazyVStack(spacing: 0) {
               Text("GIF Picker Coming Soon!")
-            }
-            .scrollTargetLayout()
-          }
-        }
-        .animation(.spring(), value: detent)
-      }
-    }
-
-    struct SheetStickerGridView: View {
-      @Environment(\.gateway) var gw
-      @Environment(\.appState) var appState
-      @Binding var detent: PresentationDetent
-      var onStickerPicked: (Sticker) -> Void
-      var guildStickers: [GuildSnowflake: [StickerSnowflake: Sticker]] {
-        gw.user.stickers
-      }
-      @State private var searchText: String = ""
-      var body: some View {
-        VStack {
-          if detent == .large {
-            TextField("Find the perfect sticker", text: $searchText)
-              .textFieldStyle(.roundedBorder)
-              .padding(.horizontal, 8)
-          }
-          ScrollView {
-            LazyVStack(spacing: 0) {
-              Text("Sticker Picker Coming Soon!")
             }
             .scrollTargetLayout()
           }

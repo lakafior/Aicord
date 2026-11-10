@@ -4,6 +4,16 @@
     "" : {
 
     },
+    "%lld / %lld characters" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld znaków"
+          }
+        }
+      }
+    },
     "%lld listening" : {
       "localizations" : {
         "pl" : {
@@ -14,12 +24,76 @@
         }
       }
     },
+    "%lld servers muted" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wyciszone serwery"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wyciszonych serwerów"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wyciszony serwer"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld wyciszonego serwera"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     ", " : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ", "
+          }
+        }
+      }
+    },
+    "3 Days" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 dni"
+          }
+        }
+      }
+    },
+    "12 Hours" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12 godzin"
+          }
+        }
+      }
+    },
+    "1 Day" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 dzień"
           }
         }
       }
@@ -44,12 +118,62 @@
         }
       }
     },
+    "A file over Discord's limit can go to the service you choose here, and its link goes into your message. Aicord asks before every file, and never uploads anywhere else. Anyone with the link can download the file. catbox keeps files for good (up to 200 MB), litterbox for the time you pick (up to 1 GB)." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plik ponad limit Discorda może trafić do wybranego tu serwisu, a jego link do Twojej wiadomości. Aicord pyta przed każdym plikiem i nigdy nie wysyła nigdzie indziej. Każdy z linkiem może pobrać plik. catbox trzyma pliki na stałe (do 200 MB), litterbox przez wybrany czas (do 1 GB)."
+          }
+        }
+      }
+    },
+    "A * matches every parameter starting with the text before it." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "* pasuje do każdego parametru zaczynającego się od tekstu przed nią."
+          }
+        }
+      }
+    },
     "A moderator starts the Stage." : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scenę rozpoczyna moderator."
+          }
+        }
+      }
+    },
+    "Amazon referral tags" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Znaczniki polecające Amazona"
+          }
+        }
+      }
+    },
+    "Ad click IDs (fbclid, gclid…)" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identyfikatory kliknięć reklam (fbclid, gclid…)"
+          }
+        }
+      }
+    },
+    "Access Key ID" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access Key ID"
           }
         }
       }
@@ -64,12 +188,82 @@
         }
       }
     },
+    "Clean Links When Pasting" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czyść linki przy wklejaniu"
+          }
+        }
+      }
+    },
+    "Campaign tags (utm_…)" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Znaczniki kampanii (utm_…)"
+          }
+        }
+      }
+    },
+    "Bucket" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket"
+          }
+        }
+      }
+    },
+    "Brings Aicord forward with the Quick Switcher open, over the app you're in. Works while Aicord is running, also with no window in front." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyciąga Aicorda na wierzch z otwartym Quick Switcherem, nad aplikacją, w której jesteś. Działa, gdy Aicord jest uruchomiony, także bez okna na wierzchu."
+          }
+        }
+      }
+    },
+    "Attachments" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Załączniki"
+          }
+        }
+      }
+    },
+    "Another app already uses this shortcut. Pick a different one." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inna aplikacja już używa tego skrótu. Wybierz inny."
+          }
+        }
+      }
+    },
     "Discord didn't allow that on this Stage." : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discord nie pozwolił na to na tej scenie."
+          }
+        }
+      }
+    },
+    "Don't Upload" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie wysyłaj"
           }
         }
       }
@@ -94,12 +288,82 @@
         }
       }
     },
+    "Emoji and stickers you can't use without Nitro go into the message as a link to their image, which Discord shows below it. It's an ordinary message with a link, but it works around a paid feature, so it's off unless you turn it on. Lottie stickers can't be sent this way." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji i naklejki, których nie możesz użyć bez Nitro, trafiają do wiadomości jako link do obrazka, który Discord pokazuje pod nią. To zwykła wiadomość z linkiem, ale omija płatną funkcję, więc jest wyłączone, dopóki tego nie włączysz. Naklejek Lottie nie da się tak wysłać."
+          }
+        }
+      }
+    },
+    "Emoji Without Nitro" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji bez Nitro"
+          }
+        }
+      }
+    },
     "End Stage" : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zakończ scenę"
+          }
+        }
+      }
+    },
+    "Global" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Globalne"
+          }
+        }
+      }
+    },
+    "Folder (Optional)" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder (opcjonalnie)"
+          }
+        }
+      }
+    },
+    "Fill in the endpoint, bucket, region and public address, where the files can be read." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uzupełnij endpoint, bucket, region i adres publiczny, pod którym można odczytać pliki."
+          }
+        }
+      }
+    },
+    "Files Too Large for Discord" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pliki za duże dla Discorda"
+          }
+        }
+      }
+    },
+    "Endpoint" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endpoint"
           }
         }
       }
@@ -124,6 +388,16 @@
         }
       }
     },
+    "Instagram and Threads share IDs" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identyfikatory udostępnień Instagrama i Threads"
+          }
+        }
+      }
+    },
     "Invite to Speak" : {
       "localizations" : {
         "pl" : {
@@ -144,6 +418,16 @@
         }
       }
     },
+    "It's larger than Discord takes. Anyone with the link can download it, and it stays on that service, not on Discord." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jest większy, niż przyjmuje Discord. Każdy z linkiem może go pobrać, a zostaje w tym serwisie, nie na Discordzie."
+          }
+        }
+      }
+    },
     "Join as Speaker" : {
       "localizations" : {
         "pl" : {
@@ -154,12 +438,32 @@
         }
       }
     },
+    "Keep For" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przechowuj przez"
+          }
+        }
+      }
+    },
     "Leave Stage" : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opuść scenę"
+          }
+        }
+      }
+    },
+    "Link Rules" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reguły linków"
           }
         }
       }
@@ -204,6 +508,16 @@
         }
       }
     },
+    "Long Messages" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Długie wiadomości"
+          }
+        }
+      }
+    },
     "Lower Hand" : {
       "localizations" : {
         "pl" : {
@@ -224,12 +538,62 @@
         }
       }
     },
+    "Newsletter tracking (Mailchimp, HubSpot…)" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Śledzenie newsletterów (Mailchimp, HubSpot…)"
+          }
+        }
+      }
+    },
+    "Mute Servers" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wycisz serwery"
+          }
+        }
+      }
+    },
     "No Stage is live" : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Żadna scena nie trwa"
+          }
+        }
+      }
+    },
+    "No sticker matches that name." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Żadna naklejka nie pasuje do tej nazwy."
+          }
+        }
+      }
+    },
+    "No changes" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez zmian"
+          }
+        }
+      }
+    },
+    "No Stickers" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak naklejek"
           }
         }
       }
@@ -244,12 +608,186 @@
         }
       }
     },
+    "Only in Direct Messages" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tylko w wiadomościach prywatnych"
+          }
+        }
+      }
+    },
     "Open Stage" : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otwórz scenę"
+          }
+        }
+      }
+    },
+    "Shortcut" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skrót"
+          }
+        }
+      }
+    },
+    "Set Discord Status and Mute Servers" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ustaw status Discorda i wycisz serwery"
+          }
+        }
+      }
+    },
+    "Service" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwis"
+          }
+        }
+      }
+    },
+    "Sent as a link" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysyłane jako link"
+          }
+        }
+      }
+    },
+    "Sends as %lld messages" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wysyłane jako %lld wiadomości"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wysyłane jako %lld wiadomości"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wysyłane jako %lld wiadomość"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wysyłane jako %lld wiadomości"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Secret Access Key" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secret Access Key"
+          }
+        }
+      }
+    },
+    "Remove Location from Photos" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuwaj lokalizację ze zdjęć"
+          }
+        }
+      }
+    },
+    "Region" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Region"
+          }
+        }
+      }
+    },
+    "Reddit share IDs" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identyfikatory udostępnień Reddita"
+          }
+        }
+      }
+    },
+    "Quick Switcher from Any App" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Switcher z każdej aplikacji"
+          }
+        }
+      }
+    },
+    "Public Address" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adres publiczny"
+          }
+        }
+      }
+    },
+    "Private names upload files under a random name with the same extension (IMG_2041.HEIC becomes k3v9x0q2m7ab.HEIC); spoiler files stay spoilers. Removing location also takes out the camera, lens and date details of JPEG, HEIC, PNG and TIFF photos, keeping their orientation. Videos are sent as they are." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prywatne nazwy wysyłają pliki pod losową nazwą z tym samym rozszerzeniem (IMG_2041.HEIC staje się k3v9x0q2m7ab.HEIC); spoilery zostają spoilerami. Usuwanie lokalizacji usuwa też dane aparatu, obiektywu i datę ze zdjęć JPEG, HEIC, PNG i TIFF, zachowując ich orientację. Filmy są wysyłane bez zmian."
+          }
+        }
+      }
+    },
+    "Private File Names" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prywatne nazwy plików"
+          }
+        }
+      }
+    },
+    "Pasted links lose tracking parameters such as utm_…, fbclid and the si of YouTube and Spotify shares. The rest of the link stays as it was." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wklejone linki tracą parametry śledzące, takie jak utm_…, fbclid i si z udostępnień YouTube i Spotify. Reszta linku zostaje bez zmian."
           }
         }
       }
@@ -270,6 +808,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mówca"
+          }
+        }
+      }
+    },
+    "Spotify share IDs (si, context)" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identyfikatory udostępnień Spotify (si, context)"
+          }
+        }
+      }
+    },
+    "Split Long Messages" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dziel długie wiadomości"
           }
         }
       }
@@ -334,12 +892,216 @@
         }
       }
     },
+    "User Hash (Optional)" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User hash (opcjonalnie)"
+          }
+        }
+      }
+    },
+    "Uploading %lld files…" : {
+      "localizations" : {
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wysyłanie %lld plików…"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wysyłanie %lld plików…"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wysyłanie %lld pliku…"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wysyłanie %lld pliku…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Uploading %@…" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysyłanie %@…"
+          }
+        }
+      }
+    },
+    "Upload “%@” (%@) to %@?" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysłać „%1$@” (%2$@) do %3$@?"
+          }
+        }
+      }
+    },
+    "Upload and Add Link" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyślij i dodaj link"
+          }
+        }
+      }
+    },
+    "Upload Failed" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysyłanie nie powiodło się"
+          }
+        }
+      }
+    },
+    "Typing Indicator" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wskaźnik pisania"
+          }
+        }
+      }
+    },
+    "Typing" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pisanie"
+          }
+        }
+      }
+    },
+    "TikTok share IDs" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identyfikatory udostępnień TikToka"
+          }
+        }
+      }
+    },
+    "Text over %lld characters goes as several messages, split between paragraphs and sentences and never inside a code block. The field shows how many before you send." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst dłuższy niż %lld znaków idzie jako kilka wiadomości, dzielony między akapitami i zdaniami, nigdy wewnątrz bloku kodu. Pole pokazuje ich liczbę przed wysłaniem."
+          }
+        }
+      }
+    },
+    "Stickers Without Nitro" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naklejki bez Nitro"
+          }
+        }
+      }
+    },
     "What the Stage is about, shown to everyone in the server." : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O czym jest scena; widzą to wszyscy na serwerze."
+          }
+        }
+      }
+    },
+    "Your servers have no stickers." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoje serwery nie mają naklejek."
+          }
+        }
+      }
+    },
+    "Your S3 or R2 Bucket" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Własny bucket S3 lub R2"
+          }
+        }
+      }
+    },
+    "YouTube share IDs (si, pp, feature)" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identyfikatory udostępnień YouTube (si, pp, feature)"
+          }
+        }
+      }
+    },
+    "X and Twitter share IDs (s, t)" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identyfikatory udostępnień X i Twittera (s, t)"
+          }
+        }
+      }
+    },
+    "Without Nitro" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez Nitro"
+          }
+        }
+      }
+    },
+    "While this Focus is on, Aicord changes your Discord status and the servers you choose only notify you when you're mentioned. Your status comes back when the Focus ends." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gdy ten tryb skupienia jest włączony, Aicord zmienia Twój status na Discordzie, a wybrane serwery powiadamiają tylko o wzmiankach. Status wraca po zakończeniu trybu."
+          }
+        }
+      }
+    },
+    "Whether others see “… is typing” while you write. When it's off, Aicord simply doesn't tell Discord you're typing; nothing else changes." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czy inni widzą „… pisze”, gdy piszesz. Gdy jest wyłączony, Aicord po prostu nie mówi Discordowi, że piszesz; nic poza tym się nie zmienia."
           }
         }
       }
