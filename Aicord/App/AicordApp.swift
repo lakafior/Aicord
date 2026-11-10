@@ -121,11 +121,24 @@ struct AicordApp: App {
       .defaultSize(width: 720, height: 760)
       .restorationBehavior(.disabled)
 
+      // a server's settings, one window per server (Go → Server Settings…)
+      WindowGroup("Server Settings", id: ServerSettingsWindow.id, for: GuildSnowflake.self) { $guildId in
+        if let guildId {
+          ServerSettingsWindow(guildId: guildId)
+            .appAppearance()
+            .environment(\.challenges, challenges)
+        }
+      }
+      .defaultSize(width: 520, height: 680)
+      .windowResizability(.contentMinSize)
+      .restorationBehavior(.disabled)
+
       // the system Settings window: ⌘, and Aicord → Settings…
       Settings {
         SettingsView()
           .appAppearance()
-          .frame(minWidth: 760, idealWidth: 860, minHeight: 520, idealHeight: 620)
+          .frame(width: 760)
+          .frame(minHeight: 560, maxHeight: 900)
       }
     #endif
   }

@@ -254,6 +254,11 @@ struct ChatView: View {
             Label("Pinned Messages", systemImage: "pin")
           }
           .help("Pinned messages")
+          // short lists drop from their button, as in Mail and Notes
+          .popover(isPresented: $showsPins, arrowEdge: .bottom) {
+            PinnedMessagesSheet(vm: vm)
+              .frame(width: 420, height: 480)
+          }
           if vm.channel?.type == .guildText || vm.channel?.type == .guildAnnouncement {
             Button {
               showsThreads = true
@@ -261,6 +266,10 @@ struct ChatView: View {
               Label("Threads", systemImage: "number.square")
             }
             .help("Threads")
+            .popover(isPresented: $showsThreads, arrowEdge: .bottom) {
+              ThreadBrowserSheet(vm: vm)
+                .frame(width: 420, height: 480)
+            }
           }
         }
       #endif
@@ -289,12 +298,14 @@ struct ChatView: View {
       AskChannelSheet(
         channelId: vm.channelId, guildId: vm.guildStore?.guildId, channelName: channelTitle)
     }
-    .sheet(isPresented: $showsPins) {
-      PinnedMessagesSheet(vm: vm)
-    }
-    .sheet(isPresented: $showsThreads) {
-      ThreadBrowserSheet(vm: vm)
-    }
+    #if os(iOS)
+      .sheet(isPresented: $showsPins) {
+        PinnedMessagesSheet(vm: vm)
+      }
+      .sheet(isPresented: $showsThreads) {
+        ThreadBrowserSheet(vm: vm)
+      }
+    #endif
     .sheet(isPresented: $showsExport) {
       ChannelExportSheet(
         channelId: vm.channelId, guildId: vm.guildStore?.guildId,

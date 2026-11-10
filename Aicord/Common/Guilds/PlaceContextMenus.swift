@@ -25,6 +25,9 @@ extension View {
 struct GuildContextMenu: ViewModifier {
   @Environment(\.gateway) var gw
   @Environment(\.appState) var appState
+  #if os(macOS)
+    @Environment(\.openWindow) var openWindow
+  #endif
   let guild: Guild
   @State private var showsSettings = false
   @State private var showsInvite = false
@@ -75,7 +78,11 @@ struct GuildContextMenu: ViewModifier {
         Divider()
 
         Button("Server Settings…", systemImage: "gearshape") {
-          showsSettings = true
+          #if os(macOS)
+            openWindow(id: ServerSettingsWindow.id, value: guild.id)
+          #else
+            showsSettings = true
+          #endif
         }
 
         if gw.settings.userSettings.appearance.developerMode {
