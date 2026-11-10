@@ -26,10 +26,8 @@ struct VoiceMessageButton: View {
           .imageScale(.large)
           .padding(7.5)
           .foregroundStyle(recorder.isRecording ? .white : .primary)
-          .background(
-            recorder.isRecording ? AnyShapeStyle(Color.red) : AnyShapeStyle(.background.secondary.opacity(0.8)),
-            in: .circle
-          )
+          .background(recorder.isRecording ? Color.red : Color.clear, in: .circle)
+          .glassEffect(.regular.interactive(), in: .circle)
           .scaleEffect(recorder.isRecording ? 1.25 : 1)
           .animation(.spring(duration: 0.25), value: recorder.isRecording)
           .gesture(holdToRecord)

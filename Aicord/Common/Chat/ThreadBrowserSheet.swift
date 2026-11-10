@@ -79,16 +79,17 @@ struct ThreadBrowserSheet: View {
       #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
       #endif
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("Done") { dismiss() }
+      // on the Mac this is a popover of its toolbar button, closed by a click
+      // outside; a toolbar here would land in the window's toolbar
+      #if os(iOS)
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Done") { dismiss() }
+          }
         }
-      }
+      #endif
       .task(id: archived) { await load(reset: true) }
     }
-    #if os(macOS)
-      .frame(minWidth: 420, minHeight: 480)
-    #endif
   }
 
   private func load(reset: Bool) async {
@@ -164,9 +165,18 @@ struct PinnedMessagesSheet: View {
         if isLoading {
           ProgressView()
         } else if failed {
-          ContentUnavailableView(
-            "Pins couldn't be loaded", systemImage: "pin.slash",
-            description: Text("Pull to try again."))
+          #if os(macOS)
+            // no pull to refresh with a mouse
+            ContentUnavailableView {
+              Label("Pins couldn't be loaded", systemImage: "pin.slash")
+            } actions: {
+              Button("Try Again") { Task { await load() } }
+            }
+          #else
+            ContentUnavailableView(
+              "Pins couldn't be loaded", systemImage: "pin.slash",
+              description: Text("Pull to try again."))
+          #endif
         } else if pins.isEmpty {
           ContentUnavailableView(
             "No pinned messages", systemImage: "pin",
@@ -178,16 +188,17 @@ struct PinnedMessagesSheet: View {
       #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
       #endif
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("Done") { dismiss() }
+      // on the Mac this is a popover of its toolbar button, closed by a click
+      // outside; a toolbar here would land in the window's toolbar
+      #if os(iOS)
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Done") { dismiss() }
+          }
         }
-      }
+      #endif
       .task { await load() }
     }
-    #if os(macOS)
-      .frame(minWidth: 420, minHeight: 480)
-    #endif
   }
 
   private func load() async {

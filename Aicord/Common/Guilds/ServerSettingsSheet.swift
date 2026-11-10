@@ -18,6 +18,9 @@ struct ServerSettingsSheet: View {
   @Environment(\.gateway) var gw
   @Environment(\.dismiss) var dismiss
   let guildId: GuildSnowflake
+  /// On the Mac the settings are a window of their own: the server names the
+  /// window, and closing it replaces Done.
+  var inWindow = false
   @State private var error: String?
   @State private var showsLeave = false
 
@@ -84,8 +87,10 @@ struct ServerSettingsSheet: View {
         .navigationBarTitleDisplayMode(.inline)
       #endif
       .toolbar {
-        ToolbarItem(placement: .confirmationAction) {
-          Button("Done") { dismiss() }
+        if !inWindow {
+          ToolbarItem(placement: .confirmationAction) {
+            Button("Done") { dismiss() }
+          }
         }
       }
     }

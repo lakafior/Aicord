@@ -171,7 +171,7 @@ struct ForumChannelView: View {
       }
     }
     .scrollContentBackground(.hidden)
-    .background(theme.common.secondaryBackground)
+    .background(theme.chatBackground)
     .refreshable { await load(reset: true) }
     #if os(macOS)
       // the window's toolbar already has the search field (MacBaseplate), and

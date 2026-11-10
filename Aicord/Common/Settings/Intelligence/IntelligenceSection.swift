@@ -332,7 +332,7 @@ struct TranslationSettingsSections: View {
             Text(MessageTranslator.name(of: language)).tag(language.minimalIdentifier)
           }
         }
-        NavigationLink {
+        SettingsPageLink {
           AutoTranslateLanguagesView(supported: supported)
         } label: {
           LabeledContent("Translate Automatically") {

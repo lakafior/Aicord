@@ -22,8 +22,8 @@ import SwiftUI
     @State private var currentGuildStore: GuildStore? = nil
     @State private var currentChannelStore: ChannelStore? = nil
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @Environment(\.openWindow) var openWindow
     @State private var showingSearch = false
-    @State private var showingServerSettings = false
     /// What's typed in the toolbar's search field; Return opens Search with it.
     @State private var searchQuery = ""
     @FocusState private var searchFieldFocused: Bool
@@ -45,6 +45,7 @@ import SwiftUI
       }
       .navigationTitle(windowTitle)
       .navigationSubtitle(windowSubtitle)
+      .keepsWindowTitle(windowTitle)
       // the toolbar's search field, like Mail's; Return opens Search with the text
       .searchable(text: $searchQuery, placement: .toolbar, prompt: Text("Search"))
       .searchFocused($searchFieldFocused)
@@ -66,11 +67,6 @@ import SwiftUI
           initialText: searchQuery
         )
         .frame(minWidth: 520, idealWidth: 600, minHeight: 520, idealHeight: 640)
-      }
-      .sheet(isPresented: $showingServerSettings) {
-        if let guildId = appState.selectedGuild {
-          ServerSettingsSheet(guildId: guildId)
-        }
       }
       .focusedSceneValue(\.macWindowActions, actions)
       .frame(minWidth: 900, minHeight: 540)
@@ -152,7 +148,9 @@ import SwiftUI
         markCurrentRead: currentChannelStore?.channel.map { channel in
           { [gw] in Task { try? await gw.readStates.markRead([channel]) } }
         },
-        serverSettings: appState.selectedGuild == nil ? nil : { showingServerSettings = true },
+        serverSettings: appState.selectedGuild.map { guildId in
+          { openWindow(id: ServerSettingsWindow.id, value: guildId) }
+        },
         goToChannel: currentGuildStore.map { guild in
           { [appState] step, unreadOnly in
             if let next = Self.channel(after: appState.selectedChannel, in: guild, step: step, unreadOnly: unreadOnly) {
@@ -383,6 +381,78 @@ import SwiftUI
 #endif
 
 #if os(macOS)
+  extension View {
+    /// Keeps the window's title as `title` while a sheet or a popover is open.
+    /// On the Mac a `navigationTitle` inside presented content replaces the
+    /// title of the window it is presented from ("Pinned Messages" instead of
+    /// the channel), and SwiftUI has no way to keep it inside the sheet.
+    func keepsWindowTitle(_ title: String) -> some View {
+      background(WindowTitleKeeper(title: title))
+    }
+  }
+
+  private struct WindowTitleKeeper: NSViewRepresentable {
+    let title: String
+
+    func makeNSView(context: Context) -> KeeperView { KeeperView() }
+
+    func updateNSView(_ view: KeeperView, context: Context) {
+      view.title = title
+      view.apply()
+    }
+
+    final class KeeperView: NSView {
+      var title = ""
+      private var observation: NSKeyValueObservation?
+
+      override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        observation = window?.observe(\.title) { [weak self] _, _ in
+          // SwiftUI sets the title on the main thread
+          MainActor.assumeIsolated { self?.apply() }
+        }
+        apply()
+      }
+
+      func apply() {
+        guard let window, !title.isEmpty, window.title != title else { return }
+        window.title = title
+      }
+    }
+  }
+
+  /// A server's settings in a window of their own, as Mac apps keep longer
+  /// forms: it can stay open beside the chat, and its title is the server's
+  /// instead of replacing the main window's.
+  struct ServerSettingsWindow: View {
+    static let id = "server-settings"
+
+    @Environment(\.gateway) var gw
+    let guildId: GuildSnowflake
+    /// Its own state, so sheets opened here show here. Leaving or deleting the
+    /// server clears this selection, and that is passed on to the main window.
+    @State private var appState = AicordAppState(remembersSelection: false)
+
+    var body: some View {
+      Group {
+        if gw.state != .connected {
+          ProgressView()
+        } else {
+          ServerSettingsSheet(guildId: guildId, inWindow: true)
+        }
+      }
+      .navigationSubtitle(Text("Server Settings"))
+      .moderationSheet()
+      .environment(\.appState, appState)
+      .task { appState.selectedGuild = guildId }
+      .onChange(of: appState.selectedGuild) { _, selected in
+        if selected == nil, AicordAppState.main?.selectedGuild == guildId {
+          AicordAppState.main?.selectedGuild = nil
+        }
+      }
+    }
+  }
+
   /// "Open in New Window" for a channel's context menu.
   struct OpenInNewWindowButton: View {
     @Environment(\.openWindow) var openWindow

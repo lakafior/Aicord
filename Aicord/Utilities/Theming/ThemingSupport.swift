@@ -425,3 +425,18 @@ extension Color {
     }
   #endif
 }
+
+extension Theming.Theme {
+  /// The chat's background. On the Mac the built-in themes take the window's
+  /// own background, so the chat matches the sidebar, toolbar and inspector
+  /// around it; a custom theme keeps its colour. Other platforms use the theme's.
+  var chatBackground: Color {
+    #if os(macOS)
+      // the built-in themes: Auto, Light and Dark
+      if id.hasPrefix("Paicord.") {
+        return Color(nsColor: .windowBackgroundColor)
+      }
+    #endif
+    return common.secondaryBackground
+  }
+}

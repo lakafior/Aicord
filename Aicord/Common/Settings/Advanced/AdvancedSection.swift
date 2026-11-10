@@ -144,7 +144,7 @@ struct AdvancedSettings: View {
     #endif
 
     Section {
-      NavigationLink {
+      SettingsPageLink {
         SafariExtensionGuide()
       } label: {
         Label("Safari Extension", systemImage: "safari")
@@ -198,7 +198,7 @@ struct AdvancedSettings: View {
     }
 
     Section {
-      NavigationLink {
+      SettingsPageLink {
         ShellView()
       } label: {
         Label("View Logs", systemImage: "apple.terminal")

@@ -17,13 +17,13 @@ struct AlertSettingsSection: View {
   var body: some View {
     Section {
       Toggle("Ghost Pings", isOn: $ghostPings)
-      NavigationLink {
+      SettingsPageLink {
         KeywordAlertsView()
       } label: {
         LabeledContent(
           "Keywords and Patterns", value: "\(AlertRules.shared.rules.filter(\.enabled).count)")
       }
-      NavigationLink {
+      SettingsPageLink {
         NotificationPeopleList(selection: $watchedUsers)
           .navigationTitle("People to Watch")
       } label: {

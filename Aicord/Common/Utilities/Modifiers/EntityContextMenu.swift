@@ -47,6 +47,13 @@ struct EntityContextMenu<Entity>: ViewModifier {
         default: EmptyView()
         }
       }
+      #if os(macOS)
+        .background {
+          if let message = entity as? DiscordChannel.Message {
+            ReactionPickerAnchor(messageID: message.id)
+          }
+        }
+      #endif
   }
 
   @ViewBuilder
