@@ -2,10 +2,11 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
-## Unreleased
+## 0.1.5 (November 2026)
 
 ### Fixed
 
+- **Fixed** · On the Mac, the global Quick Switcher shortcut brings back a minimized Aicord window instead of doing nothing
 - **Fixed** · A file too large for Discord now says why it wasn't sent through an upload service: none is chosen in Settings → Chat, the one chosen isn't fully set up, or the file is over that service's limit too
 
 ## 0.1.4 (November 2026)
