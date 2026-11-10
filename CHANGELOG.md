@@ -2,6 +2,12 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### Fixed
+
+- **Fixed** · On the Mac, the global Quick Switcher shortcut really brings back a minimized Aicord window now (0.1.5 still skipped it: a minimized window says it can't become the main one)
+
 ## 0.1.5 (November 2026)
 
 ### Fixed

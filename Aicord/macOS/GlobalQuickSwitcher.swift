@@ -95,16 +95,23 @@
         1, &type, nil, &handler)
     }
 
-    /// The main Aicord window, on screen or minimized: not a channel window
-    /// of its own, not Settings and not a panel. One on screen comes first.
+    /// The main Aicord window, on screen or minimized. One on screen comes first.
     private func mainWindow() -> NSWindow? {
       let candidates = NSApp.windows.filter { window in
-        let id = window.identifier?.rawValue ?? ""
-        return !(window is NSPanel) && window.canBecomeMain
-          && !id.contains("Channel") && !id.contains("Settings")
+        // a minimized window says it can't become main and isn't visible, so
+        // both are allowed for it
+        !(window is NSPanel) && (window.canBecomeMain || window.isMiniaturized)
           && (window.isVisible || window.isMiniaturized)
       }
-      return candidates.first { $0.isVisible } ?? candidates.first
+      // SwiftUI names a window after its content's type: the main window
+      // shows RootView; channel windows and Settings are left out otherwise
+      let main = candidates.filter { $0.identifier?.rawValue.contains("RootView") == true }
+      let others = candidates.filter { window in
+        let id = window.identifier?.rawValue ?? ""
+        return !id.contains("Channel") && !id.contains("Settings")
+      }
+      let pool = main.isEmpty ? others : main
+      return pool.first { $0.isVisible } ?? pool.first
     }
 
     /// Brings the main window forward with the switcher open, or closes it
