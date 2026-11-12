@@ -2,6 +2,14 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### Chat
+
+- **Fixed** · Scrolling a chat on iPhone and iPad is smooth: the messages are in a collection view that reuses its rows, so scrolling up through history no longer stutters, and a page of older messages loading no longer moves what's on screen
+- **Fixed** · Messages sent while Aicord was in the background or reconnecting show up as soon as the chat is back on screen, instead of a few seconds later or not until the next message
+- **Fixed** · Older history loads 100 messages at a time and comes in as one update; opening a channel, pictures and GIFs appearing, the offline copy and Spotlight indexing no longer hold up the interface
+
 ## 0.1.6 (November 2026)
 
 ### The Mac app
