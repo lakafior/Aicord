@@ -14,6 +14,7 @@
 import DiscordModels
 import Foundation
 import Logging
+import VideoToolbox
 
 public actor VoiceGatewayManager {
   /// What the main gateway handed us for this connection.
@@ -216,7 +217,15 @@ public actor VoiceGatewayManager {
   private var videoSources: [UserSnowflake: UInt32] = [:]
   /// Every layer a user announced, to turn the others off.
   private var videoLayers: [UserSnowflake: [UInt32]] = [:]
-  private var depacketizers: [UInt32: H264Depacketizer] = [:]
+  private var depacketizers: [UInt32: VideoDepacketizer] = [:]
+  /// Each layer's retransmission source, as announced (else `ssrc + 1`).
+  private var announcedRTX: [UInt32: UInt32] = [:]
+  /// Retransmission source → the layer we take, for the layers in use.
+  private var rtxToSource: [UInt32: UInt32] = [:]
+  /// H.265 only where the device decodes it in hardware.
+  private let videoCodecs: [VoiceGateway.Codec] =
+    VTIsHardwareDecodeSupported(kCMVideoCodecType_HEVC)
+    ? [.h265ReceiveCodec, .h264ReceiveCodec] : [.h264ReceiveCodec]
   private var wantedVideo: Set<UserSnowflake> = []
   private var lastKeyframeRequest: [UInt32: ContinuousClock.Instant] = [:]
 
@@ -744,7 +753,7 @@ public actor VoiceGatewayManager {
           .init(
             protocol: "udp",
             data: .init(address: address, port: Int(port), mode: mode.encryptionMode),
-            codecs: [.opusCodec, .h264ReceiveCodec]
+            codecs: [.opusCodec] + videoCodecs
           )
         )
       )
@@ -873,9 +882,19 @@ public actor VoiceGatewayManager {
       let packet = try? cipher.open(datagram),
       packet.ssrc != ssrc
     else { return }
-    if packet.payloadType.rawValue == UInt8(VoiceGateway.Codec.h264ReceiveCodec.payload_type) {
-      receiveVideo(packet)
-      return
+    let type = Int(packet.payloadType.rawValue)
+    for (codec, video) in [
+      (VoiceGateway.Codec.h264ReceiveCodec, VideoCodec.h264),
+      (VoiceGateway.Codec.h265ReceiveCodec, VideoCodec.h265),
+    ] {
+      if type == codec.payload_type {
+        receiveVideo(packet, codec: video)
+        return
+      }
+      if type == codec.rtx_payload_type {
+        receiveRetransmission(packet, codec: video)
+        return
+      }
     }
     guard isReceiving,
       packet.payloadType.rawValue == UInt8(VoiceGateway.Codec.opusCodec.payload_type),
@@ -907,6 +926,9 @@ public actor VoiceGatewayManager {
     }
     let streams = video.streams ?? []
     let layers = streams.compactMap(\.ssrc)
+    for stream in streams {
+      if let ssrc = stream.ssrc { announcedRTX[ssrc] = stream.rtx_ssrc }
+    }
     var source: UInt32?
     if video.video_ssrc != 0 {
       source = streams
@@ -928,6 +950,10 @@ public actor VoiceGatewayManager {
     }
     videoSources[userID] = source
     videoLayers[userID] = layers.isEmpty ? nil : layers
+    rtxToSource = Dictionary(
+      videoSources.values.map { (announcedRTX[$0] ?? $0 &+ 1, $0) },
+      uniquingKeysWith: { first, _ in first }
+    )
     if (old != nil) != (source != nil) {
       logger.info("Video \(source != nil ? "on" : "off")", metadata: ["user": "\(userID.rawValue)"])
       eventContinuation.yield(.video(userID, source != nil))
@@ -947,11 +973,15 @@ public actor VoiceGatewayManager {
     send(.init(opcode: .mediaSinkWants, data: .mediaSinkWants(.init(ssrcs: wants))))
   }
 
-  private func receiveVideo(_ packet: RTPPacket) {
+  private func receiveVideo(_ packet: RTPPacket, codec: VideoCodec) {
     guard let userID = videoSources.first(where: { $0.value == packet.ssrc })?.key,
       data.isStream || wantedVideo.contains(userID)
     else { return }
-    var depacketizer = depacketizers[packet.ssrc] ?? H264Depacketizer()
+    var depacketizer = depacketizers[packet.ssrc] ?? VideoDepacketizer(codec: codec)
+    if depacketizer.codec != codec {
+      // The call moved to another codec (Session Update).
+      depacketizer = VideoDepacketizer(codec: codec)
+    }
     for frame in depacketizer.push(packet) {
       guard let plain = try? dave.decrypt(userID: userID, frame: frame.data, video: true),
         !plain.isEmpty
@@ -963,14 +993,56 @@ public actor VoiceGatewayManager {
       videoContinuation.yield(
         VideoFrame(
           userID: userID,
+          codec: codec,
           timestamp: frame.timestamp,
           isKeyframe: frame.isKeyframe,
           data: plain
         )
       )
     }
+    let missing = depacketizer.missingSequences()
     depacketizers[packet.ssrc] = depacketizer
+    if !missing.isEmpty { requestRetransmission(of: missing, from: packet.ssrc) }
     if depacketizer.needsKeyframe { requestKeyframe(from: packet.ssrc) }
+  }
+
+  /// RTX (RFC 4588): the original sequence number, then the original
+  /// payload, on the layer's retransmission source.
+  private func receiveRetransmission(_ packet: RTPPacket, codec: VideoCodec) {
+    guard let source = rtxToSource[packet.ssrc], packet.payload.count > 2 else { return }
+    let bytes = [UInt8](packet.payload.prefix(2))
+    var original = packet
+    original.ssrc = source
+    original.sequence = UInt16(bytes[0]) << 8 | UInt16(bytes[1])
+    original.payload = Data(packet.payload.dropFirst(2))
+    receiveVideo(original, codec: codec)
+  }
+
+  /// RTCP Generic NACK (RFC 4585 §6.2.1): asks the sender of `mediaSSRC`
+  /// to send these packets again.
+  private func requestRetransmission(of sequences: [UInt16], from mediaSSRC: UInt32) {
+    // Each entry names one packet and, as a bit mask, the 16 after it.
+    var entries: [(id: UInt16, mask: UInt16)] = []
+    for sequence in sequences {
+      if let last = entries.last {
+        let offset = Int(sequence &- last.id)
+        if (1...16).contains(offset) {
+          entries[entries.count - 1].mask |= 1 << UInt16(offset - 1)
+          continue
+        }
+      }
+      entries.append((sequence, 0))
+    }
+    var packet = Data([0x81, 205, 0x00, UInt8(2 + entries.count)])
+    RTPPacket.appendUInt32(&packet, ssrc)
+    RTPPacket.appendUInt32(&packet, mediaSSRC)
+    for entry in entries {
+      packet.append(contentsOf: [
+        UInt8(entry.id >> 8), UInt8(entry.id & 0xFF),
+        UInt8(entry.mask >> 8), UInt8(entry.mask & 0xFF),
+      ])
+    }
+    sendRTCP(packet)
   }
 
   /// RTCP Picture Loss Indication (RFC 4585 §6.3.1): asks the sender of
@@ -983,11 +1055,15 @@ public actor VoiceGatewayManager {
       return
     }
     lastKeyframeRequest[mediaSSRC] = now
-    guard let cipher, let udp, nonceCounter < .max else { return }
-    nonceCounter += 1
     var packet = Data([0x81, 206, 0x00, 0x02])
     RTPPacket.appendUInt32(&packet, ssrc)
     RTPPacket.appendUInt32(&packet, mediaSSRC)
+    sendRTCP(packet)
+  }
+
+  private func sendRTCP(_ packet: Data) {
+    guard let cipher, let udp, nonceCounter < .max else { return }
+    nonceCounter += 1
     guard let datagram = try? cipher.sealRTCP(packet, nonce: nonceCounter) else { return }
     udp.send(datagram)
   }
@@ -1112,6 +1188,7 @@ public actor VoiceGatewayManager {
     depacketizers.removeAll()
     videoSources.removeAll()
     videoLayers.removeAll()
+    rtxToSource.removeAll()
     deadline = nil
     state = .disconnected(reason)
     eventContinuation.finish()

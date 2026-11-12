@@ -19,7 +19,8 @@ class VoiceVideoTests: XCTestCase {
     timestamp: UInt32,
     firstSequence: UInt16,
     mtu: Int = 100,
-    aggregate: Bool = false
+    aggregate: Bool = false,
+    codec: VideoCodec = .h264
   ) -> [RTPPacket] {
     var payloads: [Data] = []
     var small: [Data] = []
@@ -28,7 +29,7 @@ class VoiceVideoTests: XCTestCase {
       if small.count == 1 || !aggregate {
         payloads += small
       } else {
-        var stap = Data([24])
+        var stap = codec == .h264 ? Data([24]) : Data([48 << 1, 1])
         for unit in small {
           stap.append(contentsOf: [UInt8(unit.count >> 8), UInt8(unit.count & 0xFF)])
           stap.append(unit)
@@ -44,13 +45,18 @@ class VoiceVideoTests: XCTestCase {
       }
       flushSmall()
       let header = unit[unit.startIndex]
-      let body = [UInt8](unit.dropFirst())
+      let headerSize = codec == .h264 ? 1 : 2
+      let body = [UInt8](unit.dropFirst(headerSize))
       var offset = 0
       while offset < body.count {
-        let end = min(offset + mtu - 2, body.count)
-        var fu = Data([(header & 0xE0) | 28, header & 0x1F])
-        if offset == 0 { fu[1] |= 0x80 }
-        if end == body.count { fu[1] |= 0x40 }
+        let end = min(offset + mtu - 3, body.count)
+        var fu =
+          codec == .h264
+          ? Data([(header & 0xE0) | 28, header & 0x1F])
+          : Data([(header & 0x81) | (49 << 1), unit[unit.startIndex + 1], (header >> 1) & 0x3F])
+        let flags = fu.count - 1
+        if offset == 0 { fu[flags] |= 0x80 }
+        if end == body.count { fu[flags] |= 0x40 }
         fu.append(contentsOf: body[offset..<end])
         payloads.append(fu)
         offset = end
@@ -84,7 +90,7 @@ class VoiceVideoTests: XCTestCase {
     ]
     let delta = [unit(type: 1, size: 333, fill: 4)]
     for aggregate in [false, true] {
-      var depacketizer = H264Depacketizer()
+      var depacketizer = VideoDepacketizer()
       // A marker tells where the first whole frame starts.
       var frames = depacketizer.push(
         RTPPacket(
@@ -112,7 +118,7 @@ class VoiceVideoTests: XCTestCase {
   func testReorderedPacketsWaitAndLostOnesAskForAKeyframe() {
     let key = [unit(type: 7, size: 12, fill: 1), unit(type: 5, size: 500, fill: 2)]
     let delta = [unit(type: 1, size: 400, fill: 3)]
-    var depacketizer = H264Depacketizer()
+    var depacketizer = VideoDepacketizer()
     _ = depacketizer.push(
       RTPPacket(
         payloadType: .dynamic(103), sequence: 99, timestamp: 1, ssrc: 7,
@@ -121,7 +127,7 @@ class VoiceVideoTests: XCTestCase {
     // Out of order within the window: nothing is lost.
     var packets = packetize(key, timestamp: 3000, firstSequence: 100)
     packets.swapAt(1, 3)
-    var frames: [H264Depacketizer.Frame] = []
+    var frames: [VideoDepacketizer.Frame] = []
     for packet in packets { frames += depacketizer.push(packet) }
     XCTAssertEqual(frames.map(\.data), [annexB(key)])
 
@@ -134,7 +140,7 @@ class VoiceVideoTests: XCTestCase {
     for packet in broken { frames += depacketizer.push(packet) }
     XCTAssertTrue(frames.isEmpty)
     XCTAssertFalse(depacketizer.needsKeyframe)
-    for index in 0..<20 {
+    for index in 0..<40 {
       let next = packetize(delta, timestamp: 9000 + UInt32(index) * 3000, firstSequence: sequence)
       sequence &+= UInt16(next.count)
       for packet in next { frames += depacketizer.push(packet) }
@@ -150,6 +156,33 @@ class VoiceVideoTests: XCTestCase {
     XCTAssertFalse(depacketizer.needsKeyframe)
   }
 
+  func testAMissingPacketIsAskedForAndItsRetransmissionCompletesTheFrame() {
+    let key = [unit(type: 7, size: 12, fill: 1), unit(type: 5, size: 500, fill: 2)]
+    var depacketizer = VideoDepacketizer()
+    _ = depacketizer.push(
+      RTPPacket(
+        payloadType: .dynamic(103), sequence: 99, timestamp: 1, ssrc: 7,
+        payload: unit(type: 1, size: 10, fill: 9), marker: true))
+    let packets = packetize(key, timestamp: 3000, firstSequence: 100)
+    XCTAssertGreaterThan(packets.count, 4)
+    var frames: [VideoDepacketizer.Frame] = []
+    for packet in packets where packet.sequence != 102 { frames += depacketizer.push(packet) }
+    XCTAssertTrue(frames.isEmpty)
+
+    let start = ContinuousClock.now
+    XCTAssertEqual(depacketizer.missingSequences(now: start), [102])
+    // Not again until some time has passed, and not for ever.
+    XCTAssertEqual(depacketizer.missingSequences(now: start + .milliseconds(10)), [])
+    XCTAssertEqual(depacketizer.missingSequences(now: start + .milliseconds(100)), [102])
+    XCTAssertEqual(depacketizer.missingSequences(now: start + .milliseconds(200)), [102])
+    XCTAssertEqual(depacketizer.missingSequences(now: start + .milliseconds(300)), [])
+
+    frames += depacketizer.push(packets[2])
+    XCTAssertEqual(frames.map(\.data), [annexB(key)])
+    XCTAssertFalse(depacketizer.needsKeyframe)
+    XCTAssertEqual(depacketizer.missingSequences(now: start + .seconds(1)), [])
+  }
+
   func testAnnexBSplitsAtShortAndLongStartCodes() {
     let stream = Data([0, 0, 0, 1, 0x67, 1, 2, 0, 0, 1, 0x68, 3, 0, 0, 0, 1, 0x65, 4, 5])
     XCTAssertEqual(
@@ -160,27 +193,33 @@ class VoiceVideoTests: XCTestCase {
   /// Frames from the system's own encoder, through packets and back, must
   /// come out as sample buffers the system's decoder accepts.
   func testEncodedVideoSurvivesTheRoundTripAndDecodes() throws {
-    let encoded = try Self.encodeFrames(count: 4, width: 320, height: 240)
+    try roundTrip(.h264)
+    try roundTrip(.h265)
+  }
+
+  func roundTrip(_ codec: VideoCodec) throws {
+    let encoded = try Self.encodeFrames(count: 4, width: 320, height: 240, codec: codec)
     XCTAssertEqual(encoded.count, 4)
 
-    var depacketizer = H264Depacketizer()
+    var depacketizer = VideoDepacketizer(codec: codec)
     _ = depacketizer.push(
       RTPPacket(
         payloadType: .dynamic(103), sequence: 9, timestamp: 1, ssrc: 7,
-        payload: Data([0x61, 0]), marker: true))
+        payload: Data([0x02, 1, 0]), marker: true))
     var builder = VideoSampleBuilder()
     var sequence: UInt16 = 10
     var samples: [CMSampleBuffer] = []
     for (index, units) in encoded.enumerated() {
       let packets = packetize(
         units, timestamp: UInt32(index) * 3000, firstSequence: sequence, mtu: 200,
-        aggregate: true)
+        aggregate: true, codec: codec)
       sequence &+= UInt16(packets.count)
       for packet in packets {
         for frame in depacketizer.push(packet) {
           XCTAssertEqual(frame.data, annexB(units))
           let sample = try XCTUnwrap(
-            builder.makeSampleBuffer(annexB: frame.data, timestamp: frame.timestamp))
+            builder.makeSampleBuffer(
+              annexB: frame.data, codec: codec, timestamp: frame.timestamp))
           samples.append(sample)
         }
       }
@@ -220,15 +259,18 @@ class VoiceVideoTests: XCTestCase {
 
   /// Encodes moving grey frames; returns each frame's NAL units, parameter
   /// sets first on key frames.
-  static func encodeFrames(count: Int, width: Int32, height: Int32) throws -> [[Data]] {
+  static func encodeFrames(count: Int, width: Int32, height: Int32, codec: VideoCodec)
+    throws -> [[Data]]
+  {
     var session: VTCompressionSession?
     guard
       VTCompressionSessionCreate(
-        allocator: nil, width: width, height: height, codecType: kCMVideoCodecType_H264,
+        allocator: nil, width: width, height: height,
+        codecType: codec == .h264 ? kCMVideoCodecType_H264 : kCMVideoCodecType_HEVC,
         encoderSpecification: nil, imageBufferAttributes: nil, compressedDataAllocator: nil,
         outputCallback: nil, refcon: nil, compressionSessionOut: &session) == noErr,
       let session
-    else { throw XCTSkip("No H.264 encoder here") }
+    else { throw XCTSkip("No \(codec) encoder here") }
     defer { VTCompressionSessionInvalidate(session) }
     VTSessionSetProperty(session, key: kVTCompressionPropertyKey_RealTime, value: kCFBooleanTrue)
     VTSessionSetProperty(
@@ -257,7 +299,7 @@ class VoiceVideoTests: XCTestCase {
         duration: .invalid, frameProperties: nil, infoFlagsOut: nil
       ) { status, _, sample in
         guard status == noErr, let sample else { return }
-        output.append(nalUnits(of: sample))
+        output.append(nalUnits(of: sample, codec: codec))
       }
       guard status == noErr else { throw XCTSkip("Encoding failed: \(status)") }
     }
@@ -272,19 +314,25 @@ class VoiceVideoTests: XCTestCase {
     func append(_ frame: [Data]) { lock.withLock { frames.append(frame) } }
   }
 
-  static func nalUnits(of sample: CMSampleBuffer) -> [Data] {
+  static func nalUnits(of sample: CMSampleBuffer, codec: VideoCodec) -> [Data] {
     var units: [Data] = []
     let attachments =
       CMSampleBufferGetSampleAttachmentsArray(sample, createIfNecessary: false)
       as? [[CFString: Any]]
     let isKey = !((attachments?.first?[kCMSampleAttachmentKey_NotSync] as? Bool) ?? false)
     if isKey, let format = sample.formatDescription {
-      for index in 0..<2 {
+      for index in 0..<(codec == .h264 ? 2 : 3) {
         var pointer: UnsafePointer<UInt8>?
         var size = 0
-        CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
-          format, parameterSetIndex: index, parameterSetPointerOut: &pointer,
-          parameterSetSizeOut: &size, parameterSetCountOut: nil, nalUnitHeaderLengthOut: nil)
+        if codec == .h264 {
+          CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
+            format, parameterSetIndex: index, parameterSetPointerOut: &pointer,
+            parameterSetSizeOut: &size, parameterSetCountOut: nil, nalUnitHeaderLengthOut: nil)
+        } else {
+          CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(
+            format, parameterSetIndex: index, parameterSetPointerOut: &pointer,
+            parameterSetSizeOut: &size, parameterSetCountOut: nil, nalUnitHeaderLengthOut: nil)
+        }
         if let pointer { units.append(Data(bytes: pointer, count: size)) }
       }
     }

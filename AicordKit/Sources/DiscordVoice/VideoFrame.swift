@@ -2,17 +2,18 @@
 //  VideoFrame.swift
 //  AicordKit
 //
-//  Received video: one decrypted H.264 frame, and the step that turns it
-//  into a sample buffer a display layer can decode.
+//  Received video: one decrypted H.264 or H.265 frame, and the step that
+//  turns it into a sample buffer a display layer can decode.
 //
 
 import CoreMedia
 import DiscordModels
 import Foundation
 
-/// One received video frame, decrypted, as an H.264 Annex B byte stream.
+/// One received video frame, decrypted, as an Annex B byte stream.
 public struct VideoFrame: Sendable {
   public var userID: UserSnowflake
+  public var codec: VideoCodec
   /// RTP timestamp, 90 kHz.
   public var timestamp: UInt32
   public var isKeyframe: Bool
@@ -23,8 +24,10 @@ public struct VideoFrame: Sendable {
 /// `AVSampleBufferDisplayLayer`, which decodes them itself. Keeps the
 /// parameter sets of the last key frame.
 public struct VideoSampleBuilder {
+  private var vps: Data?
   private var sps: Data?
   private var pps: Data?
+  private var codec = VideoCodec.h264
   private var format: CMVideoFormatDescription?
 
   public init() {}
@@ -37,43 +40,64 @@ public struct VideoSampleBuilder {
   /// `nil` until parameter sets have arrived, and for frames without
   /// picture data.
   public mutating func makeSampleBuffer(_ frame: VideoFrame) -> CMSampleBuffer? {
-    makeSampleBuffer(annexB: frame.data, timestamp: frame.timestamp)
+    makeSampleBuffer(annexB: frame.data, codec: frame.codec, timestamp: frame.timestamp)
   }
 
-  public mutating func makeSampleBuffer(annexB: Data, timestamp: UInt32)
-    -> CMSampleBuffer?
-  {
+  public mutating func makeSampleBuffer(
+    annexB: Data, codec: VideoCodec = .h264, timestamp: UInt32
+  ) -> CMSampleBuffer? {
+    if codec != self.codec {
+      // The call moved to another codec.
+      self.codec = codec
+      (vps, sps, pps, format) = (nil, nil, nil, nil)
+    }
     // AVCC: every NAL unit behind its 4-byte big-endian length.
     var avcc = Data()
     var isSync = false
     for unit in Self.nalUnits(in: annexB) {
       guard let header = unit.first else { continue }
-      switch header & 0x1F {
-      case 7:
-        if sps != unit {
-          sps = unit
+      /// Parameter sets are kept for the format; a changed one resets it.
+      func keep(_ set: inout Data?) {
+        if set != unit {
+          set = unit
           format = nil
         }
-      case 8:
-        if pps != unit {
-          pps = unit
-          format = nil
-        }
-      case 1...5:
-        if header & 0x1F == 5 { isSync = true }
-        let length = UInt32(unit.count)
-        avcc.append(contentsOf: [
-          UInt8(length >> 24), UInt8((length >> 16) & 0xFF),
-          UInt8((length >> 8) & 0xFF), UInt8(length & 0xFF),
-        ])
-        avcc.append(unit)
-      default:
-        // Access unit delimiters, SEI and the rest are not needed to decode.
-        continue
       }
+      let isPicture: Bool
+      switch codec {
+      case .h264:
+        switch header & 0x1F {
+        case 7: keep(&sps)
+        case 8: keep(&pps)
+        default: break
+        }
+        isPicture = (1...5).contains(header & 0x1F)
+        if header & 0x1F == 5 { isSync = true }
+      case .h265:
+        let type = (header >> 1) & 0x3F
+        switch type {
+        case 32: keep(&vps)
+        case 33: keep(&sps)
+        case 34: keep(&pps)
+        default: break
+        }
+        isPicture = type < 32
+        if (16...21).contains(type) { isSync = true }
+      }
+      // Access unit delimiters, SEI and the rest are not needed to decode.
+      guard isPicture else { continue }
+      let length = UInt32(unit.count)
+      avcc.append(contentsOf: [
+        UInt8(length >> 24), UInt8((length >> 16) & 0xFF),
+        UInt8((length >> 8) & 0xFF), UInt8(length & 0xFF),
+      ])
+      avcc.append(unit)
     }
     if format == nil, let sps, let pps {
-      format = Self.makeFormat(sps: sps, pps: pps)
+      switch codec {
+      case .h264: format = Self.makeFormat(codec, [sps, pps])
+      case .h265: format = vps.flatMap { Self.makeFormat(codec, [$0, sps, pps]) }
+      }
     }
     guard let format, !avcc.isEmpty else { return nil }
 
@@ -170,21 +194,36 @@ public struct VideoSampleBuilder {
     return units
   }
 
-  private static func makeFormat(sps: Data, pps: Data) -> CMVideoFormatDescription? {
+  private static func makeFormat(_ codec: VideoCodec, _ sets: [Data]) -> CMVideoFormatDescription? {
+    // The pointers have to stay valid for the call: copy into one buffer.
+    let joined = sets.reduce(into: Data()) { $0 += $1 }
     var format: CMVideoFormatDescription?
-    let status = sps.withUnsafeBytes { spsBytes in
-      pps.withUnsafeBytes { ppsBytes in
-        let pointers = [
-          spsBytes.bindMemory(to: UInt8.self).baseAddress!,
-          ppsBytes.bindMemory(to: UInt8.self).baseAddress!,
-        ]
-        let sizes = [spsBytes.count, ppsBytes.count]
+    let status = joined.withUnsafeBytes { bytes -> OSStatus in
+      let base = bytes.bindMemory(to: UInt8.self).baseAddress!
+      var offset = 0
+      let pointers = sets.map { set -> UnsafePointer<UInt8> in
+        defer { offset += set.count }
+        return base + offset
+      }
+      let sizes = sets.map(\.count)
+      switch codec {
+      case .h264:
         return CMVideoFormatDescriptionCreateFromH264ParameterSets(
           allocator: kCFAllocatorDefault,
-          parameterSetCount: 2,
+          parameterSetCount: sets.count,
           parameterSetPointers: pointers,
           parameterSetSizes: sizes,
           nalUnitHeaderLength: 4,
+          formatDescriptionOut: &format
+        )
+      case .h265:
+        return CMVideoFormatDescriptionCreateFromHEVCParameterSets(
+          allocator: kCFAllocatorDefault,
+          parameterSetCount: sets.count,
+          parameterSetPointers: pointers,
+          parameterSetSizes: sizes,
+          nalUnitHeaderLength: 4,
+          extensions: nil,
           formatDescriptionOut: &format
         )
       }

@@ -50,6 +50,13 @@ final class VoiceAudioEngine: @unchecked Sendable {
   private let frames = OSAllocatedUnfairLock<AsyncStream<[Float]>.Continuation?>(
     initialState: nil
   )
+  /// Further things to hear next to the call (a Go Live's sound), each on
+  /// a player of its own. Touched on `queue` only.
+  private struct ExtraPlayback {
+    let node: AVAudioPlayerNode
+    let task: Task<Void, Never>
+  }
+  private var extras: [String: ExtraPlayback] = [:]
   private var sendTask: Task<Void, Never>?
   private var playbackTask: Task<Void, Never>?
   private var configurationObserver: (any NSObjectProtocol)?
@@ -75,6 +82,35 @@ final class VoiceAudioEngine: @unchecked Sendable {
 
   func stop() {
     queue.async { [self] in stopOnQueue() }
+  }
+
+  /// Plays another stream of 20 ms frames while the engine runs, mixed with
+  /// the call. Ends with `removePlayback` or when the engine stops.
+  func addPlayback(_ id: String, _ stream: AsyncStream<[Float]>) {
+    queue.async { [self] in
+      removePlaybackOnQueue(id)
+      guard isRunning else { return }
+      nonisolated(unsafe) let node = AVAudioPlayerNode()
+      engine.attach(node)
+      engine.connect(node, to: engine.mainMixerNode, format: format)
+      node.play()
+      let pending = OSAllocatedUnfairLock(initialState: 0)
+      let task = Task.detached(priority: .userInitiated) { [weak self] in
+        for await frame in stream { self?.schedule(frame, on: node, pending: pending) }
+      }
+      extras[id] = ExtraPlayback(node: node, task: task)
+    }
+  }
+
+  func removePlayback(_ id: String) {
+    queue.async { [self] in removePlaybackOnQueue(id) }
+  }
+
+  private func removePlaybackOnQueue(_ id: String) {
+    guard let extra = extras.removeValue(forKey: id) else { return }
+    extra.task.cancel()
+    extra.node.stop()
+    engine.detach(extra.node)
   }
 
   private func startOnQueue(
@@ -160,6 +196,7 @@ final class VoiceAudioEngine: @unchecked Sendable {
       $0?.finish()
       $0 = nil
     }
+    for id in Array(extras.keys) { removePlaybackOnQueue(id) }
     sendTask?.cancel()
     playbackTask?.cancel()
     sendTask = nil
@@ -187,6 +224,7 @@ final class VoiceAudioEngine: @unchecked Sendable {
     do {
       try engine.start()
       player.play()
+      for extra in extras.values { extra.node.play() }
     } catch {
       logger.error("Audio engine restart failed: \(error.localizedDescription)")
     }
@@ -291,8 +329,14 @@ final class VoiceAudioEngine: @unchecked Sendable {
   // MARK: Playback
 
   private func play(_ samples: [Float]) {
+    schedule(samples, on: player, pending: scheduled)
+  }
+
+  private func schedule(
+    _ samples: [Float], on node: AVAudioPlayerNode, pending: OSAllocatedUnfairLock<Int>
+  ) {
     // Keep at most ~120 ms queued; drop rather than drift behind.
-    guard scheduled.withLock({ $0 }) < 6,
+    guard pending.withLock({ $0 }) < 6,
       let buffer = AVAudioPCMBuffer(
         pcmFormat: format,
         frameCapacity: AVAudioFrameCount(samples.count)
@@ -303,9 +347,9 @@ final class VoiceAudioEngine: @unchecked Sendable {
     samples.withUnsafeBufferPointer {
       channel.update(from: $0.baseAddress!, count: samples.count)
     }
-    scheduled.withLock { $0 += 1 }
-    player.scheduleBuffer(buffer) { [weak self] in
-      self?.scheduled.withLock { $0 = max(0, $0 - 1) }
+    pending.withLock { $0 += 1 }
+    node.scheduleBuffer(buffer) {
+      pending.withLock { $0 = max(0, $0 - 1) }
     }
   }
 

@@ -54,6 +54,16 @@
         }
       }
     },
+    "Full Screen" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pełny ekran"
+          }
+        }
+      }
+    },
     "Live" : {
       "localizations" : {
         "pl" : {

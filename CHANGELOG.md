@@ -6,7 +6,7 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Voice
 
-- **New** · Other people's cameras and Go Live streams in a server voice channel: while you're connected, the channel's chat lists who has video on, and picking one plays it above the messages. Video is only received for what you're watching. Not yet tested against a live call; stream sound, video in DM calls and your own camera are still to come
+- **New** · Other people's cameras and Go Live streams, in server voice channels and in DM calls: while you're connected, the chat lists who has video on, and picking people plays them above the messages, several side by side, or one full screen (in a window of its own on the Mac). A stream comes with its sound. Video is only received for what you're watching. Not yet tested against a live call; your own camera is still to come
 
 ## 0.1.7 (November 2026)
 
@@ -634,6 +634,12 @@ Napisane i sprawdzone testami pakietu (RTP → ramki H.264 → dekoder systemowy
    - [x] DAVE dla wideo (`daveDecryptorDecrypt` z typem video) na złożonej ramce; `VideoSampleBuilder` robi z niej `CMSampleBuffer` (AVCC, opis formatu z SPS/PPS), który `AVSampleBufferDisplayLayer` dekoduje sam.
    - [x] Go Live: `VoiceConnectionStore.watch(_:)` wysyła Watch Stream, a po `STREAM_CREATE` i `STREAM_SERVER_UPDATE` otwiera drugie połączenie voice (`isStream`: `server_id`/`channel_id` z `rtc_server_id`/`rtc_channel_id`, sesja rozmowy, grupa DAVE o numerze `rtc_server_id − 1`, nic nie nadaje). Jeden stream naraz.
    - [x] `VideoPanel` nad czatem kanału głosowego, w którym jesteśmy: lista osób z kamerą lub streamem, wybrany obraz nad wiadomościami; obraz jest odbierany tylko dla tego, co widać.
+   - [x] H.265 obok H.264 (RFC 7798: jednostki agregujące i fragmentujące; `VideoDepacketizer` zastąpił `H264Depacketizer`), ogłaszany z wyższym pierwszeństwem tam, gdzie urządzenie dekoduje go sprzętowo; test koduje i dekoduje oba kodeki systemowym koderem.
+   - [x] Retransmisje: brakujące pakiety są zgłaszane przez RTCP Generic NACK (do 3 razy co 80 ms, okno 128 pakietów), a pakiet RTX (typ 102/104, źródło `rtx_ssrc` albo `ssrc + 1`) wraca na swoje miejsce; dopiero gdy to nie pomoże, czekamy na klatkę kluczową.
+   - [x] Dźwięk streamu: `VoiceAudioEngine.addPlayback` dokłada do miksera osobny odtwarzacz na każdy oglądany stream; ogłuszenie obejmuje także streamy.
+   - [x] Kilka obrazów naraz (siatka, kilka streamów równocześnie, każdy na własnym połączeniu) i pełny ekran: `fullScreenCover` na iOS, osobne okno otwierane w trybie pełnoekranowym na Macu.
+   - [x] Rozmowy DM: `VoiceConnectionStore.callVoiceStates` trzyma stany voice z `CALL_CREATE`, `CALL_UPDATE` i `VOICE_STATE_UPDATE` bez serwera, więc panel wideo działa też w DM i grupach.
+   - Nie zrobione: AV1. libdave szyfruje ramkę AV1 w układzie, który trzeba odtworzyć co do bajtu (OBU bez pola rozmiaru w ostatnim), do tego opis formatu wymaga parsowania nagłówka sekwencji, sprzętowy dekoder mają tylko nowsze układy, a system nie ma kodera AV1, którym dałoby się to przetestować. Ogłoszenie AV1 bez testu zepsułoby obraz od nadawców, którzy dziś schodzą do działającego H.265/H.264.
 
 ### 🧪 Etap 14: Reszta do Discorda 1:1 — punkt 3 (1.11)
 3. **Zarządzanie serwerem (dla moderatorów):** szczegóły i testy w [PL_ONBOARDING_ADMIN_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PL_ONBOARDING_ADMIN_NOTES.md).

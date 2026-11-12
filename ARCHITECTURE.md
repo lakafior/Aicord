@@ -35,14 +35,14 @@ Mac-only behaviour sits behind `#if os(macOS)`. Shared code changed for the Mac 
 | Encryption | `DiscordVoice/TransportCipher.swift` | `aead_aes256_gcm_rtpsize` and `aead_xchacha20_poly1305_rtpsize` on CryptoKit |
 | DAVE | `DiscordVoice/DaveSession.swift` | End-to-end encryption through libdave's C API from DaveKit |
 | Codec | `DiscordVoice/OpusCodec.swift`, `JitterBuffer.swift` | Opus, jitter buffer with packet loss concealment, mixing |
-| Video (receive) | `DiscordVoice/H264Depacketizer.swift`, `VideoFrame.swift` | RTP back into H.264 frames, DAVE on the whole frame, sample buffers for `AVSampleBufferDisplayLayer` |
+| Video (receive) | `DiscordVoice/VideoDepacketizer.swift`, `VideoFrame.swift` | RTP back into H.264 and H.265 frames, NACK and RTX, DAVE on the whole frame, sample buffers for `AVSampleBufferDisplayLayer` |
 | Audio | `Aicord/Utilities/Audio/` | `AVAudioEngine` with voice processing, voice activity, push-to-talk, devices |
 | Call logic | `Aicord/Stores/VoiceConnectionStore.swift` | Joining through gateway op 4, mute and deafen, ringing in DMs |
 | UI | `Aicord/Common/Voice/` | The call panel, voice channel rows, settings |
 
-- **Video is asked for, not sent by default.** The voice server forwards a camera only while `setVideoWanted` names its user (Media Sink Wants), and `VideoPanel` names only what is on screen. Only H.264 is offered, receive-only, so senders fall back to it.
-- **A Go Live is a second `VoiceGatewayManager`** (`isStream`) next to the call's: its own socket, UDP flow, SSRCs and DAVE group, the call's session ID, and no media sent. The call's connection has to stay up.
-- **Frames are rebuilt before they are decrypted.** DAVE encrypts a whole encoded frame, so `H264Depacketizer` restores the sender's Annex B layout (4-byte start codes, as libdave writes them) and only then hands it to the decryptor. The display layer decodes; there is no `VTDecompressionSession` of our own.
+- **Video is asked for, not sent by default.** The voice server forwards a camera only while `setVideoWanted` names its user (Media Sink Wants), and `VideoPanel` names only what is on screen. Only H.265 and H.264 are offered, receive-only, so senders fall back to them; AV1 is left out until it can be tested against a real sender.
+- **A Go Live is one more `VoiceGatewayManager`** (`isStream`) next to the call's, one per watched stream: its own socket, UDP flow, SSRCs and DAVE group, the call's session ID, and no media sent. The call's connection has to stay up.
+- **Frames are rebuilt before they are decrypted.** DAVE encrypts a whole encoded frame, so `VideoDepacketizer` restores the sender's Annex B layout (4-byte start codes, as libdave writes them) and only then hands it to the decryptor. The display layer decodes; there is no `VTDecompressionSession` of our own.
 
 ## The chat
 

@@ -264,9 +264,21 @@ extension VoiceGateway {
     public static let h264ReceiveCodec = Codec(
       name: .h264,
       type: "video",
-      priority: 1000,
+      priority: 2000,
       payload_type: 103,
       rtx_payload_type: 104,
+      encode: false,
+      decode: true
+    )
+
+    /// H.265 for a client that only watches; preferred over H.264 (the
+    /// lower priority wins).
+    public static let h265ReceiveCodec = Codec(
+      name: .h265,
+      type: "video",
+      priority: 1000,
+      payload_type: 101,
+      rtx_payload_type: 102,
       encode: false,
       decode: true
     )

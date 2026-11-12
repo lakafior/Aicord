@@ -2,9 +2,10 @@
 //  VideoPanel.swift
 //  Aicord
 //
-//  Other people's video above the chat of the voice channel we are in:
-//  who has a camera or a Go Live on, and the one being watched. Video is
-//  only received for what is on screen here.
+//  Other people's video above the chat of the voice channel or DM call we
+//  are in: who has a camera or a Go Live on, and the ones being watched,
+//  side by side or one of them full screen. Video is only received for
+//  what is on screen here.
 //
 
 import AVFoundation
@@ -60,7 +61,7 @@ final class VideoFeed {
 }
 
 #if os(macOS)
-  private struct VideoLayerView: NSViewRepresentable {
+  struct VideoLayerView: NSViewRepresentable {
     let feed: VideoFeed
 
     func makeNSView(context: Context) -> Host { Host() }
@@ -95,7 +96,7 @@ final class VideoFeed {
     }
   }
 #else
-  private struct VideoLayerView: UIViewRepresentable {
+  struct VideoLayerView: UIViewRepresentable {
     let feed: VideoFeed
 
     func makeUIView(context: Context) -> Host { Host() }
@@ -127,8 +128,11 @@ final class VideoFeed {
 struct VideoPanel: View {
   var vm: ChannelStore
   @Environment(\.gateway) var gw
-  @State private var selected: VoiceConnectionStore.VideoSource?
-  @State private var feed: VideoFeed?
+  /// What is being watched, in the order it was picked.
+  @State private var watched: [Source] = []
+  @State private var feeds: [Source: VideoFeed] = [:]
+  /// The one shown full screen (in a window of its own on the Mac).
+  @State private var expanded: Source?
 
   typealias Source = VoiceConnectionStore.VideoSource
 
@@ -136,12 +140,14 @@ struct VideoPanel: View {
   var guild: GuildStore? { vm.guildStore }
   var isHere: Bool { voice.call?.channelID == vm.channelId }
 
+  /// Everyone else in the call: from the server's voice states, or from
+  /// the DM call's.
   var states: [VoiceState] {
     let me = gw.user.currentUser?.id
-    return (guild?.voiceStates.values.filter {
-      $0.channel_id == vm.channelId && $0.user_id != me
-    } ?? [])
-    .sorted { name($0).localizedCaseInsensitiveCompare(name($1)) == .orderedAscending }
+    let all =
+      guild.map { Array($0.voiceStates.values) } ?? voice.callStates(in: vm.channelId)
+    return all.filter { $0.channel_id == vm.channelId && $0.user_id != me }
+      .sorted { name($0).localizedCaseInsensitiveCompare(name($1)) == .orderedAscending }
   }
 
   /// Go Lives first: they are what people gather around.
@@ -150,11 +156,25 @@ struct VideoPanel: View {
       + states.filter(\.self_video).map { Source(userID: $0.user_id, kind: .camera) }
   }
 
+  var columns: [GridItem] {
+    Array(repeating: GridItem(.flexible(), spacing: 6), count: min(watched.count, 2))
+  }
+
   var body: some View {
     if isHere, !sources.isEmpty {
       VStack(alignment: .leading, spacing: 8) {
-        if let selected, let feed {
-          picture(selected, feed)
+        if watched.count == 1, let source = watched.first, let feed = feeds[source] {
+          picture(source, feed)
+            .frame(maxHeight: 420)
+        } else if !watched.isEmpty {
+          LazyVGrid(columns: columns, spacing: 6) {
+            ForEach(watched) { source in
+              if let feed = feeds[source] {
+                picture(source, feed)
+                  .frame(maxHeight: 220)
+              }
+            }
+          }
         }
         ScrollView(.horizontal) {
           HStack(spacing: 6) {
@@ -170,36 +190,78 @@ struct VideoPanel: View {
       .padding(.horizontal, 10)
       .padding(.vertical, 6)
       .onChange(of: sources) { _, sources in
-        // The camera went off or the stream ended.
-        if let selected, !sources.contains(selected) { select(nil) }
+        // A camera went off or a stream ended.
+        for source in watched where !sources.contains(source) { stop(source) }
       }
-      .onDisappear { select(nil) }
+      .onDisappear {
+        for source in watched { stop(source) }
+      }
+      #if os(iOS)
+        .fullScreenCover(item: $expanded) { source in
+          if let feed = feeds[source] {
+            FullScreenVideo(feed: feed, title: label(source)) { expanded = nil }
+          }
+        }
+      #endif
     }
   }
 
   func picture(_ source: Source, _ feed: VideoFeed) -> some View {
     ZStack {
       Color.black
-      VideoLayerView(feed: feed)
-      if !feed.hasPicture {
-        status(source)
+      if expanded == source {
+        // The picture is in its own window or full screen right now.
+        Image(systemName: "arrow.up.left.and.arrow.down.right")
+          .font(.title2)
+          .foregroundStyle(.white.opacity(0.6))
+      } else {
+        VideoLayerView(feed: feed)
+        if !feed.hasPicture {
+          status(source)
+        }
       }
     }
     .aspectRatio(feed.aspectRatio, contentMode: .fit)
-    .frame(maxWidth: .infinity, maxHeight: 420)
+    .frame(maxWidth: .infinity)
     .clipShape(.rect(cornerRadius: 10))
+    .contentShape(.rect)
+    .onTapGesture(count: 2) { expand(source) }
     .overlay(alignment: .topTrailing) {
-      Button {
-        select(nil)
-      } label: {
-        Image(systemName: "xmark")
-          .padding(6)
+      HStack(spacing: 4) {
+        Button {
+          expand(source)
+        } label: {
+          Image(systemName: "arrow.up.left.and.arrow.down.right")
+            .padding(6)
+        }
+        .glassEffect(.regular, in: .circle)
+        .help(Text("Full Screen"))
+        .accessibilityLabel(Text("Full Screen"))
+        Button {
+          stop(source)
+        } label: {
+          Image(systemName: "xmark")
+            .padding(6)
+        }
+        .glassEffect(.regular, in: .circle)
+        .help(Text("Stop Watching"))
+        .accessibilityLabel(Text("Stop Watching"))
       }
       .buttonStyle(.plain)
-      .glassEffect(.regular, in: .circle)
       .padding(6)
-      .help(Text("Stop Watching"))
-      .accessibilityLabel(Text("Stop Watching"))
+    }
+    .overlay(alignment: .bottomLeading) {
+      if watched.count > 1 {
+        Text(name(source.userID))
+          .font(.caption)
+          .lineLimit(1)
+          .padding(.horizontal, 6)
+          .padding(.vertical, 2)
+          .background(.black.opacity(0.5), in: .capsule)
+          .foregroundStyle(.white)
+          .padding(6)
+          .accessibilityHidden(true)
+      }
     }
     .accessibilityElement(children: .contain)
     .accessibilityLabel(label(source))
@@ -207,7 +269,7 @@ struct VideoPanel: View {
 
   @ViewBuilder
   func status(_ source: Source) -> some View {
-    if source.kind == .stream, case .ended(let reason) = voice.streamPhase {
+    if source.kind == .stream, case .ended(let reason) = voice.streamPhases[source.userID] {
       Label(endedText(reason), systemImage: "exclamationmark.triangle.fill")
         .font(.callout)
         .foregroundStyle(.white)
@@ -224,9 +286,9 @@ struct VideoPanel: View {
   }
 
   func chip(_ source: Source) -> some View {
-    let isOn = selected == source
+    let isOn = watched.contains(source)
     return Button {
-      select(isOn ? nil : source)
+      if isOn { stop(source) } else { start(source) }
     } label: {
       HStack(spacing: 5) {
         Image(systemName: source.kind == .stream ? "display" : "video.fill")
@@ -253,16 +315,42 @@ struct VideoPanel: View {
     .accessibilityAddTraits(isOn ? .isSelected : [])
   }
 
-  func select(_ source: Source?) {
-    if let selected, selected != source { voice.stopWatching(selected) }
-    selected = source
-    feed = source.map { voice.watch($0) }
+  func start(_ source: Source) {
+    guard !watched.contains(source) else { return }
+    feeds[source] = voice.watch(source)
+    watched.append(source)
   }
 
-  func label(_ source: Source) -> Text {
+  func stop(_ source: Source) {
+    if expanded == source { collapse() }
+    watched.removeAll { $0 == source }
+    feeds[source] = nil
+    voice.stopWatching(source)
+  }
+
+  func expand(_ source: Source) {
+    guard let feed = feeds[source] else { return }
+    expanded = source
+    #if os(macOS)
+      VideoWindow.shared.show(feed: feed, title: String(localized: label(source))) {
+        expanded = nil
+      }
+    #else
+      _ = feed
+    #endif
+  }
+
+  func collapse() {
+    #if os(macOS)
+      VideoWindow.shared.close()
+    #endif
+    expanded = nil
+  }
+
+  func label(_ source: Source) -> LocalizedStringResource {
     switch source.kind {
-    case .stream: Text("\(name(source.userID))’s stream")
-    case .camera: Text("\(name(source.userID))’s camera")
+    case .stream: "\(name(source.userID))’s stream"
+    case .camera: "\(name(source.userID))’s camera"
     }
   }
 
@@ -276,12 +364,85 @@ struct VideoPanel: View {
   }
 
   func name(_ state: VoiceState) -> String {
-    let member = state.member ?? guild?.member(state.user_id)
-    return member?.nick ?? member?.user?.global_name ?? member?.user?.username
-      ?? state.user_id.rawValue
+    name(state.user_id)
   }
 
   func name(_ userID: UserSnowflake) -> String {
-    guild?.voiceStates[userID].map(name) ?? userID.rawValue
+    if let guild {
+      let member = guild.voiceStates[userID]?.member ?? guild.member(userID)
+      return member?.nick ?? member?.user?.global_name ?? member?.user?.username
+        ?? userID.rawValue
+    }
+    let user = vm.channel?.recipients?.first { $0.id == userID }
+    return user?.global_name ?? user?.username ?? userID.rawValue
   }
 }
+
+#if os(iOS)
+  /// One picture over the whole screen; a tap brings up the way back.
+  private struct FullScreenVideo: View {
+    let feed: VideoFeed
+    let title: LocalizedStringResource
+    let close: () -> Void
+
+    var body: some View {
+      ZStack(alignment: .topTrailing) {
+        Color.black.ignoresSafeArea()
+        VideoLayerView(feed: feed)
+          .ignoresSafeArea()
+          .accessibilityLabel(Text(title))
+        Button(action: close) {
+          Image(systemName: "xmark")
+            .padding(10)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular, in: .circle)
+        .padding()
+        .accessibilityLabel(Text("Close"))
+      }
+      .statusBarHidden()
+    }
+  }
+#else
+  /// One picture in a window of its own, opened full screen; closing it (or
+  /// leaving full screen and closing) puts the picture back in the chat.
+  @MainActor
+  final class VideoWindow: NSObject, NSWindowDelegate {
+    static let shared = VideoWindow()
+
+    private var window: NSWindow?
+    private var onClose: (() -> Void)?
+
+    func show(feed: VideoFeed, title: String, onClose: @escaping () -> Void) {
+      close()
+      let window = NSWindow(
+        contentRect: NSRect(x: 0, y: 0, width: 960, height: 540),
+        styleMask: [.titled, .closable, .resizable, .miniaturizable],
+        backing: .buffered,
+        defer: false
+      )
+      window.title = title
+      window.isReleasedWhenClosed = false
+      window.backgroundColor = .black
+      window.collectionBehavior = [.fullScreenPrimary]
+      window.contentView = NSHostingView(rootView: VideoLayerView(feed: feed))
+      window.delegate = self
+      window.center()
+      self.window = window
+      self.onClose = onClose
+      window.makeKeyAndOrderFront(nil)
+      window.toggleFullScreen(nil)
+    }
+
+    func close() {
+      window?.close()
+    }
+
+    func windowWillClose(_ notification: Notification) {
+      let onClose = self.onClose
+      self.onClose = nil
+      window = nil
+      onClose?()
+    }
+  }
+#endif
