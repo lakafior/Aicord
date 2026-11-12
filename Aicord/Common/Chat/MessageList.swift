@@ -35,6 +35,8 @@
     let rows: [MessageRow]
     let pending: OrderedDictionary<MessageSnowflake, Payloads.CreateMessage>
     let showsEdge: Bool
+    /// Whether a new newest message slides in (the Appearance setting).
+    let animatesNewest: Bool
     let controller: MessageListController
     /// Within three screens of the oldest loaded message.
     var onNearTop: (Bool) -> Void
@@ -68,7 +70,7 @@
         subitems: [item])
       let layout = UICollectionViewCompositionalLayout(section: .init(group: group))
 
-      let view = UICollectionView(frame: .zero, collectionViewLayout: layout)
+      let view = FlippedCollectionView(frame: .zero, collectionViewLayout: layout)
       view.transform = Self.flip
       view.backgroundColor = .clear
       // rows show through under the navigation bar and the message field
@@ -176,15 +178,25 @@
 
         if newItems != items {
           let anchor = scrollAnchor(in: view, keeping: newItems)
+          // only a message arriving under the ones on screen animates: not a
+          // page of history, a jump, or anything while reading further up
+          let arrival =
+            parent.animatesNewest && anchor == nil && view.window != nil
+            && newItems.first != items.first
+            && items.first.map { newContent[$0] != nil } == true
           items = newItems
           var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
           snapshot.appendSections([0])
           snapshot.appendItems(newItems)
-          UIView.performWithoutAnimation {
-            dataSource.apply(snapshot, animatingDifferences: false)
-            if let anchor {
-              view.layoutIfNeeded()
-              restore(anchor, in: view)
+          if arrival {
+            dataSource.apply(snapshot, animatingDifferences: true)
+          } else {
+            UIView.performWithoutAnimation {
+              dataSource.apply(snapshot, animatingDifferences: false)
+              if let anchor {
+                view.layoutIfNeeded()
+                restore(anchor, in: view)
+              }
             }
           }
         }
@@ -283,6 +295,37 @@
           DispatchQueue.main.async { [weak self] in self?.parent.onAwayFromLatest(isAway) }
         }
       }
+    }
+  }
+
+  /// The flipped list, put the right way round for VoiceOver: the rows on
+  /// screen are read from the oldest down to the newest, as they look, and a
+  /// three-finger swipe moves the way it would in a list that isn't flipped.
+  private final class FlippedCollectionView: UICollectionView {
+    override var accessibilityElements: [Any]? {
+      get {
+        indexPathsForVisibleItems
+          .sorted(by: >)
+          .compactMap { cellForItem(at: $0) }
+      }
+      set {}
+    }
+
+    override func accessibilityScroll(_ direction: UIAccessibilityScrollDirection) -> Bool {
+      let page = bounds.height * 0.9
+      let furthest = max(0, contentSize.height - bounds.height)
+      let target: CGFloat
+      switch direction {
+      // towards older messages, which are further along the flipped content
+      case .up, .previous: target = min(furthest, contentOffset.y + page)
+      case .down, .next: target = max(0, contentOffset.y - page)
+      default: return false
+      }
+      guard abs(target - contentOffset.y) > 1 else { return false }
+      setContentOffset(CGPoint(x: 0, y: target), animated: false)
+      layoutIfNeeded()
+      UIAccessibility.post(notification: .pageScrolled, argument: nil)
+      return true
     }
   }
 

@@ -83,7 +83,9 @@ struct ChatView: View {
     let shouldAnimate =
       orderedMessages.last?.author?.id != gw.user.currentUser?.id
     VStack(spacing: 20) {
-      messageList(rows: rows, pendingMessages: pendingMessages)
+      messageList(
+        rows: rows, pendingMessages: pendingMessages,
+        animatesNewest: shouldAnimate && chatAnimatesMessages)
       .frame(maxHeight: .infinity)
       .overlay(alignment: .bottomTrailing) {
         // its own view, so the scroll position changing as rows pass by only
@@ -287,7 +289,8 @@ struct ChatView: View {
   @ViewBuilder
   private func messageList(
     rows: [MessageRow],
-    pendingMessages: OrderedDictionary<MessageSnowflake, Payloads.CreateMessage>
+    pendingMessages: OrderedDictionary<MessageSnowflake, Payloads.CreateMessage>,
+    animatesNewest: Bool
   ) -> some View {
     #if os(iOS)
       MessageList(
@@ -295,6 +298,7 @@ struct ChatView: View {
         rows: rows,
         pending: pendingMessages,
         showsEdge: !vm.messages.isEmpty,
+        animatesNewest: animatesNewest,
         controller: listController,
         onNearTop: { isNearTop in
           nearTop = isNearTop
