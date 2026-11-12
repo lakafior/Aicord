@@ -62,13 +62,27 @@ import SwiftUI
         context: Context
       ) -> CGSize? {
         let targetWidth = proposal.width ?? uiView.bounds.width
-        let fittingSize = uiView.sizeThatFits(
-          CGSize(width: targetWidth, height: .greatestFiniteMagnitude)
-        )
+        // the field is asked for its size on every layout of the chat, which
+        // while scrolling is most frames; measure the text only when it, the
+        // width or the font changed
+        let key = Coordinator.Measured(
+          text: uiView.text ?? "", width: targetWidth,
+          fontSize: uiView.font?.pointSize ?? 0, height: 0)
+        let coordinator = context.coordinator
+        let height: CGFloat
+        if let last = coordinator.measured, last.matches(key) {
+          height = last.height
+        } else {
+          height = uiView.sizeThatFits(
+            CGSize(width: targetWidth, height: .greatestFiniteMagnitude)
+          ).height
+          coordinator.measured = .init(
+            text: key.text, width: key.width, fontSize: key.fontSize, height: height)
+        }
 
         return CGSize(
           width: targetWidth,
-          height: min(fittingSize.height, maxHeight)
+          height: min(height, maxHeight)
         )
       }
 
@@ -79,6 +93,19 @@ import SwiftUI
       class Coordinator: NSObject, UITextViewDelegate {
         var parent: PastableTextField
         var placeholderLabel: UILabel?
+
+        /// The last measured height of the field and what it was measured for.
+        struct Measured {
+          var text: String
+          var width: CGFloat
+          var fontSize: CGFloat
+          var height: CGFloat
+
+          func matches(_ other: Measured) -> Bool {
+            width == other.width && fontSize == other.fontSize && text == other.text
+          }
+        }
+        var measured: Measured?
 
         init(_ parent: PastableTextField) {
           self.parent = parent

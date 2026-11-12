@@ -108,20 +108,33 @@ final class OfflineCache {
       savedAt: .now,
       messages: Array(messages)
     )
-    guard let data = try? JSONEncoder().encode(channel) else { return }
-    #if os(iOS)
-      try? data.write(to: file(for: channel.id), options: [.atomic, .completeFileProtection])
-    #else
-      try? data.write(to: file(for: channel.id), options: .atomic)
-    #endif
     var summary = channel
     summary.messages = []
     channels.removeAll { $0.id == channel.id }
     channels.insert(summary, at: 0)
+    var evicted: [URL] = []
     while channels.count > Self.channelLimit, let oldest = channels.popLast() {
-      try? FileManager.default.removeItem(at: file(for: oldest.id))
+      evicted.append(file(for: oldest.id))
+    }
+    // encoding and writing off the main thread: it ran a few seconds after a
+    // channel opened and after each new message, and stalled scrolling. One
+    // queue, so saves of the same channel land in order.
+    let url = file(for: channel.id)
+    Self.diskQueue.async { [evicted] in
+      if let data = try? JSONEncoder().encode(channel) {
+        #if os(iOS)
+          try? data.write(to: url, options: [.atomic, .completeFileProtection])
+        #else
+          try? data.write(to: url, options: .atomic)
+        #endif
+      }
+      for file in evicted {
+        try? FileManager.default.removeItem(at: file)
+      }
     }
   }
+
+  private static let diskQueue = DispatchQueue(label: "Aicord.OfflineCache.disk", qos: .utility)
 
   func remove(_ channelID: String) {
     try? FileManager.default.removeItem(at: file(for: channelID))

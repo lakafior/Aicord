@@ -172,10 +172,14 @@ final class SystemIntegration {
 
   private func writeDirectory(_ entries: [DirectoryEntry]) {
     guard let url = Self.directoryURL else { return }
-    if entries.isEmpty {
-      try? FileManager.default.removeItem(at: url)
-    } else {
-      try? JSONEncoder().encode(entries).write(to: url, options: .atomic)
+    // off the main thread: this runs a few seconds after connecting, often
+    // while a chat is already being scrolled
+    Task.detached(priority: .utility) {
+      if entries.isEmpty {
+        try? FileManager.default.removeItem(at: url)
+      } else {
+        try? JSONEncoder().encode(entries).write(to: url, options: .atomic)
+      }
     }
   }
 
@@ -196,6 +200,17 @@ final class SystemIntegration {
   }
 
   private func indexChannels(_ entries: [DirectoryEntry]) async {
+    let logger = logger
+    // building and handing over the items happens off the main thread, with
+    // its own handle on the same index
+    await Task.detached(priority: .utility) {
+      await Self.indexChannels(entries, in: CSSearchableIndex(name: "Aicord"), logger: logger)
+    }.value
+  }
+
+  nonisolated private static func indexChannels(
+    _ entries: [DirectoryEntry], in index: CSSearchableIndex, logger: Logger
+  ) async {
     let items = entries.map { entry in
       let attributes = CSSearchableItemAttributeSet(contentType: .content)
       attributes.title = entry.name

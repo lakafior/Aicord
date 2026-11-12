@@ -17,12 +17,15 @@ private struct EmojiCharacterMatcher: CustomConsumingRegexComponent {
   }
 }
 
+// Built once: this was rebuilt for every message parsed.
+nonisolated(unsafe) private let unicodeEmojiPattern = Regex { Capture { EmojiCharacterMatcher() } }
+
 extension AttributedStringMarkdownParser.SyntaxExtension {
   public static var discordUnicodeEmoji: Self {
     .init(
       patterns: [
         .init(
-          regex: Regex { Capture { EmojiCharacterMatcher() } },
+          regex: unicodeEmojiPattern,
           tokenType: "discordUnicodeEmoji"
         )
       ]

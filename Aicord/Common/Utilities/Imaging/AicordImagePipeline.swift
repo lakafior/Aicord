@@ -142,7 +142,11 @@ actor ImagePipeline {
     let utType = CGImageSourceGetType(source)
     let count = CGImageSourceGetCount(source)
 
-    guard let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+    // decoded here, on the background task. Left lazy, the pixels were decoded
+    // on the main thread the first time the image was drawn, in the middle of
+    // a scroll frame.
+    let decodeNow = [kCGImageSourceShouldCacheImmediately: true] as CFDictionary
+    guard let cgImage = CGImageSourceCreateImageAtIndex(source, 0, decodeNow) else {
       throw URLError(.cannotDecodeContentData)
     }
 

@@ -120,7 +120,9 @@ public struct OrderedDictionary<Key: Hashable, Value>: ExpressibleByDictionaryLi
     forKey key: Key,
     insertingAt index: Int
   ) -> (oldValue: Value?, index: Int) {
-    if let existingIdx = keys.firstIndex(of: key) {
+    // the dictionary answers whether the key exists; searching the key list
+    // for every new key compared it against every key already there
+    if valuesByKey[key] != nil, let existingIdx = keys.firstIndex(of: key) {
       let old = valuesByKey.updateValue(value, forKey: key)
       return (old, existingIdx)
     } else {
@@ -152,6 +154,37 @@ public struct OrderedDictionary<Key: Hashable, Value>: ExpressibleByDictionaryLi
     let key = keys.removeLast()
     let val = valuesByKey.removeValue(forKey: key)!
     return (key: key, value: val)
+  }
+
+  /// Inserts several pairs at once, in their order, at `index`. Pairs whose
+  /// key already exists update the value and keep their place. One call is one
+  /// change to the dictionary, where a loop of inserts is one per pair.
+  public mutating func insert<S: Sequence>(contentsOf pairs: S, at index: Int)
+  where S.Element == (key: Key, value: Value) {
+    var newKeys: [Key] = []
+    for pair in pairs where valuesByKey.updateValue(pair.value, forKey: pair.key) == nil {
+      newKeys.append(pair.key)
+    }
+    keys.insert(contentsOf: newKeys, at: Swift.max(0, Swift.min(index, keys.count)))
+  }
+
+  /// Removes the first `count` pairs.
+  public mutating func removeFirst(_ count: Int) {
+    let count = Swift.min(count, keys.count)
+    for key in keys.prefix(count) { valuesByKey.removeValue(forKey: key) }
+    keys.removeFirst(count)
+  }
+
+  /// Removes the last `count` pairs.
+  public mutating func removeLast(_ count: Int) {
+    let count = Swift.min(count, keys.count)
+    for key in keys.suffix(count) { valuesByKey.removeValue(forKey: key) }
+    keys.removeLast(count)
+  }
+
+  /// Reorders the pairs by their keys.
+  public mutating func sortKeys(by areInIncreasingOrder: (Key, Key) throws -> Bool) rethrows {
+    try keys.sort(by: areInIncreasingOrder)
   }
 
   public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0E2C0DE00000000000000010 /* ServerAdminMore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE0000000000000000F /* ServerAdminMore.swift */; };
 		0E2C0DE0000000000000000E /* ChannelExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE0000000000000000D /* ChannelExportSheet.swift */; };
+		5C0117A0000000000000001B /* MessageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C0117A0000000000000001A /* MessageList.swift */; };
 		0E2C0DE0000000000000000C /* PersonNotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE0000000000000000B /* PersonNotesStore.swift */; };
 		0E2C0DE0000000000000000A /* OfflineReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE00000000000000009 /* OfflineReaderView.swift */; };
 		0E2C0DE00000000000000008 /* OfflineCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2C0DE00000000000000007 /* OfflineCache.swift */; };
@@ -299,6 +300,7 @@
 		B0B0C0DE0000000000000001 /* AicordShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AicordShared.swift; sourceTree = "<group>"; };
 		15A0C0DE00000000015A0008 /* AlertSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertSettings.swift; sourceTree = "<group>"; };
 		0E2C0DE0000000000000000D /* ChannelExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelExportSheet.swift; sourceTree = "<group>"; };
+		5C0117A0000000000000001A /* MessageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageList.swift; sourceTree = "<group>"; };
 		15A0C0DE00000000015A0006 /* ChannelGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelGallery.swift; sourceTree = "<group>"; };
 		0E2C0DE00000000000000009 /* OfflineReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineReaderView.swift; sourceTree = "<group>"; };
 		15A0C0DE00000000015A0004 /* SavedItemsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedItemsView.swift; sourceTree = "<group>"; };
@@ -848,6 +850,7 @@
 				D1A0C0DE0000000000000106 /* ThreadBrowserSheet.swift */,
 				15A0C0DE00000000015A0006 /* ChannelGallery.swift */,
 				0E2C0DE0000000000000000D /* ChannelExportSheet.swift */,
+				5C0117A0000000000000001A /* MessageList.swift */,
 				D1A0C0DE000000000000021C /* ActivityNotice.swift */,
 				AA36D5A52EB60F23006612F8 /* Input */,
 				AA5DC5582E9482E800D81EB5 /* Messages */,
@@ -1707,6 +1710,7 @@
 				D1A0C0DE0000000000000107 /* ThreadBrowserSheet.swift in Sources */,
 				15A0C0DE00000000015A0007 /* ChannelGallery.swift in Sources */,
 				0E2C0DE0000000000000000E /* ChannelExportSheet.swift in Sources */,
+				5C0117A0000000000000001B /* MessageList.swift in Sources */,
 				D1A0C0DE000000000000021D /* ActivityNotice.swift in Sources */,
 				AA9D26B12EC95EE4006071FE /* FlowLayout.swift in Sources */,
 				AA47AF212EDEF070008A50C9 /* DevicesSection.swift in Sources */,

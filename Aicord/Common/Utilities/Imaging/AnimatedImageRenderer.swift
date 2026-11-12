@@ -102,9 +102,13 @@ final class AnimatedImageFrameSource: @unchecked Sendable {
 
     DispatchQueue.global(qos: .utility).async { [weak self] in
       guard let self else { return }
+      // decoded here, not lazily: a frame made without this is only a
+      // reference, and its pixels get decoded on the main thread when the
+      // layer first shows it
+      let decodeNow = [kCGImageSourceShouldCacheImmediately: true] as CFDictionary
       for index in 0..<self.frameCount {
         guard
-          let image = CGImageSourceCreateImageAtIndex(self.source, index, nil)
+          let image = CGImageSourceCreateImageAtIndex(self.source, index, decodeNow)
         else { continue }
         self.lock.lock()
         self.cache[index] = image

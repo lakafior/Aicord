@@ -104,7 +104,9 @@ class ChannelStore: DiscordDataStore {
   var messages: OrderedDictionary<MessageSnowflake, DiscordChannel.Message> =
     [:]
 
-  var reactions: [MessageSnowflake: OrderedDictionary<Emoji, Reaction>] = [:]
+  /// Reactions by message. A view follows only the message it reads, so a
+  /// reaction on one message doesn't re-render the others.
+  @ObservationIgnored let reactions = ReactionTable()
 
   /// Chat settings: keep messages deleted while loaded, and what edited ones said
   /// before. Both live only in memory for this session, never on disk.
@@ -204,6 +206,48 @@ class ChannelStore: DiscordDataStore {
   @ObservationIgnored var isViewingLatest = true
   /// When the last page of older history was requested, to space out requests.
   @ObservationIgnored private var lastHistoryFetch = Date.distantPast
+  /// Messages a page of older history asks for, the most Discord gives at once.
+  static let HistoryPageSize = 100
+  /// Counts new gateway sessions. The chat on screen follows it to load what
+  /// was sent while the app was disconnected.
+  var sessionRestarts = 0
+  /// Whether events may have been missed since the newest messages were last
+  /// checked, so the next check isn't skipped as too soon.
+  @ObservationIgnored private var missedEvents = false
+  @ObservationIgnored private var lastCatchUp = Date.distantPast
+
+  /// Loads what was sent after the newest loaded message. An open channel only
+  /// hears of new messages from the gateway, so ones sent while the app was in
+  /// the background or reconnecting showed up late or not at all. Called when
+  /// the chat comes on screen and after a new session.
+  func catchUp() {
+    guard loadingMessagesTask == nil, hasLatestMessages,
+      let newest = messages.values.last,
+      hasPermission(.readMessageHistory),
+      missedEvents || Date.now.timeIntervalSince(lastCatchUp) > 10
+    else { return }
+    missedEvents = false
+    lastCatchUp = .now
+    loadingMessagesTask = Task {
+      defer {
+        loadingMessagesTask = nil
+        requestScrollToBottom()
+      }
+      // errors are reported by fetchMessages; this check is silent otherwise
+      let fetched = (try? await fetchMessages(after: newest.id, limit: Self.HistoryPageSize)) ?? 0
+      // a full page means there is more than one page of new messages
+      guard fetched == Self.HistoryPageSize else { return }
+      if isViewingLatest {
+        messages = [:]
+        hasMoreHistory = true
+        _ = try? await fetchMessages()
+        hasLatestMessages = true
+      } else {
+        // reading older history: leave it in place, the arrow brings the newest
+        hasLatestMessages = false
+      }
+    }
+  }
   /// How many messages of older history were just inserted above the loaded
   /// ones and not yet scrolled by. The chat moves by the height they add, once,
   /// then sets this back to 0.
@@ -234,6 +278,10 @@ class ChannelStore: DiscordDataStore {
     eventTask = Task {
       for await event in events {
         switch event.data {
+        // a new session (not a resume): what was sent meanwhile is never replayed
+        case .ready:
+          missedEvents = true
+          sessionRestarts += 1
         // Channel updates
         case .channelUpdate(let updatedChannel):
           if updatedChannel.id == channelId {
@@ -693,7 +741,8 @@ class ChannelStore: DiscordDataStore {
   }
 
   /// Loads the page of messages before the oldest one loaded, when the chat is
-  /// scrolled near its top. One page at a time, at most one a second.
+  /// scrolled near its top. One page at a time, with a short gap so the list
+  /// has laid out the last page before the next is asked for.
   func tryFetchMoreMessageHistory() {
     // if theres an ongoing task to fetch history, ignore this request.
     guard loadingMessagesTask == nil else { return }
@@ -701,13 +750,14 @@ class ChannelStore: DiscordDataStore {
     guard hasMoreHistory, hasPermission(.readMessageHistory) else { return }
     // fetching messages into the past, get the first message id we have and fetch before that
     guard let firstMessage = messages.values.first else { return }
-    // a request soon after the last one waits out the rest of the second
-    let wait = 1 - Date.now.timeIntervalSince(lastHistoryFetch)
+    // a request right after the last one waits out the rest of the gap
+    let wait = 0.3 - Date.now.timeIntervalSince(lastHistoryFetch)
     self.loadingMessagesTask = Task {
       if wait > 0 { try? await Task.sleep(for: .seconds(wait)) }
       self.lastHistoryFetch = .now
       do {
-        try await self.fetchMessages(before: firstMessage.id)
+        try await self.fetchMessages(before: firstMessage.id, limit: Self.HistoryPageSize)
+        self.lastHistoryFetch = .now
       } catch {
         AicordAppState.instances.first?.value.error = error
       }
@@ -740,26 +790,33 @@ class ChannelStore: DiscordDataStore {
     if !preferRemovingOldest && messages.count > limit {
       hasLatestMessages = false
     }
-    while messages.count > limit {
-      if preferRemovingOldest {
-        // keep newest messages -> drop oldest entries
-        messages.removeFirst()
-      } else {
-        // keep oldest messages -> drop newest entries
-        messages.removeLast()
-      }
+    // dropping the oldest means there is history to load again, even if the
+    // start of the channel had been reached
+    if preferRemovingOldest && messages.count > limit {
+      hasMoreHistory = true
+    }
+    let excess = messages.count - limit
+    guard excess > 0 else { return }
+    if preferRemovingOldest {
+      // keep newest messages -> drop oldest entries
+      messages.removeFirst(excess)
+    } else {
+      // keep oldest messages -> drop newest entries
+      messages.removeLast(excess)
     }
   }
 
   /// Fetches messages.
   /// NOTE: `around`, `before` and `after` are mutually exclusive.
+  /// - Returns: How many messages Discord returned.
+  @discardableResult
   func fetchMessages(
     around: MessageSnowflake? = nil,
     before: MessageSnowflake? = nil,
     after: MessageSnowflake? = nil,
     limit: Int? = nil
-  ) async throws {
-    guard let gateway = gateway?.gateway else { return }
+  ) async throws -> Int {
+    guard let gateway = gateway?.gateway else { return 0 }
 
     let requestedLimit = limit ?? 50
     let res = try await gateway.client.listMessages(
@@ -772,7 +829,8 @@ class ChannelStore: DiscordDataStore {
 
     do {
       try res.guardSuccess()
-      let fetched = try res.decode()
+      // decoded off the main thread: a page of 100 messages took most of a frame
+      let fetched = try await Task.detached(priority: .userInitiated) { try res.decode() }.value
 
       let fetchingBefore = before != nil
       let fetchingAfter = after != nil
@@ -783,14 +841,11 @@ class ChannelStore: DiscordDataStore {
         unsettledHistoryInsertion = fetched.count
         var transaction = Transaction()
         transaction.disablesAnimations = true
+        // the whole page in one change: a hundred separate inserts were a
+        // hundred updates of everything that follows the messages
         withTransaction(transaction) {
-          for message in fetched {
-            self.messages.updateValue(
-              message,
-              forKey: message.id,
-              insertingAt: 0
-            )
-          }
+          self.messages.insert(
+            contentsOf: fetched.reversed().map { (key: $0.id, value: $0) }, at: 0)
         }
 
         if fetched.count < requestedLimit {
@@ -805,13 +860,9 @@ class ChannelStore: DiscordDataStore {
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) {
-          for message in fetched.reversed() {
-            self.messages.updateValue(
-              message,
-              forKey: message.id,
-              insertingAt: self.messages.count
-            )
-          }
+          self.messages.insert(
+            contentsOf: fetched.reversed().map { (key: $0.id, value: $0) },
+            at: self.messages.count)
         }
 
         if initialLoad && fetched.count < requestedLimit {
@@ -821,7 +872,15 @@ class ChannelStore: DiscordDataStore {
           self.hasLatestMessages = true
         }
 
-        trimExtraMessagesIfNeeded(preferRemovingOldest: true)
+        // a message from the gateway can land while newer ones are being
+        // fetched, ahead of the older ones the fetch then appends
+        if fetchingAfter { restoreMessageOrder() }
+
+        // catching up while older history is on screen must not drop it
+        trimExtraMessagesIfNeeded(
+          preferRemovingOldest: true,
+          limit: fetchingAfter && !isViewingLatest
+            ? Self.HistoryMessageLimit : Self.LoadedMessageLimit)
       }
 
       // delete pending messages if they're found in fetched messages
@@ -880,13 +939,23 @@ class ChannelStore: DiscordDataStore {
           await guildStore.requestMembers(for: unknownMembers)
         }
       }
+      return fetched.count
     } catch {
       if let error = res.asError() {
         AicordAppState.instances.first?.value.error = error
       } else {
         AicordAppState.instances.first?.value.error = error
       }
+      return 0
     }
+  }
+
+  /// Puts the messages back in the order they were sent, when they aren't.
+  private func restoreMessageOrder() {
+    func sentAt(_ id: MessageSnowflake) -> UInt64 { UInt64(id.rawValue) ?? 0 }
+    let ids = messages.keys.map(sentAt)
+    guard zip(ids, ids.dropFirst()).contains(where: { $0 > $1 }) else { return }
+    messages.sortKeys { sentAt($0) < sentAt($1) }
   }
 
   /// Checks message storage for a message before the provided message.
@@ -928,6 +997,38 @@ class ChannelStore: DiscordDataStore {
 }
 
 extension ChannelStore {
+  /// The reactions of each message, read and written like a dictionary. Reading
+  /// a message's reactions follows that message alone; as one observed
+  /// dictionary, a reaction anywhere re-rendered every visible message.
+  @MainActor
+  final class ReactionTable {
+    typealias Reactions = OrderedDictionary<Emoji, Reaction>
+
+    private var storage: [MessageSnowflake: Reactions] = [:]
+    /// One change counter per message that has been read.
+    private var slots: [MessageSnowflake: ObservableBox<Int>] = [:]
+
+    subscript(
+      id: MessageSnowflake, default defaultValue: @autoclosure () -> Reactions
+    ) -> Reactions {
+      get {
+        let slot = slots[id] ?? ObservableBox(0)
+        slots[id] = slot
+        _ = slot.value
+        return storage[id] ?? defaultValue()
+      }
+      set {
+        storage[id] = newValue
+        slots[id]?.value &+= 1
+      }
+    }
+
+    func removeValue(forKey id: MessageSnowflake) {
+      guard storage.removeValue(forKey: id) != nil else { return }
+      slots[id]?.value &+= 1
+    }
+  }
+
   /// This struct represents a reaction on a message, combining data from various sources.
   struct Reaction: Identifiable, Hashable {
     var id: String {

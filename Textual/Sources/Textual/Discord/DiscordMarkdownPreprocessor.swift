@@ -217,7 +217,7 @@ public enum DiscordMarkdown {
       // An explicit blank first line ("```\ncontent") means no language was specified.
       return ("", String(rest))
     }
-    if firstLine.wholeMatch(of: /[A-Za-z0-9_+-]{1,20}/) != nil {
+    if firstLine.wholeMatch(of: languageTokenPattern) != nil {
       return (String(firstLine), String(rest))
     }
     // The first line isn't a bare token (contains spaces/punctuation), so it's code, not a
@@ -290,7 +290,7 @@ public enum DiscordMarkdown {
     let rest = line.dropFirst(leadingSpaceCount)
     // A line that's nothing but spaces has no content whose indentation needs preserving.
     guard leadingSpaceCount > 0, !rest.isEmpty,
-      rest.firstMatch(of: /^(?:[-*+]|\d{1,9}[.)])[ \t]/) == nil
+      rest.firstMatch(of: listMarkerPattern) == nil
     else {
       return line
     }
@@ -363,9 +363,12 @@ public enum DiscordMarkdown {
     }
   }
 
-  private static var underlinePattern: Regex<(Substring, Substring)> {
+  // Stored, not computed: a regex literal is compiled each time it is evaluated,
+  // and these were evaluated for every message parsed.
+  nonisolated(unsafe) private static let languageTokenPattern = /[A-Za-z0-9_+-]{1,20}/
+  nonisolated(unsafe) private static let listMarkerPattern = /^(?:[-*+]|\d{1,9}[.)])[ \t]/
+  nonisolated(unsafe) private static let underlinePattern: Regex<(Substring, Substring)> =
     /__([^_]+?)__/
-  }
 
   private static func fixingEmphasisFlanking(in line: String) -> String {
     guard line.contains("**") || line.contains("__") else { return line }
@@ -374,9 +377,8 @@ public enum DiscordMarkdown {
     }
   }
 
-  private static var emphasisFlankingFixPattern: Regex<(Substring, Substring, Substring)> {
+  nonisolated(unsafe) private static let emphasisFlankingFixPattern: Regex<(Substring, Substring, Substring)> =
     /([^\x20\t\S])(\*\*|__)/
-  }
 
   // MARK: Autolink-ambiguous tokens
 
@@ -404,13 +406,10 @@ public enum DiscordMarkdown {
   /// an animated one has `a:` there instead (`<a:name:id>`) — the leading `:?` consumes that
   /// static-case colon (it isn't part of the capture, matching `discordEmoji`'s expectations in
   /// `DiscordSyntaxExtensions.swift`).
-  private static var emojiPattern: Regex<(Substring, Substring)> {
+  nonisolated(unsafe) private static let emojiPattern: Regex<(Substring, Substring)> =
     /<:?((?:a:)?[A-Za-z0-9_]{2,32}:\d+)>/
-  }
-  private static var timestampPattern: Regex<(Substring, Substring)> {
+  nonisolated(unsafe) private static let timestampPattern: Regex<(Substring, Substring)> =
     /<t:(-?\d+(?::[tTdDfFR])?)>/
-  }
-  private static var noEmbedLinkPattern: Regex<(Substring, Substring)> {
+  nonisolated(unsafe) private static let noEmbedLinkPattern: Regex<(Substring, Substring)> =
     /<(https?:\/\/[^\s<>]+)>/
-  }
 }

@@ -56,9 +56,8 @@ extension DiscordMarkdown {
     return (hasCustomEmoji || hasUnicodeEmoji) && !hasOtherContent
   }
 
-  private static var customEmojiPattern: Regex<Substring> {
+  nonisolated(unsafe) private static let customEmojiPattern: Regex<Substring> =
     /<:?(?:a:)?[A-Za-z0-9_]{2,32}:\d+>/
-  }
 }
 
 extension Character {

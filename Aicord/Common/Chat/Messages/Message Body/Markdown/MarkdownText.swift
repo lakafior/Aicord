@@ -24,7 +24,11 @@ struct MarkdownText: View {
   @State private var emojiPopover: DiscordModels.Emoji?
   @State private var unicodeEmojiPopover: String?
 
-  @State private var documentFrame: CGRect = .zero
+  /// Where the text is on screen, for placing a popover at a tapped mention or
+  /// emoji. A plain reference rather than state: the frame changes on every
+  /// frame of a scroll, and as state it re-rendered each visible message then.
+  @State private var documentFrameBox = FrameBox()
+  private var documentFrame: CGRect { documentFrameBox.frame }
   @State private var tapLocalPoint: (point: CGPoint, size: CGSize) = (.zero, .zero)
 
   init(
@@ -62,7 +66,10 @@ struct MarkdownText: View {
     StructuredText(
       content,
       parser: .discordMarkdown(syntaxExtensions: syntaxExtensions),
-      revision: revision
+      revision: revision,
+      // parsed once per text and shown from the first layout; `revision`
+      // carries everything else the parse depends on
+      cachesParsedContent: true
     )
     .textual.inlineStyle(inlineStyle)
     .textual.structuredTextStyle(.discord)
@@ -76,7 +83,7 @@ struct MarkdownText: View {
     .onGeometryChange(for: CGRect.self) { geometry in
       geometry.frame(in: .global)
     } action: { newFrame in
-      documentFrame = newFrame
+      documentFrameBox.frame = newFrame
     }
     .popover(
       isPresented: isPopoverPresented,
@@ -391,10 +398,10 @@ struct MarkdownText: View {
   /// changing data they depend on (a nickname, a role's color, the theme, revealed spoilers)
   /// needs a re-parse, which `revision` triggers without resetting the view's identity.
   private struct RevisionSignature: Hashable {
-    let userCount: Int
-    let memberCount: Int?
-    let roleCount: Int?
-    let channelCount: Int?
+    /// What each mention in the text resolves to right now.
+    let mentions: [String]
+    let jumboEmoji: Bool
+    let animatesEmoji: Bool
     let themeID: String
     let revealedSpoilers: Set<String>
     let revealsAllSpoilers: Bool
@@ -402,14 +409,36 @@ struct MarkdownText: View {
 
   private var revision: RevisionSignature {
     RevisionSignature(
-      userCount: GatewayStore.shared.user.users.count,
-      memberCount: guildStore?.memberCount,
-      roleCount: guildStore?.roleCount,
-      channelCount: guildStore?.channels.count,
+      mentions: resolvedMentions,
+      jumboEmoji: isJumboEmoji,
+      animatesEmoji: gw.settings.animatesEmoji,
       themeID: theme.id,
       revealedSpoilers: revealedSpoilers,
       revealsAllSpoilers: revealsAllSpoilers
     )
+  }
+
+  /// The names (and role colours) the mentions in this text show. Only these
+  /// can change what the text says, so only they trigger a re-parse: counting
+  /// every known user and member re-parsed all visible messages each time
+  /// anyone's data loaded, and text without mentions follows none of it.
+  private var resolvedMentions: [String] {
+    guard content.contains("<") else { return [] }
+    let gw = GatewayStore.shared
+    return content.matches(of: MentionPattern.any).map { match in
+      let id = String(match.output.2)
+      switch match.output.1 {
+      case "#":
+        return "#" + (guildStore?.channels[ChannelSnowflake(id)]?.name ?? id)
+      case "@&":
+        guard let role = guildStore?.role(RoleSnowflake(id)) else { return "&" + id }
+        return "&\(role.name)|\(role.color)"
+      default:
+        let userID = UserSnowflake(id)
+        guard let user = gw.user.users[userID] else { return "@" + id }
+        return "@" + (guildStore?.member(userID)?.nick ?? user.global_name ?? user.username ?? id)
+      }
+    }
   }
 
   private var revealsAllSpoilers: Bool {
@@ -548,6 +577,22 @@ struct MarkdownText: View {
   }
 }
 
+/// The mention patterns, compiled once: a regex literal is compiled each time it
+/// is evaluated, and these were evaluated for every message on every render.
+private enum MentionPattern {
+  nonisolated(unsafe) static let any = /<(@&|@!?|#)(\d+)>/
+  nonisolated(unsafe) static let user = /<@!?(\d+)>/
+  nonisolated(unsafe) static let channel = /<#(\d+)>/
+  nonisolated(unsafe) static let role = /<@&(\d+)>/
+  nonisolated(unsafe) static let everyone = /@(everyone)/
+  nonisolated(unsafe) static let here = /@(here)/
+}
+
+/// Holds a frame without being observed.
+private final class FrameBox {
+  var frame: CGRect = .zero
+}
+
 // MARK: - Paicord mention syntax extensions
 
 extension AttributedStringMarkdownParser.SyntaxExtension {
@@ -581,7 +626,7 @@ extension AttributedStringMarkdownParser.SyntaxExtension {
     let defaultForeground = theme.markdown.mentionText
     let defaultBackground = theme.markdown.mentionBackground
 
-    let userMention = Self(regex: /<@!?(\d+)>/, tokenType: "paicordUserMention") { id, base in
+    let userMention = Self(regex: MentionPattern.user, tokenType: "paicordUserMention") { id, base in
       let userID = UserSnowflake(id)
       let name: String
       if let user = gw.user.users[userID] {
@@ -599,7 +644,7 @@ extension AttributedStringMarkdownParser.SyntaxExtension {
       )
     }
 
-    let channelMention = Self(regex: /<#(\d+)>/, tokenType: "paicordChannelMention") { id, base in
+    let channelMention = Self(regex: MentionPattern.channel, tokenType: "paicordChannelMention") { id, base in
       let channelID = ChannelSnowflake(id)
       let name = guildStore?.channels[channelID]?.name ?? id
       return mention(
@@ -612,7 +657,7 @@ extension AttributedStringMarkdownParser.SyntaxExtension {
       )
     }
 
-    let roleMention = Self(regex: /<@&(\d+)>/, tokenType: "paicordRoleMention") { id, base in
+    let roleMention = Self(regex: MentionPattern.role, tokenType: "paicordRoleMention") { id, base in
       let roleID = RoleSnowflake(id)
       guard let role = guildStore?.role(roleID) else {
         return mention(
@@ -635,7 +680,7 @@ extension AttributedStringMarkdownParser.SyntaxExtension {
       )
     }
 
-    let everyoneMention = Self(regex: /@(everyone)/, tokenType: "paicordEveryoneMention") {
+    let everyoneMention = Self(regex: MentionPattern.everyone, tokenType: "paicordEveryoneMention") {
       _, base in
       mention(
         text: "@everyone",
@@ -647,7 +692,7 @@ extension AttributedStringMarkdownParser.SyntaxExtension {
       )
     }
 
-    let hereMention = Self(regex: /@(here)/, tokenType: "paicordHereMention") { _, base in
+    let hereMention = Self(regex: MentionPattern.here, tokenType: "paicordHereMention") { _, base in
       mention(
         text: "@here",
         link: "paicord://mention/here",

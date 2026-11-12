@@ -106,6 +106,7 @@ public struct StructuredText: View {
   private let markup: String
   private let parser: any MarkupParser
   private let revision: AnyHashable
+  private let cachesParsedContent: Bool
 
   /// Creates a structured-text view by parsing `markup` with a custom parser.
   ///
@@ -117,48 +118,97 @@ public struct StructuredText: View {
   ///   in the source string. Updates `markup`'s existing parsed content in place instead of
   ///   resetting the view's identity (as `.id(_:)` would), so the displayed content doesn't
   ///   momentarily collapse while re-parsing.
-  public init(_ markup: String, parser: any MarkupParser, revision: some Hashable = 0) {
+  /// - Parameter cachesParsedContent: Keeps the parsed result in a shared cache keyed by
+  ///   `markup` and `revision`, and shows it from the view's first layout. Only for callers
+  ///   whose `revision` covers everything the parser's output depends on besides `markup`:
+  ///   two views with the same markup and revision get the same content. Without it the view
+  ///   is first laid out empty and parsed afterwards, which in a lazy list means every row
+  ///   changes height right after it appears, and is parsed again each time it comes back.
+  public init(
+    _ markup: String,
+    parser: any MarkupParser,
+    revision: some Hashable = 0,
+    cachesParsedContent: Bool = false
+  ) {
     self.markup = markup
     self.parser = parser
     self.revision = AnyHashable(revision)
+    self.cachesParsedContent = cachesParsedContent
   }
 
   public var body: some View {
-    if #available(macOS 26.0, *) {  // fixes a warning.
-      WithAttachments(attributedString) {
-        BlockContent(content: $0)
-          .modifier(TextSelectionInteraction())
-          .modifier(TextSelectionCoordination())
-      }
-      .coordinateSpace(.textContainer)
-      .onChange(of: markup, initial: true) {
-        markupDidChange(markup)
-      }
-      .onChange(of: revision) {
-        markupDidChange(markup)
-      }
-      // Disable line limit to avoid per-fragment truncation
-      .lineLimit(nil)
-    } else {
-      WithAttachments(attributedString) {
-        BlockContent(content: $0)
-          .modifier(TextSelectionInteraction())
-          .modifier(TextSelectionCoordination())
-      }
-      .coordinateSpace(.textContainer)
-      .onChange(of: markup, initial: true) {
-        markupDidChange(markup)
-      }
-      .onChange(of: revision) {
-        markupDidChange(markup)
-      }
-      // Disable line limit to avoid per-fragment truncation
-      .lineLimit(nil)
+    WithAttachments(content) {
+      BlockContent(content: $0)
+        .modifier(TextSelectionInteraction())
+        .modifier(TextSelectionCoordination())
+    }
+    .coordinateSpace(.textContainer)
+    .onChange(of: markup, initial: true) {
+      markupDidChange(markup)
+    }
+    .onChange(of: revision) {
+      markupDidChange(markup)
+    }
+    // Disable line limit to avoid per-fragment truncation
+    .lineLimit(nil)
+  }
+
+  private var content: AttributedString {
+    guard cachesParsedContent else { return attributedString }
+    return ParsedMarkupCache.content(markup: markup, revision: revision) {
+      (try? parser.attributedString(for: markup)) ?? .init()
     }
   }
 
   private func markupDidChange(_ markup: String) {
+    guard !cachesParsedContent else { return }
     self.attributedString = (try? parser.attributedString(for: markup)) ?? .init()
+  }
+}
+
+/// Parsed content of views created with `cachesParsedContent`.
+private enum ParsedMarkupCache {
+  private final class Key: NSObject {
+    let markup: String
+    let revision: AnyHashable
+
+    init(markup: String, revision: AnyHashable) {
+      self.markup = markup
+      self.revision = revision
+    }
+
+    override var hash: Int {
+      var hasher = Hasher()
+      hasher.combine(markup)
+      hasher.combine(revision)
+      return hasher.finalize()
+    }
+
+    override func isEqual(_ object: Any?) -> Bool {
+      guard let other = object as? Key else { return false }
+      return markup == other.markup && revision == other.revision
+    }
+  }
+
+  private final class Entry {
+    let content: AttributedString
+    init(_ content: AttributedString) { self.content = content }
+  }
+
+  nonisolated(unsafe) private static let storage: NSCache<Key, Entry> = {
+    let cache = NSCache<Key, Entry>()
+    cache.countLimit = 3000
+    return cache
+  }()
+
+  static func content(
+    markup: String, revision: AnyHashable, parse: () -> AttributedString
+  ) -> AttributedString {
+    let key = Key(markup: markup, revision: revision)
+    if let entry = storage.object(forKey: key) { return entry.content }
+    let content = parse()
+    storage.setObject(Entry(content), forKey: key)
+    return content
   }
 }
 
