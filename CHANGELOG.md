@@ -2,6 +2,12 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### Fixed
+
+- **Fixed** · On the Mac, the camera can be turned on in a call: the app's sandbox had no camera access, so 0.1.8 always answered that camera access was off
+
 ## 0.1.8 (November 2026)
 
 ### Voice
