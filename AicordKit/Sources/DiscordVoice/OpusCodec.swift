@@ -71,28 +71,31 @@ public final class OpusEncoder: @unchecked Sendable {
   public func reset() { _ = paicord_opus_encoder_reset(handle) }
 }
 
-/// A mono Opus decoder with packet-loss concealment.
+/// An Opus decoder with packet-loss concealment: mono for voices, stereo
+/// (interleaved) for the sound of a Go Live.
 public final class OpusDecoder: @unchecked Sendable {
   private let handle: OpaquePointer
+  private let channels: Int
   private var lastFrameSamples = VoiceAudioFormat.frameSamples
 
-  public init() throws(OpusError) {
+  public init(channels: Int = VoiceAudioFormat.channels) throws(OpusError) {
     var error: Int32 = 0
     guard
       let handle = opus_decoder_create(
         Int32(VoiceAudioFormat.sampleRate),
-        Int32(VoiceAudioFormat.channels),
+        Int32(channels),
         &error
       ), error == OPUS_OK
     else { throw .code(error) }
     self.handle = handle
+    self.channels = channels
   }
 
   deinit { opus_decoder_destroy(handle) }
 
-  /// Decodes a packet into mono PCM. Returns the decoded samples.
+  /// Decodes a packet into PCM. Returns the decoded samples.
   public func decode(_ packet: Data) throws(OpusError) -> [Float] {
-    var pcm = [Float](repeating: 0, count: VoiceAudioFormat.maxFrameSamples)
+    var pcm = [Float](repeating: 0, count: VoiceAudioFormat.maxFrameSamples * channels)
     let samples = packet.withUnsafeBytes { raw in
       pcm.withUnsafeMutableBufferPointer { out in
         opus_decode_float(
@@ -107,17 +110,17 @@ public final class OpusDecoder: @unchecked Sendable {
     }
     guard samples >= 0 else { throw .code(samples) }
     lastFrameSamples = Int(samples)
-    return Array(pcm[..<Int(samples)])
+    return Array(pcm[..<(Int(samples) * channels)])
   }
 
   /// Packet-loss concealment for one missing packet of the previous duration.
   public func conceal() -> [Float] {
     let count = min(max(lastFrameSamples, 120), VoiceAudioFormat.maxFrameSamples)
-    var pcm = [Float](repeating: 0, count: count)
+    var pcm = [Float](repeating: 0, count: count * channels)
     let samples = pcm.withUnsafeMutableBufferPointer { out in
       opus_decode_float(handle, nil, 0, out.baseAddress!, Int32(count), 0)
     }
-    return samples > 0 ? Array(pcm[..<Int(samples)]) : pcm
+    return samples > 0 ? Array(pcm[..<(Int(samples) * channels)]) : pcm
   }
 
   public func reset() { _ = paicord_opus_decoder_reset(handle) }

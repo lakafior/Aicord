@@ -36,7 +36,7 @@ Biblioteka to już `AicordKit` (zrobione: patrz CHANGELOG i [SLIM_NOTES](https:/
 ### 🔜 Etap 9: Voice — kanały głosowe i rozmowy w DM
 Szczegóły portu, decyzje i instrukcja testu: [VOICE_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/VOICE_NOTES.md).
 7. **Później:**
-   - [ ] Wideo i udostępnianie ekranu. Serein ma do tego ścieżki na macOS (ScreenCaptureKit, VideoToolbox).
+   - Wideo i udostępnianie ekranu są napisane (12.11), do sprawdzenia na żywo: patrz Etap 14, punkt 2.
 
 ---
 
@@ -78,9 +78,9 @@ Paczki 1 i 2 zrobione (szczegóły w CHANGELOG, [PACK1_NOTES](https://github.com
 1. **Powiadomienia:** (granica opisana w README 1.11)
    - [ ] Sprawdzić, ile da się wycisnąć z odświeżania w tle na iOS bez łamania zasad.
 2. **Wideo:** (nadawanie wideo i ekranu jest w Etapie 9)
-   - [ ] Odbiór cudzych kamer i Go Live w kanale głosowym serwera jest napisany (panel nad czatem kanału, szczegóły w CHANGELOG), ale nie był testowany na żywo. Do przeklikania z drugą osobą: kamera, Go Live z dźwiękiem, dwa obrazy naraz, pełny ekran, rozmowa DM, wyłączenie i ponowne włączenie obrazu, dołączenie w trakcie streamu, przejście DAVE, gdy ktoś wchodzi lub wychodzi. Niepewne miejsca, od których zacząć, gdy obrazu nie ma: numer grupy DAVE streamu (`rtc_server_id − 1`), sesja w Identify streamu, prośba o klatkę kluczową i o retransmisję (RTCP PLI i NACK), `any: 100` w Media Sink Wants, typy pakietów 101–104.
-   - [ ] AV1 (powody w CHANGELOG; wymaga testu z prawdziwym nadawcą), podgląd streamu przed wejściem, dźwięk streamu w stereo.
-   - [ ] Potem własna kamera.
+   - [ ] Wideo jest napisane w całości (odbiór kamer i Go Live, własna kamera, udostępnianie ekranu z Maca; szczegóły w CHANGELOG), ale nie było testowane na żywo. Do przeklikania z drugą osobą: kamera, Go Live z dźwiękiem, dwa obrazy naraz, pełny ekran, rozmowa DM, wyłączenie i ponowne włączenie obrazu, dołączenie w trakcie streamu, przejście DAVE, gdy ktoś wchodzi lub wychodzi. Niepewne miejsca, od których zacząć, gdy obrazu nie ma: numer grupy DAVE streamu (`rtc_server_id − 1`), sesja w Identify streamu, prośba o klatkę kluczową i o retransmisję (RTCP PLI i NACK), `any: 100` w Media Sink Wants, typy pakietów 101–104. Po stronie nadawania: rozszerzenie nagłówka RTP (element 5), wybór kodeka do wysyłania (wysyłamy tylko H.264), `self_video` i Create Stream.
+   - [ ] AV1 (powody w CHANGELOG; wymaga testu z prawdziwym nadawcą), dźwięk systemu w udostępnianym ekranie, udostępnianie ekranu z iOS (wymagałoby rozszerzenia Broadcast, czyli czwartego App ID), wybór kamery i jakości, wysyłanie własnej miniatury streamu, odpowiadanie na NACK (dziś zgubiony pakiet naprawia dopiero klatka kluczowa).
+   - [ ] Podpisana aplikacja na Maca (Etap 12) potrzebuje uprawnień `com.apple.security.device.camera` i `device.audio-input`: projekt ma włączony Hardened Runtime, a plik uprawnień ich nie zawiera.
    - [ ] Redukcja szumów mikrofonu w voice (odpowiednik Krisp, np. przetwarzanie głosu z `AVAudioEngine`).
 3. **Zarządzanie serwerem (dla moderatorów):** całość zrobiona 1.11 (CHANGELOG, [PL_ONBOARDING_ADMIN_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PL_ONBOARDING_ADMIN_NOTES.md), [OVERNIGHT2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT2_NOTES.md)). Zostało:
    - [ ] Sekcja „Zarządzanie serwerem” pojawia się dopiero, gdy serwer był otwarty w tej sesji (bez danych o rolach uprawnienia nie są znane).

@@ -111,12 +111,37 @@ struct VoiceCallBar: View {
         .help(Text(voice.isDeafened ? "Undeafen" : "Deafen"))
         .accessibilityLabel(Text(voice.isDeafened ? "Undeafen" : "Deafen"))
 
+        if !voice.isSuppressed {
+          CameraButton(voice: voice)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+          #if os(macOS)
+            Button {
+              voice.toggleScreenShare()
+            } label: {
+              Image(systemName: voice.isSharingScreen ? "display" : "rectangle.on.rectangle")
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+            }
+            .foregroundStyle(voice.isSharingScreen ? .green : .primary)
+            .disabled(voice.phase != .connected)
+            .help(Text(voice.isSharingScreen ? "Stop Sharing" : "Share Your Screen"))
+            .accessibilityLabel(Text(voice.isSharingScreen ? "Stop Sharing" : "Share Your Screen"))
+          #endif
+        }
+
         if voice.usesPushToTalk, !voice.isSuppressed {
           PushToTalkButton(voice: voice)
         }
       }
       .buttonStyle(.borderless)
       .glassEffect(.regular, in: .capsule)
+
+      if voice.cameraDenied {
+        Text("Camera access is off. Allow it in System Settings to turn your camera on.")
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+      }
 
       if voice.microphoneDenied {
         Text("Microphone access is off. Allow it in System Settings to talk.")
@@ -320,6 +345,7 @@ struct VoiceCallAccessory: View {
         }
         .foregroundStyle(voice.isMuted || voice.isDeafened ? .red : .primary)
         .accessibilityLabel(Text(voice.isMuted ? "Unmute" : "Mute"))
+        CameraButton(voice: voice)
       }
       Button {
         voice.toggleDeafen()
@@ -338,6 +364,22 @@ struct VoiceCallAccessory: View {
     }
     .buttonStyle(.plain)
     .padding(.horizontal, 16)
+  }
+}
+
+/// Turns our camera on or off.
+struct CameraButton: View {
+  let voice: VoiceConnectionStore
+
+  var body: some View {
+    Button {
+      voice.toggleCamera()
+    } label: {
+      Image(systemName: voice.isCameraOn ? "video.fill" : "video.slash.fill")
+    }
+    .foregroundStyle(voice.isCameraOn ? .green : .primary)
+    .help(Text(voice.isCameraOn ? "Turn Off Camera" : "Turn On Camera"))
+    .accessibilityLabel(Text(voice.isCameraOn ? "Turn Off Camera" : "Turn On Camera"))
   }
 }
 

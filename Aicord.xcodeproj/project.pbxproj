@@ -192,6 +192,7 @@
 		AC0DC60013FF71EBBDA11DD2 /* VoiceConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0394B0AEB5CC91C895A5CC /* VoiceConnectionStore.swift */; };
 		AC0EF8DCE4F59941702225FE /* VoicePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC03E04F0CF84CFE2B61F8E3 /* VoicePreferences.swift */; };
 		AC0F5A6E1B2C3D4E5F607182 /* StagePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */; };
+		AC0F5A6E1B2C3D4E5F607186 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F5A6E1B2C3D4E5F607187 /* VideoCapture.swift */; };
 		AC0F5A6E1B2C3D4E5F607184 /* VideoPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F5A6E1B2C3D4E5F607185 /* VideoPanel.swift */; };
 		AC4A7E0000000000000000C2 /* Emoticons.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC4A7E0000000000000000C1 /* Emoticons.swift */; };
 		AE20AC89771EEC582C914D08 /* CatchUpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE47218BB51CFFA380642130 /* CatchUpSheet.swift */; };
@@ -466,6 +467,7 @@
 		AC056C49F2F9D4341D99AB1F /* AudioDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDevices.swift; sourceTree = "<group>"; };
 		AC0B4B4B4578BC80D509BBA3 /* VoiceAudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAudioEngine.swift; sourceTree = "<group>"; };
 		AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StagePanel.swift; sourceTree = "<group>"; };
+		AC0F5A6E1B2C3D4E5F607187 /* VideoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
 		AC0F5A6E1B2C3D4E5F607185 /* VideoPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPanel.swift; sourceTree = "<group>"; };
 		AC0FAE13CCBACC320FF89B36 /* VoiceChannelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceChannelButton.swift; sourceTree = "<group>"; };
 		AC4A7E0000000000000000C1 /* Emoticons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Emoticons.swift; sourceTree = "<group>"; };
@@ -1307,6 +1309,7 @@
 			isa = PBXGroup;
 			children = (
 				AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */,
+				AC0F5A6E1B2C3D4E5F607187 /* VideoCapture.swift */,
 				AC0F5A6E1B2C3D4E5F607185 /* VideoPanel.swift */,
 				AC01D5DA1D1CC78C94BBCCC6 /* VoiceCallBar.swift */,
 				AC0FAE13CCBACC320FF89B36 /* VoiceChannelButton.swift */,
@@ -1579,6 +1582,7 @@
 				AC0DC60013FF71EBBDA11DD2 /* VoiceConnectionStore.swift in Sources */,
 				AC04D930DC8474160A714437 /* VoiceCallBar.swift in Sources */,
 				AC0F5A6E1B2C3D4E5F607182 /* StagePanel.swift in Sources */,
+				AC0F5A6E1B2C3D4E5F607186 /* VideoCapture.swift in Sources */,
 				AC0F5A6E1B2C3D4E5F607184 /* VideoPanel.swift in Sources */,
 				AC018E635EC5A8ED23F275F2 /* VoiceChannelButton.swift in Sources */,
 				AAC07FC32F2D9E460077B8FA /* DownloadButton.swift in Sources */,
@@ -2059,7 +2063,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Aicord;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Aicord uses the camera to take photos and videos to send in chats.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Aicord uses the camera for video in calls and to take photos and videos to send in chats.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Aicord uses the microphone for voice calls and to record videos and voice messages.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Aicord uses motion data to keep the camera preview upright.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Aicord transcribes voice messages on your device.";
@@ -2128,7 +2132,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Aicord;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Aicord uses the camera to take photos and videos to send in chats.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Aicord uses the camera for video in calls and to take photos and videos to send in chats.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Aicord uses the microphone for voice calls and to record videos and voice messages.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Aicord uses motion data to keep the camera preview upright.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Aicord transcribes voice messages on your device.";

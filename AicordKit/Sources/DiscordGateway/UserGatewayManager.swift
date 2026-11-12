@@ -340,6 +340,33 @@ public actor UserGatewayManager: GatewayManager {
     )
   }
 
+  /// Starts a Go Live of our own in the voice channel or call we are in.
+  /// Stream Create and Stream Server Update follow.
+  /// https://docs.discord.food/topics/gateway-events#create-stream
+  public func createStream(guildID: GuildSnowflake?, channelID: ChannelSnowflake) {
+    self.send(
+      message: .init(
+        payload: .init(
+          opcode: .streamCreate,
+          data: .requestStreamCreate(.init(guildID: guildID, channelID: channelID))
+        )
+      )
+    )
+  }
+
+  /// Ends our own Go Live.
+  /// https://docs.discord.food/topics/gateway-events#delete-stream
+  public func deleteStream(key: Gateway.StreamKey) {
+    self.send(
+      message: .init(
+        payload: .init(
+          opcode: .streamDelete,
+          data: .requestStream(.init(stream_key: key.rawValue))
+        )
+      )
+    )
+  }
+
   /// https://docs.discord.food/topics/gateway-events#ping-voice-server
   public func pingVoiceServer() {
     self.send(

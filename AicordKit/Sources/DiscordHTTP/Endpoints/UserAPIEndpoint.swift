@@ -42,6 +42,7 @@ public enum UserAPIEndpoint: Endpoint {
 
   // MARK: - Channels
   case getCallEligibility(channelId: ChannelSnowflake)
+  case getStreamPreview(streamKey: String)
   case modifyCall(channelId: ChannelSnowflake)
   case ringChannelRecipients(channelId: ChannelSnowflake)
   case stopRingingChannelRecipients(channelId: ChannelSnowflake)
@@ -270,6 +271,8 @@ public enum UserAPIEndpoint: Endpoint {
     // MARK: - Channels
     case .getCallEligibility(let channelId):
       suffix = "channels/\(channelId.rawValue)/call"
+    case .getStreamPreview(let streamKey):
+      suffix = "streams/\(streamKey)/preview"
     case .modifyCall(let channelId):
       suffix = "channels/\(channelId.rawValue)/call"
     case .ringChannelRecipients(let channelId):
@@ -510,6 +513,8 @@ public enum UserAPIEndpoint: Endpoint {
       suffix = "guilds/\(guildId.rawValue)/audit-logs"
     case .getCallEligibility(let channelId):
       suffix = "channels/\(channelId.rawValue)/call"
+    case .getStreamPreview(let streamKey):
+      suffix = "streams/\(streamKey)/preview"
     case .modifyCall(let channelId):
       suffix = "channels/\(channelId.rawValue)/call"
     case .ringChannelRecipients(let channelId):
@@ -699,6 +704,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .deleteOwnedGuild: return .POST
     case .listGuildAuditLogEntries: return .GET
     case .getCallEligibility: return .GET
+    case .getStreamPreview: return .GET
     case .modifyCall: return .PATCH
     case .ringChannelRecipients: return .POST
     case .stopRingingChannelRecipients: return .POST
@@ -799,6 +805,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .deleteOwnedGuild: return true
     case .listGuildAuditLogEntries: return true
     case .getCallEligibility: return true
+    case .getStreamPreview: return true
     case .modifyCall: return true
     case .ringChannelRecipients: return true
     case .stopRingingChannelRecipients: return true
@@ -895,6 +902,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .deleteOwnedGuild: return true
     case .listGuildAuditLogEntries: return true
     case .getCallEligibility: return true
+    case .getStreamPreview: return true
     case .modifyCall: return true
     case .ringChannelRecipients: return true
     case .stopRingingChannelRecipients: return true
@@ -995,6 +1003,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .deleteOwnedGuild(let guildId): return [guildId.rawValue]
     case .listGuildAuditLogEntries(let guildId): return [guildId.rawValue]
     case .getCallEligibility(let channelId): return [channelId.rawValue]
+    case .getStreamPreview(let streamKey): return [streamKey]
     case .modifyCall(let channelId): return [channelId.rawValue]
     case .ringChannelRecipients(let channelId): return [channelId.rawValue]
     case .stopRingingChannelRecipients(let channelId):
@@ -1120,6 +1129,7 @@ public enum UserAPIEndpoint: Endpoint {
     case .deleteAutoModRule: return 159
     case .deleteOwnedGuild: return 160
     case .getCallEligibility: return 21
+    case .getStreamPreview: return 162
     case .modifyCall: return 22
     case .ringChannelRecipients: return 23
     case .stopRingingChannelRecipients: return 24
@@ -1246,6 +1256,8 @@ public enum UserAPIEndpoint: Endpoint {
       return "listGuildAuditLogEntries(guildId: \(guildId.rawValue))"
     case .getCallEligibility(let channelId):
       return "getCallEligibility(channelId: \(channelId.rawValue))"
+    case .getStreamPreview(let streamKey):
+      return "getStreamPreview(streamKey: \(streamKey))"
     case .modifyCall(let channelId):
       return "modifyCall(channelId: \(channelId.rawValue), ...)"
     case .ringChannelRecipients(let channelId):

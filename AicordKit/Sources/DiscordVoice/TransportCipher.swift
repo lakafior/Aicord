@@ -70,12 +70,20 @@ public struct TransportCipher: Sendable {
     self.key = SymmetricKey(data: secretKey)
   }
 
-  /// Encrypts an RTP packet. `packet.payload` holds the cleartext Opus frame
-  /// (already DAVE-encrypted, if DAVE is active); no header extension is sent.
+  /// Encrypts an RTP packet. `packet.payload` holds the cleartext media
+  /// (already DAVE-encrypted, if DAVE is active). When the packet is marked
+  /// as having a header extension, the payload starts with it: its 4-byte
+  /// header stays in the clear, its body is encrypted with the media.
   public func seal(_ packet: RTPPacket, nonce counter: UInt32) throws(Error)
     -> Data
   {
-    let aad = packet.header
+    var aad = packet.header
+    var packet = packet
+    if packet.extension {
+      guard packet.payload.count >= 4 else { throw .truncatedPacket }
+      aad += packet.payload.prefix(4)
+      packet.payload = Data(packet.payload.dropFirst(4))
+    }
     let suffix = Self.counterBytes(counter)
     let (ciphertext, tag): (Data, Data)
     do {
@@ -136,6 +144,38 @@ public struct TransportCipher: Sendable {
           authenticating: aad
         )
         return aad + box.ciphertext + box.tag + suffix
+      }
+    } catch {
+      throw .authenticationFailed
+    }
+  }
+
+  /// Decrypts a received RTCP datagram; returns it whole, header included.
+  public func openRTCP(_ datagram: Data) throws(Error) -> Data {
+    let trailer = Self.tagSize + Self.nonceSuffixSize
+    guard datagram.count >= 8 + trailer else { throw .truncatedPacket }
+    let bytes = [UInt8](datagram)
+    let aad = Data(bytes[..<8])
+    let ciphertextEnd = bytes.count - trailer
+    let ciphertext = Data(bytes[8..<ciphertextEnd])
+    let tag = Data(bytes[ciphertextEnd..<(ciphertextEnd + Self.tagSize)])
+    let suffix = Data(bytes[(bytes.count - Self.nonceSuffixSize)...])
+    do {
+      switch mode {
+      case .aes256GCM:
+        let box = try AES.GCM.SealedBox(
+          nonce: AES.GCM.Nonce(data: suffix + Data(count: 8)),
+          ciphertext: ciphertext,
+          tag: tag
+        )
+        return aad + (try AES.GCM.open(box, using: key, authenticating: aad))
+      case .xchacha20Poly1305:
+        let (subkey, nonce) = Self.xchachaParameters(
+          key: key,
+          nonce24: suffix + Data(count: 20)
+        )
+        let box = try ChaChaPoly.SealedBox(nonce: nonce, ciphertext: ciphertext, tag: tag)
+        return aad + (try ChaChaPoly.open(box, using: subkey, authenticating: aad))
       }
     } catch {
       throw .authenticationFailed

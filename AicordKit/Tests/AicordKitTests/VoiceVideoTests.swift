@@ -183,6 +183,75 @@ class VoiceVideoTests: XCTestCase {
     XCTAssertEqual(depacketizer.missingSequences(now: start + .seconds(1)), [])
   }
 
+  /// What we send has to come back out of our own receiving side: the
+  /// encoder's frames through the packetizer, the transport cipher with the
+  /// header extension, the depacketizer and the decoder.
+  func testOurOwnVideoIsReceivableAndRTCPRoundTrips() throws {
+    let collected = EncodedFrames()
+    let encoder = VideoEncoder(settings: .camera) { collected.append($0) }
+    for index in 0..<3 {
+      var pixels: CVPixelBuffer?
+      CVPixelBufferCreate(
+        nil, 320, 240, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
+        [kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary, &pixels)
+      encoder.encode(try XCTUnwrap(pixels), at: CMTime(value: CMTimeValue(index), timescale: 30))
+    }
+    var frames: [EncodedVideoFrame] = []
+    for _ in 0..<100 where frames.count < 3 {
+      Thread.sleep(forTimeInterval: 0.02)
+      frames = collected.value
+    }
+    guard frames.count == 3 else { throw XCTSkip("No H.264 encoder here") }
+    XCTAssertTrue(frames[0].isKeyframe)
+    XCTAssertEqual(frames[1].timestamp, 3000)
+
+    let cipher = try TransportCipher(mode: .aes256GCM, secretKey: [UInt8](repeating: 7, count: 32))
+    var depacketizer = VideoDepacketizer()
+    _ = depacketizer.push(
+      RTPPacket(
+        payloadType: .dynamic(103), sequence: 0, timestamp: 1, ssrc: 9,
+        payload: Data([0x61, 0]), marker: true))
+    var builder = VideoSampleBuilder()
+    var sequence: UInt16 = 1
+    var nonce: UInt32 = 0
+    var received = 0
+    for frame in frames {
+      let payloads = VideoPacketizer.payloads(annexB: frame.data, maxSize: 300)
+      XCTAssertTrue(payloads.allSatisfy { $0.count <= 300 })
+      for (index, payload) in payloads.enumerated() {
+        nonce += 1
+        let datagram = try cipher.seal(
+          RTPPacket(
+            extension: true, payloadType: .dynamic(103), sequence: sequence,
+            timestamp: frame.timestamp, ssrc: 9,
+            payload: VoiceGatewayManager.videoExtension + payload,
+            marker: index == payloads.count - 1),
+          nonce: nonce)
+        sequence &+= 1
+        let packet = try cipher.open(datagram)
+        XCTAssertEqual(packet.payload, payload)
+        for rebuilt in depacketizer.push(packet) {
+          XCTAssertEqual(rebuilt.data, frame.data)
+          XCTAssertNotNil(
+            builder.makeSampleBuffer(annexB: rebuilt.data, timestamp: rebuilt.timestamp))
+          received += 1
+        }
+      }
+    }
+    XCTAssertEqual(received, 3)
+
+    // A Picture Loss Indication as we send it, sealed and opened again.
+    let pli = Data([0x81, 206, 0, 2, 0, 0, 0, 1, 0, 0, 0, 9])
+    XCTAssertEqual(try cipher.openRTCP(cipher.sealRTCP(pli, nonce: 5)), pli)
+  }
+
+  final class EncodedFrames: @unchecked Sendable {
+    private let lock = NSLock()
+    private var frames: [EncodedVideoFrame] = []
+    var value: [EncodedVideoFrame] { lock.withLock { frames } }
+    func append(_ frame: EncodedVideoFrame) { lock.withLock { frames.append(frame) } }
+  }
+
   func testAnnexBSplitsAtShortAndLongStartCodes() {
     let stream = Data([0, 0, 0, 1, 0x67, 1, 2, 0, 0, 1, 0x68, 3, 0, 0, 0, 1, 0x65, 4, 5])
     XCTAssertEqual(

@@ -145,3 +145,8 @@ public struct VoiceStateUpdate: Sendable, Codable {
 public struct CallEligibility: Sendable, Decodable {
   public var ringable: Bool
 }
+
+/// https://docs.discord.food/resources/stream#get-stream-preview
+public struct StreamPreview: Sendable, Decodable {
+  public var url: String
+}

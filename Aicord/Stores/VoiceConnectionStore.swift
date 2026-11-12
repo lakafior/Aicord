@@ -4,8 +4,8 @@
 //
 //  The one voice call this device is in: joining through the main gateway,
 //  the voice connection, audio, mute, deafen and push-to-talk, and the
-//  video of others: cameras over the call's connection, a Go Live over a
-//  second one.
+//  video: cameras (others' and ours) over the call's connection, each Go
+//  Live (watched, or our own shared screen) over a connection of its own.
 //
 //  Ported from the `voice` branch of llsc12/Paicord. Join behaviour follows
 //  Serein: a lost main gateway session or a voice session that cannot be
@@ -98,7 +98,29 @@ final class VoiceConnectionStore: DiscordDataStore {
   /// voice states are in their `GuildStore`.
   private(set) var callVoiceStates: [ChannelSnowflake: [UserSnowflake: VoiceState]] = [:]
 
-  /// One watched Go Live: what Discord sent for it and its connection.
+  /// Our camera is on and being sent to the call.
+  private(set) var isCameraOn = false
+  /// Camera access was refused in the system's settings.
+  private(set) var cameraDenied = false
+  /// Our screen (or a window) is being shared as a Go Live. Mac only.
+  private(set) var isSharingScreen = false
+
+  /// The camera, for the picture of ourselves.
+  @ObservationIgnored let camera = CameraCapture()
+  @ObservationIgnored private var cameraEncoder: VideoEncoder?
+  @ObservationIgnored private var cameraTask: Task<Void, Never>?
+  @ObservationIgnored private var screenEncoder: VideoEncoder?
+  @ObservationIgnored private var screenTask: Task<Void, Never>?
+  #if os(macOS)
+    @ObservationIgnored private var screen: ScreenCapture?
+  #endif
+
+  /// What we tell the voice server about the video we send.
+  private static let cameraVideo = (width: 1280, height: 720, framerate: 30, bitrate: 1_500_000)
+  private static let screenVideo = (width: 1920, height: 1080, framerate: 30, bitrate: 3_500_000)
+
+  /// One Go Live, watched or our own: what Discord sent for it and its
+  /// connection.
   private struct StreamWatch {
     var info: Gateway.GoLiveStream?
     var server: Gateway.StreamServerUpdate?
@@ -242,6 +264,7 @@ final class VoiceConnectionStore: DiscordDataStore {
     managerTask = nil
     videoTask?.cancel()
     videoTask = nil
+    stopCamera(tellDiscord: false)
     for owner in Array(streams.keys) { endStream(owner, nil) }
     streams = [:]
     streamPhases = [:]
@@ -366,8 +389,11 @@ final class VoiceConnectionStore: DiscordDataStore {
       }
     }
     let cameras = watchedCameras
+    let sendsCamera = isCameraOn
     Task {
       await manager.setVideoWanted(cameras)
+      // The camera stays on across a move to another voice server.
+      if sendsCamera { await manager.setVideoSending(Self.cameraVideo) }
       await manager.connect()
     }
 
@@ -402,6 +428,8 @@ final class VoiceConnectionStore: DiscordDataStore {
     case .speaking(let user, let isSpeaking):
       if isSpeaking { speaking.insert(user) } else { speaking.remove(user) }
     case .participantJoined(let user):
+      // Somebody new can only start watching from a key frame.
+      cameraEncoder?.requestKeyframe()
       participants.insert(user)
       updatePhase()
     case .participantLeft(let user):
@@ -413,7 +441,119 @@ final class VoiceConnectionStore: DiscordDataStore {
     case .video(let user, let isOn):
       // A camera that comes back starts with a fresh picture.
       if !isOn { feeds[.init(userID: user, kind: .camera)]?.reset() }
+    case .videoKeyframeRequested:
+      cameraEncoder?.requestKeyframe()
     }
+  }
+
+  // MARK: Our camera and screen
+
+  func toggleCamera() {
+    if isCameraOn {
+      stopCamera(tellDiscord: true)
+      return
+    }
+    guard call != nil, !isSuppressed else { return }
+    Task {
+      guard await AVCaptureDevice.requestAccess(for: .video) else {
+        cameraDenied = true
+        return
+      }
+      cameraDenied = false
+      await startCamera()
+    }
+  }
+
+  /// Camera → encoder → the call's connection. Frames go through one
+  /// stream so they are sent in the order they were encoded.
+  private func startCamera() async {
+    guard call != nil, !isCameraOn else { return }
+    let (frames, continuation) = AsyncStream.makeStream(
+      of: EncodedVideoFrame.self, bufferingPolicy: .bufferingNewest(30))
+    let encoder = VideoEncoder(settings: .camera) { continuation.yield($0) }
+    guard await camera.start({ pixels, time in encoder.encode(pixels, at: time) }),
+      call != nil
+    else {
+      camera.stop()
+      cameraDenied = true
+      return
+    }
+    cameraEncoder = encoder
+    cameraTask = Task { [weak self] in
+      for await frame in frames { await self?.manager?.sendVideo(frame) }
+    }
+    isCameraOn = true
+    logger.info("Camera on")
+    sendVoiceState()
+    Task { [manager] in await manager?.setVideoSending(Self.cameraVideo) }
+  }
+
+  private func stopCamera(tellDiscord: Bool) {
+    guard isCameraOn else { return }
+    camera.stop()
+    cameraTask?.cancel()
+    cameraTask = nil
+    cameraEncoder = nil
+    isCameraOn = false
+    logger.info("Camera off")
+    guard tellDiscord else { return }
+    sendVoiceState()
+    Task { [manager] in await manager?.setVideoSending(nil) }
+  }
+
+  #if os(macOS)
+    /// Picks a screen or a window and shares it as a Go Live, or stops.
+    func toggleScreenShare() {
+      if isSharingScreen {
+        stopScreenShare(tellDiscord: true)
+        return
+      }
+      guard let call, phase == .connected, !isSuppressed,
+        let me = gateway?.user.currentUser?.id, let gateway = gateway?.gateway
+      else { return }
+      let (frames, continuation) = AsyncStream.makeStream(
+        of: EncodedVideoFrame.self, bufferingPolicy: .bufferingNewest(30))
+      let encoder = VideoEncoder(settings: .screen) { continuation.yield($0) }
+      let screen = ScreenCapture()
+      self.screen = screen
+      screen.onEnded = { [weak self] in self?.stopScreenShare(tellDiscord: true) }
+      screen.pick(output: { pixels, time in encoder.encode(pixels, at: time) }) { [weak self] picked in
+        guard let self else { return }
+        guard picked, self.call?.channelID == call.channelID else {
+          screen.stop()
+          self.screen = nil
+          return
+        }
+        self.screenEncoder = encoder
+        self.screenTask = Task { [weak self] in
+          for await frame in frames { await self?.streams[me]?.manager?.sendVideo(frame) }
+        }
+        self.isSharingScreen = true
+        self.streams[me] = StreamWatch()
+        self.streamPhases[me] = .connecting
+        self.logger.info("Starting a Go Live")
+        Task { await gateway.createStream(guildID: call.guildID, channelID: call.channelID) }
+      }
+    }
+  #endif
+
+  private func stopScreenShare(tellDiscord: Bool) {
+    guard isSharingScreen, let me = gateway?.user.currentUser?.id else { return }
+    isSharingScreen = false
+    #if os(macOS)
+      screen?.stop()
+      screen = nil
+    #endif
+    screenTask?.cancel()
+    screenTask = nil
+    screenEncoder = nil
+    logger.info("Go Live ended")
+    if tellDiscord, let key = streamKey(of: me), let gateway = gateway?.gateway {
+      Task { await gateway.deleteStream(key: key) }
+    }
+    disconnectStream(me)
+    streams[me] = nil
+    streamPhases[me] = nil
   }
 
   // MARK: Video
@@ -497,6 +637,8 @@ final class VoiceConnectionStore: DiscordDataStore {
       endpoint: endpoint
     )
     connection.isStream = true
+    let isOurs = owner == userID
+    connection.isStreamOwner = isOurs
     // The stream's encrypted group is numbered one below its server ID.
     connection.daveGroupID = UInt64(serverID.rawValue).map { $0 &- 1 }
     let manager = VoiceGatewayManager(connectionData: connection)
@@ -505,9 +647,18 @@ final class VoiceConnectionStore: DiscordDataStore {
       Task { [weak self] in
         for await event in manager.events {
           guard let self, manager === self.streams[owner]?.manager else { return }
-          if case .stateChanged(.disconnected(let reason)) = event, reason != .requested {
+          switch event {
+          case .stateChanged(.disconnected(let reason)) where reason != .requested:
             self.logger.error("Stream connection ended: \(reason.description, privacy: .public)")
             self.endStream(owner, .ended("connection_lost"))
+          case .stateChanged(.connected) where isOurs:
+            self.streamPhases[owner] = .watching
+            self.screenEncoder?.requestKeyframe()
+          case .participantJoined, .videoKeyframeRequested:
+            // A viewer of our screen starts from a key frame.
+            if isOurs { self.screenEncoder?.requestKeyframe() }
+          default:
+            break
           }
         }
       },
@@ -520,11 +671,12 @@ final class VoiceConnectionStore: DiscordDataStore {
         }
       },
     ]
-    // The stream's sound, next to the call's.
-    audio.addPlayback(owner.rawValue, manager.playback)
+    // The stream's sound, in stereo, next to the call's.
+    if !isOurs { audio.addPlayback(owner.rawValue, manager.playback, channels: 2) }
     let receiving = !isDeafened
     Task {
       await manager.setReceiving(receiving)
+      if isOurs { await manager.setVideoSending(Self.screenVideo) }
       await manager.connect()
     }
   }
@@ -540,6 +692,11 @@ final class VoiceConnectionStore: DiscordDataStore {
 
   /// `phase` stays on screen as the reason; `nil` when we stopped watching.
   private func endStream(_ owner: UserSnowflake, _ phase: StreamPhase?) {
+    if isSharingScreen, owner == gateway?.user.currentUser?.id {
+      // Discord ended our Go Live, or the call is over.
+      stopScreenShare(tellDiscord: false)
+      return
+    }
     disconnectStream(owner)
     feeds[.init(userID: owner, kind: .stream)]?.reset()
     streams[owner]?.info = nil
@@ -723,7 +880,7 @@ final class VoiceConnectionStore: DiscordDataStore {
       channel_id: call?.channelID,
       self_mute: isMuted || isDeafened,
       self_deaf: isDeafened,
-      self_video: false
+      self_video: call != nil && isCameraOn
     )
     Task { [gateway] in await gateway?.gateway?.updateVoiceState(payload: payload) }
   }

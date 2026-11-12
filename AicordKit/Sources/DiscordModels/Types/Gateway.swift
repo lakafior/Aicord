@@ -282,6 +282,8 @@ public struct Gateway: Sendable, Codable {
       case streamDelete(StreamDelete)
       /// Opcodes 19 and 20: stop watching, or watch, someone's Go Live.
       case requestStream(StreamRequest)
+      /// Opcode 18: start a Go Live of our own.
+      case requestStreamCreate(StreamCreateRequest)
 
       //			case speedTestCreate() // TODO
       //			case speedTestServerUpdate() // TODO
@@ -723,6 +725,8 @@ public struct Gateway: Sendable, Codable {
       case .updateGuildSubscriptions(let payload):
         try container.encode(payload, forKey: .data)
       case .requestStream(let payload):
+        try container.encode(payload, forKey: .data)
+      case .requestStreamCreate(let payload):
         try container.encode(payload, forKey: .data)
       case .updateTimeSpentSessionId(let payload):
         try container.encode(payload, forKey: .data)

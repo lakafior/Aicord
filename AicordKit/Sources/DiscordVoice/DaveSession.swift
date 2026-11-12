@@ -348,11 +348,17 @@ package final class DaveSession: @unchecked Sendable {
   }
 
   package func encrypt(ssrc: UInt32, opus frame: Data) throws(MediaError) -> Data {
+    try encrypt(ssrc: ssrc, frame: frame, video: false)
+  }
+
+  /// `video` frames are whole encoded frames in Annex B; the SSRC must have
+  /// been given its codec with `assignVideo`.
+  package func encrypt(ssrc: UInt32, frame: Data, video: Bool) throws(MediaError) -> Data {
     if protocolVersion == 0 { return frame }
     guard isMediaReady else { throw .notReady }
     let capacity = daveEncryptorGetMaxCiphertextByteSize(
       encryptor,
-      .audio,
+      video ? .video : .audio,
       frame.count
     )
     var output = Data(count: max(capacity, frame.count + 64))
@@ -361,7 +367,7 @@ package final class DaveSession: @unchecked Sendable {
       frame.withUnsafeBytes { input in
         daveEncryptorEncrypt(
           encryptor,
-          .audio,
+          video ? .video : .audio,
           ssrc,
           input.bindMemory(to: UInt8.self).baseAddress,
           input.count,
@@ -414,6 +420,11 @@ package final class DaveSession: @unchecked Sendable {
 
   func assign(ssrc: UInt32) {
     daveEncryptorAssignSsrcToCodec(encryptor, ssrc, .opus)
+  }
+
+  /// Our own video goes out as H.264.
+  func assignVideo(ssrc: UInt32) {
+    daveEncryptorAssignSsrcToCodec(encryptor, ssrc, .h264)
   }
 
   // MARK: Private

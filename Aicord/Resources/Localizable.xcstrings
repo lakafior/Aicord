@@ -54,6 +54,16 @@
         }
       }
     },
+    "Camera access is off. Allow it in System Settings to turn your camera on." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dostęp do kamery jest wyłączony. Zezwól na niego w Ustawieniach systemowych, żeby włączyć kamerę."
+          }
+        }
+      }
+    },
     "Full Screen" : {
       "localizations" : {
         "pl" : {
@@ -70,6 +80,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Na żywo"
+          }
+        }
+      }
+    },
+    "Share Your Screen" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udostępnij ekran"
+          }
+        }
+      }
+    },
+    "Stop Sharing" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończ udostępnianie"
           }
         }
       }
@@ -114,6 +144,26 @@
         }
       }
     },
+    "Turn Off Camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyłącz kamerę"
+          }
+        }
+      }
+    },
+    "Turn On Camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz kamerę"
+          }
+        }
+      }
+    },
     "Waiting for video…" : {
       "localizations" : {
         "pl" : {
@@ -124,12 +174,32 @@
         }
       }
     },
+    "Watch Stream" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oglądaj transmisję"
+          }
+        }
+      }
+    },
     "You can't watch this stream." : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nie możesz oglądać tej transmisji."
+          }
+        }
+      }
+    },
+    "Your camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoja kamera"
           }
         }
       }

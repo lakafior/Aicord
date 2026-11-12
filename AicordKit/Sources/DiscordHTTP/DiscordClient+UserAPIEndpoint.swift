@@ -340,6 +340,17 @@ extension DiscordClient {
     return try await self.send(request: .init(to: endpoint))
   }
 
+  /// A recent picture of a Go Live, for showing before watching it. The
+  /// link is short-lived.
+  /// https://docs.discord.food/resources/stream#get-stream-preview
+  @inlinable
+  public func getStreamPreview(streamKey: String) async throws
+    -> DiscordClientResponse<StreamPreview>
+  {
+    let endpoint = UserAPIEndpoint.getStreamPreview(streamKey: streamKey)
+    return try await self.send(request: .init(to: endpoint))
+  }
+
   /// Modifies the active call in the private channel. Returns a 204 empty response on success. Fires a Call Update Gateway event.
   /// https://docs.discord.food/resources/channel#modify-call
   @inlinable

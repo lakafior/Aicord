@@ -161,7 +161,7 @@ struct VideoPanel: View {
   }
 
   var body: some View {
-    if isHere, !sources.isEmpty {
+    if isHere, !sources.isEmpty || voice.isCameraOn {
       VStack(alignment: .leading, spacing: 8) {
         if watched.count == 1, let source = watched.first, let feed = feeds[source] {
           picture(source, feed)
@@ -178,8 +178,20 @@ struct VideoPanel: View {
         }
         ScrollView(.horizontal) {
           HStack(spacing: 6) {
+            if voice.isCameraOn {
+              // What the others see of us.
+              CameraPreview(session: voice.camera.session)
+                .frame(width: 96, height: 54)
+                .clipShape(.rect(cornerRadius: 8))
+                .accessibilityLabel(Text("Your camera"))
+            }
             ForEach(sources) { source in
-              chip(source)
+              if source.kind == .stream, !watched.contains(source), let key = streamKey(source) {
+                StreamPreviewCard(key: key, name: name(source.userID)) { start(source) }
+                  .accessibilityLabel(Text(label(source)))
+              } else {
+                chip(source)
+              }
             }
           }
         }
@@ -347,6 +359,13 @@ struct VideoPanel: View {
     expanded = nil
   }
 
+  func streamKey(_ source: Source) -> String? {
+    voice.call.map {
+      Gateway.StreamKey(guildID: $0.guildID, channelID: $0.channelID, ownerID: source.userID)
+        .rawValue
+    }
+  }
+
   func label(_ source: Source) -> LocalizedStringResource {
     switch source.kind {
     case .stream: "\(name(source.userID))’s stream"
@@ -375,6 +394,66 @@ struct VideoPanel: View {
     }
     let user = vm.channel?.recipients?.first { $0.id == userID }
     return user?.global_name ?? user?.username ?? userID.rawValue
+  }
+}
+
+/// A Go Live nobody here is watching yet: Discord's latest still of it,
+/// refreshed while it is on screen. Tapping it starts watching.
+private struct StreamPreviewCard: View {
+  @Environment(\.gateway) var gw
+  let key: String
+  let name: String
+  let watch: () -> Void
+  @State private var url: URL?
+
+  var body: some View {
+    Button(action: watch) {
+      ZStack(alignment: .bottomLeading) {
+        Color.black
+        if let url {
+          AsyncImage(url: url) { image in
+            image.resizable().scaledToFill()
+          } placeholder: {
+            Color.clear
+          }
+        } else {
+          Image(systemName: "display")
+            .font(.title3)
+            .foregroundStyle(.white.opacity(0.6))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        HStack(spacing: 4) {
+          Text("Live")
+            .font(.caption2.bold())
+            .padding(.horizontal, 4)
+            .padding(.vertical, 1)
+            .background(.red, in: .capsule)
+          Text(name)
+            .font(.caption)
+            .lineLimit(1)
+        }
+        .foregroundStyle(.white)
+        .padding(4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.black.opacity(0.45))
+      }
+      .frame(width: 144, height: 81)
+      .clipShape(.rect(cornerRadius: 8))
+      .contentShape(.rect)
+    }
+    .buttonStyle(.plain)
+    .help(Text("Watch Stream"))
+    .task(id: key) {
+      // The link is short-lived, and the still is renewed about once a minute.
+      while !Task.isCancelled {
+        if let preview = try? await gw.client.getStreamPreview(streamKey: key).decode(),
+          let fresh = URL(string: preview.url)
+        {
+          url = fresh
+        }
+        try? await Task.sleep(for: .seconds(60))
+      }
+    }
   }
 }
 

@@ -85,18 +85,28 @@ final class VoiceAudioEngine: @unchecked Sendable {
   }
 
   /// Plays another stream of 20 ms frames while the engine runs, mixed with
-  /// the call. Ends with `removePlayback` or when the engine stops.
-  func addPlayback(_ id: String, _ stream: AsyncStream<[Float]>) {
+  /// the call: mono, or interleaved stereo with `channels: 2`. Ends with
+  /// `removePlayback` or when the engine stops.
+  func addPlayback(_ id: String, _ stream: AsyncStream<[Float]>, channels: Int = 1) {
     queue.async { [self] in
       removePlaybackOnQueue(id)
-      guard isRunning else { return }
+      guard isRunning,
+        let format = AVAudioFormat(
+          commonFormat: .pcmFormatFloat32,
+          sampleRate: Double(VoiceAudioFormat.sampleRate),
+          channels: AVAudioChannelCount(channels),
+          interleaved: false
+        )
+      else { return }
       nonisolated(unsafe) let node = AVAudioPlayerNode()
       engine.attach(node)
       engine.connect(node, to: engine.mainMixerNode, format: format)
       node.play()
       let pending = OSAllocatedUnfairLock(initialState: 0)
       let task = Task.detached(priority: .userInitiated) { [weak self] in
-        for await frame in stream { self?.schedule(frame, on: node, pending: pending) }
+        for await frame in stream {
+          self?.schedule(frame, on: node, pending: pending, format: format)
+        }
       }
       extras[id] = ExtraPlayback(node: node, task: task)
     }
@@ -329,23 +339,33 @@ final class VoiceAudioEngine: @unchecked Sendable {
   // MARK: Playback
 
   private func play(_ samples: [Float]) {
-    schedule(samples, on: player, pending: scheduled)
+    schedule(samples, on: player, pending: scheduled, format: format)
   }
 
+  /// `samples` hold one frame, interleaved when `format` has two channels.
   private func schedule(
-    _ samples: [Float], on node: AVAudioPlayerNode, pending: OSAllocatedUnfairLock<Int>
+    _ samples: [Float], on node: AVAudioPlayerNode, pending: OSAllocatedUnfairLock<Int>,
+    format: AVAudioFormat
   ) {
+    let channels = Int(format.channelCount)
+    let count = samples.count / channels
     // Keep at most ~120 ms queued; drop rather than drift behind.
-    guard pending.withLock({ $0 }) < 6,
+    guard pending.withLock({ $0 }) < 6, count > 0,
       let buffer = AVAudioPCMBuffer(
         pcmFormat: format,
-        frameCapacity: AVAudioFrameCount(samples.count)
+        frameCapacity: AVAudioFrameCount(count)
       ),
-      let channel = buffer.floatChannelData?[0]
+      let data = buffer.floatChannelData
     else { return }
-    buffer.frameLength = AVAudioFrameCount(samples.count)
-    samples.withUnsafeBufferPointer {
-      channel.update(from: $0.baseAddress!, count: samples.count)
+    buffer.frameLength = AVAudioFrameCount(count)
+    if channels == 1 {
+      samples.withUnsafeBufferPointer {
+        data[0].update(from: $0.baseAddress!, count: count)
+      }
+    } else {
+      for channel in 0..<channels {
+        for index in 0..<count { data[channel][index] = samples[index * channels + channel] }
+      }
     }
     pending.withLock { $0 += 1 }
     node.scheduleBuffer(buffer) {

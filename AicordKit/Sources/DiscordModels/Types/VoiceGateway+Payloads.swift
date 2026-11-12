@@ -259,21 +259,20 @@ extension VoiceGateway {
       decode: true
     )
 
-    /// H.264 for a client that only watches. Payload type 96 is reserved
-    /// for probe packets.
-    public static let h264ReceiveCodec = Codec(
+    /// H.264, the codec we send and one of the two we receive. Payload
+    /// type 96 is reserved for probe packets.
+    public static let h264VideoCodec = Codec(
       name: .h264,
       type: "video",
       priority: 2000,
       payload_type: 103,
       rtx_payload_type: 104,
-      encode: false,
+      encode: true,
       decode: true
     )
 
-    /// H.265 for a client that only watches; preferred over H.264 (the
-    /// lower priority wins).
-    public static let h265ReceiveCodec = Codec(
+    /// H.265, received only; preferred over H.264 (the lower priority wins).
+    public static let h265VideoCodec = Codec(
       name: .h265,
       type: "video",
       priority: 1000,

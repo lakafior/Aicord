@@ -6,7 +6,10 @@ Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc
 
 ### Voice
 
-- **New** · Other people's cameras and Go Live streams, in server voice channels and in DM calls: while you're connected, the chat lists who has video on, and picking people plays them above the messages, several side by side, or one full screen (in a window of its own on the Mac). A stream comes with its sound. Video is only received for what you're watching. Not yet tested against a live call; your own camera is still to come
+- **New** · Other people's cameras and Go Live streams, in server voice channels and in DM calls: while you're connected, the chat lists who has video on, and picking people plays them above the messages, several side by side, or one full screen (in a window of its own on the Mac). A stream comes with its sound. Video is only received for what you're watching. Go Lives nobody is watching yet show Discord's latest still of them
+- **New** · Your own camera in voice channels and calls, from the call bar on iPhone, iPad and Mac, with a small picture of what the others see
+- **New** · Share your screen from the Mac: the call bar's button opens the system's picker for a display, a window or an app and shares it as a Go Live
+- Video is new and has not been tested against a live call yet: if a picture doesn't come up, sound and everything else in the call keep working
 
 ## 0.1.7 (November 2026)
 
@@ -639,6 +642,11 @@ Napisane i sprawdzone testami pakietu (RTP → ramki H.264 → dekoder systemowy
    - [x] Dźwięk streamu: `VoiceAudioEngine.addPlayback` dokłada do miksera osobny odtwarzacz na każdy oglądany stream; ogłuszenie obejmuje także streamy.
    - [x] Kilka obrazów naraz (siatka, kilka streamów równocześnie, każdy na własnym połączeniu) i pełny ekran: `fullScreenCover` na iOS, osobne okno otwierane w trybie pełnoekranowym na Macu.
    - [x] Rozmowy DM: `VoiceConnectionStore.callVoiceStates` trzyma stany voice z `CALL_CREATE`, `CALL_UPDATE` i `VOICE_STATE_UPDATE` bez serwera, więc panel wideo działa też w DM i grupach.
+   - [x] Nadawanie: `VideoEncoder` (H.264 z VideoToolbox, czas rzeczywisty, bez klatek B, klatka kluczowa co 4 s i na żądanie), `VideoPacketizer` (pojedyncze NAL i FU-A do 1100 bajtów), DAVE dla całej ramki, rozszerzenie nagłówka RTP jak w klientach Discorda, Sender Report co 5 s. W Identify jedna warstwa (`rid` 100), SSRC wideo z Ready (albo `ssrc + 1`), własny Video (op 12) z rozmiarem i bitrate. PLI/FIR od serwera i Media Sink Wants z zerem dla naszego SSRC (nikt nie ogląda: nie wysyłamy) są obsłużone; test puszcza własne ramki przez pakiety i szyfr z powrotem do odbiornika.
+   - [x] Własna kamera (`CameraCapture`, 720p/30, 1,5 Mb/s): przycisk w pasku rozmowy, `self_video` w stanie voice, podgląd własnego obrazu w panelu wideo.
+   - [x] Udostępnianie ekranu na Macu (`ScreenCapture`: systemowy `SCContentSharingPicker`, do 1080p/30, 3,5 Mb/s): Create Stream (op 18), własne połączenie streamu jako nadawca (`isStreamOwner`), Delete Stream (op 19) przy końcu; obraz, który się nie zmienia, idzie ponownie co sekundę, żeby dołączający dostał klatkę. Bez dźwięku systemu.
+   - [x] Dźwięk oglądanego streamu w stereo (dekoder Opus z dwoma kanałami na połączeniu streamu, osobny format odtwarzacza).
+   - [x] Podgląd streamu przed wejściem: `GET /streams/{key}/preview`, miniatura odświeżana co minutę zamiast zwykłego przycisku.
    - Nie zrobione: AV1. libdave szyfruje ramkę AV1 w układzie, który trzeba odtworzyć co do bajtu (OBU bez pola rozmiaru w ostatnim), do tego opis formatu wymaga parsowania nagłówka sekwencji, sprzętowy dekoder mają tylko nowsze układy, a system nie ma kodera AV1, którym dałoby się to przetestować. Ogłoszenie AV1 bez testu zepsułoby obraz od nadawców, którzy dziś schodzą do działającego H.265/H.264.
 
 ### 🧪 Etap 14: Reszta do Discorda 1:1 — punkt 3 (1.11)

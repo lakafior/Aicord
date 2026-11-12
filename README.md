@@ -87,7 +87,7 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 
 <p align="center"><sub>Screenshots use made-up demo data (see <a href=".github/CONTRIBUTING.md#demo-mode">demo mode</a>).</sub></p>
 
-- **Voice and calls** — server voice channels and DM or group calls, end-to-end encrypted with DAVE, with push-to-talk and device choice; Stage channels to listen in, raise a hand and speak
+- **Voice and calls** — server voice channels and DM or group calls, end-to-end encrypted with DAVE, with push-to-talk and device choice; cameras, Go Live and screen sharing from the Mac; Stage channels to listen in, raise a hand and speak
 - **Nearly all of Discord's settings** — privacy, content filters, devices, connections, appearance, chat and notifications, saved to your account so the official apps see them too
 - **One search for everything** — servers, channels, people and messages, with date and regex filters, opening a result right at the message
 - **Intelligence, read-only and on device by default** — translate messages, summarize channels and catch up on servers, ask a channel or explain what a message refers to, with links back to the messages; an OpenAI-compatible API is optional

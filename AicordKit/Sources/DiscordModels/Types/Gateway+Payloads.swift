@@ -1471,6 +1471,35 @@ extension Gateway {
     }
   }
 
+  /// https://docs.discord.food/topics/gateway-events#create-stream
+  public struct StreamCreateRequest: Sendable, Encodable {
+    /// `guild` or `call`.
+    public var type: String
+    public var guild_id: GuildSnowflake?
+    public var channel_id: ChannelSnowflake
+    public var preferred_region: String?
+
+    public init(guildID: GuildSnowflake?, channelID: ChannelSnowflake) {
+      self.type = guildID == nil ? "call" : "guild"
+      self.guild_id = guildID
+      self.channel_id = channelID
+      self.preferred_region = nil
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encode(type, forKey: .type)
+      // Sent as an explicit null for a call.
+      try container.encode(guild_id, forKey: .guild_id)
+      try container.encode(channel_id, forKey: .channel_id)
+      try container.encode(preferred_region, forKey: .preferred_region)
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case type, guild_id, channel_id, preferred_region
+    }
+  }
+
   /// https://docs.discord.food/topics/gateway-events#stream-key
   public struct StreamKey: Sendable, Hashable {
     /// `nil` for a call in a DM or group DM.

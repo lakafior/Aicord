@@ -32,6 +32,8 @@ public actor VoiceGatewayManager {
     /// and `channelID` are the stream's `rtc_server_id` and `rtc_channel_id`.
     /// A viewer sends no media on it and wants all of its video.
     public var isStream = false
+    /// The stream is ours: this connection sends its picture.
+    public var isStreamOwner = false
     /// The DAVE group, when it is not the channel ID (streams).
     public var daveGroupID: UInt64?
 
@@ -115,6 +117,8 @@ public actor VoiceGatewayManager {
     /// Somebody's camera (or, on a stream connection, the stream's picture)
     /// went on or off.
     case video(UserSnowflake, Bool)
+    /// A viewer needs a key frame of the video we send.
+    case videoKeyframeRequested
   }
 
   // MARK: Limits
@@ -142,8 +146,8 @@ public actor VoiceGatewayManager {
 
   public nonisolated let events: AsyncStream<Event>
   private let eventContinuation: AsyncStream<Event>.Continuation
-  /// Mixed received audio: 20 ms mono frames at 48 kHz, only while somebody
-  /// is audible.
+  /// Mixed received audio: 20 ms frames at 48 kHz, only while somebody is
+  /// audible. Mono, or interleaved stereo on a stream connection.
   public nonisolated let playback: AsyncStream<[Float]>
   private let playbackContinuation: AsyncStream<[Float]>.Continuation
   /// Received video of the users asked for with `setVideoWanted` (everyone
@@ -212,6 +216,24 @@ public actor VoiceGatewayManager {
   private var userVolumes: [UserSnowflake: Float] = [:]
   private var isReceiving = true
 
+  // Sending video
+  private var videoSSRC: UInt32 = 0
+  private var videoRTXSSRC: UInt32 = 0
+  /// What we announced with our Video payload; `nil` while we send none.
+  private var outgoingVideo: (width: Int, height: Int, framerate: Int, bitrate: Int)?
+  /// The codec the server picked for sending is one we encode.
+  private var canSendVideo = true
+  /// The server says nobody takes our video right now.
+  private var videoUnwanted = false
+  private var videoSequence = UInt16.random(in: .min ... .max)
+  private var videoPackets: UInt32 = 0
+  private var videoOctets: UInt32 = 0
+  private var lastVideoTimestamp: UInt32 = 0
+  private var lastSenderReport: ContinuousClock.Instant?
+  private var lastKeyframeEvent: ContinuousClock.Instant?
+  /// A stream's sound is stereo, voices are mono.
+  private let channels: Int
+
   // Receiving video
   /// The layer we take from each user with video on (the best active one).
   private var videoSources: [UserSnowflake: UInt32] = [:]
@@ -225,7 +247,7 @@ public actor VoiceGatewayManager {
   /// H.265 only where the device decodes it in hardware.
   private let videoCodecs: [VoiceGateway.Codec] =
     VTIsHardwareDecodeSupported(kCMVideoCodecType_HEVC)
-    ? [.h265ReceiveCodec, .h264ReceiveCodec] : [.h264ReceiveCodec]
+    ? [.h265VideoCodec, .h264VideoCodec] : [.h264VideoCodec]
   private var wantedVideo: Set<UserSnowflake> = []
   private var lastKeyframeRequest: [UInt32: ContinuousClock.Instant] = [:]
 
@@ -246,6 +268,7 @@ public actor VoiceGatewayManager {
       logger: logger
     )
     self.encoder = try? OpusEncoder()
+    self.channels = connectionData.isStream ? 2 : 1
     (events, eventContinuation) = AsyncStream.makeStream(
       bufferingPolicy: .bufferingNewest(256)
     )
@@ -396,8 +419,11 @@ public actor VoiceGatewayManager {
               user_id: data.userID,
               session_id: data.sessionID,
               token: data.token,
-              // We only watch, but without this no video is announced.
               video: true,
+              // The one layer we may send; a stream's viewer sends nothing.
+              streams: data.isStream && !data.isStreamOwner
+                ? nil
+                : [.init(type: data.isStream ? .screen : .video, rid: "100", quality: 100)],
               max_dave_protocol_version: Int(DaveSession.maxSupportedProtocolVersion)
             )
           )
@@ -505,6 +531,12 @@ public actor VoiceGatewayManager {
         }
       case .video(let video):
         handleVideo(video)
+      case .mediaSinkWants(let wants):
+        // To a sender: whether anybody takes our video.
+        guard let quality = wants.ssrcs["\(videoSSRC)"] else { break }
+        let unwanted = quality == 0
+        if videoUnwanted, !unwanted { requestOwnKeyframe() }
+        videoUnwanted = unwanted
       case .clientsConnect(let connect):
         logger.info("Participants joined", metadata: ["count": "\(connect.user_ids.count)"])
         try dave.addParticipants(connect.user_ids)
@@ -716,6 +748,15 @@ public actor VoiceGatewayManager {
     ssrc = ready.ssrc
     offeredModes = ready.modes
     dave.assign(ssrc: ssrc)
+    if let stream = ready.streams?.first(where: { $0.ssrc != nil }), let video = stream.ssrc {
+      videoSSRC = video
+      videoRTXSSRC = stream.rtx_ssrc ?? video &+ 1
+    } else {
+      // What the voice server gives a client that offered no streams.
+      videoSSRC = ssrc &+ 1
+      videoRTXSSRC = ssrc &+ 2
+    }
+    dave.assignVideo(ssrc: videoSSRC)
     state = .discovering
     deadline = (.now + Self.discoveryTimeout, "UDP discovery timed out")
     guard let port = UInt16(exactly: ready.port) else {
@@ -792,9 +833,12 @@ public actor VoiceGatewayManager {
     try sendDave(dave.selectProtocol(version: version))
     deadline = nil
     updateEncryptionState(participantsChanged: true)
-    // Video can only be received after a Video payload of our own; ours
-    // says we send none.
-    send(.init(opcode: .video, data: .video(.none(audioSSRC: ssrc))))
+    if let codec = description.video_codec {
+      if case .h264 = codec { canSendVideo = true } else { canSendVideo = false }
+    }
+    // Video can only be received after a Video payload of our own, even
+    // one that says we send none.
+    sendVideoState()
     if !videoSources.isEmpty { sendMediaSinkWants() }
     startTicking()
     if data.isStream {
@@ -878,14 +922,18 @@ public actor VoiceGatewayManager {
   }
 
   private func receive(_ datagram: Data) {
-    guard let cipher, !RTPPacket.isRTCP(datagram),
+    if RTPPacket.isRTCP(datagram) {
+      receiveRTCP(datagram)
+      return
+    }
+    guard let cipher,
       let packet = try? cipher.open(datagram),
       packet.ssrc != ssrc
     else { return }
     let type = Int(packet.payloadType.rawValue)
     for (codec, video) in [
-      (VoiceGateway.Codec.h264ReceiveCodec, VideoCodec.h264),
-      (VoiceGateway.Codec.h265ReceiveCodec, VideoCodec.h265),
+      (VoiceGateway.Codec.h264VideoCodec, VideoCodec.h264),
+      (VoiceGateway.Codec.h265VideoCodec, VideoCodec.h265),
     ] {
       if type == codec.payload_type {
         receiveVideo(packet, codec: video)
@@ -903,7 +951,7 @@ public actor VoiceGatewayManager {
     guard let opus = try? dave.decrypt(userID: userID, frame: packet.payload),
       !opus.isEmpty
     else { return }
-    var speaker = speakers[packet.ssrc] ?? Speaker(decoder: try? OpusDecoder())
+    var speaker = speakers[packet.ssrc] ?? Speaker(decoder: try? OpusDecoder(channels: channels))
     speaker.jitter.push(sequence: packet.sequence, opus: opus)
     if opus != VoiceAudioFormat.silenceFrame {
       speaker.lastAudible = .now
@@ -911,7 +959,138 @@ public actor VoiceGatewayManager {
     speakers[packet.ssrc] = speaker
   }
 
-  // MARK: Video
+  // MARK: Sending video
+
+  /// Announces that we send video of this size (or, with `nil`, none), on
+  /// the call's connection for a camera and on a stream's for a screen.
+  public func setVideoSending(
+    _ video: (width: Int, height: Int, framerate: Int, bitrate: Int)?
+  ) {
+    let wasOff = outgoingVideo == nil
+    outgoingVideo = video
+    if wasOff, video != nil {
+      videoPackets = 0
+      videoOctets = 0
+      lastSenderReport = nil
+    }
+    sendVideoState()
+  }
+
+  /// Opcode 12, ours.
+  private func sendVideoState() {
+    guard cipher != nil, isActive else { return }
+    guard let video = outgoingVideo else {
+      send(.init(opcode: .video, data: .video(.none(audioSSRC: ssrc))))
+      return
+    }
+    let layer = VoiceGateway.Stream(
+      type: .video,
+      rid: "100",
+      quality: 100,
+      active: true,
+      max_bitrate: video.bitrate,
+      max_framerate: video.framerate,
+      max_resolution: .init(type: .fixed, width: video.width, height: video.height),
+      ssrc: videoSSRC,
+      rtx_ssrc: videoRTXSSRC
+    )
+    send(
+      .init(
+        opcode: .video,
+        data: .video(
+          .init(
+            audio_ssrc: UInt(ssrc),
+            video_ssrc: UInt(videoSSRC),
+            rtx_ssrc: UInt(videoRTXSSRC),
+            streams: [layer]
+          )
+        )
+      )
+    )
+  }
+
+  /// One-byte RTP header extension as Discord's clients put on video
+  /// packets: profile 0xBEDE, one word, element 5 with two zero bytes.
+  package static let videoExtension = Data([0xBE, 0xDE, 0x00, 0x01, 0x51, 0x00, 0x00, 0x00])
+
+  /// Sends one encoded frame of our video. Dropped unless video was
+  /// announced with `setVideoSending` and media is ready.
+  public func sendVideo(_ frame: EncodedVideoFrame) {
+    guard state == .connected || state == .resuming, outgoingVideo != nil,
+      canSendVideo, !videoUnwanted, let cipher, let udp, dave.isMediaReady,
+      let encrypted = try? dave.encrypt(ssrc: videoSSRC, frame: frame.data, video: true)
+    else { return }
+    let payloads = VideoPacketizer.payloads(annexB: encrypted)
+    for (index, payload) in payloads.enumerated() {
+      guard nonceCounter < .max else {
+        finish(.sessionInvalid("transport nonce exhausted"))
+        return
+      }
+      nonceCounter += 1
+      let packet = RTPPacket(
+        extension: true,
+        payloadType: .dynamic(UInt8(VoiceGateway.Codec.h264VideoCodec.payload_type)),
+        sequence: videoSequence,
+        timestamp: frame.timestamp,
+        ssrc: videoSSRC,
+        payload: Self.videoExtension + payload,
+        marker: index == payloads.count - 1
+      )
+      videoSequence &+= 1
+      videoPackets &+= 1
+      videoOctets &+= UInt32(truncatingIfNeeded: payload.count)
+      if let datagram = try? cipher.seal(packet, nonce: nonceCounter) { udp.send(datagram) }
+    }
+    lastVideoTimestamp = frame.timestamp
+    sendSenderReportIfDue()
+  }
+
+  /// RTCP Sender Report (RFC 3550 §6.4.1) for our video, every 5 seconds:
+  /// receivers line the picture up with the sound by it.
+  private func sendSenderReportIfDue() {
+    let now = ContinuousClock.now
+    if let last = lastSenderReport, now - last < .seconds(5) { return }
+    lastSenderReport = now
+    let time = Date().timeIntervalSince1970 + 2_208_988_800
+    var packet = Data([0x80, 200, 0x00, 0x06])
+    RTPPacket.appendUInt32(&packet, videoSSRC)
+    RTPPacket.appendUInt32(&packet, UInt32(truncatingIfNeeded: UInt64(time)))
+    RTPPacket.appendUInt32(
+      &packet, UInt32(truncatingIfNeeded: UInt64((time - time.rounded(.down)) * 4_294_967_296)))
+    RTPPacket.appendUInt32(&packet, lastVideoTimestamp)
+    RTPPacket.appendUInt32(&packet, videoPackets)
+    RTPPacket.appendUInt32(&packet, videoOctets)
+    sendRTCP(packet)
+  }
+
+  /// Feedback about what we send: a Picture Loss Indication or Full Intra
+  /// Request (payload-specific feedback, formats 1 and 4) asks for a key
+  /// frame.
+  private func receiveRTCP(_ datagram: Data) {
+    guard outgoingVideo != nil, let cipher,
+      let plain = try? cipher.openRTCP(datagram)
+    else { return }
+    let bytes = [UInt8](plain)
+    var offset = 0
+    // A datagram may hold several RTCP packets, each with its length.
+    while offset + 4 <= bytes.count {
+      let format = bytes[offset] & 0x1F
+      if bytes[offset + 1] == 206, format == 1 || format == 4 {
+        requestOwnKeyframe()
+        return
+      }
+      offset += (Int(bytes[offset + 2]) << 8 | Int(bytes[offset + 3]) + 1) * 4
+    }
+  }
+
+  private func requestOwnKeyframe() {
+    let now = ContinuousClock.now
+    if let last = lastKeyframeEvent, now - last < .milliseconds(500) { return }
+    lastKeyframeEvent = now
+    eventContinuation.yield(.videoKeyframeRequested)
+  }
+
+  // MARK: Receiving video
 
   /// Opcode 12: a user's video went on, off, or changed its layers.
   private func handleVideo(_ video: VoiceGateway.Video) {
@@ -1086,13 +1265,14 @@ public actor VoiceGatewayManager {
   /// Runs every 20 ms: playout, mixing, speaking state and the silence tail.
   private func tick() {
     let now = ContinuousClock.now
-    var mix = [Float](repeating: 0, count: VoiceAudioFormat.frameSamples)
+    let frameSamples = VoiceAudioFormat.frameSamples * channels
+    var mix = [Float](repeating: 0, count: frameSamples)
     var audible = false
     for (ssrc, var speaker) in speakers {
       if isReceiving, let decoder = speaker.decoder {
         // Short packets: decode until one 20 ms frame is filled (at most 8).
         var decodes = 0
-        while speaker.pending.count < VoiceAudioFormat.frameSamples, decodes < 8 {
+        while speaker.pending.count < frameSamples, decodes < 8 {
           decodes += 1
           switch speaker.jitter.pop() {
           case .packet(let opus):
@@ -1104,13 +1284,14 @@ public actor VoiceGatewayManager {
           }
         }
         if !speaker.pending.isEmpty {
-          let count = min(speaker.pending.count, VoiceAudioFormat.frameSamples)
+          let count = min(speaker.pending.count, frameSamples)
           let gain = ssrcToUser[ssrc].flatMap { userVolumes[$0] } ?? 1
           for i in 0..<count { mix[i] += speaker.pending[i] * gain }
           speaker.pending.removeFirst(count)
           // Bound per-speaker leftovers to 120 ms.
-          if speaker.pending.count > VoiceAudioFormat.maxFrameSamples {
-            speaker.pending.removeFirst(speaker.pending.count - VoiceAudioFormat.maxFrameSamples)
+          let most = VoiceAudioFormat.maxFrameSamples * channels
+          if speaker.pending.count > most {
+            speaker.pending.removeFirst(speaker.pending.count - most)
           }
           audible = true
         }
