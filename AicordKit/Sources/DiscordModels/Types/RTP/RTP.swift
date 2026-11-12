@@ -100,7 +100,7 @@ public struct RTPPacket: Sendable, Equatable {
       | UInt32(bytes[i + 2]) << 8 | UInt32(bytes[i + 3])
   }
 
-  static func appendUInt32(_ data: inout Data, _ value: UInt32) {
+  public static func appendUInt32(_ data: inout Data, _ value: UInt32) {
     data.append(contentsOf: [
       UInt8(value >> 24), UInt8((value >> 16) & 0xFF),
       UInt8((value >> 8) & 0xFF), UInt8(value & 0xFF),

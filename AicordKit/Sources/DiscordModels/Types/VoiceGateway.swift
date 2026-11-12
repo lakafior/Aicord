@@ -262,7 +262,7 @@ public struct VoiceGateway: Sendable, Codable {
 
       switch self.opcode {
       case .ready, .sessionDescription, .heartbeatAck, .hello, .resumed,
-        .clientsConnect, .video, .clientDisconnect:
+        .clientsConnect, .clientDisconnect:
         throw EncodingError.notSupposedToBeSent(
           message:
             "`\(self.opcode.rawValue)` opcode is supposed to never be sent."
@@ -294,6 +294,8 @@ public struct VoiceGateway: Sendable, Codable {
       case .sessionUpdate(let payload):
         try container.encode(payload, forKey: .data)
       case .mediaSinkWants(let payload):
+        try container.encode(payload, forKey: .data)
+      case .video(let payload):
         try container.encode(payload, forKey: .data)
       case .voiceBackendVersion(let payload):
         try container.encode(payload, forKey: .data)

@@ -107,6 +107,41 @@ public struct TransportCipher: Sendable {
     return aad + ciphertext + tag + suffix
   }
 
+  /// Encrypts an RTCP packet: its first 8 bytes (header and sender SSRC)
+  /// stay in the clear as associated data, the rest is encrypted.
+  public func sealRTCP(_ packet: Data, nonce counter: UInt32) throws(Error) -> Data {
+    guard packet.count >= 8 else { throw .truncatedPacket }
+    let aad = Data(packet.prefix(8))
+    let body = Data(packet.dropFirst(8))
+    let suffix = Self.counterBytes(counter)
+    do {
+      switch mode {
+      case .aes256GCM:
+        let box = try AES.GCM.seal(
+          body,
+          using: key,
+          nonce: AES.GCM.Nonce(data: suffix + Data(count: 8)),
+          authenticating: aad
+        )
+        return aad + box.ciphertext + box.tag + suffix
+      case .xchacha20Poly1305:
+        let (subkey, nonce) = Self.xchachaParameters(
+          key: key,
+          nonce24: suffix + Data(count: 20)
+        )
+        let box = try ChaChaPoly.seal(
+          body,
+          using: subkey,
+          nonce: nonce,
+          authenticating: aad
+        )
+        return aad + box.ciphertext + box.tag + suffix
+      }
+    } catch {
+      throw .authenticationFailed
+    }
+  }
+
   /// Decrypts a received datagram. The returned packet's payload is the
   /// decrypted Opus frame with the header extension body (if any) removed.
   public func open(_ datagram: Data) throws(Error) -> RTPPacket {

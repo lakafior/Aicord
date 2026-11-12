@@ -313,6 +313,7 @@ struct ChatView: View {
           if vm.channel?.type == .guildStageVoice {
             StagePanel(vm: vm)
           }
+          VideoPanel(vm: vm)
         }
       }
       .overlay(alignment: .top) { OfflinePill() }
@@ -378,6 +379,7 @@ struct ChatView: View {
           if vm.channel?.type == .guildStageVoice {
             StagePanel(vm: vm)
           }
+          VideoPanel(vm: vm)
         }
       }
       .overlay(alignment: .top) { OfflinePill() }

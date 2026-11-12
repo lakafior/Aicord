@@ -192,6 +192,7 @@
 		AC0DC60013FF71EBBDA11DD2 /* VoiceConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0394B0AEB5CC91C895A5CC /* VoiceConnectionStore.swift */; };
 		AC0EF8DCE4F59941702225FE /* VoicePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC03E04F0CF84CFE2B61F8E3 /* VoicePreferences.swift */; };
 		AC0F5A6E1B2C3D4E5F607182 /* StagePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */; };
+		AC0F5A6E1B2C3D4E5F607184 /* VideoPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F5A6E1B2C3D4E5F607185 /* VideoPanel.swift */; };
 		AC4A7E0000000000000000C2 /* Emoticons.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC4A7E0000000000000000C1 /* Emoticons.swift */; };
 		AE20AC89771EEC582C914D08 /* CatchUpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE47218BB51CFFA380642130 /* CatchUpSheet.swift */; };
 		AE475505035AA5BFC10BC23C /* AskChannelSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED2EF9C47C2968DB26C8262 /* AskChannelSheet.swift */; };
@@ -465,6 +466,7 @@
 		AC056C49F2F9D4341D99AB1F /* AudioDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDevices.swift; sourceTree = "<group>"; };
 		AC0B4B4B4578BC80D509BBA3 /* VoiceAudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAudioEngine.swift; sourceTree = "<group>"; };
 		AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StagePanel.swift; sourceTree = "<group>"; };
+		AC0F5A6E1B2C3D4E5F607185 /* VideoPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPanel.swift; sourceTree = "<group>"; };
 		AC0FAE13CCBACC320FF89B36 /* VoiceChannelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceChannelButton.swift; sourceTree = "<group>"; };
 		AC4A7E0000000000000000C1 /* Emoticons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Emoticons.swift; sourceTree = "<group>"; };
 		AE06616E3A64D492BD0B59AA /* IntelligenceSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceSource.swift; sourceTree = "<group>"; };
@@ -1305,6 +1307,7 @@
 			isa = PBXGroup;
 			children = (
 				AC0F5A6E1B2C3D4E5F607183 /* StagePanel.swift */,
+				AC0F5A6E1B2C3D4E5F607185 /* VideoPanel.swift */,
 				AC01D5DA1D1CC78C94BBCCC6 /* VoiceCallBar.swift */,
 				AC0FAE13CCBACC320FF89B36 /* VoiceChannelButton.swift */,
 			);
@@ -1576,6 +1579,7 @@
 				AC0DC60013FF71EBBDA11DD2 /* VoiceConnectionStore.swift in Sources */,
 				AC04D930DC8474160A714437 /* VoiceCallBar.swift in Sources */,
 				AC0F5A6E1B2C3D4E5F607182 /* StagePanel.swift in Sources */,
+				AC0F5A6E1B2C3D4E5F607184 /* VideoPanel.swift in Sources */,
 				AC018E635EC5A8ED23F275F2 /* VoiceChannelButton.swift in Sources */,
 				AAC07FC32F2D9E460077B8FA /* DownloadButton.swift in Sources */,
 				571AE5B12FFD7726006D609C /* ObservableBox.swift in Sources */,

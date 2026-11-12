@@ -78,7 +78,9 @@ Paczki 1 i 2 zrobione (szczegóły w CHANGELOG, [PACK1_NOTES](https://github.com
 1. **Powiadomienia:** (granica opisana w README 1.11)
    - [ ] Sprawdzić, ile da się wycisnąć z odświeżania w tle na iOS bez łamania zasad.
 2. **Wideo:** (nadawanie wideo i ekranu jest w Etapie 9)
-   - [ ] Najpierw oglądanie cudzego Go Live i kamer w kanale głosowym, potem własna kamera.
+   - [ ] Odbiór cudzych kamer i Go Live w kanale głosowym serwera jest napisany (panel nad czatem kanału, szczegóły w CHANGELOG), ale nie był testowany na żywo. Do przeklikania z drugą osobą: kamera, Go Live, wyłączenie i ponowne włączenie obrazu, dołączenie w trakcie streamu, przejście DAVE, gdy ktoś wchodzi lub wychodzi. Niepewne miejsca, od których zacząć, gdy obrazu nie ma: numer grupy DAVE streamu (`rtc_server_id − 1`), sesja w Identify streamu, prośba o klatkę kluczową (RTCP PLI), `any: 100` w Media Sink Wants.
+   - [ ] Dźwięk streamu (drugi odtwarzacz w `VoiceAudioEngine`; `playback` połączenia streamu już go dostarcza), wideo w rozmowach DM (stany voice rozmów DM nie są trzymane w żadnym store), H.265/AV1 (dziś ogłaszamy tylko H.264, więc nadawcy schodzą do niego), RTX zamiast czekania na klatkę kluczową, pełny ekran i kilka obrazów naraz, podgląd streamu przed wejściem.
+   - [ ] Potem własna kamera.
    - [ ] Redukcja szumów mikrofonu w voice (odpowiednik Krisp, np. przetwarzanie głosu z `AVAudioEngine`).
 3. **Zarządzanie serwerem (dla moderatorów):** całość zrobiona 1.11 (CHANGELOG, [PL_ONBOARDING_ADMIN_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PL_ONBOARDING_ADMIN_NOTES.md), [OVERNIGHT2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT2_NOTES.md)). Zostało:
    - [ ] Sekcja „Zarządzanie serwerem” pojawia się dopiero, gdy serwer był otwarty w tej sesji (bez danych o rolach uprawnienia nie są znane).

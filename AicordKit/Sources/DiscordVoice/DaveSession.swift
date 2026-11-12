@@ -82,12 +82,13 @@ package final class DaveSession: @unchecked Sendable {
   package init(
     selfUserID: UserSnowflake,
     channelID: ChannelSnowflake,
+    groupID: UInt64? = nil,
     allowedUserIDs: Set<UserSnowflake>?,
     logger: Logger
   ) {
     Self.installLogSink
     self.selfUserID = selfUserID.rawValue
-    self.groupID = UInt64(channelID.rawValue) ?? 0
+    self.groupID = groupID ?? UInt64(channelID.rawValue) ?? 0
     self.allowedUserIDs = allowedUserIDs.map { Set($0.map(\.rawValue)) }
     self.logger = logger
     self.session = daveSessionCreate(
@@ -376,14 +377,18 @@ package final class DaveSession: @unchecked Sendable {
     return output
   }
 
-  func decrypt(userID: UserSnowflake, frame: Data) throws(MediaError) -> Data {
+  /// `video` frames are whole encoded frames (Annex B for H.264), as the
+  /// sender's encryptor saw them.
+  func decrypt(userID: UserSnowflake, frame: Data, video: Bool = false)
+    throws(MediaError) -> Data
+  {
     guard let decryptor = decryptors[userID.rawValue] else {
       // Media from someone the voice server never announced.
       throw .notReady
     }
     let capacity = daveDecryptorGetMaxPlaintextByteSize(
       decryptor,
-      .audio,
+      video ? .video : .audio,
       frame.count
     )
     var output = Data(count: max(capacity, frame.count))
@@ -392,7 +397,7 @@ package final class DaveSession: @unchecked Sendable {
       frame.withUnsafeBytes { input in
         daveDecryptorDecrypt(
           decryptor,
-          .audio,
+          video ? .video : .audio,
           input.bindMemory(to: UInt8.self).baseAddress,
           input.count,
           out.bindMemory(to: UInt8.self).baseAddress,

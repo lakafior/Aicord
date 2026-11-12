@@ -4,6 +4,26 @@
     "" : {
 
     },
+    "%@’s camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera: %@"
+          }
+        }
+      }
+    },
+    "%@’s stream" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmisja: %@"
+          }
+        }
+      }
+    },
     ", " : {
       "localizations" : {
         "pl" : {
@@ -30,6 +50,76 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":3"
+          }
+        }
+      }
+    },
+    "Live" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na żywo"
+          }
+        }
+      }
+    },
+    "Stop Watching" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przestań oglądać"
+          }
+        }
+      }
+    },
+    "The connection to the stream was lost." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utracono połączenie z transmisją."
+          }
+        }
+      }
+    },
+    "The stream ended." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmisja się zakończyła."
+          }
+        }
+      }
+    },
+    "This stream is full." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta transmisja jest pełna."
+          }
+        }
+      }
+    },
+    "Waiting for video…" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czekam na obraz…"
+          }
+        }
+      }
+    },
+    "You can't watch this stream." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie możesz oglądać tej transmisji."
           }
         }
       }

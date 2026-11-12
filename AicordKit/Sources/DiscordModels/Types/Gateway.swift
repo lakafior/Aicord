@@ -276,10 +276,12 @@ public struct Gateway: Sendable, Codable {
       case stageInstanceDelete(StageInstance)
       case stageInstanceUpdate(StageInstance)
 
-      //			case streamCreateStream() // TODO
-      //			case streamServerUpdate() // TODO
-      //			case streamUpdateStream() // TODO
-      //			case streamDelete() // TODO
+      case streamCreate(GoLiveStream)
+      case streamServerUpdate(StreamServerUpdate)
+      case streamUpdate(GoLiveStream)
+      case streamDelete(StreamDelete)
+      /// Opcodes 19 and 20: stop watching, or watch, someone's Go Live.
+      case requestStream(StreamRequest)
 
       //			case speedTestCreate() // TODO
       //			case speedTestServerUpdate() // TODO
@@ -539,6 +541,14 @@ public struct Gateway: Sendable, Codable {
           self.data = try .voiceStateUpdate(decodeData())
         case "VOICE_SERVER_UPDATE":
           self.data = try .voiceServerUpdate(decodeData())
+        case "STREAM_CREATE":
+          self.data = try .streamCreate(decodeData())
+        case "STREAM_SERVER_UPDATE":
+          self.data = try .streamServerUpdate(decodeData())
+        case "STREAM_UPDATE":
+          self.data = try .streamUpdate(decodeData())
+        case "STREAM_DELETE":
+          self.data = try .streamDelete(decodeData())
         case "MESSAGE_POLL_VOTE_ADD":
           self.data = try .messagePollVoteAdd(decodeData())
         case "MESSAGE_POLL_VOTE_REMOVE":
@@ -711,6 +721,8 @@ public struct Gateway: Sendable, Codable {
       case .requestVoiceStateUpdate(let payload):
         try container.encode(payload, forKey: .data)
       case .updateGuildSubscriptions(let payload):
+        try container.encode(payload, forKey: .data)
+      case .requestStream(let payload):
         try container.encode(payload, forKey: .data)
       case .updateTimeSpentSessionId(let payload):
         try container.encode(payload, forKey: .data)

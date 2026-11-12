@@ -46,13 +46,15 @@ extension VoiceGateway {
   /// https://docs.discord.food/topics/voice-connections#stream-structure
   public struct Stream: Sendable, Codable {
     public init(
-      type: Kind,
+      type: Kind? = nil,
       rid: String,
       quality: Int? = nil,
       active: Bool? = nil,
       max_bitrate: Int? = nil,
       max_framerate: Int? = nil,
-      max_resolution: StreamResolution? = nil
+      max_resolution: StreamResolution? = nil,
+      ssrc: UInt32? = nil,
+      rtx_ssrc: UInt32? = nil
     ) {
       self.type = type
       self.rid = rid
@@ -61,15 +63,22 @@ extension VoiceGateway {
       self.max_bitrate = max_bitrate
       self.max_framerate = max_framerate
       self.max_resolution = max_resolution
+      self.ssrc = ssrc
+      self.rtx_ssrc = rtx_ssrc
     }
 
-    public var type: Kind
+    /// Missing in the streams of a received Video payload.
+    public var type: Kind?
     public var rid: String
     public var quality: Int?
     public var active: Bool?
     public var max_bitrate: Int?
     public var max_framerate: Int?
     public var max_resolution: StreamResolution?
+    /// The layer's RTP source, in Ready and in received Video payloads.
+    public var ssrc: UInt32?
+    /// Retransmissions of this layer; `ssrc + 1` when absent.
+    public var rtx_ssrc: UInt32?
 
     @UnstableEnum<String>
     public enum Kind: Sendable, Codable {
@@ -250,6 +259,18 @@ extension VoiceGateway {
       decode: true
     )
 
+    /// H.264 for a client that only watches. Payload type 96 is reserved
+    /// for probe packets.
+    public static let h264ReceiveCodec = Codec(
+      name: .h264,
+      type: "video",
+      priority: 1000,
+      payload_type: 103,
+      rtx_payload_type: 104,
+      encode: false,
+      decode: true
+    )
+
     @UnstableEnum<String>
     public enum CodecName: Sendable, Codable {
       case opus
@@ -411,7 +432,7 @@ extension VoiceGateway {
       audio_ssrc: UInt,
       video_ssrc: UInt,
       rtx_ssrc: UInt,
-      streams: [Stream]? = nil
+      streams: [Stream] = []
     ) {
       self.audio_ssrc = audio_ssrc
       self.video_ssrc = video_ssrc
@@ -420,9 +441,17 @@ extension VoiceGateway {
       self.user_id = nil
     }
 
+    /// A connection that sends no video: all zeros and no streams. It still
+    /// has to be sent once before video can be received.
+    public static func none(audioSSRC: UInt32) -> Video {
+      Video(audio_ssrc: UInt(audioSSRC), video_ssrc: 0, rtx_ssrc: 0)
+    }
+
     public var audio_ssrc: UInt
+    /// 0 when the user turned video off.
     public var video_ssrc: UInt
-    public var rtx_ssrc: UInt
+    /// Sent by clients only.
+    public var rtx_ssrc: UInt?
     public var streams: [Stream]?
     public var user_id: UserSnowflake?  // sent by server only
   }
@@ -450,7 +479,7 @@ extension VoiceGateway {
 
     public func encode(to encoder: any Encoder) throws {
       var container = encoder.container(keyedBy: DynamicCodingKeys.self)
-      try container.encode(pixelCounts, forKey: .pixelCounts)
+      try container.encodeIfPresent(pixelCounts, forKey: .pixelCounts)
       for (key, value) in ssrcs {
         try container.encode(value, forKey: .dynamic(key))
       }
@@ -458,7 +487,7 @@ extension VoiceGateway {
 
     public init(
       ssrcs: [String: Int],
-      pixelCounts: [String: Double]?
+      pixelCounts: [String: Double]? = nil
     ) {
       self.pixelCounts = pixelCounts
       self.ssrcs = ssrcs

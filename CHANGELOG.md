@@ -2,6 +2,12 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### Voice
+
+- **New** · Other people's cameras and Go Live streams in a server voice channel: while you're connected, the channel's chat lists who has video on, and picking one plays it above the messages. Video is only received for what you're watching. Not yet tested against a live call; stream sound, video in DM calls and your own camera are still to come
+
 ## 0.1.7 (November 2026)
 
 ### Chat
@@ -618,6 +624,16 @@ Szczegóły, decyzje, testy i ryzyka: [INTELLIGENCE_NOTES](https://github.com/la
    - [x] Okno 4 tys. tokenów: odpowiedzi z narzędziami na urządzeniu (Ask, Explain Context) mają limit czasu, czytelne błędy i przy przepełnieniu okna drugą próbę bez narzędzi na przyciętym prompcie. Sprawdzone: Ask na urządzeniu w NAScin #ogólny „Who posted the ipa file and what was it called?” → „Lakafi posted the ipa file and it was called Kite.ipa.” z linkiem do wiadomości.
    - [x] „Index Channel” (menu ✨ w kanale): ostatnie 500–5000 wiadomości pobierane po 100 z przerwą 350 ms, z paskiem postępu i anulowaniem, przez te same filtry co dla modelu, z wektorem zdania; plik JSON w Application Support (`ChannelIndexes/<kanał>.json`, ok. 190 B na wiadomość bez wektora, ok. 2 KB z wektorem). Wyszukiwanie po sensie z przejściem do wiadomości, rozmiar na dysku, „Add New Messages”, „Delete Index” z potwierdzeniem. Ask dokłada do 4 (urządzenie) / 10 (API) starszych wiadomości z indeksu. Sprawdzone na NAScin #ogólny: 925 wiadomości, 173 kB, „kite ipa” → wiadomość z Kite.ipa, usunięcie.
    - [x] Rerankowanie bez indeksu: narzędzie `search` modelu z 25 wyników Discorda oddaje te najbliższe pytaniu (6 na urządzeniu, 15 przez API), a Ask na urządzeniu bierze 5 najnowszych i 15 najlepiej pasujących z ostatnich 50 wiadomości.
+
+### 🧪 Etap 14: Reszta do Discorda 1:1 — punkt 2, odbiór wideo (12.11)
+Napisane i sprawdzone testami pakietu (RTP → ramki H.264 → dekoder systemowy), bez testu na żywej rozmowie: na NAScin nie ma drugiej osoby z kamerą.
+2. **Wideo:**
+   - [x] Modele: Video (op 12) dekoduje się także bez `type` i `rtx_ssrc` (tak wysyła serwer; wcześniej cały pakiet był odrzucany), `ssrc`/`rtx_ssrc` warstw, Media Sink Wants (op 15) bez pustego `pixelCounts`; na głównym gatewayu `STREAM_CREATE`, `STREAM_SERVER_UPDATE`, `STREAM_UPDATE`, `STREAM_DELETE`, Watch Stream (op 20) i `StreamKey`.
+   - [x] `VoiceGatewayManager`: Identify z `video: true`, w Select Protocol H.264 tylko do odbioru (typ 103, RTX 104), po Session Description własny Video z zerami (bez niego serwer nie przysyła obrazu), mapa użytkownik → warstwa o najwyższej jakości, Media Sink Wants `any: 100` i 0 dla każdej warstwy wideo, której nikt nie ogląda.
+   - [x] `H264Depacketizer` (RFC 6184: pojedyncze NAL, STAP-A, FU-A) składa ramkę Annex B z 4-bajtowymi kodami startu, czyli bajt w bajt to, co zaszyfrował libdave nadawcy; okno 48 pakietów na zamianę kolejności, po stracie czeka na klatkę kluczową i prosi o nią przez RTCP PLI (najwyżej raz na sekundę, szyfrowane jak RTP z 8 bajtami nagłówka jako AAD).
+   - [x] DAVE dla wideo (`daveDecryptorDecrypt` z typem video) na złożonej ramce; `VideoSampleBuilder` robi z niej `CMSampleBuffer` (AVCC, opis formatu z SPS/PPS), który `AVSampleBufferDisplayLayer` dekoduje sam.
+   - [x] Go Live: `VoiceConnectionStore.watch(_:)` wysyła Watch Stream, a po `STREAM_CREATE` i `STREAM_SERVER_UPDATE` otwiera drugie połączenie voice (`isStream`: `server_id`/`channel_id` z `rtc_server_id`/`rtc_channel_id`, sesja rozmowy, grupa DAVE o numerze `rtc_server_id − 1`, nic nie nadaje). Jeden stream naraz.
+   - [x] `VideoPanel` nad czatem kanału głosowego, w którym jesteśmy: lista osób z kamerą lub streamem, wybrany obraz nad wiadomościami; obraz jest odbierany tylko dla tego, co widać.
 
 ### 🧪 Etap 14: Reszta do Discorda 1:1 — punkt 3 (1.11)
 3. **Zarządzanie serwerem (dla moderatorów):** szczegóły i testy w [PL_ONBOARDING_ADMIN_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PL_ONBOARDING_ADMIN_NOTES.md).

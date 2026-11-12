@@ -3,7 +3,8 @@
 //  AicordKit
 //
 //  One voice connection: the voice WebSocket (v8), the UDP media flow,
-//  transport encryption, DAVE, Opus and the receive mixer.
+//  transport encryption, DAVE, Opus and the receive mixer, and received
+//  video (other people's cameras, or a Go Live on its own connection).
 //
 //  Ported from the `voice` branch of llsc12/Paicord (NIO, AsyncHTTPClient
 //  and WSClient replaced by URLSessionWebSocketTask and Network.framework).
@@ -26,6 +27,12 @@ public actor VoiceGatewayManager {
     public var endpoint: String
     /// One-to-one DMs: the only users DAVE accepts into the group.
     public var allowedUserIDs: Set<UserSnowflake>?
+    /// The connection of a Go Live stream, next to the call's own: `guildID`
+    /// and `channelID` are the stream's `rtc_server_id` and `rtc_channel_id`.
+    /// A viewer sends no media on it and wants all of its video.
+    public var isStream = false
+    /// The DAVE group, when it is not the channel ID (streams).
+    public var daveGroupID: UInt64?
 
     public init(
       token: Secret,
@@ -104,6 +111,9 @@ public actor VoiceGatewayManager {
     /// DAVE state: protocol version (0 = not end-to-end encrypted) and
     /// whether our media is currently encrypted and allowed out.
     case encryption(protocolVersion: UInt16, mediaReady: Bool)
+    /// Somebody's camera (or, on a stream connection, the stream's picture)
+    /// went on or off.
+    case video(UserSnowflake, Bool)
   }
 
   // MARK: Limits
@@ -124,6 +134,8 @@ public actor VoiceGatewayManager {
   /// Silence frames sent after we stop talking, so receivers' decoders
   /// fade out instead of concealing.
   static let silenceTailFrames = 5
+  /// At most one key frame request per video source in this time.
+  static let keyframeRequestInterval: Duration = .seconds(1)
 
   // MARK: Public state
 
@@ -133,6 +145,10 @@ public actor VoiceGatewayManager {
   /// is audible.
   public nonisolated let playback: AsyncStream<[Float]>
   private let playbackContinuation: AsyncStream<[Float]>.Continuation
+  /// Received video of the users asked for with `setVideoWanted` (everyone
+  /// on a stream connection): decrypted H.264 frames, starting at a key frame.
+  public nonisolated let video: AsyncStream<VideoFrame>
+  private let videoContinuation: AsyncStream<VideoFrame>.Continuation
 
   public private(set) var state: State = .idle {
     didSet {
@@ -195,6 +211,15 @@ public actor VoiceGatewayManager {
   private var userVolumes: [UserSnowflake: Float] = [:]
   private var isReceiving = true
 
+  // Receiving video
+  /// The layer we take from each user with video on (the best active one).
+  private var videoSources: [UserSnowflake: UInt32] = [:]
+  /// Every layer a user announced, to turn the others off.
+  private var videoLayers: [UserSnowflake: [UInt32]] = [:]
+  private var depacketizers: [UInt32: H264Depacketizer] = [:]
+  private var wantedVideo: Set<UserSnowflake> = []
+  private var lastKeyframeRequest: [UInt32: ContinuousClock.Instant] = [:]
+
   public init(
     connectionData: ConnectionData,
     urlSession: URLSession = .shared
@@ -207,6 +232,7 @@ public actor VoiceGatewayManager {
     self.dave = DaveSession(
       selfUserID: connectionData.userID,
       channelID: connectionData.channelID,
+      groupID: connectionData.daveGroupID,
       allowedUserIDs: connectionData.allowedUserIDs,
       logger: logger
     )
@@ -216,6 +242,9 @@ public actor VoiceGatewayManager {
     )
     (playback, playbackContinuation) = AsyncStream.makeStream(
       bufferingPolicy: .bufferingNewest(10)
+    )
+    (video, videoContinuation) = AsyncStream.makeStream(
+      bufferingPolicy: .bufferingNewest(120)
     )
   }
 
@@ -267,6 +296,28 @@ public actor VoiceGatewayManager {
   public func setVolume(_ volume: Float, for userID: UserSnowflake) {
     userVolumes[userID] = min(max(volume, 0), 2)
   }
+
+  /// Whose camera to receive. The voice server sends no video nobody asked
+  /// for. A stream connection receives its video without asking.
+  public func setVideoWanted(_ users: Set<UserSnowflake>) {
+    guard users != wantedVideo else { return }
+    wantedVideo = users
+    for (user, ssrc) in videoSources where !users.contains(user) && !data.isStream {
+      depacketizers[ssrc] = nil
+    }
+    sendMediaSinkWants()
+  }
+
+  /// The picture of this user's video broke on our side (the decoder was
+  /// reset): take it up again from a new key frame.
+  public func refreshVideo(for userID: UserSnowflake) {
+    guard let ssrc = videoSources[userID] else { return }
+    depacketizers[ssrc]?.requireKeyframe()
+    requestKeyframe(from: ssrc)
+  }
+
+  /// Users whose video is on right now.
+  public var usersWithVideo: Set<UserSnowflake> { Set(videoSources.keys) }
 
   /// When deafened, received audio is not decoded at all.
   public func setReceiving(_ receiving: Bool) {
@@ -336,7 +387,8 @@ public actor VoiceGatewayManager {
               user_id: data.userID,
               session_id: data.sessionID,
               token: data.token,
-              video: false,
+              // We only watch, but without this no video is announced.
+              video: true,
               max_dave_protocol_version: Int(DaveSession.maxSupportedProtocolVersion)
             )
           )
@@ -442,6 +494,8 @@ public actor VoiceGatewayManager {
             speakers[ssrc] = nil
           }
         }
+      case .video(let video):
+        handleVideo(video)
       case .clientsConnect(let connect):
         logger.info("Participants joined", metadata: ["count": "\(connect.user_ids.count)"])
         try dave.addParticipants(connect.user_ids)
@@ -455,6 +509,7 @@ public actor VoiceGatewayManager {
           ssrcToUser[ssrc] = nil
           speakers[ssrc] = nil
         }
+        setVideoSource(nil, layers: [], for: disconnect.user_id)
         eventContinuation.yield(.participantLeft(disconnect.user_id))
         updateEncryptionState(participantsChanged: true)
       case .davePrepareTransition(let payload):
@@ -689,7 +744,7 @@ public actor VoiceGatewayManager {
           .init(
             protocol: "udp",
             data: .init(address: address, port: Int(port), mode: mode.encryptionMode),
-            codecs: [.opusCodec]
+            codecs: [.opusCodec, .h264ReceiveCodec]
           )
         )
       )
@@ -728,7 +783,16 @@ public actor VoiceGatewayManager {
     try sendDave(dave.selectProtocol(version: version))
     deadline = nil
     updateEncryptionState(participantsChanged: true)
+    // Video can only be received after a Video payload of our own; ours
+    // says we send none.
+    send(.init(opcode: .video, data: .video(.none(audioSSRC: ssrc))))
+    if !videoSources.isEmpty { sendMediaSinkWants() }
     startTicking()
+    if data.isStream {
+      // Only the owner sends media on a stream connection.
+      sendSpeaking(false)
+      return
+    }
     // Silence lets the server learn our SSRC mapping before anyone talks.
     for _ in 0..<3 { sendOpus(VoiceAudioFormat.silenceFrame) }
   }
@@ -805,10 +869,16 @@ public actor VoiceGatewayManager {
   }
 
   private func receive(_ datagram: Data) {
-    guard isReceiving, let cipher, !RTPPacket.isRTCP(datagram) else { return }
-    guard let packet = try? cipher.open(datagram),
+    guard let cipher, !RTPPacket.isRTCP(datagram),
+      let packet = try? cipher.open(datagram),
+      packet.ssrc != ssrc
+    else { return }
+    if packet.payloadType.rawValue == UInt8(VoiceGateway.Codec.h264ReceiveCodec.payload_type) {
+      receiveVideo(packet)
+      return
+    }
+    guard isReceiving,
       packet.payloadType.rawValue == UInt8(VoiceGateway.Codec.opusCodec.payload_type),
-      packet.ssrc != ssrc,
       let userID = ssrcToUser[packet.ssrc]
     else { return }
     guard let opus = try? dave.decrypt(userID: userID, frame: packet.payload),
@@ -820,6 +890,106 @@ public actor VoiceGatewayManager {
       speaker.lastAudible = .now
     }
     speakers[packet.ssrc] = speaker
+  }
+
+  // MARK: Video
+
+  /// Opcode 12: a user's video went on, off, or changed its layers.
+  private func handleVideo(_ video: VoiceGateway.Video) {
+    guard let userID = video.user_id, userID != data.userID else { return }
+    if video.audio_ssrc != 0 {
+      // Stream sound comes without a Speaking payload.
+      let audio = UInt32(truncatingIfNeeded: video.audio_ssrc)
+      if ssrcToUser[audio] != userID {
+        ssrcToUser[audio] = userID
+        speakers[audio] = nil
+      }
+    }
+    let streams = video.streams ?? []
+    let layers = streams.compactMap(\.ssrc)
+    var source: UInt32?
+    if video.video_ssrc != 0 {
+      source = streams
+        .filter { $0.active != false && $0.ssrc != nil }
+        .max { ($0.quality ?? 0) < ($1.quality ?? 0) }?
+        .ssrc
+      if source == nil, streams.isEmpty {
+        source = UInt32(truncatingIfNeeded: video.video_ssrc)
+      }
+    }
+    setVideoSource(source, layers: layers, for: userID)
+  }
+
+  private func setVideoSource(_ source: UInt32?, layers: [UInt32], for userID: UserSnowflake) {
+    let old = videoSources[userID]
+    if let old, old != source {
+      depacketizers[old] = nil
+      lastKeyframeRequest[old] = nil
+    }
+    videoSources[userID] = source
+    videoLayers[userID] = layers.isEmpty ? nil : layers
+    if (old != nil) != (source != nil) {
+      logger.info("Video \(source != nil ? "on" : "off")", metadata: ["user": "\(userID.rawValue)"])
+      eventContinuation.yield(.video(userID, source != nil))
+    }
+    if old != source || source != nil { sendMediaSinkWants() }
+  }
+
+  /// Opcode 15: which video the voice server should forward to us. Sound is
+  /// left alone (`any`), video is off unless asked for.
+  private func sendMediaSinkWants() {
+    guard cipher != nil, isActive else { return }
+    var wants = ["any": 100]
+    for ssrc in videoLayers.values.joined() { wants["\(ssrc)"] = 0 }
+    for (user, ssrc) in videoSources {
+      wants["\(ssrc)"] = data.isStream || wantedVideo.contains(user) ? 100 : 0
+    }
+    send(.init(opcode: .mediaSinkWants, data: .mediaSinkWants(.init(ssrcs: wants))))
+  }
+
+  private func receiveVideo(_ packet: RTPPacket) {
+    guard let userID = videoSources.first(where: { $0.value == packet.ssrc })?.key,
+      data.isStream || wantedVideo.contains(userID)
+    else { return }
+    var depacketizer = depacketizers[packet.ssrc] ?? H264Depacketizer()
+    for frame in depacketizer.push(packet) {
+      guard let plain = try? dave.decrypt(userID: userID, frame: frame.data, video: true),
+        !plain.isEmpty
+      else {
+        // Frames after a missing one build on it; start over.
+        depacketizer.requireKeyframe()
+        continue
+      }
+      videoContinuation.yield(
+        VideoFrame(
+          userID: userID,
+          timestamp: frame.timestamp,
+          isKeyframe: frame.isKeyframe,
+          data: plain
+        )
+      )
+    }
+    depacketizers[packet.ssrc] = depacketizer
+    if depacketizer.needsKeyframe { requestKeyframe(from: packet.ssrc) }
+  }
+
+  /// RTCP Picture Loss Indication (RFC 4585 §6.3.1): asks the sender of
+  /// `mediaSSRC` for a key frame.
+  private func requestKeyframe(from mediaSSRC: UInt32) {
+    let now = ContinuousClock.now
+    if let last = lastKeyframeRequest[mediaSSRC],
+      now - last < Self.keyframeRequestInterval
+    {
+      return
+    }
+    lastKeyframeRequest[mediaSSRC] = now
+    guard let cipher, let udp, nonceCounter < .max else { return }
+    nonceCounter += 1
+    var packet = Data([0x81, 206, 0x00, 0x02])
+    RTPPacket.appendUInt32(&packet, ssrc)
+    RTPPacket.appendUInt32(&packet, mediaSSRC)
+    guard let datagram = try? cipher.sealRTCP(packet, nonce: nonceCounter) else { return }
+    udp.send(datagram)
   }
 
   private func startTicking() {
@@ -939,9 +1109,13 @@ public actor VoiceGatewayManager {
     udp = nil
     cipher = nil
     speakers.removeAll()
+    depacketizers.removeAll()
+    videoSources.removeAll()
+    videoLayers.removeAll()
     deadline = nil
     state = .disconnected(reason)
     eventContinuation.finish()
     playbackContinuation.finish()
+    videoContinuation.finish()
   }
 }

@@ -1433,6 +1433,79 @@ extension Gateway {
     public var endpoint: String?
   }
 
+  /// A Go Live stream, in Stream Create and Stream Update.
+  /// https://docs.discord.food/topics/gateway-events#stream-create
+  public struct GoLiveStream: Sendable, Decodable {
+    public var stream_key: String
+    /// The `server_id` of the stream's own voice connection. Stream Create only.
+    public var rtc_server_id: GuildSnowflake?
+    /// The `channel_id` of the stream's own voice connection. Stream Create only.
+    public var rtc_channel_id: ChannelSnowflake?
+    public var region: String?
+    public var viewer_ids: [UserSnowflake]?
+    public var paused: Bool?
+  }
+
+  /// https://docs.discord.food/topics/gateway-events#stream-server-update
+  public struct StreamServerUpdate: Sendable, Decodable {
+    public var token: Secret
+    public var stream_key: String
+    /// `nil` while the server is being reallocated.
+    public var endpoint: String?
+  }
+
+  /// https://docs.discord.food/topics/gateway-events#stream-delete
+  public struct StreamDelete: Sendable, Decodable {
+    public var stream_key: String
+    /// `user_requested`, `stream_ended`, `stream_full`, `unauthorized`, …
+    public var reason: String?
+    public var unavailable: Bool?
+  }
+
+  /// https://docs.discord.food/topics/gateway-events#watch-stream
+  public struct StreamRequest: Sendable, Encodable {
+    public var stream_key: String
+
+    public init(stream_key: String) {
+      self.stream_key = stream_key
+    }
+  }
+
+  /// https://docs.discord.food/topics/gateway-events#stream-key
+  public struct StreamKey: Sendable, Hashable {
+    /// `nil` for a call in a DM or group DM.
+    public var guildID: GuildSnowflake?
+    public var channelID: ChannelSnowflake
+    public var ownerID: UserSnowflake
+
+    public init(guildID: GuildSnowflake?, channelID: ChannelSnowflake, ownerID: UserSnowflake) {
+      self.guildID = guildID
+      self.channelID = channelID
+      self.ownerID = ownerID
+    }
+
+    public init?(_ rawValue: String) {
+      let parts = rawValue.split(separator: ":").map(String.init)
+      switch (parts.first, parts.count) {
+      case ("guild", 4):
+        self.init(
+          guildID: .init(parts[1]), channelID: .init(parts[2]), ownerID: .init(parts[3]))
+      case ("call", 3):
+        self.init(guildID: nil, channelID: .init(parts[1]), ownerID: .init(parts[2]))
+      default:
+        return nil
+      }
+    }
+
+    public var rawValue: String {
+      if let guildID {
+        "guild:\(guildID.rawValue):\(channelID.rawValue):\(ownerID.rawValue)"
+      } else {
+        "call:\(channelID.rawValue):\(ownerID.rawValue)"
+      }
+    }
+  }
+
   /// https://discord.com/developers/docs/topics/gateway#get-gateway
   public struct URL: Sendable, Decodable {
     public var url: String

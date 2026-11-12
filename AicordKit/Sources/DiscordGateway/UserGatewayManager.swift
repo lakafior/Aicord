@@ -326,6 +326,20 @@ public actor UserGatewayManager: GatewayManager {
     )
   }
 
+  /// Asks for someone's Go Live. Stream Create and Stream Server Update
+  /// follow, or Stream Delete with the reason it can't be watched.
+  /// https://docs.discord.food/topics/gateway-events#watch-stream
+  public func watchStream(key: Gateway.StreamKey) {
+    self.send(
+      message: .init(
+        payload: .init(
+          opcode: .streamWatch,
+          data: .requestStream(.init(stream_key: key.rawValue))
+        )
+      )
+    )
+  }
+
   /// https://docs.discord.food/topics/gateway-events#ping-voice-server
   public func pingVoiceServer() {
     self.send(

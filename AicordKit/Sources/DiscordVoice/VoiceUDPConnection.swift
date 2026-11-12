@@ -42,7 +42,8 @@ package final class VoiceUDPConnection: @unchecked Sendable {
       using: parameters
     )
     var continuation: AsyncStream<Data>.Continuation!
-    self.datagrams = AsyncStream(bufferingPolicy: .bufferingNewest(64)) {
+    // Room for the burst of a video key frame (a few hundred packets).
+    self.datagrams = AsyncStream(bufferingPolicy: .bufferingNewest(2048)) {
       continuation = $0
     }
     self.datagramContinuation = continuation

@@ -3,7 +3,9 @@
 //  Aicord
 //
 //  The one voice call this device is in: joining through the main gateway,
-//  the voice connection, audio, mute, deafen and push-to-talk.
+//  the voice connection, audio, mute, deafen and push-to-talk, and the
+//  video of others: cameras over the call's connection, a Go Live over a
+//  second one.
 //
 //  Ported from the `voice` branch of llsc12/Paicord. Join behaviour follows
 //  Serein: a lost main gateway session or a voice session that cannot be
@@ -46,6 +48,25 @@ final class VoiceConnectionStore: DiscordDataStore {
     var startedAt = Date()
   }
 
+  /// Video somebody in the call is sending.
+  struct VideoSource: Hashable, Identifiable {
+    enum Kind: Hashable {
+      case camera
+      /// A Go Live: a screen or a window.
+      case stream
+    }
+    var userID: UserSnowflake
+    var kind: Kind
+    var id: Self { self }
+  }
+
+  enum StreamPhase: Equatable {
+    case connecting
+    case watching
+    /// Discord's reason (`stream_ended`, `stream_full`, …) or ours.
+    case ended(String)
+  }
+
   /// How long Discord gets to hand out a voice server.
   static let joinTimeout: Duration = .seconds(30)
 
@@ -70,6 +91,18 @@ final class VoiceConnectionStore: DiscordDataStore {
   private(set) var ownState: VoiceState?
   /// Discord turned down the last Stage action (raise hand, go on stage).
   private(set) var stageError: String?
+
+  /// Whose Go Live is being watched; one at a time.
+  private(set) var watchedStream: UserSnowflake?
+  private(set) var streamPhase: StreamPhase?
+
+  @ObservationIgnored private var feeds: [VideoSource: VideoFeed] = [:]
+  @ObservationIgnored private var watchedCameras: Set<UserSnowflake> = []
+  @ObservationIgnored private var videoTask: Task<Void, Never>?
+  @ObservationIgnored private var streamManager: VoiceGatewayManager?
+  @ObservationIgnored private var streamTasks: [Task<Void, Never>] = []
+  @ObservationIgnored private var streamInfo: Gateway.GoLiveStream?
+  @ObservationIgnored private var streamServer: Gateway.StreamServerUpdate?
 
   @ObservationIgnored private var manager: VoiceGatewayManager?
   @ObservationIgnored private var managerTask: Task<Void, Never>?
@@ -107,6 +140,21 @@ final class VoiceConnectionStore: DiscordDataStore {
           self.handleVoiceState(state)
         case .voiceServerUpdate(let server):
           self.handleVoiceServer(server)
+        case .streamCreate(let stream):
+          guard stream.stream_key == self.streamKey?.rawValue else { break }
+          self.streamInfo = stream
+          self.connectStreamIfReady()
+        case .streamServerUpdate(let server):
+          guard server.stream_key == self.streamKey?.rawValue else { break }
+          self.streamServer = server
+          // A new server for a stream already being watched.
+          self.disconnectStream()
+          self.streamPhase = .connecting
+          self.connectStreamIfReady()
+        case .streamDelete(let deleted):
+          guard deleted.stream_key == self.streamKey?.rawValue else { break }
+          self.logger.info("Stream ended: \(deleted.reason ?? "?", privacy: .public)")
+          self.endStream(.ended(deleted.reason ?? "stream_ended"))
         default:
           break
         }
@@ -176,6 +224,12 @@ final class VoiceConnectionStore: DiscordDataStore {
     joinTimeoutTask?.cancel()
     managerTask?.cancel()
     managerTask = nil
+    videoTask?.cancel()
+    videoTask = nil
+    endStream(nil)
+    watchedStream = nil
+    watchedCameras = []
+    feeds = [:]
     let manager = self.manager
     self.manager = nil
     Task { await manager?.disconnect() }
@@ -248,6 +302,7 @@ final class VoiceConnectionStore: DiscordDataStore {
 
   private func restartForNewServer() {
     managerTask?.cancel()
+    videoTask?.cancel()
     let old = manager
     manager = nil
     Task { await old?.disconnect() }
@@ -288,7 +343,16 @@ final class VoiceConnectionStore: DiscordDataStore {
         self?.handle(event, from: manager)
       }
     }
-    Task { await manager.connect() }
+    videoTask = Task { [weak self] in
+      for await frame in manager.video {
+        self?.feeds[.init(userID: frame.userID, kind: .camera)]?.enqueue(frame)
+      }
+    }
+    let cameras = watchedCameras
+    Task {
+      await manager.setVideoWanted(cameras)
+      await manager.connect()
+    }
 
     audio.start(
       capture: !microphoneDenied,
@@ -329,7 +393,133 @@ final class VoiceConnectionStore: DiscordDataStore {
       updatePhase()
     case .encryption(let version, _):
       daveProtocolVersion = version
+    case .video(let user, let isOn):
+      // A camera that comes back starts with a fresh picture.
+      if !isOn { feeds[.init(userID: user, kind: .camera)]?.reset() }
     }
+  }
+
+  // MARK: Video
+
+  /// Starts receiving a camera or a Go Live and returns where its picture
+  /// arrives. Watching a second Go Live ends the first.
+  func watch(_ source: VideoSource) -> VideoFeed {
+    let feed = feeds[source] ?? VideoFeed()
+    feeds[source] = feed
+    switch source.kind {
+    case .camera:
+      feed.onNeedsKeyframe = { [weak self] in
+        Task { await self?.manager?.refreshVideo(for: source.userID) }
+      }
+      if watchedCameras.insert(source.userID).inserted { sendWantedCameras() }
+    case .stream:
+      feed.onNeedsKeyframe = { [weak self] in
+        Task { await self?.streamManager?.refreshVideo(for: source.userID) }
+      }
+      if watchedStream == source.userID,
+        streamPhase == .connecting || streamPhase == .watching
+      {
+        break
+      }
+      guard call != nil, let gateway = gateway?.gateway else { break }
+      if let watchedStream, watchedStream != source.userID {
+        endStream(nil)
+        feeds[.init(userID: watchedStream, kind: .stream)] = nil
+      }
+      watchedStream = source.userID
+      streamPhase = .connecting
+      streamInfo = nil
+      streamServer = nil
+      logger.info("Asking to watch a stream")
+      if let key = streamKey {
+        Task { await gateway.watchStream(key: key) }
+      }
+    }
+    return feed
+  }
+
+  func stopWatching(_ source: VideoSource) {
+    feeds[source] = nil
+    switch source.kind {
+    case .camera:
+      if watchedCameras.remove(source.userID) != nil { sendWantedCameras() }
+    case .stream:
+      guard watchedStream == source.userID else { return }
+      endStream(nil)
+      watchedStream = nil
+    }
+  }
+
+  private var streamKey: Gateway.StreamKey? {
+    guard let call, let watchedStream else { return nil }
+    return .init(guildID: call.guildID, channelID: call.channelID, ownerID: watchedStream)
+  }
+
+  private func sendWantedCameras() {
+    let cameras = watchedCameras
+    Task { [manager] in await manager?.setVideoWanted(cameras) }
+  }
+
+  /// A Go Live has a voice connection of its own, next to the call's, with
+  /// the call's session and the IDs and token Discord sent for the stream.
+  private func connectStreamIfReady() {
+    guard streamManager == nil, let owner = watchedStream, streamPhase == .connecting,
+      let info = streamInfo, let serverID = info.rtc_server_id,
+      let channelID = info.rtc_channel_id,
+      let server = streamServer, let endpoint = server.endpoint, !endpoint.isEmpty,
+      let sessionID = pendingSessionID,
+      let userID = gateway?.user.currentUser?.id
+    else { return }
+    var connection = VoiceGatewayManager.ConnectionData(
+      token: server.token,
+      guildID: serverID,
+      channelID: channelID,
+      userID: userID,
+      sessionID: sessionID,
+      endpoint: endpoint
+    )
+    connection.isStream = true
+    // The stream's encrypted group is numbered one below its server ID.
+    connection.daveGroupID = UInt64(serverID.rawValue).map { $0 &- 1 }
+    let manager = VoiceGatewayManager(connectionData: connection)
+    streamManager = manager
+    streamTasks = [
+      Task { [weak self] in
+        for await event in manager.events {
+          guard let self, manager === self.streamManager else { return }
+          if case .stateChanged(.disconnected(let reason)) = event, reason != .requested {
+            self.logger.error("Stream connection ended: \(reason.description, privacy: .public)")
+            self.endStream(.ended("connection_lost"))
+          }
+        }
+      },
+      Task { [weak self] in
+        for await frame in manager.video {
+          guard let self, manager === self.streamManager else { return }
+          // Whoever sends on a stream connection is its owner.
+          self.feeds[.init(userID: owner, kind: .stream)]?.enqueue(frame)
+          if self.streamPhase == .connecting { self.streamPhase = .watching }
+        }
+      },
+    ]
+    Task { await manager.connect() }
+  }
+
+  private func disconnectStream() {
+    streamTasks.forEach { $0.cancel() }
+    streamTasks = []
+    let manager = streamManager
+    streamManager = nil
+    Task { await manager?.disconnect() }
+  }
+
+  /// `phase` stays on screen as the reason; `nil` when we stopped watching.
+  private func endStream(_ phase: StreamPhase?) {
+    disconnectStream()
+    if let watchedStream { feeds[.init(userID: watchedStream, kind: .stream)]?.reset() }
+    streamInfo = nil
+    streamServer = nil
+    streamPhase = phase
   }
 
   /// Alone in the channel the encrypted group cannot form yet, but to the
