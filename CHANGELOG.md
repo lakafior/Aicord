@@ -2,14 +2,14 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
-## Unreleased
+## 0.1.8 (November 2026)
 
 ### Voice
 
 - **New** · Other people's cameras and Go Live streams, in server voice channels and in DM calls: while you're connected, the chat lists who has video on, and picking people plays them above the messages, several side by side, or one full screen (in a window of its own on the Mac). A stream comes with its sound. Video is only received for what you're watching. Go Lives nobody is watching yet show Discord's latest still of them
 - **New** · Your own camera in voice channels and calls, from the call bar on iPhone, iPad and Mac, with a small picture of what the others see
 - **New** · Share your screen from the Mac: the call bar's button opens the system's picker for a display, a window or an app and shares it as a Go Live
-- Video is new and has not been tested against a live call yet: if a picture doesn't come up, sound and everything else in the call keep working
+- Video is new and has not been tested against a live call yet
 
 ## 0.1.7 (November 2026)
 
