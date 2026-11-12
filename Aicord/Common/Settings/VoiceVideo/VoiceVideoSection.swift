@@ -33,6 +33,7 @@ struct VoiceVideoSettings: View {
   @AppStorage(Prefs.automaticGainKey) private var automaticGain = true
   @AppStorage(Prefs.pushToTalkKeyKey) private var pushToTalkKey = Prefs.PushToTalkKey.backtick
   @AppStorage(Prefs.pushToTalkReleaseKey) private var pushToTalkRelease = 0.2
+  @AppStorage(Prefs.cameraKey) private var camera = ""
 
   @State private var inputs: [AudioDevice] = []
   @State private var outputs: [AudioDevice] = []
@@ -127,11 +128,29 @@ struct VoiceVideoSettings: View {
     }
 
     Section {
-      LabeledContent("Video and Screen Sharing") {
-        Text("Coming Soon").foregroundStyle(.secondary)
+      Picker("Camera", selection: $camera) {
+        #if os(macOS)
+          Text("System Default").tag("")
+          ForEach(CameraCapture.devices(), id: \.uniqueID) { device in
+            Text(device.localizedName).tag(device.uniqueID)
+          }
+        #else
+          Text("Front Camera").tag("")
+          Text("Back Camera").tag("back")
+        #endif
       }
     } header: {
       Text("Video")
+    } footer: {
+      #if os(macOS)
+        Text(
+          "Turn your camera on or share your screen from the call panel. Other people's cameras and streams show above the chat of the call you're in. A camera change applies the next time you turn the camera on."
+        )
+      #else
+        Text(
+          "Turn your camera on from the call panel. Other people's cameras and streams show above the chat of the call you're in. A camera change applies the next time you turn the camera on."
+        )
+      #endif
     }
     .task { reloadDevices() }
     .onChange(of: settingsSignature) { gw.voice.preferencesChanged() }

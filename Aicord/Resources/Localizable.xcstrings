@@ -54,12 +54,32 @@
         }
       }
     },
+    "Back Camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tylna kamera"
+          }
+        }
+      }
+    },
     "Camera access is off. Allow it in System Settings to turn your camera on." : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dostęp do kamery jest wyłączony. Zezwól na niego w Ustawieniach systemowych, żeby włączyć kamerę."
+          }
+        }
+      }
+    },
+    "Front Camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przednia kamera"
           }
         }
       }
@@ -160,6 +180,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Włącz kamerę"
+          }
+        }
+      }
+    },
+    "Turn your camera on from the call panel. Other people's cameras and streams show above the chat of the call you're in. A camera change applies the next time you turn the camera on." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamerę włączysz z panelu rozmowy. Kamery i transmisje innych osób pokazują się nad czatem rozmowy, w której jesteś. Zmiana kamery zadziała przy następnym włączeniu kamery."
+          }
+        }
+      }
+    },
+    "Turn your camera on or share your screen from the call panel. Other people's cameras and streams show above the chat of the call you're in. A camera change applies the next time you turn the camera on." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamerę włączysz, a ekran udostępnisz z panelu rozmowy. Kamery i transmisje innych osób pokazują się nad czatem rozmowy, w której jesteś. Zmiana kamery zadziała przy następnym włączeniu kamery."
           }
         }
       }

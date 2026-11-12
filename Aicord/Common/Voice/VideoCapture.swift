@@ -35,7 +35,8 @@ final class CameraCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
   let session = AVCaptureSession()
   private let queue = DispatchQueue(label: "Aicord.Camera", qos: .userInitiated)
   private let output = OSAllocatedUnfairLock<VideoCaptureOutput?>(initialState: nil)
-  private var isConfigured = false
+  /// The camera choice the session is set up for.
+  private var configured: String?
 
   /// Starts the camera; `false` when there is none to use.
   func start(_ handler: @escaping VideoCaptureOutput) async -> Bool {
@@ -59,23 +60,51 @@ final class CameraCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     }
   }
 
+  /// The cameras that can be picked in Settings (Mac).
+  static func devices() -> [AVCaptureDevice] {
+    #if os(macOS)
+      AVCaptureDevice.DiscoverySession(
+        deviceTypes: [.builtInWideAngleCamera, .external, .continuityCamera],
+        mediaType: .video, position: .unspecified
+      ).devices
+    #else
+      []
+    #endif
+  }
+
   private func configure() -> Bool {
-    if isConfigured { return true }
+    let choice = UserDefaults.standard.string(forKey: VoicePreferences.cameraKey) ?? ""
+    if configured == choice { return true }
     #if os(iOS)
+      let position: AVCaptureDevice.Position = choice == "back" ? .back : .front
       let device =
-        AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front)
+        AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position)
         ?? AVCaptureDevice.default(for: .video)
     #else
-      let device = AVCaptureDevice.default(for: .video)
+      // A camera that is gone falls back to the system's default.
+      let device =
+        (choice.isEmpty ? nil : AVCaptureDevice(uniqueID: choice))
+        ?? AVCaptureDevice.default(for: .video)
     #endif
     guard let device, let input = try? AVCaptureDeviceInput(device: device) else {
       return false
     }
     session.beginConfiguration()
     defer { session.commitConfiguration() }
+    // Set up before with another camera: only the camera changes.
+    let isFirst = configured == nil
+    for old in session.inputs { session.removeInput(old) }
     if session.canSetSessionPreset(.hd1280x720) { session.sessionPreset = .hd1280x720 }
-    guard session.canAddInput(input) else { return false }
+    guard session.canAddInput(input) else {
+      configured = nil
+      return false
+    }
     session.addInput(input)
+    if !isFirst {
+      configureConnection(mirrored: device.position != .back)
+      configured = choice
+      return true
+    }
     let video = AVCaptureVideoDataOutput()
     video.alwaysDiscardsLateVideoFrames = true
     video.videoSettings = [
@@ -85,15 +114,22 @@ final class CameraCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     video.setSampleBufferDelegate(self, queue: queue)
     guard session.canAddOutput(video) else { return false }
     session.addOutput(video)
+    configureConnection(mirrored: device.position != .back)
+    configured = choice
+    return true
+  }
+
+  private func configureConnection(mirrored: Bool) {
     #if os(iOS)
-      // The phone is held upright; the sensor is not.
-      if let connection = video.connection(with: .video) {
-        if connection.isVideoRotationAngleSupported(90) { connection.videoRotationAngle = 90 }
-        if connection.isVideoMirroringSupported { connection.isVideoMirrored = true }
+      // The phone is held upright; the sensor is not. The front camera is
+      // sent mirrored, as people know themselves.
+      guard let connection = session.outputs.first?.connection(with: .video) else { return }
+      if connection.isVideoRotationAngleSupported(90) { connection.videoRotationAngle = 90 }
+      if connection.isVideoMirroringSupported {
+        connection.automaticallyAdjustsVideoMirroring = false
+        connection.isVideoMirrored = mirrored
       }
     #endif
-    isConfigured = true
-    return true
   }
 
   func captureOutput(

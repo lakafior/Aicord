@@ -20,6 +20,9 @@ enum VoicePreferences {
   static let automaticGainKey = "Paicord.Voice.AutomaticGain"
   static let pushToTalkKeyKey = "Paicord.Voice.PushToTalkKey"
   static let pushToTalkReleaseKey = "Paicord.Voice.PushToTalkRelease"
+  /// The camera for video in calls: a device ID on the Mac, `back` for the
+  /// back camera on iOS; empty for the default (the front one on iOS).
+  static let cameraKey = "Paicord.Voice.Camera"
   static let mutedKey = "Paicord.Voice.Muted"
   static let deafenedKey = "Paicord.Voice.Deafened"
   /// Debug: join without opening the microphone or asking for it
