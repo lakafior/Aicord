@@ -54,7 +54,6 @@ Aicord na Macu to już natywna aplikacja (jeden wieloplatformowy target SwiftUI,
 1. **Interfejs Maca:** dopracowanie wyglądu zrobione (okno `Settings` z kartami, ustawienia serwera w osobnym oknie, przypięte, wątki i reakcje jako popovery, tytuł okna nie ginie pod arkuszem, tło czatu jak tło okna; szczegóły w `CHANGELOG.md`). Zostało:
    - [ ] Wyszukiwanie z paska narzędzi otwiera wyniki w arkuszu; lepiej pasowałyby wyniki w oknie albo w miejscu listy, jak w Mail.
    - [ ] „Media, Links and Files” i podsumowania Intelligence to nadal arkusze (o rozmiarze Maca); galeria mogłaby być osobnym oknem.
-   - [ ] Okno pojedynczego kanału (`ChannelWindow`) nie pilnuje swojego tytułu pod arkuszem tak jak okno główne.
 2. **Serwer MCP (połączenie Claude z Discordem):**
    - [ ] Podsumowania jako narzędzie MCP (z modelu wybranego w Intelligence). Wysyłanie najwyżej z potwierdzeniem każdej akcji w aplikacji: działanie przez token użytkownika to automatyzacja konta, której Discord zabrania (self-bot), więc ryzyko blokady trzeba ograniczyć.
 

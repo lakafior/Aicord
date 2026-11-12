@@ -332,6 +332,16 @@ import SwiftUI
     @State private var channelStore: ChannelStore?
     @State private var showingMembers = false
 
+    /// The channel's name, as the main window titles it.
+    private var windowTitle: String {
+      guard let channel = channelStore?.channel else { return String(localized: "Channel") }
+      if let name = channel.name, !name.isEmpty {
+        return guildStore == nil ? name : "#" + name
+      }
+      return channel.recipients?.map { $0.global_name ?? $0.username }.joined(separator: ", ")
+        ?? String(localized: "Channel")
+    }
+
     var body: some View {
       Group {
         if gw.state != .connected {
@@ -359,7 +369,10 @@ import SwiftUI
           ContentUnavailableView("Channel Not Available", systemImage: "number")
         }
       }
+      .navigationTitle(windowTitle)
       .navigationSubtitle(guildStore?.guild?.name ?? "")
+      // as in the main window: a sheet or a popover would rename the window
+      .keepsWindowTitle(windowTitle)
       .attachmentViewer()
       .reactionPicker()
       .forwardSheet()
