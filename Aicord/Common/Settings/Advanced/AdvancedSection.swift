@@ -62,38 +62,41 @@ struct AdvancedSettings: View {
       )
     }
 
-    Section {
-      Toggle("Check for Updates", isOn: $updatesEnabled)
-        #if os(macOS)
-          .toggleStyle(.switch)
-        #endif
-      Button {
-        checkingUpdates = true
-        Task {
-          await updates.check()
-          checkingUpdates = false
-        }
-      } label: {
-        HStack {
-          Text("Check Now")
-          if checkingUpdates {
-            Spacer()
-            ProgressView().controlSize(.small)
+    // a store-managed build (AltStore PAL) is updated by the store
+    if !UpdateChecker.isStoreManaged {
+      Section {
+        Toggle("Check for Updates", isOn: $updatesEnabled)
+          #if os(macOS)
+            .toggleStyle(.switch)
+          #endif
+        Button {
+          checkingUpdates = true
+          Task {
+            await updates.check()
+            checkingUpdates = false
+          }
+        } label: {
+          HStack {
+            Text("Check Now")
+            if checkingUpdates {
+              Spacer()
+              ProgressView().controlSize(.small)
+            }
           }
         }
+        .disabled(checkingUpdates)
+        if let result = updates.lastResult {
+          Text(verbatim: result)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+        }
+      } header: {
+        Text("Updates")
+      } footer: {
+        Text(
+          "Once a day at launch, Aicord asks GitHub for the newest release and shows a banner with a link. Nothing is installed automatically."
+        )
       }
-      .disabled(checkingUpdates)
-      if let result = updates.lastResult {
-        Text(verbatim: result)
-          .font(.footnote)
-          .foregroundStyle(.secondary)
-      }
-    } header: {
-      Text("Updates")
-    } footer: {
-      Text(
-        "Once a day at launch, Aicord asks GitHub for the newest release and shows a banner with a link. Nothing is installed automatically."
-      )
     }
 
     Section {

@@ -4,6 +4,10 @@
 <dict>
 	<key>AicordAppGroup</key>
 	<string>$(AICORD_APP_GROUP)</string>
+	<key>AicordDistribution</key>
+	<string>$(AICORD_DISTRIBUTION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSUserActivityTypes</key>

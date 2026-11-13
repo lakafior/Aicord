@@ -37,8 +37,17 @@ final class UpdateChecker {
   private(set) var available: Release?
   private(set) var lastResult: String?
 
+  /// True in a build that a store updates (AltStore PAL): `AicordDistribution`
+  /// in Info.plist, filled from the `AICORD_DISTRIBUTION` build setting by
+  /// scripts/build-ios.sh. Such a build never asks GitHub and shows no banner.
+  static let isStoreManaged: Bool = {
+    let value = Bundle.main.object(forInfoDictionaryKey: "AicordDistribution") as? String
+    return value?.isEmpty == false
+  }()
+
   static var isEnabled: Bool {
-    UserDefaults.standard.object(forKey: enabledKey) as? Bool ?? true
+    guard !isStoreManaged else { return false }
+    return UserDefaults.standard.object(forKey: enabledKey) as? Bool ?? true
   }
 
   static var currentVersion: String {
