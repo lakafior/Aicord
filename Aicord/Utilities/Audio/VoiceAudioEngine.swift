@@ -98,7 +98,7 @@ final class VoiceAudioEngine: @unchecked Sendable {
           interleaved: false
         )
       else { return }
-      nonisolated(unsafe) let node = AVAudioPlayerNode()
+      let node = AVAudioPlayerNode()
       engine.attach(node)
       engine.connect(node, to: engine.mainMixerNode, format: format)
       node.play()
