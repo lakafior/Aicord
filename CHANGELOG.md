@@ -2,6 +2,12 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### Voice
+
+- **New** · Share your screen from iPhone and iPad: the call bar's button opens the system's Start Broadcast sheet, and the whole screen, other apps included, goes out as a Go Live until you stop it. Not tested against a live call yet
+
 ## 0.1.10 (November 2026)
 
 ### Voice
@@ -659,6 +665,7 @@ Napisane i sprawdzone testami pakietu (RTP → ramki H.264 → dekoder systemowy
    - [x] Udostępnianie ekranu na Macu (`ScreenCapture`: systemowy `SCContentSharingPicker`, do 1080p/30, 3,5 Mb/s): Create Stream (op 18), własne połączenie streamu jako nadawca (`isStreamOwner`), Delete Stream (op 19) przy końcu; obraz, który się nie zmienia, idzie ponownie co sekundę, żeby dołączający dostał klatkę. Bez dźwięku systemu.
    - [x] Dźwięk oglądanego streamu w stereo (dekoder Opus z dwoma kanałami na połączeniu streamu, osobny format odtwarzacza).
    - [x] Podgląd streamu przed wejściem: `GET /streams/{key}/preview`, miniatura odświeżana co minutę zamiast zwykłego przycisku.
+   - [x] Udostępnianie ekranu z iOS (13.11): rozszerzenie Broadcast `AicordBroadcast` (ReplayKit, tryb sample buffer) obraca obraz do pionu lub poziomu (`VTPixelRotationSession`), koduje go tym samym `VideoEncoder` (plik kompilowany wprost do rozszerzenia, dłuższy bok do 1920) i wysyła zakodowane ramki do aplikacji przez gniazdo Unix w kontenerze App Group (`BroadcastLink`). Aplikacja, która żyje w tle dzięki trybowi audio, nasłuchuje tylko w trakcie rozmowy i puszcza ramki tą samą ścieżką Go Live co Mac; w drugą stronę idą prośba o klatkę kluczową i koniec. Rozszerzenie nie zna konta ani Discorda. To czwarty App ID: świadoma decyzja (większość instaluje przez LiveContainer, docelowo AltStore PAL), darmowe konto w AltStore ma limit trzech.
    - Nie zrobione: AV1. libdave szyfruje ramkę AV1 w układzie, który trzeba odtworzyć co do bajtu (OBU bez pola rozmiaru w ostatnim), do tego opis formatu wymaga parsowania nagłówka sekwencji, sprzętowy dekoder mają tylko nowsze układy, a system nie ma kodera AV1, którym dałoby się to przetestować. Ogłoszenie AV1 bez testu zepsułoby obraz od nadawców, którzy dziś schodzą do działającego H.265/H.264.
 
 ### 🧪 Etap 14: Reszta do Discorda 1:1 — punkt 3 (1.11)

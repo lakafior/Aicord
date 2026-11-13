@@ -102,17 +102,21 @@ final class VoiceConnectionStore: DiscordDataStore {
   private(set) var isCameraOn = false
   /// Camera access was refused in the system's settings.
   private(set) var cameraDenied = false
-  /// Our screen (or a window) is being shared as a Go Live. Mac only.
+  /// Our screen (on the Mac, or a window) is being shared as a Go Live.
   private(set) var isSharingScreen = false
 
   /// The camera, for the picture of ourselves.
   @ObservationIgnored let camera = CameraCapture()
   @ObservationIgnored private var cameraEncoder: VideoEncoder?
   @ObservationIgnored private var cameraTask: Task<Void, Never>?
-  @ObservationIgnored private var screenEncoder: VideoEncoder?
+  /// Asks whatever encodes our screen for a key frame.
+  @ObservationIgnored private var screenKeyframe: (() -> Void)?
   @ObservationIgnored private var screenTask: Task<Void, Never>?
   #if os(macOS)
     @ObservationIgnored private var screen: ScreenCapture?
+  #else
+    /// Where the Broadcast extension delivers the screen while in a call.
+    @ObservationIgnored private let broadcast = BroadcastReceiver()
   #endif
 
   /// What we tell the voice server about the video we send.
@@ -149,6 +153,16 @@ final class VoiceConnectionStore: DiscordDataStore {
     audio.onInputLevel = { [weak self] level, _ in
       Task { @MainActor in self?.inputLevel = level }
     }
+    #if os(iOS)
+      broadcast.onStarted = { [weak self] frames in
+        guard let self else { return }
+        let broadcast = self.broadcast
+        if !self.beginScreenShare(frames: frames, keyframe: { broadcast.requestKeyframe() }) {
+          broadcast.end()
+        }
+      }
+      broadcast.onEnded = { [weak self] in self?.stopScreenShare(tellDiscord: true) }
+    #endif
   }
 
   // MARK: Gateway events
@@ -265,6 +279,9 @@ final class VoiceConnectionStore: DiscordDataStore {
     videoTask?.cancel()
     videoTask = nil
     stopCamera(tellDiscord: false)
+    #if os(iOS)
+      broadcast.stop()
+    #endif
     for owner in Array(streams.keys) { endStream(owner, nil) }
     streams = [:]
     streamPhases = [:]
@@ -388,6 +405,10 @@ final class VoiceConnectionStore: DiscordDataStore {
         self?.feeds[.init(userID: frame.userID, kind: .camera)]?.enqueue(frame)
       }
     }
+    #if os(iOS)
+      // From now on the Broadcast extension can reach us.
+      broadcast.start()
+    #endif
     let cameras = watchedCameras
     let sendsCamera = isCameraOn
     Task {
@@ -508,9 +529,7 @@ final class VoiceConnectionStore: DiscordDataStore {
         stopScreenShare(tellDiscord: true)
         return
       }
-      guard let call, phase == .connected, !isSuppressed,
-        let me = gateway?.user.currentUser?.id, let gateway = gateway?.gateway
-      else { return }
+      guard let call, phase == .connected, !isSuppressed else { return }
       let (frames, continuation) = AsyncStream.makeStream(
         of: EncodedVideoFrame.self, bufferingPolicy: .bufferingNewest(30))
       let encoder = VideoEncoder(settings: .screen) { continuation.yield($0) }
@@ -519,23 +538,43 @@ final class VoiceConnectionStore: DiscordDataStore {
       screen.onEnded = { [weak self] in self?.stopScreenShare(tellDiscord: true) }
       screen.pick(output: { pixels, time in encoder.encode(pixels, at: time) }) { [weak self] picked in
         guard let self else { return }
-        guard picked, self.call?.channelID == call.channelID else {
+        guard picked, self.call?.channelID == call.channelID,
+          self.beginScreenShare(frames: frames, keyframe: { encoder.requestKeyframe() })
+        else {
           screen.stop()
           self.screen = nil
           return
         }
-        self.screenEncoder = encoder
-        self.screenTask = Task { [weak self] in
-          for await frame in frames { await self?.streams[me]?.manager?.sendVideo(frame) }
-        }
-        self.isSharingScreen = true
-        self.streams[me] = StreamWatch()
-        self.streamPhases[me] = .connecting
-        self.logger.info("Starting a Go Live")
-        Task { await gateway.createStream(guildID: call.guildID, channelID: call.channelID) }
       }
     }
+  #else
+    /// Ends the broadcast started from the system's sheet.
+    func stopSharingScreen() {
+      stopScreenShare(tellDiscord: true)
+    }
   #endif
+
+  /// Starts a Go Live of our own from frames already encoded: by the Mac's
+  /// screen capture, or by the iOS Broadcast extension. `false` when there
+  /// is no call to share into.
+  @discardableResult
+  private func beginScreenShare(
+    frames: AsyncStream<EncodedVideoFrame>, keyframe: @escaping () -> Void
+  ) -> Bool {
+    guard let call, phase == .connected, !isSuppressed, !isSharingScreen,
+      let me = gateway?.user.currentUser?.id, let gateway = gateway?.gateway
+    else { return false }
+    screenKeyframe = keyframe
+    screenTask = Task { [weak self] in
+      for await frame in frames { await self?.streams[me]?.manager?.sendVideo(frame) }
+    }
+    isSharingScreen = true
+    streams[me] = StreamWatch()
+    streamPhases[me] = .connecting
+    logger.info("Starting a Go Live")
+    Task { await gateway.createStream(guildID: call.guildID, channelID: call.channelID) }
+    return true
+  }
 
   private func stopScreenShare(tellDiscord: Bool) {
     guard isSharingScreen, let me = gateway?.user.currentUser?.id else { return }
@@ -543,10 +582,12 @@ final class VoiceConnectionStore: DiscordDataStore {
     #if os(macOS)
       screen?.stop()
       screen = nil
+    #else
+      broadcast.end()
     #endif
     screenTask?.cancel()
     screenTask = nil
-    screenEncoder = nil
+    screenKeyframe = nil
     logger.info("Go Live ended")
     if tellDiscord, let key = streamKey(of: me), let gateway = gateway?.gateway {
       Task { await gateway.deleteStream(key: key) }
@@ -653,10 +694,10 @@ final class VoiceConnectionStore: DiscordDataStore {
             self.endStream(owner, .ended("connection_lost"))
           case .stateChanged(.connected) where isOurs:
             self.streamPhases[owner] = .watching
-            self.screenEncoder?.requestKeyframe()
+            self.screenKeyframe?()
           case .participantJoined, .videoKeyframeRequested:
             // A viewer of our screen starts from a key frame.
-            if isOurs { self.screenEncoder?.requestKeyframe() }
+            if isOurs { self.screenKeyframe?() }
           default:
             break
           }

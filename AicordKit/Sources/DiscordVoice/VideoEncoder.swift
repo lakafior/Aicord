@@ -3,7 +3,10 @@
 //  AicordKit
 //
 //  Our own video on its way out: pixel buffers into H.264 frames with the
-//  system encoder, and frames into RTP payloads (RFC 6184).
+//  system encoder.
+//
+//  This file stands alone (system frameworks only): the iOS Broadcast
+//  extension compiles it too, without the rest of the library.
 //
 
 import CoreMedia
@@ -18,6 +21,12 @@ public struct EncodedVideoFrame: Sendable {
   public var isKeyframe: Bool
   /// RTP timestamp, 90 kHz.
   public var timestamp: UInt32
+
+  public init(data: Data, isKeyframe: Bool, timestamp: UInt32) {
+    self.data = data
+    self.isKeyframe = isKeyframe
+    self.timestamp = timestamp
+  }
 }
 
 /// A real-time H.264 encoder. Frames come out in the order they went in.
@@ -38,16 +47,25 @@ public final class VideoEncoder: @unchecked Sendable {
 
   /// Key frames come this often even when nobody asks for one.
   static let keyframeInterval = 4
+  static let startCode = Data([0, 0, 0, 1])
 
   private let lock = NSLock()
   private var session: VTCompressionSession?
   private var size: (width: Int32, height: Int32) = (0, 0)
   private var wantsKeyframe = true
   private let settings: Settings
+  private let maxDimension: Int?
   private let output: @Sendable (EncodedVideoFrame) -> Void
 
-  public init(settings: Settings, output: @escaping @Sendable (EncodedVideoFrame) -> Void) {
+  /// `maxDimension` caps the longer side of what is sent; larger pictures
+  /// are scaled down by the encoder.
+  public init(
+    settings: Settings,
+    maxDimension: Int? = nil,
+    output: @escaping @Sendable (EncodedVideoFrame) -> Void
+  ) {
     self.settings = settings
+    self.maxDimension = maxDimension
     self.output = output
   }
 
@@ -92,6 +110,13 @@ public final class VideoEncoder: @unchecked Sendable {
   }
 
   private func makeSession(width: Int32, height: Int32) -> VTCompressionSession? {
+    var (width, height) = (width, height)
+    if let maxDimension, max(width, height) > Int32(maxDimension) {
+      let scale = Double(maxDimension) / Double(max(width, height))
+      // Even sizes, as encoders want them.
+      width = max(2, Int32(Double(width) * scale) / 2 * 2)
+      height = max(2, Int32(Double(height) * scale) / 2 * 2)
+    }
     var session: VTCompressionSession?
     guard
       VTCompressionSessionCreate(
@@ -136,7 +161,7 @@ public final class VideoEncoder: @unchecked Sendable {
           format, parameterSetIndex: index, parameterSetPointerOut: &pointer,
           parameterSetSizeOut: &size, parameterSetCountOut: nil, nalUnitHeaderLengthOut: nil)
         if let pointer {
-          data += VideoDepacketizer.startCode
+          data += Self.startCode
           data.append(pointer, count: size)
         }
       }
@@ -156,7 +181,7 @@ public final class VideoEncoder: @unchecked Sendable {
         | Int(bytes[offset + 2]) << 8 | Int(bytes[offset + 3])
       offset += 4
       guard size > 0, offset + size <= length else { break }
-      data += VideoDepacketizer.startCode
+      data += Self.startCode
       data.append(contentsOf: bytes[offset..<(offset + size)])
       offset += size
     }
@@ -165,35 +190,5 @@ public final class VideoEncoder: @unchecked Sendable {
     let ticks = seconds.isFinite ? UInt64(max(seconds, 0) * 90_000) : 0
     return EncodedVideoFrame(
       data: data, isKeyframe: isKeyframe, timestamp: UInt32(truncatingIfNeeded: ticks))
-  }
-}
-
-/// Splits an H.264 frame into RTP payloads: a NAL unit that fits goes out
-/// whole, a larger one as FU-A fragments.
-package enum VideoPacketizer {
-  /// Leaves room for the RTP header, the extension, the encryption tag and
-  /// the nonce inside a 1200-byte datagram.
-  package static let maxPayloadSize = 1100
-
-  package static func payloads(annexB: Data, maxSize: Int = maxPayloadSize) -> [Data] {
-    var payloads: [Data] = []
-    for unit in VideoSampleBuilder.nalUnits(in: annexB) {
-      guard let header = unit.first else { continue }
-      if unit.count <= maxSize {
-        payloads.append(unit)
-        continue
-      }
-      let body = unit.dropFirst()
-      var offset = body.startIndex
-      while offset < body.endIndex {
-        let end = min(offset + maxSize - 2, body.endIndex)
-        var flags = header & 0x1F
-        if offset == body.startIndex { flags |= 0x80 }
-        if end == body.endIndex { flags |= 0x40 }
-        payloads.append(Data([(header & 0xE0) | 28, flags]) + body[offset..<end])
-        offset = end
-      }
-    }
-    return payloads
   }
 }

@@ -127,6 +127,10 @@ struct VoiceCallBar: View {
             .disabled(voice.phase != .connected)
             .help(Text(voice.isSharingScreen ? "Stop Sharing" : "Share Your Screen"))
             .accessibilityLabel(Text(voice.isSharingScreen ? "Stop Sharing" : "Share Your Screen"))
+          #else
+            ScreenShareButton(voice: voice)
+              .frame(maxWidth: .infinity)
+              .padding(.vertical, 6)
           #endif
         }
 
@@ -346,6 +350,9 @@ struct VoiceCallAccessory: View {
         .foregroundStyle(voice.isMuted || voice.isDeafened ? .red : .primary)
         .accessibilityLabel(Text(voice.isMuted ? "Unmute" : "Mute"))
         CameraButton(voice: voice)
+        #if os(iOS)
+          ScreenShareButton(voice: voice)
+        #endif
       }
       Button {
         voice.toggleDeafen()
@@ -382,6 +389,34 @@ struct CameraButton: View {
     .accessibilityLabel(Text(voice.isCameraOn ? "Turn Off Camera" : "Turn On Camera"))
   }
 }
+
+#if os(iOS)
+  /// Shares the screen as a Go Live: opens the system's Start Broadcast
+  /// sheet, or ends the broadcast that is running.
+  struct ScreenShareButton: View {
+    let voice: VoiceConnectionStore
+
+    var body: some View {
+      if voice.isSharingScreen {
+        Button {
+          voice.stopSharingScreen()
+        } label: {
+          Image(systemName: "rectangle.on.rectangle.slash")
+        }
+        .foregroundStyle(.green)
+        .accessibilityLabel(Text("Stop Sharing"))
+      } else {
+        Image(systemName: "rectangle.on.rectangle")
+          .overlay { BroadcastPickerButton() }
+          .opacity(voice.phase == .connected ? 1 : 0.4)
+          .allowsHitTesting(voice.phase == .connected)
+          .accessibilityElement()
+          .accessibilityLabel(Text("Share Your Screen"))
+          .accessibilityAddTraits(.isButton)
+      }
+    }
+  }
+#endif
 
 /// Raises or lowers the hand in a Stage audience.
 struct StageHandButton: View {

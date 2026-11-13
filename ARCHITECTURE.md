@@ -10,8 +10,9 @@ What changed and when is in the [changelog](CHANGELOG.md).
 | `Aicord/` | The app, one target for iOS and macOS. `App/` (entry point, app state, commands), `Baseplates/` (the window layouts: `SmallBaseplate` on iPhone, `LargeBaseplate` on iPad, `MacBaseplate` on the Mac), `Common/` (views shared by both platforms), `Stores/` (observable state fed by the gateway), `iOS/` and `macOS/` (platform-only views) |
 | `AicordKit/` | The Discord library, a fork of [DiscordBM](https://github.com/DiscordBM/DiscordBM) trimmed to what a user client needs. Modules: `DiscordModels`, `DiscordHTTP`, `DiscordGateway`, `DiscordVoice`, `COpusShim`, and the umbrella `AicordKit` the app imports |
 | `Textual/` | Markdown rendering, a modified [Textual](https://github.com/gonzalezreal/textual) |
-| `AicordShared/` | Types compiled into both the app and the widget extension, without `AicordKit`: `AicordLink`, the App Group ID, the widget snapshot, Live Activity attributes and intents |
+| `AicordShared/` | Types compiled into both the app and its extensions, without `AicordKit`: `AicordLink`, the App Group ID, the widget snapshot, Live Activity attributes and intents |
 | `AicordWidgets/` | The unread widget and the voice call Live Activity |
+| `AicordBroadcast/` | The iOS Broadcast extension that captures the screen for a Go Live and hands encoded frames to the app |
 | `AicordSafari/` | The Safari extension that sends `discord.gg` links to the app |
 | `AicordMCP/` | `aicord-mcp`, the read-only MCP helper for the Mac (a standalone SwiftPM package) |
 | `scripts/` | `altstore_source.py`, which builds the AltStore source from GitHub releases |
@@ -43,7 +44,7 @@ Mac-only behaviour sits behind `#if os(macOS)`. Shared code changed for the Mac 
 
 - **Video is asked for, not sent by default.** The voice server forwards a camera only while `setVideoWanted` names its user (Media Sink Wants), and `VideoPanel` names only what is on screen. Only H.265 and H.264 are offered, receive-only, so senders fall back to them; AV1 is left out until it can be tested against a real sender.
 - **The Mac app's entitlements come from build settings** (`ENABLE_APP_SANDBOX`, `ENABLE_RESOURCE_ACCESS_CAMERA`, `ENABLE_RESOURCE_ACCESS_AUDIO_INPUT`, …), not from `Aicord.entitlements`, which only holds the App Group and is shared with iOS. Anything new the sandbox has to allow is switched on there.
-- **We send H.264 only**, one layer, and nothing while the voice server says nobody is watching. Encoded frames reach the connection through one `AsyncStream` per source, so they go out in the order they were encoded. Screen sharing is Mac-only: on iOS it would need a Broadcast extension, a fourth App ID.
+- **We send H.264 only**, one layer, and nothing while the voice server says nobody is watching. Encoded frames reach the connection through one `AsyncStream` per source, so they go out in the order they were encoded. On iOS the screen comes from the Broadcast extension, a separate process with a 50 MB limit: it only rotates and encodes (it compiles `VideoEncoder.swift` directly, without the library) and sends frames to the app over a Unix socket in the App Group container (`AicordShared/BroadcastLink.swift`). The call, DAVE and the token never leave the app, which listens only while in a call.
 - **A Go Live is one more `VoiceGatewayManager`** (`isStream`) next to the call's, one per watched stream: its own socket, UDP flow, SSRCs and DAVE group, the call's session ID, and no media sent. The call's connection has to stay up.
 - **Frames are rebuilt before they are decrypted.** DAVE encrypts a whole encoded frame, so `VideoDepacketizer` restores the sender's Annex B layout (4-byte start codes, as libdave writes them) and only then hands it to the decryptor. The display layer decodes; there is no `VTDecompressionSession` of our own.
 
@@ -60,7 +61,7 @@ Mac-only behaviour sits behind `#if os(macOS)`. Shared code changed for the Mac 
 
 - **One link format.** Widgets, Spotlight, Handoff, Shortcuts and notifications all open `aicord://channel/<server or @me>/<channel>[/<message>]` through `SystemIntegration`.
 - **App Group:** `group.net.smigi.aicord` on iOS and `$(DEVELOPMENT_TEAM).net.smigi.aicord` on macOS, set once as `AICORD_APP_GROUP` and read from `Info.plist`.
-- **Three App IDs** (the app, Safari and widgets) is the limit of a free account in AltStore. Don't add another extension without dropping one.
+- **Four App IDs on iOS** (the app, Safari, widgets and Broadcast). A free account in AltStore allows three, which was the rule until screen sharing; the fourth was added on purpose, since most people install through LiveContainer and the plan is AltStore PAL. Don't add a fifth without a reason as good.
 - **Nothing runs with the token in the background.** No push server, and App Intents bring the app to the foreground (`supportedModes = .foreground`). The widget only shows counts the app wrote while it was open.
 - **Updates** are checked against `GET /repos/lakafior/Aicord/releases/latest` (`UpdateChecker.swift`), not Sparkle. The same check works on iOS, where AltStore installs the update, and it needs no signing keys.
 

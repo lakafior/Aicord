@@ -231,3 +231,33 @@ public struct VideoSampleBuilder {
     return status == noErr ? format : nil
   }
 }
+
+/// Splits an H.264 frame into RTP payloads: a NAL unit that fits goes out
+/// whole, a larger one as FU-A fragments.
+package enum VideoPacketizer {
+  /// Leaves room for the RTP header, the extension, the encryption tag and
+  /// the nonce inside a 1200-byte datagram.
+  package static let maxPayloadSize = 1100
+
+  package static func payloads(annexB: Data, maxSize: Int = maxPayloadSize) -> [Data] {
+    var payloads: [Data] = []
+    for unit in VideoSampleBuilder.nalUnits(in: annexB) {
+      guard let header = unit.first else { continue }
+      if unit.count <= maxSize {
+        payloads.append(unit)
+        continue
+      }
+      let body = unit.dropFirst()
+      var offset = body.startIndex
+      while offset < body.endIndex {
+        let end = min(offset + maxSize - 2, body.endIndex)
+        var flags = header & 0x1F
+        if offset == body.startIndex { flags |= 0x80 }
+        if end == body.endIndex { flags |= 0x40 }
+        payloads.append(Data([(header & 0xE0) | 28, flags]) + body[offset..<end])
+        offset = end
+      }
+    }
+    return payloads
+  }
+}

@@ -14,6 +14,9 @@ import os
 
 #if os(macOS)
   import ScreenCaptureKit
+#else
+  import AicordKit
+  import ReplayKit
 #endif
 
 /// Pictures as they are captured. Called on a capture queue.
@@ -320,6 +323,120 @@ struct CameraPreview {
     }
   }
 #else
+  /// The app's end of `BroadcastLink`: while we are in a call it listens
+  /// for the Broadcast extension, and hands on the frames the extension
+  /// encoded from the screen.
+  final class BroadcastReceiver: @unchecked Sendable {
+    private let queue = DispatchQueue(label: "Aicord.BroadcastReceiver", qos: .userInitiated)
+    private var listener: Int32 = -1
+    private var client: Int32 = -1
+    private var acceptSource: (any DispatchSourceRead)?
+    /// A broadcast started: its frames, in order, until it ends.
+    var onStarted: (@MainActor (AsyncStream<EncodedVideoFrame>) -> Void)?
+    /// The broadcast was stopped from the system's side.
+    var onEnded: (@MainActor () -> Void)?
+
+    func start() {
+      queue.async { [self] in
+        guard listener < 0, let path = BroadcastLink.socketPath,
+          let fd = BroadcastLink.listen(at: path)
+        else { return }
+        listener = fd
+        let source = DispatchSource.makeReadSource(fileDescriptor: fd, queue: queue)
+        source.setEventHandler { [weak self] in self?.accept() }
+        source.resume()
+        acceptSource = source
+      }
+    }
+
+    func stop() {
+      queue.async { [self] in
+        closeClient(tellExtension: true)
+        acceptSource?.cancel()
+        acceptSource = nil
+        if listener >= 0 { close(listener) }
+        listener = -1
+      }
+    }
+
+    /// A viewer needs a key frame.
+    func requestKeyframe() {
+      queue.async { [self] in
+        if client >= 0 { _ = BroadcastLink.write(BroadcastLink.encode(.keyframe), to: client) }
+      }
+    }
+
+    /// Ends the broadcast from our side (the stream or the call is over).
+    func end() {
+      queue.async { [self] in closeClient(tellExtension: true) }
+    }
+
+    private func closeClient(tellExtension: Bool) {
+      guard client >= 0 else { return }
+      if tellExtension { _ = BroadcastLink.write(BroadcastLink.encode(.stop), to: client) }
+      // Wakes the reading thread, which closes the descriptor.
+      shutdown(client, SHUT_RDWR)
+      client = -1
+    }
+
+    private func accept() {
+      let fd = Darwin.accept(listener, nil, nil)
+      guard fd >= 0 else { return }
+      guard client < 0 else {
+        // One broadcast at a time.
+        close(fd)
+        return
+      }
+      var on: Int32 = 1
+      setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &on, socklen_t(MemoryLayout<Int32>.size))
+      client = fd
+      let (frames, continuation) = AsyncStream.makeStream(
+        of: EncodedVideoFrame.self, bufferingPolicy: .bufferingNewest(30))
+      let onStarted = self.onStarted
+      Task { @MainActor in onStarted?(frames) }
+      Thread.detachNewThread { [weak self] in
+        var parser = BroadcastLink.Parser()
+        while let data = BroadcastLink.read(from: fd) {
+          for case .frame(let isKeyframe, let timestamp, let data) in parser.append(data) {
+            continuation.yield(
+              EncodedVideoFrame(data: data, isKeyframe: isKeyframe, timestamp: timestamp))
+          }
+          if parser.isBroken { break }
+        }
+        continuation.finish()
+        close(fd)
+        guard let self else { return }
+        self.queue.async {
+          // Ended by the extension, unless we closed it ourselves.
+          let endedThere = self.client == fd
+          if endedThere { self.client = -1 }
+          let onEnded = self.onEnded
+          if endedThere { Task { @MainActor in onEnded?() } }
+        }
+      }
+    }
+  }
+
+  /// The system's Start Broadcast sheet, behind an icon of ours. The
+  /// system only shows it from its own button, which sits invisibly on
+  /// top and takes the tap.
+  struct BroadcastPickerButton: UIViewRepresentable {
+    func makeUIView(context: Context) -> RPSystemBroadcastPickerView {
+      let picker = RPSystemBroadcastPickerView(frame: CGRect(x: 0, y: 0, width: 44, height: 32))
+      // AltStore renames the app; the extension keeps its suffix.
+      picker.preferredExtension = (Bundle.main.bundleIdentifier ?? "net.smigi.aicord") + ".Broadcast"
+      picker.showsMicrophoneButton = false
+      for case let button as UIButton in picker.subviews {
+        button.setImage(UIImage(), for: .normal)
+        button.frame = picker.bounds
+        button.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+      }
+      return picker
+    }
+
+    func updateUIView(_ view: RPSystemBroadcastPickerView, context: Context) {}
+  }
+
   extension CameraPreview: UIViewRepresentable {
     func makeUIView(context: Context) -> PreviewView {
       let view = PreviewView()

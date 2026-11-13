@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B0ADCA570000000000000002 /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ADCA570000000000000001 /* SampleHandler.swift */; };
+		B0ADCA570000000000000004 /* BroadcastLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ADCA570000000000000003 /* BroadcastLink.swift */; };
+		B0ADCA570000000000000005 /* BroadcastLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ADCA570000000000000003 /* BroadcastLink.swift */; };
+		B0ADCA570000000000000007 /* VideoEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ADCA570000000000000006 /* VideoEncoder.swift */; };
 		044C78D9083D40903B75814E /* ChannelIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99786A66C75D3846203C309A /* ChannelIndex.swift */; };
 		0AFD5990586C92D6CFD99C40 /* ImageDescriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5544B514A0125B34B4F88B6B /* ImageDescriptions.swift */; };
 		0B6D47340329CA193CBA07B0 /* RichPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92981EF5B411046392600481 /* RichPresence.swift */; };
@@ -31,6 +35,7 @@
 		3755AD1F15283F948096ABD1 /* ServerInvitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4A4EB17D56C7699B48F04A8 /* ServerInvitesView.swift */; };
 		3AF88BECD93B047076A636D3 /* MCPBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8692F2B1E90E76228C54E6D7 /* MCPBridge.swift */; };
 		3D58D54EDDCE8486AAB0AA73 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB88FC1D519531963FD04B31 /* SearchView.swift */; };
+		47CD8170A3EDDE8CC113E95B /* AicordBroadcast.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2112046F256BCEA4361CCA61 /* AicordBroadcast.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		571AE5B12FFD7726006D609C /* ObservableBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571AE5B02FFD7726006D609C /* ObservableBox.swift */; };
 		5724CD6F2E733D0E00931FEF /* MFASheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5724CD6E2E733D0900931FEF /* MFASheet.swift */; };
 		575DA6A030006C3D00CBA394 /* MentionCountBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575DA69F30006C3D00CBA394 /* MentionCountBadge.swift */; };
@@ -257,6 +262,13 @@
 			remoteGlobalIDString = 5AFE758A7256AD2044554B31;
 			remoteInfo = AicordSafari;
 		};
+		8A7928770314FF8B7A1ACA9D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA1096D32E63BE84005BC3D2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F1C4DE0FF1D1462AAED3A992;
+			remoteInfo = AicordBroadcast;
+		};
 		B0B0C0DE0000000000000020 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AA1096D32E63BE84005BC3D2 /* Project object */;
@@ -275,6 +287,7 @@
 			files = (
 				B0B0C0DE0000000000000018 /* AicordWidgets.appex in Embed Foundation Extensions */,
 				5AFEF657D454654A8F2C4082 /* AicordSafari.appex in Embed Foundation Extensions */,
+				47CD8170A3EDDE8CC113E95B /* AicordBroadcast.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -282,6 +295,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B0ADCA570000000000000001 /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
+		B0ADCA570000000000000003 /* BroadcastLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastLink.swift; sourceTree = "<group>"; };
+		B0ADCA570000000000000006 /* VideoEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEncoder.swift; path = AicordKit/Sources/DiscordVoice/VideoEncoder.swift; sourceTree = SOURCE_ROOT; };
+		B0ADCA570000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B0ADCA570000000000000009 /* AicordBroadcast.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AicordBroadcast.entitlements; sourceTree = "<group>"; };
 		0B46F22DEFE15CC7CB874558 /* ComposerSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerSettings.swift; sourceTree = "<group>"; };
 		0E2C0DE00000000000000001 /* MessageFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFormatting.swift; sourceTree = "<group>"; };
 		0E2C0DE00000000000000003 /* FormattedMessageSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormattedMessageSheet.swift; sourceTree = "<group>"; };
@@ -300,6 +318,7 @@
 		1A7E501E161E4DAD6C94F7C8 /* InvitePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitePreview.swift; sourceTree = "<group>"; };
 		1A7E7D8F22A9583785112D86 /* VideoEmbedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEmbedView.swift; sourceTree = "<group>"; };
 		1A7EB8862910F45731B26854 /* AddFriend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriend.swift; sourceTree = "<group>"; };
+		2112046F256BCEA4361CCA61 /* AicordBroadcast.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AicordBroadcast.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		25420FE83E339522A9C96698 /* DemoMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMessages.swift; sourceTree = "<group>"; };
 		3B767A96E682F1FFD1C3B3FA /* ExternalUploadFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalUploadFlow.swift; sourceTree = "<group>"; };
 		4AE08CE43F8E1856ED910E6F /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMode.swift; sourceTree = "<group>"; };
@@ -533,6 +552,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6C15BE89A9257DDED04E548E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA1096D82E63BE84005BC3D2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -737,6 +763,17 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		9C45339F8F43EE0FDD4B41D0 /* AicordBroadcast */ = {
+			isa = PBXGroup;
+			children = (
+				B0ADCA570000000000000001 /* SampleHandler.swift */,
+				B0ADCA570000000000000006 /* VideoEncoder.swift */,
+				B0ADCA570000000000000008 /* Info.plist */,
+				B0ADCA570000000000000009 /* AicordBroadcast.entitlements */,
+			);
+			path = AicordBroadcast;
+			sourceTree = "<group>";
+		};
 		AA078FBF2EC808F900EDFFA8 /* Account */ = {
 			isa = PBXGroup;
 			children = (
@@ -786,6 +823,7 @@
 				5AFE0E59960BFE2FD810352F /* AicordSafari */,
 				579848C62E6C5A07004CC343 /* Frameworks */,
 				AA1096DC2E63BE84005BC3D2 /* Products */,
+				9C45339F8F43EE0FDD4B41D0 /* AicordBroadcast */,
 			);
 			sourceTree = "<group>";
 		};
@@ -795,6 +833,7 @@
 				B0B0C0DE000000000000000A /* AicordWidgets.appex */,
 				AA1096DB2E63BE84005BC3D2 /* Aicord.app */,
 				5AFEDA6B3775552587C1C25A /* AicordSafari.appex */,
+				2112046F256BCEA4361CCA61 /* AicordBroadcast.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1347,6 +1386,7 @@
 			isa = PBXGroup;
 			children = (
 				B0B0C0DE0000000000000001 /* AicordShared.swift */,
+				B0ADCA570000000000000003 /* BroadcastLink.swift */,
 				B0B0C0DE0000000000000002 /* VoiceCallActivity.swift */,
 			);
 			path = AicordShared;
@@ -1410,6 +1450,7 @@
 			dependencies = (
 				B0B0C0DE0000000000000021 /* PBXTargetDependency */,
 				5AFEF582CE10B187A29DE55E /* PBXTargetDependency */,
+				F0705A9585EA952C3FE76D7E /* PBXTargetDependency */,
 			);
 			name = Aicord;
 			packageProductDependencies = (
@@ -1435,6 +1476,25 @@
 			name = AicordWidgets;
 			productName = AicordWidgets;
 			productReference = B0B0C0DE000000000000000A /* AicordWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		F1C4DE0FF1D1462AAED3A992 /* AicordBroadcast */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6E0E18BE1B751372802F883E /* Build configuration list for PBXNativeTarget "AicordBroadcast" */;
+			buildPhases = (
+				1A274A324C8EDBA123F130A0 /* Sources */,
+				6C15BE89A9257DDED04E548E /* Frameworks */,
+				DF7217B12EFE6387A0FF3BE7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AicordBroadcast;
+			packageProductDependencies = (
+			);
+			productName = AicordBroadcast;
+			productReference = 2112046F256BCEA4361CCA61 /* AicordBroadcast.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -1481,6 +1541,7 @@
 				AA1096DA2E63BE84005BC3D2 /* Aicord */,
 				5AFE758A7256AD2044554B31 /* AicordSafari */,
 				B0B0C0DE000000000000001C /* AicordWidgets */,
+				F1C4DE0FF1D1462AAED3A992 /* AicordBroadcast */,
 			);
 		};
 /* End PBXProject section */
@@ -1518,6 +1579,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DF7217B12EFE6387A0FF3BE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -1543,6 +1611,16 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1A274A324C8EDBA123F130A0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0ADCA570000000000000002 /* SampleHandler.swift in Sources */,
+				B0ADCA570000000000000005 /* BroadcastLink.swift in Sources */,
+				B0ADCA570000000000000007 /* VideoEncoder.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5AFEF474B6ED04097E659EFB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1582,6 +1660,7 @@
 				AC0DC60013FF71EBBDA11DD2 /* VoiceConnectionStore.swift in Sources */,
 				AC04D930DC8474160A714437 /* VoiceCallBar.swift in Sources */,
 				AC0F5A6E1B2C3D4E5F607182 /* StagePanel.swift in Sources */,
+				B0ADCA570000000000000004 /* BroadcastLink.swift in Sources */,
 				AC0F5A6E1B2C3D4E5F607186 /* VideoCapture.swift in Sources */,
 				AC0F5A6E1B2C3D4E5F607184 /* VideoPanel.swift in Sources */,
 				AC018E635EC5A8ED23F275F2 /* VoiceChannelButton.swift in Sources */,
@@ -1809,6 +1888,15 @@
 			);
 			target = B0B0C0DE000000000000001C /* AicordWidgets */;
 			targetProxy = B0B0C0DE0000000000000020 /* PBXContainerItemProxy */;
+		};
+		F0705A9585EA952C3FE76D7E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = AicordBroadcast;
+			platformFilters = (
+				ios,
+			);
+			target = F1C4DE0FF1D1462AAED3A992 /* AicordBroadcast */;
+			targetProxy = 8A7928770314FF8B7A1ACA9D /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2252,6 +2340,76 @@
 			};
 			name = Release;
 		};
+		D66B0C74F0CF478BF2B5AF9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = AicordBroadcast/AicordBroadcast.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 11;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 5TA8RF548P;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AicordBroadcast/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Aicord;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.10;
+				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord.Broadcast;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F55DC97FE65EEA97CA1FCE2F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = AicordBroadcast/AicordBroadcast.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 11;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 5TA8RF548P;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AicordBroadcast/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Aicord;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.10;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord.Broadcast;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2260,6 +2418,15 @@
 			buildConfigurations = (
 				5AFE77060360780E8C17752E /* Debug */,
 				5AFE3DB581C16A9EF22B6694 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6E0E18BE1B751372802F883E /* Build configuration list for PBXNativeTarget "AicordBroadcast" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F55DC97FE65EEA97CA1FCE2F /* Debug */,
+				D66B0C74F0CF478BF2B5AF9B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
