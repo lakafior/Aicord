@@ -4,26 +4,6 @@
     "" : {
 
     },
-    "%@’s camera" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamera: %@"
-          }
-        }
-      }
-    },
-    "%@’s stream" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transmisja: %@"
-          }
-        }
-      }
-    },
     ", " : {
       "localizations" : {
         "pl" : {
@@ -50,196 +30,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":3"
-          }
-        }
-      }
-    },
-    "Back Camera" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tylna kamera"
-          }
-        }
-      }
-    },
-    "Camera access is off. Allow it in System Settings to turn your camera on." : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dostęp do kamery jest wyłączony. Zezwól na niego w Ustawieniach systemowych, żeby włączyć kamerę."
-          }
-        }
-      }
-    },
-    "Front Camera" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Przednia kamera"
-          }
-        }
-      }
-    },
-    "Full Screen" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pełny ekran"
-          }
-        }
-      }
-    },
-    "Live" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Na żywo"
-          }
-        }
-      }
-    },
-    "Share Your Screen" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Udostępnij ekran"
-          }
-        }
-      }
-    },
-    "Stop Sharing" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zakończ udostępnianie"
-          }
-        }
-      }
-    },
-    "Stop Watching" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Przestań oglądać"
-          }
-        }
-      }
-    },
-    "The connection to the stream was lost." : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utracono połączenie z transmisją."
-          }
-        }
-      }
-    },
-    "The stream ended." : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transmisja się zakończyła."
-          }
-        }
-      }
-    },
-    "This stream is full." : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ta transmisja jest pełna."
-          }
-        }
-      }
-    },
-    "Turn Off Camera" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wyłącz kamerę"
-          }
-        }
-      }
-    },
-    "Turn On Camera" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Włącz kamerę"
-          }
-        }
-      }
-    },
-    "Turn your camera on from the call panel. Other people's cameras and streams show above the chat of the call you're in. A camera change applies the next time you turn the camera on." : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamerę włączysz z panelu rozmowy. Kamery i transmisje innych osób pokazują się nad czatem rozmowy, w której jesteś. Zmiana kamery zadziała przy następnym włączeniu kamery."
-          }
-        }
-      }
-    },
-    "Turn your camera on or share your screen from the call panel. Other people's cameras and streams show above the chat of the call you're in. A camera change applies the next time you turn the camera on." : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamerę włączysz, a ekran udostępnisz z panelu rozmowy. Kamery i transmisje innych osób pokazują się nad czatem rozmowy, w której jesteś. Zmiana kamery zadziała przy następnym włączeniu kamery."
-          }
-        }
-      }
-    },
-    "Waiting for video…" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Czekam na obraz…"
-          }
-        }
-      }
-    },
-    "Watch Stream" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oglądaj transmisję"
-          }
-        }
-      }
-    },
-    "You can't watch this stream." : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie możesz oglądać tej transmisji."
-          }
-        }
-      }
-    },
-    "Your camera" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twoja kamera"
           }
         }
       }
@@ -1025,6 +815,16 @@
         }
       }
     },
+    "%@’s camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera: %@"
+          }
+        }
+      }
+    },
     "%@'s poll has closed." : {
       "comment" : "A notice that a user's poll has ended.",
       "isCommentAutoGenerated" : true,
@@ -1033,6 +833,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ankieta użytkownika %@ została zamknięta."
+          }
+        }
+      }
+    },
+    "%@’s stream" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmisja: %@"
           }
         }
       }
@@ -4237,6 +4047,16 @@
         }
       }
     },
+    "Back Camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tylna kamera"
+          }
+        }
+      }
+    },
     "Back to the channel" : {
       "comment" : "A description of the back button for a channel view.",
       "isCommentAutoGenerated" : true,
@@ -4577,6 +4397,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kamera"
+          }
+        }
+      }
+    },
+    "Camera access is off. Allow it in System Settings to turn your camera on." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dostęp do kamery jest wyłączony. Zezwól na niego w Ustawieniach systemowych, żeby włączyć kamerę."
           }
         }
       }
@@ -5280,6 +5110,7 @@
     },
     "Coming Soon" : {
       "comment" : "A placeholder text that will be displayed when the accessibility section is not yet implemented.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "pl" : {
@@ -8432,6 +8263,26 @@
         }
       }
     },
+    "Front Camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przednia kamera"
+          }
+        }
+      }
+    },
+    "Full Screen" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pełny ekran"
+          }
+        }
+      }
+    },
     "Further MFA restricted actions will be allowed for the next 5 minutes." : {
       "localizations" : {
         "pl" : {
@@ -10314,6 +10165,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wyświetla kanały serwera, których nie możesz oglądać, wyszarzone z kłódką. Dotknięcie jednego z nich pokazuje jego temat i kto może go oglądać, nigdy jego wiadomości. Tylko na tym urządzeniu."
+          }
+        }
+      }
+    },
+    "Live" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na żywo"
           }
         }
       }
@@ -16806,6 +16667,16 @@
         }
       }
     },
+    "Share Your Screen" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udostępnij ekran"
+          }
+        }
+      }
+    },
     "Short Date" : {
       "localizations" : {
         "pl" : {
@@ -17761,6 +17632,26 @@
         }
       }
     },
+    "Stop Sharing" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończ udostępnianie"
+          }
+        }
+      }
+    },
+    "Stop Watching" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przestań oglądać"
+          }
+        }
+      }
+    },
     "Storage" : {
       "comment" : "The section title for the storage settings.",
       "isCommentAutoGenerated" : true,
@@ -18331,6 +18222,16 @@
         }
       }
     },
+    "The connection to the stream was lost." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utracono połączenie z transmisją."
+          }
+        }
+      }
+    },
     "The conversation is removed for you. The sender isn't told." : {
       "comment" : "The text that appears in the body of a confirmation dialog.",
       "isCommentAutoGenerated" : true,
@@ -18507,6 +18408,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nie udało się załadować postów."
+          }
+        }
+      }
+    },
+    "The stream ended." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmisja się zakończyła."
           }
         }
       }
@@ -18913,6 +18824,16 @@
         }
       }
     },
+    "This stream is full." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta transmisja jest pełna."
+          }
+        }
+      }
+    },
     "Thread" : {
       "localizations" : {
         "pl" : {
@@ -19302,6 +19223,26 @@
         }
       }
     },
+    "Turn Off Camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyłącz kamerę"
+          }
+        }
+      }
+    },
+    "Turn On Camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz kamerę"
+          }
+        }
+      }
+    },
     "Turn on the Aicord Invites extension and links like this one open here instead of on the website." : {
       "comment" : "A description of the Safari extension that opens the invite links.",
       "isCommentAutoGenerated" : true,
@@ -19310,6 +19251,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Włącz rozszerzenie Aicord Invites, aby linki takie jak ten otwierały się tutaj zamiast na stronie internetowej."
+          }
+        }
+      }
+    },
+    "Turn your camera on from the call panel. Other people's cameras and streams show above the chat of the call you're in. A camera change applies the next time you turn the camera on." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamerę włączysz z panelu rozmowy. Kamery i transmisje innych osób pokazują się nad czatem rozmowy, w której jesteś. Zmiana kamery zadziała przy następnym włączeniu kamery."
+          }
+        }
+      }
+    },
+    "Turn your camera on or share your screen from the call panel. Other people's cameras and streams show above the chat of the call you're in. A camera change applies the next time you turn the camera on." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamerę włączysz, a ekran udostępnisz z panelu rozmowy. Kamery i transmisje innych osób pokazują się nad czatem rozmowy, w której jesteś. Zmiana kamery zadziała przy następnym włączeniu kamery."
           }
         }
       }
@@ -20317,6 +20278,7 @@
     },
     "Video and Screen Sharing" : {
       "comment" : "A label for the video and screen sharing section.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "pl" : {
@@ -20495,6 +20457,16 @@
         }
       }
     },
+    "Waiting for video…" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czekam na obraz…"
+          }
+        }
+      }
+    },
     "Want to use this emoji everywhere? Join the server." : {
       "localizations" : {
         "pl" : {
@@ -20513,6 +20485,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ostrzegaj o oszustwach"
+          }
+        }
+      }
+    },
+    "Watch Stream" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oglądaj transmisję"
           }
         }
       }
@@ -21099,6 +21081,16 @@
         }
       }
     },
+    "You can't watch this stream." : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie możesz oglądać tej transmisji."
+          }
+        }
+      }
+    },
     "You don't have permission to create invites on this server." : {
       "comment" : "A description of the error shown when a user doesn't",
       "isCommentAutoGenerated" : true,
@@ -21345,6 +21337,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Twoja aktywność to gra, w którą grasz, lub to, czego słuchasz. Opcja serwera dotyczy serwerów, do których dołączysz od teraz; dołączanie bez pytania nie dotyczy serwerów społecznościowych."
+          }
+        }
+      }
+    },
+    "Your camera" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoja kamera"
           }
         }
       }
