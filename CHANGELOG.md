@@ -2,6 +2,12 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## Unreleased
+
+### Sign-in
+
+- **New** · "Try the Demo Without an Account" on the sign-in screen opens Aicord on made-up servers, DMs and people, with no Discord account and nothing sent over the network. Messages you send, edit or delete and your reactions show up as they would for real. Logging out ends the demo and puts your settings back; your real accounts stay untouched. Made for App Review, which needs a way into the app without a Discord login
+
 ## 0.1.11 (November 2026)
 
 ### Voice

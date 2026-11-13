@@ -27,6 +27,7 @@ final class TokenStore {
       withMutation(keyPath: \.currentAccountID) {
         _currentAccountID = newValue
       }
+      leaveDemoIfNeeded()
     }
   }
 
@@ -75,13 +76,11 @@ final class TokenStore {
   }
 
   init() {
-    #if DEBUG
-      if DemoMode.isEnabled, let account = DemoMode.account {
-        accounts = [account]
-        currentAccountID = account.user.id
-        return
-      }
-    #endif
+    if DemoMode.isEnabled, let account = DemoMode.account {
+      accounts = [account]
+      currentAccountID = account.user.id
+      return
+    }
     accounts = Self.load()
     // safeguard against cases where keychain is empty but UserDefaults has an ID
     // this would usually softlock people.
@@ -94,6 +93,20 @@ final class TokenStore {
     {
       currentAccountID = nil
     }
+  }
+
+  /// Signs in the demo account, keeping the real ones out of sight.
+  func enterDemo(with account: AccountData) {
+    accounts = [account]
+    currentAccountID = account.user.id
+  }
+
+  /// Signing the demo account out ends demo mode, and the real accounts
+  /// come back.
+  private func leaveDemoIfNeeded() {
+    guard DemoMode.isEnabled, currentAccountID == nil else { return }
+    DemoMode.stop()
+    accounts = Self.load()
   }
 
   func addAccount(token: Secret, user: DiscordUser) {
@@ -142,10 +155,8 @@ final class TokenStore {
   }
 
   private static func save(_ data: [AccountData]) {
-    #if DEBUG
-      // the demo account never reaches the keychain
-      guard !DemoMode.isEnabled else { return }
-    #endif
+    // the demo account never reaches the keychain
+    guard !DemoMode.isEnabled else { return }
     // dedupe via id
     let dedupedData = Array(data.uniqued(on: \.user.id))
     guard let encoded = try? DiscordGlobalConfiguration.encoder.encode(dedupedData)

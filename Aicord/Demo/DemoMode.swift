@@ -5,6 +5,7 @@
 
 import AicordKit
 import Foundation
+import Synchronization
 
 #if os(macOS)
   import AppKit
@@ -55,189 +56,342 @@ enum DemoSettingsBackup {
   }
 }
 
-#if DEBUG
-  /// Demo mode runs the app on made-up data from `DemoWorld`, without a
-  /// Discord account or a network connection. It's for screenshots and only
-  /// exists in Debug builds. Turn it on with the launch argument
-  /// `-AicordDemo YES`.
-  ///
-  /// The real account stays untouched: the keychain isn't read or written,
-  /// and `DemoSettingsBackup` keeps the settings.
-  enum DemoMode {
-    static let isEnabled = UserDefaults.standard.bool(forKey: "AicordDemo")
+/// Demo mode runs the app on made-up data from `DemoWorld`, without a
+/// Discord account or a network connection. It's for App Review and for
+/// anyone who wants a look before signing in: "Try Demo" on the sign-in
+/// screen starts it, and logging out ends it. For screenshots, the launch
+/// argument `-AicordDemo YES` starts it at launch.
+///
+/// The real account stays untouched: the keychain isn't read or written,
+/// and `DemoSettingsBackup` keeps the settings.
+enum DemoMode {
+  private static let enabled = Atomic(false)
 
-    /// Call before anything reads the settings.
-    @MainActor
-    static func prepare() {
-      guard isEnabled else { return }
-      guard DemoSettingsBackup.putAside() else {
-        // without a backup the real settings would be lost: quit instead
-        exit(1)
-      }
-      let defaults = UserDefaults.standard
-      // nothing of the demo goes into Spotlight or the offline cache on disk
-      defaults.set(false, forKey: SystemIntegration.spotlightEnabledKey)
-      defaults.set(false, forKey: OfflineCache.enabledKey)
-      URLProtocol.registerClass(DemoImages.self)
-      #if os(macOS)
-        let quit = NSApplication.willTerminateNotification
-      #else
-        let quit = UIApplication.willTerminateNotification
-      #endif
-      NotificationCenter.default.addObserver(forName: quit, object: nil, queue: nil) { _ in
-        DemoSettingsBackup.restore()
-      }
-    }
+  /// Read from any thread: the image loaders ask too.
+  static var isEnabled: Bool { enabled.load(ordering: .relaxed) }
 
-    /// Opens the place named by the launch argument `-AicordDemoOpen`, once
-    /// the demo is ready: `server` for Swift Studio's channel list, a Swift
-    /// Studio channel by name (`swiftui`), or a DM by username with an @
-    /// (`@leopark`). For screenshots.
-    @MainActor
-    static func openRequestedPlace() {
-      guard let name = UserDefaults.standard.string(forKey: "AicordDemoOpen") else { return }
-      if name == "server" {
-        AicordAppState.externalTarget?.selectedGuild = GuildSnowflake(DemoWorld.swiftStudioID)
-        return
-      }
-      let guild: String?
-      let channel: String?
-      if name.hasPrefix("@") {
-        let username = name.dropFirst()
-        let person = DemoWorld.people.first { $0.username == username }
-        guild = nil
-        channel = DemoWorld.privateChannels.first { dm in
-          (dm["recipients"] as? [DemoWorld.JSON])?.count == 1
-            && (dm["recipients"] as? [DemoWorld.JSON])?.first?["id"] as? String == person?.id
-        }?["id"] as? String
-      } else {
-        guild = DemoWorld.swiftStudioID
-        channel = DemoWorld.swiftStudio.channels.first { $0.name == name }?.id
-      }
-      guard let channel else { return }
-      AicordAppState.openExternally(
-        guild: guild.map(GuildSnowflake.init), channel: ChannelSnowflake(channel))
-    }
+  /// The launch argument `-AicordDemo YES`.
+  static let isRequestedAtLaunch = UserDefaults.standard.bool(forKey: "AicordDemo")
 
-    /// The demo account, as the account list holds it.
-    static var account: TokenStore.AccountData? {
-      guard
-        let user = try? DiscordGlobalConfiguration.decoder.decode(
-          DiscordUser.self, from: DemoWorld.data(DemoWorld.meUser))
-      else { return nil }
-      return TokenStore.AccountData(user: user, token: Secret("demo"))
-    }
-
-    @MainActor
-    static func makeGateway(
-      stateCallback: @escaping @Sendable (GatewayState) -> Void
-    ) async -> UserGatewayManager {
-      await UserGatewayManager(
-        replaying: DemoGateway(), client: DemoDiscordClient(), stateCallback: stateCallback)
+  /// Starts demo mode at launch, before anything reads the settings.
+  @MainActor
+  static func prepare() {
+    guard isEnabled || setUp() else {
+      // without a backup the real settings would be lost: quit instead
+      exit(1)
     }
   }
 
-  /// Discord's side of the gateway in demo mode.
-  struct DemoGateway: GatewayReplaySource {
-    func initialFrames() -> [Data] {
-      [DemoWorld.frame("READY", DemoWorld.ready)]
-    }
+  /// Starts demo mode from the sign-in screen: the demo account signs in,
+  /// and the app connects to the made-up Discord.
+  @MainActor
+  static func start(_ gateway: GatewayStore) {
+    guard !isEnabled, setUp(), let account else { return }
+    gateway.accounts.enterDemo(with: account)
+  }
 
-    func frames(answering payload: Gateway.Event) -> [Data] {
-      switch payload.data {
-      case .updateGuildSubscriptions(let update):
-        // a channel asking for its member list gets the whole list at once
-        return update.subscriptions.compactMap { guildID, subscription in
-          guard subscription.channels?.isEmpty == false,
-            let server = DemoWorld.servers.first(where: { $0.id == guildID.rawValue })
-          else { return nil }
-          return DemoWorld.frame(
-            "GUILD_MEMBER_LIST_UPDATE", DemoWorld.memberListSync(for: server, listID: "everyone"))
-        }
+  /// Ends demo mode once the demo account signs out: the real settings
+  /// come back. Called by `TokenStore`.
+  @MainActor
+  static func stop() {
+    guard isEnabled else { return }
+    enabled.store(false, ordering: .relaxed)
+    DemoSettingsBackup.restore()
+  }
+
+  @MainActor
+  private static func setUp() -> Bool {
+    guard DemoSettingsBackup.putAside() else { return false }
+    let defaults = UserDefaults.standard
+    // nothing of the demo goes into Spotlight or the offline cache on disk
+    defaults.set(false, forKey: SystemIntegration.spotlightEnabledKey)
+    defaults.set(false, forKey: OfflineCache.enabledKey)
+    enabled.store(true, ordering: .relaxed)
+    URLProtocol.registerClass(DemoImages.self)
+    _ = observeQuit
+    return true
+  }
+
+  /// Quitting during the demo puts the settings back. On iOS the app is
+  /// usually killed without notice, so the next launch does it then.
+  @MainActor
+  private static let observeQuit: Void = {
+    #if os(macOS)
+      let quit = NSApplication.willTerminateNotification
+    #else
+      let quit = UIApplication.willTerminateNotification
+    #endif
+    NotificationCenter.default.addObserver(forName: quit, object: nil, queue: nil) { _ in
+      guard DemoMode.isEnabled else { return }
+      DemoSettingsBackup.restore()
+    }
+  }()
+
+  /// Opens the place named by the launch argument `-AicordDemoOpen`, once
+  /// the demo is ready: `server` for Swift Studio's channel list, a Swift
+  /// Studio channel by name (`swiftui`), or a DM by username with an @
+  /// (`@leopark`). For screenshots.
+  @MainActor
+  static func openRequestedPlace() {
+    guard let name = UserDefaults.standard.string(forKey: "AicordDemoOpen") else { return }
+    if name == "server" {
+      AicordAppState.externalTarget?.selectedGuild = GuildSnowflake(DemoWorld.swiftStudioID)
+      return
+    }
+    let guild: String?
+    let channel: String?
+    if name.hasPrefix("@") {
+      let username = name.dropFirst()
+      let person = DemoWorld.people.first { $0.username == username }
+      guild = nil
+      channel = DemoWorld.privateChannels.first { dm in
+        (dm["recipients"] as? [DemoWorld.JSON])?.count == 1
+          && (dm["recipients"] as? [DemoWorld.JSON])?.first?["id"] as? String == person?.id
+      }?["id"] as? String
+    } else {
+      guild = DemoWorld.swiftStudioID
+      channel = DemoWorld.swiftStudio.channels.first { $0.name == name }?.id
+    }
+    guard let channel else { return }
+    AicordAppState.openExternally(
+      guild: guild.map(GuildSnowflake.init), channel: ChannelSnowflake(channel))
+  }
+
+  /// The demo account, as the account list holds it.
+  static var account: TokenStore.AccountData? {
+    guard
+      let user = try? DiscordGlobalConfiguration.decoder.decode(
+        DiscordUser.self, from: DemoWorld.data(DemoWorld.meUser))
+    else { return nil }
+    return TokenStore.AccountData(user: user, token: Secret("demo"))
+  }
+
+  @MainActor
+  static func makeGateway(
+    stateCallback: @escaping @Sendable (GatewayState) -> Void
+  ) async -> UserGatewayManager {
+    let echo = DemoEcho()
+    let gateway = await UserGatewayManager(
+      replaying: DemoGateway(), client: DemoDiscordClient(echo: echo),
+      stateCallback: stateCallback)
+    echo.attach(gateway)
+    return gateway
+  }
+}
+
+/// Discord's side of the gateway in demo mode.
+struct DemoGateway: GatewayReplaySource {
+  func initialFrames() -> [Data] {
+    [DemoWorld.frame("READY", DemoWorld.ready)]
+  }
+
+  func frames(answering payload: Gateway.Event) -> [Data] {
+    switch payload.data {
+    case .updateGuildSubscriptions(let update):
+      // a channel asking for its member list gets the whole list at once
+      return update.subscriptions.compactMap { guildID, subscription in
+        guard subscription.channels?.isEmpty == false,
+          let server = DemoWorld.servers.first(where: { $0.id == guildID.rawValue })
+        else { return nil }
+        return DemoWorld.frame(
+          "GUILD_MEMBER_LIST_UPDATE", DemoWorld.memberListSync(for: server, listID: "everyone"))
+      }
+    default:
+      return []
+    }
+  }
+}
+
+/// Discord's HTTP API in demo mode. Reads come from `DemoWorld`; anything
+/// else gets an empty success, so nothing reaches Discord.
+struct DemoDiscordClient: DiscordClient {
+  var captchaCallback: CaptchaChallengeHandler?
+  var mfaCallback: MFAVerificationHandler?
+  var authentication: AuthenticationHeader { .userToken(Secret("demo")) }
+  let echo: DemoEcho
+
+  func send(request: DiscordHTTPRequest) async throws -> DiscordHTTPResponse {
+    respond(to: request, payload: [:])
+  }
+
+  func send<E: Sendable & Encodable & ValidatablePayload>(
+    request: DiscordHTTPRequest, payload: E
+  ) async throws -> DiscordHTTPResponse {
+    respond(to: request, payload: Self.json(payload))
+  }
+
+  func sendMultipart<E: Sendable & MultipartEncodable & ValidatablePayload>(
+    request: DiscordHTTPRequest, payload: E
+  ) async throws -> DiscordHTTPResponse {
+    respond(to: request, payload: Self.json(payload))
+  }
+
+  private static func json(_ payload: some Encodable) -> DemoWorld.JSON {
+    guard let data = try? DiscordGlobalConfiguration.encoder.encode(payload) else { return [:] }
+    return (try? JSONSerialization.jsonObject(with: data)) as? DemoWorld.JSON ?? [:]
+  }
+
+  private func respond(to request: DiscordHTTPRequest, payload: DemoWorld.JSON)
+    -> DiscordHTTPResponse
+  {
+    let url = URL(string: request.endpoint.url)
+    let parts = url?.pathComponents.filter { $0 != "/" } ?? []
+    // drop "api" and the version
+    let path = Array(parts.drop { $0 == "api" || $0.hasPrefix("v") && Int($0.dropFirst()) != nil })
+    let method = request.endpoint.httpMethod
+
+    // what the user does comes back as Discord's events, so it shows
+    if path.count >= 3, path[0] == "channels", path[2] == "messages" {
+      let channel = path[1]
+      switch (method, path.count) {
+      case (.POST, 3):
+        return ok(echo.send(payload, in: channel))
+      case (.PATCH, 4):
+        return ok(echo.edit(path[3], in: channel, payload: payload))
+      case (.DELETE, 4):
+        echo.delete(path[3], in: channel)
+        return noContent
+      case (.PUT, 7) where path[4] == "reactions":
+        echo.react(path[5], to: path[3], in: channel, adding: true)
+        return noContent
+      case (.DELETE, 7) where path[4] == "reactions":
+        echo.react(path[5], to: path[3], in: channel, adding: false)
+        return noContent
       default:
-        return []
+        break
       }
     }
+
+    if method == .GET, path.count == 3, path[0] == "channels", path[2] == "messages" {
+      return ok(messages(in: path[1], queries: request.queries))
+    }
+    if method == .GET, path.count >= 3, path[0] == "users", path[2] == "profile" {
+      return ok(profile(for: path[1]))
+    }
+    if method == .GET, path.starts(with: ["users", "@me", "settings-proto"]) {
+      // empty settings: the app keeps its defaults
+      return ok(["settings": ""])
+    }
+    if method == .GET, path.count == 3, path[0] == "guilds", path[2] == "scheduled-events" {
+      return ok([])
+    }
+    if method == .GET, path.last == "application-command-index" {
+      return ok(["applications": [], "application_commands": [], "version": "0"])
+    }
+    print("[DemoMode] Unhandled \(method) /\(path.joined(separator: "/"))")
+    return DiscordHTTPResponse(
+      host: "discord.com", status: method == .GET ? .notFound : .noContent,
+      headers: ["Content-Type": "application/json"],
+      body: method == .GET
+        ? DemoWorld.data(["message": "Not in demo mode", "code": 0]) : nil)
   }
 
-  /// Discord's HTTP API in demo mode. Reads come from `DemoWorld`; anything
-  /// else gets an empty success, so nothing reaches Discord.
-  struct DemoDiscordClient: DiscordClient {
-    var captchaCallback: CaptchaChallengeHandler?
-    var mfaCallback: MFAVerificationHandler?
-    var authentication: AuthenticationHeader { .userToken(Secret("demo")) }
-
-    func send(request: DiscordHTTPRequest) async throws -> DiscordHTTPResponse {
-      respond(to: request)
-    }
-
-    func send<E: Sendable & Encodable & ValidatablePayload>(
-      request: DiscordHTTPRequest, payload: E
-    ) async throws -> DiscordHTTPResponse {
-      respond(to: request)
-    }
-
-    func sendMultipart<E: Sendable & MultipartEncodable & ValidatablePayload>(
-      request: DiscordHTTPRequest, payload: E
-    ) async throws -> DiscordHTTPResponse {
-      respond(to: request)
-    }
-
-    private func respond(to request: DiscordHTTPRequest) -> DiscordHTTPResponse {
-      let url = URL(string: request.endpoint.url)
-      let parts = url?.pathComponents.filter { $0 != "/" } ?? []
-      // drop "api" and the version
-      let path = Array(parts.drop { $0 == "api" || $0.hasPrefix("v") && Int($0.dropFirst()) != nil })
-      let method = request.endpoint.httpMethod
-
-      if method == .GET, path.count == 3, path[0] == "channels", path[2] == "messages" {
-        return ok(messages(in: path[1], queries: request.queries))
-      }
-      if method == .GET, path.count >= 3, path[0] == "users", path[2] == "profile" {
-        return ok(profile(for: path[1]))
-      }
-      if method == .GET, path.starts(with: ["users", "@me", "settings-proto"]) {
-        // empty settings: the app keeps its defaults
-        return ok(["settings": ""])
-      }
-      if method == .GET, path.count == 3, path[0] == "guilds", path[2] == "scheduled-events" {
-        return ok([])
-      }
-      if method == .GET, path.last == "application-command-index" {
-        return ok(["applications": [], "application_commands": [], "version": "0"])
-      }
-      print("[DemoMode] Unhandled \(method) /\(path.joined(separator: "/"))")
-      return DiscordHTTPResponse(
-        host: "discord.com", status: method == .GET ? .notFound : .noContent,
-        headers: ["Content-Type": "application/json"],
-        body: method == .GET
-          ? DemoWorld.data(["message": "Not in demo mode", "code": 0]) : nil)
-    }
-
-    private func ok(_ json: Any) -> DiscordHTTPResponse {
-      DiscordHTTPResponse(
-        host: "discord.com", status: .ok, headers: ["Content-Type": "application/json"],
-        body: DemoWorld.data(json))
-    }
-
-    /// Newest first, like Discord. Every channel fits in one page, so a
-    /// page `before` or `after` the loaded one is empty.
-    private func messages(in channel: String, queries: [(String, String?)]) -> [Any] {
-      let paging = queries.contains { ($0.0 == "before" || $0.0 == "after") && $0.1 != nil }
-      if paging { return [] }
-      return (DemoWorld.messages[channel] ?? []).reversed()
-    }
-
-    private func profile(for id: String) -> Any {
-      let person = DemoWorld.people.first { $0.id == id } ?? DemoWorld.me
-      return [
-        "user": DemoWorld.user(person).merging(["bio": "Swift Studio regular."]) { a, _ in a },
-        "user_profile": ["bio": "Swift Studio regular.", "accent_color": NSNull()],
-        "badges": [],
-        "mutual_guilds": [["id": DemoWorld.swiftStudioID, "nick": NSNull()]],
-        "connected_accounts": [],
-        "premium_type": 0,
-      ]
-    }
+  private var noContent: DiscordHTTPResponse {
+    DiscordHTTPResponse(host: "discord.com", status: .noContent, headers: [:], body: nil)
   }
-#endif
+
+  private func ok(_ json: Any) -> DiscordHTTPResponse {
+    DiscordHTTPResponse(
+      host: "discord.com", status: .ok, headers: ["Content-Type": "application/json"],
+      body: DemoWorld.data(json))
+  }
+
+  /// Newest first, like Discord. Every channel fits in one page, so a
+  /// page `before` or `after` the loaded one is empty.
+  private func messages(in channel: String, queries: [(String, String?)]) -> [Any] {
+    let paging = queries.contains { ($0.0 == "before" || $0.0 == "after") && $0.1 != nil }
+    if paging { return [] }
+    return (DemoWorld.messages[channel] ?? []).reversed()
+  }
+
+  private func profile(for id: String) -> Any {
+    let person = DemoWorld.people.first { $0.id == id } ?? DemoWorld.me
+    return [
+      "user": DemoWorld.user(person).merging(["bio": "Swift Studio regular."]) { a, _ in a },
+      "user_profile": ["bio": "Swift Studio regular.", "accent_color": NSNull()],
+      "badges": [],
+      "mutual_guilds": [["id": DemoWorld.swiftStudioID, "nick": NSNull()]],
+      "connected_accounts": [],
+      "premium_type": 0,
+    ]
+  }
+}
+
+/// Sends back as gateway events what the user does in the demo: messages
+/// they send, edit or delete, and reactions. Messages sent this session
+/// last until the demo ends.
+final class DemoEcho: @unchecked Sendable {
+  private let lock = NSLock()
+  private weak var gateway: UserGatewayManager?
+  private var sent: [String: DemoWorld.JSON] = [:]
+
+  func attach(_ gateway: UserGatewayManager) {
+    lock.withLock { self.gateway = gateway }
+  }
+
+  func send(_ payload: DemoWorld.JSON, in channel: String) -> DemoWorld.JSON {
+    var extra: DemoWorld.JSON = [:]
+    if let nonce = payload["nonce"] { extra["nonce"] = nonce }
+    if let reference = payload["message_reference"] as? DemoWorld.JSON,
+      let id = reference["message_id"] as? String
+    {
+      extra["type"] = 19
+      extra["message_reference"] = ["message_id": id, "channel_id": channel]
+      if let replied = message(id, in: channel) { extra["referenced_message"] = replied }
+    }
+    let message = DemoWorld.message(
+      channel: channel, guild: guild(of: channel), author: DemoWorld.me,
+      // after the made-up chat, which ends at 9:41 today
+      at: max(.now, DemoWorld.now.addingTimeInterval(60)),
+      n: Int.random(in: 0..<4096), content: payload["content"] as? String ?? "", extra: extra)
+    if let id = message["id"] as? String { lock.withLock { sent[id] = message } }
+    replay("MESSAGE_CREATE", message)
+    return message
+  }
+
+  func edit(_ id: String, in channel: String, payload: DemoWorld.JSON) -> DemoWorld.JSON {
+    var message = self.message(id, in: channel) ?? ["id": id, "channel_id": channel]
+    if let content = payload["content"] as? String { message["content"] = content }
+    message["edited_timestamp"] = DemoWorld.timestamp(.now)
+    let edited = message
+    lock.withLock { sent[id] = edited }
+    replay("MESSAGE_UPDATE", edited)
+    return edited
+  }
+
+  func delete(_ id: String, in channel: String) {
+    lock.withLock { _ = sent.removeValue(forKey: id) }
+    var event: DemoWorld.JSON = ["id": id, "channel_id": channel]
+    if let guild = guild(of: channel) { event["guild_id"] = guild }
+    replay("MESSAGE_DELETE", event)
+  }
+
+  /// `emoji` as it is in the URL: a character, or `name:id` for a
+  /// server's own.
+  func react(_ emoji: String, to id: String, in channel: String, adding: Bool) {
+    let parts = emoji.split(separator: ":", maxSplits: 1).map(String.init)
+    let emojiJSON: DemoWorld.JSON =
+      parts.count == 2 ? ["name": parts[0], "id": parts[1]] : ["name": emoji, "id": NSNull()]
+    var event: DemoWorld.JSON = [
+      "user_id": DemoWorld.me.id, "channel_id": channel, "message_id": id,
+      "emoji": emojiJSON, "burst": false, "type": 0,
+    ]
+    if let guild = guild(of: channel) { event["guild_id"] = guild }
+    replay(adding ? "MESSAGE_REACTION_ADD" : "MESSAGE_REACTION_REMOVE", event)
+  }
+
+  private func message(_ id: String, in channel: String) -> DemoWorld.JSON? {
+    lock.withLock { sent[id] }
+      ?? DemoWorld.messages[channel]?.first { $0["id"] as? String == id }
+  }
+
+  private func guild(of channel: String) -> String? {
+    DemoWorld.servers.first { $0.channels.contains { $0.id == channel } }?.id
+  }
+
+  private func replay(_ type: String, _ data: DemoWorld.JSON) {
+    let frame = DemoWorld.frame(type, data)
+    guard let gateway = lock.withLock({ self.gateway }) else { return }
+    Task { await gateway.replay([frame]) }
+  }
+}

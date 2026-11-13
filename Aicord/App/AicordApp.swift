@@ -15,15 +15,12 @@ import UserNotifications
 struct AicordApp: App {
   let gatewayStore: GatewayStore = {
     // before any store reads the settings
-    #if DEBUG
-      if DemoMode.isEnabled {
-        DemoMode.prepare()
-      } else {
-        DemoSettingsBackup.restore()
-      }
-    #else
+    if DemoMode.isRequestedAtLaunch {
+      DemoMode.prepare()
+    } else {
+      // from a demo that ended without a log out
       DemoSettingsBackup.restore()
-    #endif
+    }
     if UserDefaults.standard.bool(forKey: "AicordRestoreSettings") {
       // only puts the settings back from demo mode, without connecting
       exit(0)

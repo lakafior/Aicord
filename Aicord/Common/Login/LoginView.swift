@@ -178,6 +178,9 @@ struct LoginForm: View {
         }
 
         LoginButton(viewModel: viewModel)
+
+        TryDemoButton(viewModel: viewModel)
+          .padding(.top, 6)
       }
       .frame(maxWidth: 360)
 
@@ -322,6 +325,23 @@ private struct LoginButton: View {
         .font(.title3)
     }
     .buttonStyle(.borderless)
+  }
+}
+
+/// Opens the app on made-up data, for App Review and for a look around
+/// before signing in. Logging out ends it.
+private struct TryDemoButton: View {
+  @Environment(\.theme) var theme
+  var viewModel: LoginViewModel
+
+  var body: some View {
+    Button {
+      DemoMode.start(viewModel.gw)
+    } label: {
+      Text("Try the Demo Without an Account")
+    }
+    .buttonStyle(.borderless)
+    .foregroundStyle(theme.common.hyperlink)
   }
 }
 

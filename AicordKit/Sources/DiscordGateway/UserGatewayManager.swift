@@ -961,6 +961,14 @@ extension UserGatewayManager {
       self.deliver(frame)
     }
   }
+
+  /// Sends events as Discord would, on a manager made with
+  /// `init(replaying:client:stateCallback:)`: the demo answering what the
+  /// app sent over HTTP. Does nothing on a real connection.
+  public func replay(_ frames: [Data]) {
+    guard replaySource != nil else { return }
+    deliver(frames)
+  }
 }
 
 /// Plays Discord's side of a gateway connection, for a ``UserGatewayManager``

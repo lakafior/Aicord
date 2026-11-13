@@ -76,14 +76,12 @@ final class GatewayStore {
         self?.state = state
       }
     }
-    #if DEBUG
-      if DemoMode.isEnabled {
-        gateway = await DemoMode.makeGateway(stateCallback: stateCallback)
-        setupEventHandling()
-        await gateway?.connect()
-        return
-      }
-    #endif
+    if DemoMode.isEnabled {
+      gateway = await DemoMode.makeGateway(stateCallback: stateCallback)
+      setupEventHandling()
+      await gateway?.connect()
+      return
+    }
     gateway = await UserGatewayManager(
       token: account.token,
       captchaCallback: captchaCallback,
@@ -271,9 +269,7 @@ final class GatewayStore {
     }
 
     SystemIntegration.shared.gatewayReady()
-    #if DEBUG
-      if DemoMode.isEnabled { DemoMode.openRequestedPlace() }
-    #endif
+    if DemoMode.isEnabled { DemoMode.openRequestedPlace() }
 
     // update user data in account storage
     accounts.updateProfile(for: data.user.id, data.user)
