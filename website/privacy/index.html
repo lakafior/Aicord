@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy — Aicord</title>
+  <meta name="description" content="Aicord collects no personal data. It has no server of its own; it talks to Discord straight from your device.">
+  <meta name="theme-color" content="#c24f27">
+  <link rel="canonical" href="https://aicord.smigi.net/privacy">
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="/">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="/assets/icon-dark.png">
+        <img src="/assets/icon.png" alt="" width="34" height="34">
+      </picture>
+      Aicord
+    </a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/support">Support</a>
+      <a href="/privacy" aria-current="page">Privacy</a>
+      <a href="https://github.com/lakafior/Aicord">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap prose">
+
+  <h1>Privacy Policy</h1>
+  <p class="updated">Effective 13 November 2026. Applies to the Aicord apps for iPhone, iPad and Mac and to this website.</p>
+  <p><b>Aicord collects no personal data.</b> Aicord is an unofficial Discord client for iOS and macOS. The developer does not run any servers for Aicord and does not receive any of your data. Aicord is not made by or affiliated with Discord.</p>
+
+  <h2>Data Aicord does not collect</h2>
+  <ul>
+    <li>No accounts or sign-ups of its own</li>
+    <li>No analytics or tracking</li>
+    <li>No crash reporting of its own (if you opt in to sharing analytics with developers in your device's settings, Apple may pass on crash logs; they contain no account data)</li>
+    <li>No ads</li>
+  </ul>
+
+  <h2>Discord</h2>
+  <p>Aicord connects straight from your device to Discord, with the Discord account you log in to. Everything you read, send, upload or change goes to Discord and nowhere else, and <a href="https://discord.com/privacy">Discord's privacy policy</a> applies to it.</p>
+  <ul>
+    <li>Your login (the account token Discord issues) lives in your device's Keychain.</li>
+    <li>Voice, camera and screen sharing in calls go to Discord's voice servers. The camera and microphone are used only for calls and for the photos, videos and voice messages you choose to send.</li>
+    <li>Discord may ask you to solve a captcha when you log in; it is loaded from Discord's captcha provider.</li>
+  </ul>
+
+  <h2>Content from other sites</h2>
+  <p>Images and link previews in messages come through Discord. When you open a link or play an embedded player (for example YouTube, Spotify or Apple Music), that content loads from its own site, whose privacy policy applies.</p>
+
+  <h2>Intelligence</h2>
+  <ul>
+    <li>Translation, summaries, catch-up, questions about a channel, scam warnings and image text run on your device with Apple's models by default.</li>
+    <li>If you enter an OpenAI-compatible API or a model server on your network in <b>Settings › Intelligence</b>, the messages you ask about are sent to that server, and its privacy policy applies. Nothing is sent to one unless you set it up.</li>
+    <li>Voice messages are transcribed on your device.</li>
+  </ul>
+
+  <h2>Data that stays on your device</h2>
+  <ul>
+    <li>The offline copy: the newest messages of channels you opened recently.</li>
+    <li>Private notes and tags about people, your word filter, alerts and other app settings.</li>
+    <li>Deleted messages and edit history, kept in memory only while the app runs.</li>
+    <li>The Spotlight index: names of your DMs and channels, plus the text of messages you saved. <b>Settings › Advanced › Spotlight</b> turns it off, and turning it off or logging out removes everything.</li>
+  </ul>
+  <p>Handoff passes the channel you have open to your other devices through your Apple account.</p>
+
+  <h2>MCP server (Mac)</h2>
+  <p>Off by default. If you turn on <b>Settings › Advanced › Allow MCP Server</b>, assistants you connect on the same Mac (such as Claude) can list your servers and channels and read and search messages, and direct messages only if you allow those too. It is read-only and listens only on your own Mac. What an assistant does with what it reads is governed by that assistant's privacy policy.</p>
+
+  <h2>Update check</h2>
+  <p>Once a day at launch, Aicord asks GitHub for the newest release. GitHub sees the request (and your IP address), nothing about your account. <b>Settings › Advanced › Updates</b> turns it off.</p>
+
+  <h2>Safari extension</h2>
+  <p>The extension runs only on Discord invite links and opens them in Aicord. It collects nothing.</p>
+
+  <h2>Children</h2>
+  <p>Aicord is not directed at children under 13. Discord sets its own minimum age.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or concerns? Write to <a href="mailto:aicord@smigi.net">aicord@smigi.net</a> or open an issue on GitHub: <a href="https://github.com/lakafior/Aicord/issues">github.com/lakafior/Aicord/issues</a></p>
+
+  <h2>This website</h2>
+  <p>This site has no cookies, analytics or trackers, and loads nothing from other companies. It is served by Cloudflare, which processes the technical data any web server sees (such as your IP address) to deliver the pages, and keeps short-lived request logs that the developer uses only to fix problems with the site.</p>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Smigi · Aicord is free software under the
+      <a href="https://github.com/lakafior/Aicord/blob/main/LICENSE">GPL-3.0</a> ·
+      Not affiliated with Discord Inc.</span>
+    <span>
+      <a href="https://github.com/lakafior/Aicord">GitHub</a> ·
+      <a href="/support">Support</a> ·
+      <a href="/privacy">Privacy</a> ·
+      <a href="mailto:aicord@smigi.net">aicord@smigi.net</a>
+    </span>
+  </div>
+</footer>
+
+<!-- smigi.net window chrome: traffic lights + minimize-to-dock.
+     Loads from localhost during development, smigi.net in production. -->
+<script>
+  (function () {
+    var local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+    var s = document.createElement("script");
+    s.src = (local ? "" : "https://smigi.net") + "/os/chrome.js";
+    s.dataset.app = "aicord";
+    s.dataset.title = "Aicord";
+    document.head.appendChild(s);
+  })();
+</script>
+
+</body>
+</html>

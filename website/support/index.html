@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support — Aicord</title>
+  <meta name="description" content="Getting started with Aicord, answers to common questions, and how to report a problem.">
+  <meta name="theme-color" content="#c24f27">
+  <link rel="canonical" href="https://aicord.smigi.net/support">
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="/">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="/assets/icon-dark.png">
+        <img src="/assets/icon.png" alt="" width="34" height="34">
+      </picture>
+      Aicord
+    </a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/support" aria-current="page">Support</a>
+      <a href="/privacy">Privacy</a>
+      <a href="https://github.com/lakafior/Aicord">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap prose">
+
+  <h1>Support</h1>
+  <p>Aicord is an unofficial, native Discord client for iPhone, iPad and Mac. It talks straight to Discord from your device and has no server of its own.</p>
+
+  <h2 id="getting-started">Getting started</h2>
+  <ol>
+    <li><b>Install Aicord.</b>
+      On a Mac, download it from <a href="https://github.com/lakafior/Aicord/releases/latest">GitHub Releases</a>. On iPhone and iPad, add the source to <a href="https://lakafior.github.io/Aicord/">AltStore or SideStore</a>, or sideload the IPA. See <a href="/#download">Get Aicord</a>.</li>
+    <li><b>Log in to Discord.</b>
+      <ul>
+        <li>Enter your e-mail or phone number and password, then confirm two-factor authentication or a captcha if Discord asks.</li>
+        <li>Or choose <b>Log in with QR Code</b> and scan it with the Discord app on your phone.</li>
+      </ul>
+    </li>
+    <li><b>Allow notifications, the microphone and the camera</b> when Aicord asks, if you want alerts and calls.</li>
+  </ol>
+
+  <h2 id="faq">FAQ</h2>
+  <h3>Is Aicord made by Discord?</h3>
+  <p>No. Aicord is an independent, open-source client and is not affiliated with Discord.</p>
+
+  <h3>Can my account be banned for using it?</h3>
+  <p>Like every third-party client, using Aicord breaks Discord's Terms of Service. It identifies itself as close to the official client as it can, but the risk of an account ban never goes away. Use it at your own risk.</p>
+
+  <h3>Why do notifications stop when Aicord is closed?</h3>
+  <p>Discord's push notifications go through Apple with Discord's own certificate, so Apple delivers them only to the official app. Aicord will not run a server that keeps your token to forward them, so it notifies you only while it is running. On a Mac that is whenever the app is open; iOS suspends apps in the background within minutes. Keep the official app installed, with its notifications on, if you need to be reached on iPhone.</p>
+
+  <h3>Where is my login stored?</h3>
+  <p>In your device's Keychain. Aicord has no server and the developer never sees it. See the <a href="/privacy">privacy policy</a>.</p>
+
+  <h3>Does Intelligence send my messages anywhere?</h3>
+  <p>Not by default: it runs on your device with Apple's models, and it only reads. If you add an OpenAI-compatible API or a model server on your network in <b>Settings › Intelligence</b>, the messages you ask about go to that server.</p>
+
+  <h3>Why is Intelligence unavailable on my device?</h3>
+  <p>The on-device model needs a device that supports Apple Intelligence, with Apple Intelligence turned on. Without it you can still use an API of your own.</p>
+
+  <h3>Are calls encrypted?</h3>
+  <p>Yes. Voice channels and DM or group calls use DAVE, Discord's end-to-end encryption for audio and video.</p>
+
+  <h3>How do I read messages without a connection?</h3>
+  <p>The newest 100 messages of the last 40 channels you opened stay on the device. Open them from <b>Settings › Advanced › Offline</b> or from the connecting screen.</p>
+
+  <h3>How do I make discord.gg links open in Aicord?</h3>
+  <p>Turn on the Aicord extension in Safari's settings. Invite links then open in Aicord, with a preview of the server before you join.</p>
+
+  <h3>How do I connect Claude or another assistant on the Mac?</h3>
+  <p>Turn on <b>Settings › Advanced › Allow MCP Server</b> and use <b>Copy Configuration</b>. The server is read-only, and direct messages have a switch of their own.</p>
+
+  <h3>How does Aicord update?</h3>
+  <p>The Mac app asks GitHub for the newest release once a day and shows a banner with a download link; it never downloads an update by itself. On iPhone and iPad, updates show up in AltStore or SideStore.</p>
+
+  <h3>Which devices does it need?</h3>
+  <p>iOS 26 or iPadOS 26, or macOS 26 on a Mac with Apple silicon.</p>
+
+  <h2 id="report">Reporting a problem</h2>
+  <p>Report problems on GitHub: <a href="https://github.com/lakafior/Aicord/issues">github.com/lakafior/Aicord/issues</a>, or write to <a href="mailto:aicord@smigi.net">aicord@smigi.net</a>.</p>
+  <p>Include:</p>
+  <ul>
+    <li>Aicord version (shown in Settings)</li>
+    <li>Device and iOS/macOS version</li>
+    <li>Steps to reproduce</li>
+  </ul>
+  <p>Never paste your Discord token, password or an MCP key.</p>
+
+  <h2 id="privacy">Privacy</h2>
+  <p><a href="/privacy">Aicord privacy policy</a></p>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Smigi · Aicord is free software under the
+      <a href="https://github.com/lakafior/Aicord/blob/main/LICENSE">GPL-3.0</a> ·
+      Not affiliated with Discord Inc.</span>
+    <span>
+      <a href="https://github.com/lakafior/Aicord">GitHub</a> ·
+      <a href="/support">Support</a> ·
+      <a href="/privacy">Privacy</a> ·
+      <a href="mailto:aicord@smigi.net">aicord@smigi.net</a>
+    </span>
+  </div>
+</footer>
+
+<!-- smigi.net window chrome: traffic lights + minimize-to-dock.
+     Loads from localhost during development, smigi.net in production. -->
+<script>
+  (function () {
+    var local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+    var s = document.createElement("script");
+    s.src = (local ? "" : "https://smigi.net") + "/os/chrome.js";
+    s.dataset.app = "aicord";
+    s.dataset.title = "Aicord";
+    document.head.appendChild(s);
+  })();
+</script>
+
+</body>
+</html>

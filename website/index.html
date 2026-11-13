@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aicord — A native Discord client for iPhone, iPad and Mac</title>
+  <meta name="description" content="An unofficial Discord client written in Swift and SwiftUI for iOS 26 and macOS 26: system lists and Liquid Glass, encrypted voice and video calls, one search for everything, and Intelligence that runs on your device. No servers, no trackers. Open source, GPL-3.0.">
+  <meta property="og:title" content="Aicord — A native Discord client for iPhone, iPad and Mac">
+  <meta property="og:description" content="Discord in Swift and SwiftUI: Liquid Glass, encrypted voice and video calls, one search for everything, Intelligence on your device. Open source.">
+  <meta property="og:image" content="https://aicord.smigi.net/assets/icon.png">
+  <meta property="og:url" content="https://aicord.smigi.net">
+  <meta name="theme-color" content="#c24f27">
+  <link rel="canonical" href="https://aicord.smigi.net/">
+  <link rel="icon" href="/assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="/">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="/assets/icon-dark.png">
+        <img src="/assets/icon.png" alt="" width="34" height="34">
+      </picture>
+      Aicord
+    </a>
+    <nav>
+      <a href="#features" class="wide">Features</a>
+      <a href="#download">Download</a>
+      <a href="/support">Support</a>
+      <a href="/privacy">Privacy</a>
+      <a href="https://github.com/lakafior/Aicord">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <span class="tag">iPhone · iPad · Mac · Open source</span>
+      <h1>Discord, native on iPhone and&nbsp;Mac.</h1>
+      <p class="lede">Aicord is an unofficial Discord client written in Swift and SwiftUI: system lists and Liquid Glass, encrypted voice and video calls, and Intelligence that runs on your device.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/lakafior/Aicord/releases/latest">Download for Mac</a>
+        <a class="btn btn-secondary" href="https://github.com/lakafior/Aicord">View the source</a>
+      </div>
+      <p class="cta-note">iPhone and iPad: <a href="#download">AltStore, SideStore or an IPA</a>. AltStore&nbsp;PAL in the EU is coming.</p>
+    </div>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="/assets/icon-dark.png">
+      <img class="hero-icon" src="/assets/icon.png" width="256" height="256" alt="The Aicord icon: two coral speech bubbles.">
+    </picture>
+  </div>
+</section>
+
+<section class="showcase" aria-label="Aicord on Mac and iPhone">
+  <div class="wrap">
+    <div class="section-head"><h2>See it on Mac and iPhone</h2><p>The same app on both, in light and dark. Use the arrows to look around.</p></div>
+    <!-- No JavaScript: one radio per step; the arrows and dots are labels for them. -->
+    <input class="shot-radio" type="radio" name="shot" id="shot-1" checked aria-label="Servers, channels and voice">
+    <input class="shot-radio" type="radio" name="shot" id="shot-2" aria-label="Images in the chat">
+    <input class="shot-radio" type="radio" name="shot" id="shot-3" aria-label="Direct messages">
+    <div class="stage">
+      <div class="dev dev-mac">
+        <picture class="s1">
+          <source media="(prefers-color-scheme: dark)" srcset="/assets/shots/mac-chat-dark.webp">
+          <img src="/assets/shots/mac-chat-light.webp" width="1600" height="1000" alt="Aicord on a Mac: a server's channels, a conversation with code and reactions, and the member list by role">
+        </picture>
+        <picture class="s2">
+          <source media="(prefers-color-scheme: dark)" srcset="/assets/shots/mac-showcase-dark.webp">
+          <img src="/assets/shots/mac-showcase-light.webp" width="1600" height="1000" alt="Aicord on a Mac: images posted in a channel, with reactions under them" loading="lazy">
+        </picture>
+        <picture class="s3">
+          <source media="(prefers-color-scheme: dark)" srcset="/assets/shots/mac-dm-dark.webp">
+          <img src="/assets/shots/mac-dm-light.webp" width="1600" height="1000" alt="Aicord on a Mac: a direct message, with the other person's profile beside it" loading="lazy">
+        </picture>
+      </div>
+      <div class="dev dev-iphone">
+        <picture class="s1">
+          <source media="(prefers-color-scheme: dark)" srcset="/assets/shots/iphone-server-dark.webp">
+          <img src="/assets/shots/iphone-server-light.webp" width="600" height="1304" alt="Aicord on an iPhone: a server's channels, with three people in a voice channel">
+        </picture>
+        <picture class="s2">
+          <source media="(prefers-color-scheme: dark)" srcset="/assets/shots/iphone-showcase-dark.webp">
+          <img src="/assets/shots/iphone-showcase-light.webp" width="600" height="1304" alt="Aicord on an iPhone: images posted in a channel" loading="lazy">
+        </picture>
+        <picture class="s3">
+          <source media="(prefers-color-scheme: dark)" srcset="/assets/shots/iphone-dm-dark.webp">
+          <img src="/assets/shots/iphone-dm-light.webp" width="600" height="1304" alt="Aicord on an iPhone: a direct message" loading="lazy">
+        </picture>
+      </div>
+    </div>
+    <div class="shot-nav">
+      <label class="arrow prev p1" for="shot-3" aria-label="Previous">‹</label>
+      <label class="arrow prev p2" for="shot-1" aria-label="Previous">‹</label>
+      <label class="arrow prev p3" for="shot-2" aria-label="Previous">‹</label>
+      <div class="dots">
+        <label class="dot d1" for="shot-1" aria-label="Show: Servers, channels and voice"></label>
+        <label class="dot d2" for="shot-2" aria-label="Show: Images in the chat"></label>
+        <label class="dot d3" for="shot-3" aria-label="Show: Direct messages"></label>
+      </div>
+      <label class="arrow next n1" for="shot-2" aria-label="Next">›</label>
+      <label class="arrow next n2" for="shot-3" aria-label="Next">›</label>
+      <label class="arrow next n3" for="shot-1" aria-label="Next">›</label>
+    </div>
+    <div class="captions" aria-live="polite">
+      <div class="caption c1"><h3>Servers, channels and voice</h3><p>Your servers down the side, channels and who is in voice next to them, the conversation in the middle and the members by role on the right.</p></div>
+      <div class="caption c2"><h3>Images in the chat</h3><p>Pictures, GIFs and videos sit in the conversation, and a gallery collects a channel's media, links and files in one place.</p></div>
+      <div class="caption c3"><h3>Direct messages</h3><p>DMs and group chats with replies, mentions, reactions and calls, plus message requests and a spam folder.</p></div>
+    </div>
+    <p class="note" style="text-align:center; margin: 22px 0 0">Screenshots use made-up demo data.</p>
+  </div>
+</section>
+
+<section class="alt" aria-label="More on iPhone">
+  <div class="wrap">
+    <ul class="phones">
+      <li>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="/assets/shots/iphone-home-dark.webp">
+          <img src="/assets/shots/iphone-home-light.webp" width="600" height="1304" loading="lazy" alt="The Home tab: servers down the side, direct messages with unread marks, and a tab bar">
+        </picture>
+        <h3>Everything from Home</h3>
+        <p>Servers, DMs and what is unread on one screen, with Messages, Search and Settings a tap away.</p>
+      </li>
+      <li>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="/assets/shots/iphone-chat-dark.webp">
+          <img src="/assets/shots/iphone-chat-light.webp" width="600" height="1304" loading="lazy" alt="A conversation with a reply, a mention, code and reactions">
+        </picture>
+        <h3>Replies, mentions and reactions</h3>
+        <p>Formatting, code blocks, polls, threads and quick reactions from a long press.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <h2>Know before you use it.</h2>
+        <p>Aicord is a fork of <a href="https://github.com/llsc12/Paicord">Paicord</a>, rebuilt for the newest Apple platforms with almost nothing but Apple's own frameworks. It is honest about what a third-party client is:</p>
+        <ul class="bring">
+          <li><b>Unofficial.</b> Aicord is not made by or affiliated with Discord. Using any third-party client is against Discord's Terms of Service, and the risk of an account ban never goes away. Use it at your own risk.</li>
+          <li><b>Notifications only while it runs.</b> Discord's push notifications reach only the official app, and Aicord will not run a server that keeps your token to forward them. Keep the official app installed if you need to be reached on iPhone.</li>
+          <li><b>No server of its own.</b> Everything goes straight from your device to Discord.</li>
+        </ul>
+        <p><a href="/privacy">Read the privacy policy →</a></p>
+      </div>
+      <ul class="facts">
+        <li><span>Works on</span> <b>iPhone, iPad, Mac</b></li>
+        <li><span>Servers of Aicord's</span> <b>none</b></li>
+        <li><span>Trackers &amp; analytics</span> <b>none</b></li>
+        <li><span>Where your login lives</span> <b>Keychain</b></li>
+        <li><span>Intelligence</span> <b>on device by default</b></li>
+        <li><span>Calls</span> <b>DAVE, end to end</b></li>
+        <li><span>Licence</span> <b>GPL-3.0</b></li>
+        <li><span>Requires</span> <b>iOS 26 or macOS 26</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>What it does</h2>
+      <p>Discord as you know it, plus a few things the official app does not do.</p>
+    </div>
+    <div class="grid">
+      <div class="feature">
+        <h3>Voice and calls</h3>
+        <p>Server voice channels and DM or group calls, end-to-end encrypted with DAVE, with push-to-talk and device choice. Stage channels to listen in, raise a hand and speak.</p>
+      </div>
+      <div class="feature">
+        <h3>Video and screen sharing</h3>
+        <p>Cameras and Go Live streams, several side by side or one full screen. Share your own camera, or your screen from iPhone, iPad and Mac.</p>
+      </div>
+      <div class="feature">
+        <h3>One search for everything</h3>
+        <p>Servers, channels, people and messages, with date and regex filters. A result opens right at the message.</p>
+      </div>
+      <div class="feature">
+        <h3>Intelligence, on device</h3>
+        <p>Translate messages, summarize a channel, catch up on a server or ask a channel a question, with links back to the messages. Read-only, and on your device unless you add an API of your own.</p>
+      </div>
+      <div class="feature">
+        <h3>Messages done properly</h3>
+        <p>Formatting from the edit menu or ⌘B, a live preview, slash commands, bot buttons and forms, voice messages, polls, pins, threads and forwards.</p>
+      </div>
+      <div class="feature">
+        <h3>Notifications by your rules</h3>
+        <p>Per server and channel, quiet hours and keywords, with Reply and Mark as Read. They follow your Discord settings and need no push server.</p>
+      </div>
+      <div class="feature">
+        <h3>Nearly all of Discord's settings</h3>
+        <p>Privacy, content filters, devices, connections, appearance, chat and notifications, saved to your account so the official apps see them too.</p>
+      </div>
+      <div class="feature">
+        <h3>Tools for moderators</h3>
+        <p>Timeout, kick and ban with a reason, channels, categories and roles with every permission, AutoMod, emoji and stickers, and the audit log.</p>
+      </div>
+      <div class="feature">
+        <h3>Invites that open in the app</h3>
+        <p>Create invite links and preview a server before joining. A Safari extension sends <code>discord.gg</code> links straight to Aicord.</p>
+      </div>
+      <div class="feature">
+        <h3>Kept for you</h3>
+        <p>Offline reading, channel export to Markdown or PDF, message reminders, saved messages, and private notes and tags about people.</p>
+      </div>
+      <div class="feature">
+        <h3>Nothing slips by</h3>
+        <p>Ghost pings, keyword and person alerts, deleted messages and edit history kept in memory, hidden channels and a local word filter.</p>
+      </div>
+      <div class="feature">
+        <h3>Part of the system</h3>
+        <p>Spotlight, an unread and mentions widget, a Live Activity for calls, Shortcuts and Siri, and Handoff between iPhone and Mac.</p>
+      </div>
+      <div class="feature">
+        <h3>For your assistant, too</h3>
+        <p>On the Mac, a read-only MCP server lets Claude and other assistants read and search what you allow. Off until you turn it on.</p>
+      </div>
+      <div class="feature">
+        <h3>Native, not a web view</h3>
+        <p>System lists and Liquid Glass throughout, Swift 6 with strict concurrency, and six dependencies in all.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Get Aicord</h2>
+      <p>Free and open source. You need a Discord account.</p>
+    </div>
+    <div class="platforms">
+      <div class="platform">
+        <h3>Mac</h3>
+        <p>Signed and notarized, from GitHub Releases. macOS 26 or later, Apple silicon. Aicord checks for updates once a day and never downloads one by itself.</p>
+        <a class="btn btn-primary" href="https://github.com/lakafior/Aicord/releases/latest">Download for Mac</a>
+      </div>
+      <div class="platform">
+        <h3>iPhone and iPad</h3>
+        <!-- Once Aicord is on AltStore PAL, replace the two paragraphs below with:
+        <p>On <a href="https://altstore.io">AltStore PAL</a>, the alternative app marketplace in the EU. Notarized by Apple. iOS 26 or later. In AltStore, open Sources, tap + and add:</p>
+        <p class="index-url"><code>https://smigi.net/altstore/source.json</code></p>
+        and keep the sideloading source as the "Outside the EU" note. -->
+        <p>iOS 26 or later. Add the source to <a href="https://lakafior.github.io/Aicord/">AltStore or SideStore</a> and updates show up there:</p>
+        <p class="index-url"><code>https://lakafior.github.io/Aicord/altstore.json</code></p>
+        <p><span class="soon">AltStore PAL: coming soon</span></p>
+        <p class="note">A notarized build for <a href="https://altstore.io">AltStore PAL</a>, the alternative app marketplace in the EU, is on its way. You can also sideload the IPA from the <a href="https://github.com/lakafior/Aicord/releases/latest">latest release</a>, or <a href="https://github.com/lakafior/Aicord#building">build it yourself</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Smigi · Aicord is free software under the
+      <a href="https://github.com/lakafior/Aicord/blob/main/LICENSE">GPL-3.0</a> ·
+      Not affiliated with Discord Inc.</span>
+    <span>
+      <a href="https://github.com/lakafior/Aicord">GitHub</a> ·
+      <a href="/support">Support</a> ·
+      <a href="/privacy">Privacy</a> ·
+      <a href="mailto:aicord@smigi.net">aicord@smigi.net</a>
+    </span>
+  </div>
+</footer>
+
+<!-- smigi.net window chrome: traffic lights + minimize-to-dock.
+     Loads from localhost during development, smigi.net in production. -->
+<script>
+  (function () {
+    var local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+    var s = document.createElement("script");
+    s.src = (local ? "" : "https://smigi.net") + "/os/chrome.js";
+    s.dataset.app = "aicord";
+    s.dataset.title = "Aicord";
+    document.head.appendChild(s);
+  })();
+</script>
+
+</body>
+</html>
