@@ -4,7 +4,7 @@ GitHub releases.
 
     gh api repos/OWNER/REPO/releases --paginate | python3 scripts/altstore_source.py > source.json
 
-Every release with an `.ipa` asset becomes a version, newest first. Releases
+Every release with an `Aicord.ipa` asset becomes a version, newest first. Releases
 marked as drafts are skipped; prereleases are kept, since AltStore shows the
 newest version anyway. Only the standard library is used.
 """
@@ -16,6 +16,7 @@ import sys
 REPO = "lakafior/Aicord"
 BUNDLE_ID = "net.smigi.aicord"
 MIN_OS = "26.0"
+IPA_NAME = "Aicord.ipa"
 
 SOURCE = {
     "name": "Aicord",
@@ -69,9 +70,8 @@ def versions(releases):
     for release in releases:
         if release.get("draft"):
             continue
-        ipa = next(
-            (a for a in release.get("assets", []) if a.get("name", "").endswith(".ipa")), None
-        )
+        # by name: an AltStore PAL release also carries encrypted `<uuid>.ipa` files
+        ipa = next((a for a in release.get("assets", []) if a.get("name") == IPA_NAME), None)
         version = version_of(release)
         if not ipa or not version:
             continue
