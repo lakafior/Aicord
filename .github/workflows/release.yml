@@ -1,8 +1,14 @@
 name: Release
 
 # A tag like v0.2.0 builds an unsigned iOS app (.ipa) for AltStore and
-# SideStore and attaches it to a GitHub release. The signed Mac app is in
-# release_macos.yml, the AltStore source on GitHub Pages in altstore.yml.
+# SideStore and attaches it to a GitHub release, then uploads a signed build
+# to App Store Connect and submits it for notarization (AltStore PAL). The
+# signed Mac app is in release_macos.yml, the sideloading source on GitHub
+# Pages in altstore.yml, and altstore-pal.yml publishes the notarized version.
+#
+# Secrets for the signed build:
+#   IOS_DISTRIBUTION_P12_BASE64 / IOS_DISTRIBUTION_P12_PASSWORD   Apple Distribution certificate
+#   NOTARY_KEY_P8_BASE64 / NOTARY_KEY_ID / NOTARY_ISSUER_ID       App Store Connect key
 #
 # Assets keep the same names in every release (Aicord.ipa, Aicord-mac.zip), so
 # the README links to releases/latest/download/... stay valid.
@@ -102,6 +108,11 @@ jobs:
             echo
             echo "**Install on iPhone:** add the AltStore or SideStore source from"
             echo "https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"
+            echo
+            echo "**AltStore PAL (EU):** add the source https://smigi.net/altstore/source.json in AltStore PAL."
+            echo "Once Apple has notarized this version, \`manifest.json\`, \`signature\` and the \`.ipa\` files"
+            echo "named with a UUID appear here: they are encrypted and only AltStore PAL can install them."
+            echo "For sideloading, take \`Aicord.ipa\`."
           } >> notes.md
 
       - name: Create the release
@@ -111,3 +122,85 @@ jobs:
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
             || gh release create "$GITHUB_REF_NAME" --title "Aicord ${{ needs.ios.outputs.version }}" --notes-file notes.md
           gh release upload "$GITHUB_REF_NAME" Aicord.ipa --clobber
+
+  pal:
+    name: Signed iOS app for AltStore PAL
+    # After the unsigned build: an upload to App Store Connect cannot be taken
+    # back and its build number cannot be used twice, so only on a tag and only
+    # once the app is known to build.
+    needs: ios
+    if: github.ref_type == 'tag'
+    runs-on: xcode-27
+    env:
+      VERSION: ${{ needs.ios.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # build number = commit count
+
+      - name: Disable Swift macro plugin consent prompt
+        run: defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
+      - name: Force Git to use HTTPS
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Import the Apple Distribution certificate
+        env:
+          P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}
+        run: |
+          if [[ -z "$P12_BASE64" ]]; then
+            echo "::error::Secret IOS_DISTRIBUTION_P12_BASE64 is missing"
+            exit 1
+          fi
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
+          echo "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$P12_PASSWORD" -f pkcs12 -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security find-identity -v -p codesigning "$KEYCHAIN" | grep -q 'Apple Distribution' || {
+            echo "::error::No 'Apple Distribution' identity in the imported certificate"
+            exit 1
+          }
+
+      - name: Write the App Store Connect key
+        env:
+          NOTARY_KEY_P8_BASE64: ${{ secrets.NOTARY_KEY_P8_BASE64 }}
+        run: |
+          if [[ -z "$NOTARY_KEY_P8_BASE64" ]]; then
+            echo "::error::Secret NOTARY_KEY_P8_BASE64 is missing"
+            exit 1
+          fi
+          echo "$NOTARY_KEY_P8_BASE64" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          echo "NOTARY_KEY_PATH=$RUNNER_TEMP/notary.p8" >> "$GITHUB_ENV"
+          echo "BUILD=$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
+
+      - name: Archive and upload to App Store Connect
+        env:
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: ./scripts/build-ios.sh upload
+
+      - name: Submit for notarization
+        env:
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: python3 scripts/asc-notarize.py --version "$VERSION" --build "$BUILD"
+
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-ios-signed-log
+          path: build/ios-archive.log
+
+      - name: Clean up signing material
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/notary.p8" "$RUNNER_TEMP/cert.p12"

@@ -16,10 +16,11 @@ A native Discord client for iOS and macOS, written in pure Swift 6 and SwiftUI.
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 
 [![Download for Mac](https://img.shields.io/badge/Download_for_Mac-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/lakafior/Aicord/releases/latest/download/Aicord-mac.zip)
+[![AltStore PAL (EU)](https://img.shields.io/badge/AltStore_PAL_(EU)-C24F27?style=for-the-badge&logo=appstore&logoColor=white)](https://aicord.smigi.net/#download)
 [![Add to AltStore](https://img.shields.io/badge/Add_to_AltStore-1BB3A6?style=for-the-badge&logo=appstore&logoColor=white)](https://lakafior.github.io/Aicord/)
 [![Download IPA](https://img.shields.io/badge/Download_IPA-5865F2?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/lakafior/Aicord/releases/latest/download/Aicord.ipa)
 
-<sub>The Mac app is signed and notarized. On iPhone and iPad, add the source to <a href="https://lakafior.github.io/Aicord/">AltStore or SideStore</a> for updates, or sideload the IPA yourself.</sub>
+<sub>The Mac app is signed and notarized. On iPhone and iPad in the EU, Aicord is on <a href="https://aicord.smigi.net/#download">AltStore PAL</a>, notarized by Apple: add the source <code>https://smigi.net/altstore/source.json</code>. Elsewhere, add the sideloading source to <a href="https://lakafior.github.io/Aicord/">AltStore or SideStore</a> for updates, or sideload the IPA yourself.</sub>
 
 </div>
 
@@ -111,7 +112,7 @@ git clone https://github.com/lakafior/Aicord.git
 open Aicord/Aicord.xcworkspace
 ```
 
-Pick the **Aicord** scheme, choose a Mac or an iOS 26 device or simulator, and run. The macOS app is built for Apple silicon only. There are no prebuilt releases of Aicord yet.
+Pick the **Aicord** scheme, choose a Mac or an iOS 26 device or simulator, and run. The macOS app is built for Apple silicon only.
 
 ## Contributing
 

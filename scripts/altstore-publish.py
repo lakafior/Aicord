@@ -75,6 +75,19 @@ def gh(*args):
     return subprocess.run(["gh", *args], check=True, capture_output=True, text=True).stdout
 
 
+def release_notes(body):
+    """The release's notes as AltStore shows them: without the changelog's `## version` heading and
+    without the install instructions release.yml appends (they point at the sideloading source)."""
+    lines = []
+    for line in body.splitlines():
+        if line.startswith(("**Install on iPhone", "**AltStore PAL")):
+            break
+        if line.startswith("## ") or "Full Changelog" in line:
+            continue
+        lines.append(line)
+    return "\n".join(lines).strip()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tag", required=True, help="the release tag, e.g. v1.1.0")
@@ -125,8 +138,7 @@ def main():
     if len(set(names)) != len(names):
         sys.exit(f"Two package files share a name: {names}")
     base = f"https://github.com/{REPO}/releases/download/{args.tag}/"
-    notes = "\n".join(line for line in release["body"].splitlines()
-                      if "Full Changelog" not in line).strip()
+    notes = release_notes(release["body"])
     entry = {
         "version": manifest["shortVersionString"],
         "buildVersion": str(manifest["bundleVersion"]),
