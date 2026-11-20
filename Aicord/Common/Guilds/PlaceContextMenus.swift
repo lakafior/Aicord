@@ -214,6 +214,246 @@ struct ChannelContextMenu: ViewModifier {
   private var channelName: String { "#" + (channel.name ?? "channel") }
 }
 
+// MARK: - Direct Messages
+
+extension View {
+  /// The menu a direct message or group shows on long press or right click.
+  func dmContextMenu(_ channel: DiscordChannel) -> some View {
+    modifier(DMContextMenu(channel: channel))
+  }
+
+  /// The confirmations the conversation actions ask for, and their errors.
+  func dmActionDialogs(
+    _ confirming: Binding<DMAction?>, error: Binding<String?>
+  ) -> some View {
+    modifier(DMActionDialogs(confirming: confirming, error: error))
+  }
+}
+
+struct DMContextMenu: ViewModifier {
+  let channel: DiscordChannel
+  @State private var confirming: DMAction?
+  @State private var error: String?
+
+  func body(content: Content) -> some View {
+    content
+      .contextMenu {
+        DMActionButtons(channel: channel, confirming: $confirming, error: $error)
+      }
+      .dmActionDialogs($confirming, error: $error)
+  }
+}
+
+/// The conversation actions behind a button, for the profile panel.
+struct DMActionsMenu<MenuLabel: View>: View {
+  var channel: DiscordChannel?
+  var user: UserSnowflake?
+  var userName: String?
+  @ViewBuilder var label: () -> MenuLabel
+  @State private var confirming: DMAction?
+  @State private var error: String?
+
+  var body: some View {
+    Menu {
+      DMActionButtons(
+        channel: channel, user: user, userName: userName, confirming: $confirming, error: $error)
+    } label: {
+      label()
+    }
+    .dmActionDialogs($confirming, error: $error)
+  }
+}
+
+/// What Discord lets you do with a conversation and the person in it. Closing a
+/// DM only hides it: the history stays, and a new message brings it back.
+struct DMActionButtons: View {
+  @Environment(\.gateway) var gw
+  @Environment(\.appState) var appState
+  var channel: DiscordChannel?
+  /// The other person; taken from the channel when it's a one-to-one DM.
+  var user: UserSnowflake?
+  var userName: String?
+  @Binding var confirming: DMAction?
+  @Binding var error: String?
+
+  init(
+    channel: DiscordChannel?, user: UserSnowflake? = nil, userName: String? = nil,
+    confirming: Binding<DMAction?>, error: Binding<String?>
+  ) {
+    self.channel = channel
+    let recipient = channel?.type == .dm ? channel?.recipients?.first : nil
+    self.user = user ?? recipient?.id
+    self.userName = userName ?? recipient.map { $0.global_name ?? $0.username }
+    self._confirming = confirming
+    self._error = error
+  }
+
+  var body: some View {
+    if let channel {
+      Button("Mark as Read", systemImage: "envelope.open") {
+        saveInBackground($error) { try await gw.readStates.markRead([channel]) }
+      }
+      .disabled(
+        !gw.readStates.isUnread(channelId: channel.id, lastMessageId: channel.last_message_id)
+          && gw.readStates.mentionCount(channelId: channel.id) == 0
+      )
+    }
+
+    if let user, user != gw.user.currentUser?.id {
+      let relationship = gw.user.relationships[user]
+      let name = userName ?? ""
+      Divider()
+      if relationship?.type == .friend {
+        Button("Remove Friend", systemImage: "person.badge.minus", role: .destructive) {
+          confirming = .removeFriend(user, name: name)
+        }
+      }
+      let ignored = relationship?.user_ignored == true
+      Button(ignored ? "Unignore" : "Ignore", systemImage: ignored ? "eye" : "eye.slash") {
+        saveInBackground($error) {
+          try await DMActions.setIgnored(!ignored, user: user, gw: gw)
+        }
+      }
+      if relationship?.type == .blocked {
+        Button("Unblock", systemImage: "hand.raised.slash") {
+          saveInBackground($error) {
+            try await gw.client.removeRelationship(userID: user).guardSuccess()
+          }
+        }
+      } else {
+        Button("Block", systemImage: "hand.raised", role: .destructive) {
+          confirming = .block(user, name: name)
+        }
+      }
+    }
+
+    if gw.settings.userSettings.appearance.developerMode {
+      Divider()
+      if let user {
+        Button("Copy User ID", systemImage: "number") { copyToPasteboard(user.rawValue) }
+      }
+      if let channel {
+        Button("Copy Channel ID", systemImage: "number") { copyToPasteboard(channel.id.rawValue) }
+      }
+    }
+
+    if let channel {
+      Divider()
+      if channel.type == .groupDm {
+        Button("Leave Group", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
+          confirming = .leaveGroup(channel)
+        }
+      } else {
+        Button("Close DM", systemImage: "xmark.circle", role: .destructive) {
+          saveInBackground($error) {
+            try await DMActions.close(channel, gw: gw, appState: appState)
+          }
+        }
+      }
+    }
+  }
+}
+
+/// The conversation actions that ask first.
+enum DMAction: Identifiable {
+  case block(UserSnowflake, name: String)
+  case removeFriend(UserSnowflake, name: String)
+  case leaveGroup(DiscordChannel)
+
+  var id: String {
+    switch self {
+    case .block(let user, _): "block-\(user.rawValue)"
+    case .removeFriend(let user, _): "remove-\(user.rawValue)"
+    case .leaveGroup(let channel): "leave-\(channel.id.rawValue)"
+    }
+  }
+}
+
+struct DMActionDialogs: ViewModifier {
+  @Environment(\.gateway) var gw
+  @Environment(\.appState) var appState
+  @Binding var confirming: DMAction?
+  @Binding var error: String?
+
+  func body(content: Content) -> some View {
+    content
+      .confirmationDialog(
+        title,
+        isPresented: Binding(get: { confirming != nil }, set: { if !$0 { confirming = nil } }),
+        titleVisibility: .visible,
+        presenting: confirming
+      ) { action in
+        switch action {
+        case .block(let user, _):
+          Button("Block", role: .destructive) {
+            saveInBackground($error) {
+              try await gw.client.createRelationship(userID: user, payload: .init(type: .blocked))
+                .guardSuccess()
+            }
+          }
+        case .removeFriend(let user, _):
+          Button("Remove Friend", role: .destructive) {
+            saveInBackground($error) {
+              try await gw.client.removeRelationship(userID: user).guardSuccess()
+            }
+          }
+        case .leaveGroup(let channel):
+          Button("Leave Group", role: .destructive) {
+            saveInBackground($error) {
+              try await DMActions.close(channel, gw: gw, appState: appState)
+            }
+          }
+        }
+        Button("Cancel", role: .cancel) {}
+      } message: { action in
+        switch action {
+        case .block:
+          Text("They won't be able to message you, and their messages will be hidden. They aren't told.")
+        case .removeFriend:
+          Text("Your conversation stays; you can add them again later.")
+        case .leaveGroup:
+          Text("You won't get its messages unless someone adds you back.")
+        }
+      }
+      .saveErrorAlert($error)
+  }
+
+  private var title: String {
+    switch confirming {
+    case .block(_, let name): String(localized: "Block \(name)?")
+    case .removeFriend(_, let name): String(localized: "Remove \(name) from Friends?")
+    case .leaveGroup: String(localized: "Leave this group?")
+    case nil: ""
+    }
+  }
+}
+
+@MainActor
+enum DMActions {
+  /// Closes a DM (or leaves a group) and leaves the chat if it was open.
+  static func close(_ channel: DiscordChannel, gw: GatewayStore, appState: AicordAppState)
+    async throws
+  {
+    try await gw.client.deleteChannel(id: channel.id).guardSuccess()
+    gw.user.privateChannels.removeValue(forKey: channel.id)
+    if appState.selectedChannel == channel.id {
+      appState.selectedChannel = nil
+      appState.chatOpen = false
+    }
+  }
+
+  /// Ignoring keeps someone's messages and requests quiet without telling them.
+  static func setIgnored(_ ignored: Bool, user: UserSnowflake, gw: GatewayStore) async throws {
+    let res =
+      ignored
+      ? try await gw.client.ignoreUser(userID: user)
+      : try await gw.client.unignoreUser(userID: user)
+    try res.guardSuccess()
+    // the gateway confirms with Relationship Add/Update; reflect it right away
+    gw.user.relationships[user]?.user_ignored = ignored
+  }
+}
+
 // MARK: - Mute and Notify
 
 /// Mute and Notify submenus for a server, or one of its channels with `channelId`.

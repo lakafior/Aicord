@@ -67,6 +67,7 @@ struct ChannelButton: View {
     case .dm, .groupDm:
       privateChannelLabel
         .tag(channel.id)
+        .dmContextMenu(channel)
     case .guildVoice, .guildStageVoice:
       VoiceChannelButton(channel: channel)
     case .guildText, .guildAnnouncement:

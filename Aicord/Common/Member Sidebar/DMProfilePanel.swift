@@ -112,7 +112,35 @@ extension MemberSidebarView {
           MarkdownText(content: bio)
         }
 
-        AddFriendProfileButton(user: user)
+        HStack(alignment: .bottom, spacing: 8) {
+          AddFriendProfileButton(user: user)
+          if user.id != gw.user.currentUser?.id {
+            DMActionsMenu(
+              channel: conversation, user: user.id,
+              userName: user.global_name ?? user.username
+            ) {
+              Label("More", systemImage: "ellipsis")
+                .labelStyle(.iconOnly)
+            }
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .buttonStyle(.bordered)
+            .help("More actions")
+          }
+        }
+      }
+    }
+
+    /// The one-to-one DM with this person, when there is one.
+    var conversation: DiscordChannel? {
+      if let selected = appState.selectedChannel,
+        let channel = gw.user.privateChannels[selected], channel.type == .dm,
+        channel.recipients?.first?.id == user.id
+      {
+        return channel
+      }
+      return gw.user.privateChannels.values.first {
+        $0.type == .dm && $0.recipients?.first?.id == user.id
       }
     }
 

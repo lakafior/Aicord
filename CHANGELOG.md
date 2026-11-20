@@ -2,6 +2,12 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## 0.1.13 (November 2026)
+
+### Direct messages
+
+- **New** · Conversation actions: right-click on the Mac, long press on iPhone and iPad, the … button next to Add Friend in the DM profile panel, and the chat's … menu. Mark as Read, Remove Friend, Ignore or Unignore, Block or Unblock, and Close DM (it leaves the list, the history stays and a new message brings it back) or Leave Group. Blocking, removing a friend and leaving a group ask first. On iPhone a swipe closes a DM
+
 ## 0.1.12 (November 2026)
 
 ### Sign-in

@@ -35,6 +35,8 @@ struct ChatView: View {
   @State private var showsThreads = false
   @State private var showsGallery = false
   @State private var showsExport = false
+  @State private var dmAction: DMAction?
+  @State private var dmActionError: String?
   @AppStorage(IntelligencePreferences.Key.allowsDMs) private var intelligenceInDMs = false
   @State private var isScrolling: Bool = false
   /// Whether the user has scrolled this chat. Older history only loads after
@@ -522,9 +524,14 @@ struct ChatView: View {
       } label: {
         Label("Export Channel…", systemImage: "square.and.arrow.up")
       }
+      // block, ignore, close: the same actions as the conversation list's menu
+      if isPrivateChannel, let channel = vm.channel {
+        DMActionButtons(channel: channel, confirming: $dmAction, error: $dmActionError)
+      }
     } label: {
       Label("Channel", systemImage: "ellipsis.circle")
     }
+    .dmActionDialogs($dmAction, error: $dmActionError)
   }
 
   /// "#channel · Server" for a server channel, the DM's name otherwise.

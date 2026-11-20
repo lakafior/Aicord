@@ -101,6 +101,20 @@ struct MessagesView: View {
             ConversationRow(channel: channel)
           }
           .tint(.primary)
+          .dmContextMenu(channel)
+          .swipeActions(edge: .trailing) {
+            if channel.type == .dm {
+              Button("Close", systemImage: "xmark", role: .destructive) {
+                Task {
+                  do {
+                    try await DMActions.close(channel, gw: gw, appState: appState)
+                  } catch {
+                    appState.error = error
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
