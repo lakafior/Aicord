@@ -20,7 +20,7 @@ final class CloudRelayTests: XCTestCase {
     let original = note("42")
     let record = original.record()
     XCTAssertEqual(record.recordType, "RelayNotification")
-    XCTAssertEqual(record.recordID.recordName, "relay-42")
+    XCTAssertEqual(record.recordID.recordName, "relay-g1-c1-42")
     XCTAssertEqual(record["title"] as? String, "Ala")
     XCTAssertEqual(record["channelId"] as? String, "c1")
     XCTAssertEqual(record["createdAt"] as? Date, start)
@@ -33,6 +33,26 @@ final class CloudRelayTests: XCTestCase {
     let record = dm.record()
     XCTAssertEqual(record["guildId"] as? String, "")
     XCTAssertNil(RelayNotification(record: record)?.guildId)
+    XCTAssertEqual(
+      RelayTarget(recordName: record.recordID.recordName),
+      RelayTarget(channelId: "c1", guildId: nil, messageId: "7"))
+  }
+
+  func testRecordNameCarriesTheTarget() {
+    XCTAssertEqual(
+      RelayTarget(recordName: note("42").recordName),
+      RelayTarget(channelId: "c1", guildId: "g1", messageId: "42"))
+    XCTAssertNil(RelayTarget(recordName: "ios-active"))
+    XCTAssertNil(RelayTarget(recordName: "relay-42"))
+  }
+
+  func testLongTextIsTrimmed() {
+    var long = note("1")
+    long.body = String(repeating: "a", count: 5_000)
+    let trimmed = long.trimmed
+    XCTAssertEqual(trimmed.body.count, RelayNotification.maxBody)
+    XCTAssertTrue(trimmed.body.hasSuffix("…"))
+    XCTAssertEqual(note("2").trimmed, note("2"))
   }
 
   func testOtherRecordTypesAreRejected() {
@@ -81,7 +101,8 @@ final class CloudRelayTests: XCTestCase {
     let batch = coalescer.flush(now: start.addingTimeInterval(10))
     XCTAssertEqual(batch.count, 1)
     XCTAssertEqual(batch.first?.messageId, "3")
-    XCTAssertEqual(batch.first?.count, 3)
+    // the first was pushed on its own: the summary counts what waited
+    XCTAssertEqual(batch.first?.count, 2)
   }
 
   func testQuietChannelClosesItsBurst() {
@@ -97,12 +118,13 @@ final class CloudRelayTests: XCTestCase {
     var coalescer = RelayCoalescer(window: 10)
     _ = coalescer.offer(note("1"), now: start)
     _ = coalescer.offer(note("2"), now: start.addingTimeInterval(1))
-    XCTAssertEqual(coalescer.flush(now: start.addingTimeInterval(10)).first?.count, 2)
+    XCTAssertEqual(coalescer.flush(now: start.addingTimeInterval(10)).first?.count, 1)
     _ = coalescer.offer(note("3"), now: start.addingTimeInterval(12))
+    _ = coalescer.offer(note("4"), now: start.addingTimeInterval(13))
     let next = coalescer.flush(now: start.addingTimeInterval(20))
-    // the device shows one notification for the channel: it counts the whole burst
-    XCTAssertEqual(next.first?.count, 3)
-    XCTAssertEqual(next.first?.messageId, "3")
+    // the burst goes on: another window, counting only the new ones
+    XCTAssertEqual(next.first?.count, 2)
+    XCTAssertEqual(next.first?.messageId, "4")
   }
 
   func testChannelsAreSeparate() {
@@ -124,6 +146,7 @@ final class CloudRelayTests: XCTestCase {
     // an hour later there's room again
     let later = coalescer.flush(now: start.addingTimeInterval(3_601))
     XCTAssertEqual(later.map(\.messageId), ["3"])
+    XCTAssertEqual(later.first?.count, 1)
   }
 
   func testResetForgetsWaitingMessages() {

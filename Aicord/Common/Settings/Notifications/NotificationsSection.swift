@@ -546,9 +546,14 @@ private struct MacRelaySection: View {
         #if os(macOS)
           .toggleStyle(.switch)
         #endif
-        .disabled(relay.availability == .notEntitled && !on)
+        // sideloaded builds have no iCloud: it can only be turned off there
+        .disabled(!CloudRelayStore.isEntitled && !on)
         .onChange(of: on) { relay.update() }
-      if on, let status {
+      if !CloudRelayStore.isEntitled {
+        LabeledContent("iCloud") {
+          Text("Not available in this version of Aicord").foregroundStyle(.secondary)
+        }
+      } else if on, let status {
         LabeledContent("iCloud") {
           Text(status)
             .foregroundStyle(relay.availability == .available ? Color.secondary : Color.red)

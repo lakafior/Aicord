@@ -157,6 +157,23 @@ final class CloudRelayStore {
 
   @ObservationIgnored private var pausedUntil: Date = .distantPast
 
+  /// A save that didn't throw can still fail record by record (a schema not
+  /// deployed to Production, say): show it instead of a false "Ready".
+  private func reportFailures(_ results: [CKRecord.ID: Result<CKRecord, Error>]) {
+    for case .failure(let error) in results.values {
+      handle(error)
+      // only what won't pass by itself; network trouble and limits do
+      let lasting: [CKError.Code] = [
+        .unknownItem, .invalidArguments, .permissionFailure, .serverRejectedRequest,
+        .badContainer, .missingEntitlement, .quotaExceeded, .incompatibleVersion,
+      ]
+      if let code = (error as? CKError)?.code, lasting.contains(code) {
+        availability = .unreachable(error.localizedDescription)
+      }
+      return
+    }
+  }
+
   // MARK: - iOS: subscription, marker, delivered notifications
 
   #if os(iOS)
@@ -203,8 +220,8 @@ final class CloudRelayStore {
       info.shouldBadge = true
       info.category = NotificationStore.messageCategory
       info.desiredKeys = RelayTarget.desiredKeys
-      // a burst's summary replaces the channel's first notification
-      info.collapseIDKey = F.channelId
+      // no collapseIDKey: it's one literal apns-collapse-id for every push,
+      // so each would replace the one before, whatever the channel
       subscription.notificationInfo = info
       return subscription
     }
@@ -230,8 +247,9 @@ final class CloudRelayStore {
     private func writeMarker(_ marker: ActivityMarker) async {
       guard let database else { return }
       do {
-        _ = try await database.modifyRecords(
+        let (saved, _) = try await database.modifyRecords(
           saving: [marker.record()], deleting: [], savePolicy: .allKeys)
+        reportFailures(saved)
       } catch {
         handle(error)
       }
@@ -295,10 +313,11 @@ final class CloudRelayStore {
         coalescer.reset()
         return
       }
-      let records = notifications.map { Self.summarized($0).record() }
+      let records = notifications.map { Self.summarized($0).trimmed.record() }
       do {
-        _ = try await database.modifyRecords(
+        let (saved, _) = try await database.modifyRecords(
           saving: records, deleting: [], savePolicy: .allKeys, atomically: false)
+        reportFailures(saved)
       } catch {
         handle(error)
       }

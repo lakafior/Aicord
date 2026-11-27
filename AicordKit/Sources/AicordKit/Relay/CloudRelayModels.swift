@@ -72,8 +72,27 @@ public struct RelayNotification: Equatable, Sendable {
     self.count = count
   }
 
-  /// One record per message: saving it twice can't make two pushes.
-  public var recordName: String { "relay-\(messageId)" }
+  /// One record per message, so saving it twice can't make two pushes. It
+  /// also carries where the message is: CloudKit drops `desiredKeys` from a
+  /// push that would be too big, but keeps the record ID.
+  public var recordName: String { "relay-\(guildId ?? "0")-\(channelId)-\(messageId)" }
+
+  /// What fits in a push (APNs allows 4 KB for everything).
+  public static let maxTitle = 100
+  public static let maxSubtitle = 120
+  public static let maxBody = 400
+
+  /// Trimmed to what a push can carry.
+  public var trimmed: RelayNotification {
+    func cut(_ text: String, _ limit: Int) -> String {
+      text.count <= limit ? text : String(text.prefix(limit - 1)) + "…"
+    }
+    var out = self
+    out.title = cut(title, Self.maxTitle)
+    out.subtitle = cut(subtitle, Self.maxSubtitle)
+    out.body = cut(body, Self.maxBody)
+    return out
+  }
 
   public func record(zoneID: CKRecordZone.ID = .default) -> CKRecord {
     let record = CKRecord(
@@ -135,7 +154,25 @@ public struct RelayTarget: Equatable, Sendable {
         as? CKQueryNotification,
       notification.subscriptionID?.hasPrefix("relay-notifications") == true
     else { return nil }
-    self.init(fields: notification.recordFields ?? [:])
+    if let target = RelayTarget(fields: notification.recordFields ?? [:]) {
+      self = target
+    } else if let name = notification.recordID?.recordName,
+      let target = RelayTarget(recordName: name)
+    {
+      self = target
+    } else {
+      return nil
+    }
+  }
+
+  /// From `relay-<guild or 0>-<channel>-<message>`.
+  public init?(recordName: String) {
+    let parts = recordName.split(separator: "-").map(String.init)
+    guard parts.count == 4, parts[0] == "relay", !parts[2].isEmpty, !parts[3].isEmpty else {
+      return nil
+    }
+    self.init(
+      channelId: parts[2], guildId: parts[1] == "0" ? nil : parts[1], messageId: parts[3])
   }
 
   public init?(fields: [String: Any]) {
@@ -201,16 +238,17 @@ public struct ActivityMarker: Equatable, Sendable {
 }
 
 /// Bursts in one channel become one push: the first message goes at once,
-/// the ones after it within `window` wait and go as one ("4 new messages"),
-/// which replaces the first on the device (the channel is the collapse ID).
-/// An hourly cap keeps a busy account under CloudKit's and APNs' limits.
+/// the ones after it within `window` wait and go as one ("3 new messages",
+/// counting what waited). An hourly cap keeps a busy account under
+/// CloudKit's and APNs' limits.
 public struct RelayCoalescer: Sendable {
   public var window: TimeInterval
   public var maxPerHour: Int
 
   private struct Burst {
     var deadline: Date
-    var total: Int
+    /// Messages waiting since the last push for the channel.
+    var held: Int
     var latest: RelayNotification?
   }
 
@@ -227,15 +265,16 @@ public struct RelayCoalescer: Sendable {
     -> RelayNotification?
   {
     if var burst = bursts[notification.channelId], burst.deadline > now || burst.latest != nil {
-      burst.total += 1
+      burst.held += 1
       burst.latest = notification
       bursts[notification.channelId] = burst
       return nil
     }
     bursts[notification.channelId] = Burst(
-      deadline: now.addingTimeInterval(window), total: 1, latest: nil)
+      deadline: now.addingTimeInterval(window), held: 0, latest: nil)
     guard takeSlot(now: now) else {
       // over the cap: it waits like the rest of a burst
+      bursts[notification.channelId]?.held = 1
       bursts[notification.channelId]?.latest = notification
       return nil
     }
@@ -243,7 +282,7 @@ public struct RelayCoalescer: Sendable {
   }
 
   /// Bursts whose window ended: one notification each for what waited, with
-  /// `count` set to every message of the burst. A burst that keeps going gets
+  /// `count` set to how many messages waited. A burst that keeps going gets
   /// another window.
   public mutating func flush(now: Date = .now) -> [RelayNotification] {
     var out: [RelayNotification] = []
@@ -256,9 +295,9 @@ public struct RelayCoalescer: Sendable {
         bursts[channel]?.deadline = now.addingTimeInterval(window)
         continue
       }
-      latest.count = burst.total
+      latest.count = burst.held
       out.append(latest)
-      bursts[channel] = Burst(deadline: now.addingTimeInterval(window), total: burst.total, latest: nil)
+      bursts[channel] = Burst(deadline: now.addingTimeInterval(window), held: 0, latest: nil)
     }
     return out.sorted { $0.createdAt < $1.createdAt }
   }
