@@ -446,6 +446,10 @@ extension AicordAppState {
     guard let appState = main else {
       print("[Notifications] open \(channel.rawValue) kept until the window is up")
       pendingExternalOpen = (guild, channel, message)
+      #if os(macOS)
+        // running without a window: open one, it picks this up
+        MacBackground.shared.openMainWindow()
+      #endif
       return
     }
     print("[Notifications] open \(channel.rawValue) in guild \(guild?.rawValue ?? "DM")")

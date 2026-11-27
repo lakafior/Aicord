@@ -86,42 +86,13 @@
         }
       }
     },
-    "Message Notifications From" : {
+    "Aicord Is Running in the Background" : {
+      "comment" : "The title of the menu bar item's menu while Aicord runs without a window.",
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Powiadomienia o wiadomościach z"
-          }
-        }
-      }
-    },
-    "Your Mac" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twojego Maca"
-          }
-        }
-      }
-    },
-    "Message Notifications" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Powiadomienia o wiadomościach"
-          }
-        }
-      }
-    },
-    "For iPhone and iPad" : {
-      "localizations" : {
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dla iPhone'a i iPada"
+            "value" : "Aicord działa w tle"
           }
         }
       }
@@ -136,12 +107,206 @@
         }
       }
     },
+    "Background" : {
+      "comment" : "A section header in Advanced settings on the Mac.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W tle"
+          }
+        }
+      }
+    },
+    "Discord: Connected" : {
+      "comment" : "Status in the menu bar item: the Discord connection is up.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord: połączono"
+          }
+        }
+      }
+    },
+    "Discord: Connecting…" : {
+      "comment" : "Status in the menu bar item: the Discord connection is being made.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord: łączenie…"
+          }
+        }
+      }
+    },
+    "For iPhone and iPad" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dla iPhone'a i iPada"
+          }
+        }
+      }
+    },
+    "Keep Running in the Background" : {
+      "comment" : "A toggle in Advanced settings on the Mac.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Działaj w tle"
+          }
+        }
+      }
+    },
+    "MCP Server: Not Running" : {
+      "comment" : "Status in the menu bar item: the server is allowed but couldn't start.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwer MCP: nie działa"
+          }
+        }
+      }
+    },
+    "MCP Server: Off" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwer MCP: wyłączony"
+          }
+        }
+      }
+    },
+    "MCP Server: Running" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwer MCP: działa"
+          }
+        }
+      }
+    },
+    "Message Notifications" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia o wiadomościach"
+          }
+        }
+      }
+    },
+    "Message Notifications From" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia o wiadomościach z"
+          }
+        }
+      }
+    },
+    "Notifications Through the Mac: Checking iCloud…" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia przez Maca: sprawdzanie iCloud…"
+          }
+        }
+      }
+    },
+    "Notifications Through the Mac: iCloud Unavailable" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia przez Maca: iCloud niedostępny"
+          }
+        }
+      }
+    },
+    "Notifications Through the Mac: Off" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia przez Maca: wyłączone"
+          }
+        }
+      }
+    },
+    "Notifications Through the Mac: Sending" : {
+      "comment" : "Status in the menu bar item: the Mac sends notifications to iOS.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia przez Maca: wysyłane"
+          }
+        }
+      }
+    },
+    "Open Aicord" : {
+      "comment" : "A menu item that opens the main window again.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz Aicord"
+          }
+        }
+      }
+    },
+    "Quit Aicord" : {
+      "comment" : "A menu item that quits the app, with the MCP server and the relay.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończ Aicord"
+          }
+        }
+      }
+    },
     "This Device: Aicord notifies while it's running, and for about half a minute after you leave it. Your Mac: Aicord on your Mac sends the notifications, also while Aicord here is closed, following the Mac's notification settings, and this device shows none of its own. Message content goes through your iCloud account and is kept there for up to an hour. Works only while your Mac is on, awake and running Aicord with Notifications Through the Mac on, signed in to the same Apple Account." : {
       "localizations" : {
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tego urządzenia: Aicord powiadamia, gdy działa, i przez około pół minuty po wyjściu z niego. Twojego Maca: powiadomienia wysyła Aicord na Macu, także gdy Aicord tutaj jest zamknięty, według ustawień powiadomień Maca, a to urządzenie nie pokazuje własnych. Treść wiadomości przechodzi przez Twoje konto iCloud i zostaje tam najwyżej godzinę. Działa tylko, gdy Mac jest włączony, nie śpi i ma uruchomiony Aicord z włączonymi powiadomieniami przez Maca, z tym samym kontem Apple."
+          }
+        }
+      }
+    },
+    "While the MCP server or Notifications Through the Mac is on, closing the last window keeps Aicord connected in the menu bar, without its windows or Dock icon. Quit Aicord (⌘Q) to stop everything." : {
+      "comment" : "The footer of the Background section in Advanced settings on the Mac.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gdy włączony jest serwer MCP albo Powiadomienia przez Maca, zamknięcie ostatniego okna zostawia Aicord połączony na pasku menu, bez okien i ikony w Docku. Zakończ Aicord (⌘Q), żeby zatrzymać wszystko."
+          }
+        }
+      }
+    },
+    "Your Mac" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twojego Maca"
           }
         }
       }

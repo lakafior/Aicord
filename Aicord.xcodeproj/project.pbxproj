@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6C8660D7732A463D4AAEE2CF /* MacBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EEA2E440036AAD84D0290C5 /* MacBackground.swift */; };
 		B0ADCA570000000000000002 /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ADCA570000000000000001 /* SampleHandler.swift */; };
 		B0ADCA570000000000000004 /* BroadcastLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ADCA570000000000000003 /* BroadcastLink.swift */; };
 		B0ADCA570000000000000005 /* BroadcastLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0ADCA570000000000000003 /* BroadcastLink.swift */; };
@@ -296,6 +297,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9EEA2E440036AAD84D0290C5 /* MacBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MacBackground.swift; path = MacBackground.swift; sourceTree = "<group>"; };
 		B0ADCA570000000000000001 /* SampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleHandler.swift; sourceTree = "<group>"; };
 		B0ADCA570000000000000003 /* BroadcastLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastLink.swift; sourceTree = "<group>"; };
 		B0ADCA570000000000000006 /* VideoEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEncoder.swift; path = AicordKit/Sources/DiscordVoice/VideoEncoder.swift; sourceTree = SOURCE_ROOT; };
@@ -597,6 +599,7 @@
 			children = (
 				57AA8A012E7875A300B4CA9C /* Sidebar */,
 				D8ABAD09C4E5FCABF89F3EBF /* GlobalQuickSwitcher.swift */,
+				9EEA2E440036AAD84D0290C5 /* MacBackground.swift */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -1860,6 +1863,7 @@
 				F3F073A6399D42A4262C2B75 /* FocusFilter.swift in Sources */,
 				B3C4870A266FF8323CC475B0 /* GlobalQuickSwitcher.swift in Sources */,
 				FD193FD09A9289C8704D0D10 /* ComposerSettings.swift in Sources */,
+				6C8660D7732A463D4AAEE2CF /* MacBackground.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

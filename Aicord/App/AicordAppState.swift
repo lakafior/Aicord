@@ -45,6 +45,16 @@ final class AicordAppState {
   let id = UUID()
   @ObservationIgnored let remembersSelection: Bool
 
+  #if os(macOS)
+    /// Every window has closed: their states go, and the next main window
+    /// starts from the saved selection. `instances` holds them strongly, so
+    /// without this they'd stay for good.
+    static func releaseWindowStates() {
+      main = nil
+      instances = instances.filter { $0.value === sharedEphemeral }
+    }
+  #endif
+
   // MARK: - iOS Specific
   /// iPhone opens on Home; the chat slides over once a channel is picked.
   var chatOpen: Bool = false

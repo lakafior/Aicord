@@ -130,6 +130,9 @@ struct RootView: View {
   // MARK: - Gateway Callbacks
 
   private func setupGatewayCallbacks() {
+    // only the challenges, not this view: the gateway keeps these for good,
+    // and the view would keep its window's app state alive after it closes
+    let challenges = challenges
     gatewayStore.captchaCallback = { captcha in
       await challenges?.presentCaptcha(captcha)
     }

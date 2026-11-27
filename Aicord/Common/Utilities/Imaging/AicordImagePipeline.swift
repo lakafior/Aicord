@@ -94,6 +94,15 @@ actor ImagePipeline {
     memoryCache.withLockUnchecked { $0.removeAllObjects() }
   }
 
+  /// Decoded images and the responses kept in memory; the files on disk stay.
+  /// For a Mac running without windows.
+  nonisolated func clearMemory() {
+    memoryCache.withLockUnchecked { $0.removeAllObjects() }
+    let capacity = diskCache.memoryCapacity
+    diskCache.memoryCapacity = 0
+    diskCache.memoryCapacity = capacity
+  }
+
   func container(for url: URL) async throws -> ImageContainer {
     if let cached = cachedContainer(for: url) {
       return cached
