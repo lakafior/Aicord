@@ -17,9 +17,6 @@ public enum CloudRelay {
   /// the app on iOS and on macOS.
   public static let containerID = "iCloud.net.smigi.aicord"
   public static let notificationType = "RelayNotification"
-  public static let markerType = "ActivityMarker"
-  /// One marker for every iOS device of the account.
-  public static let markerRecordName = "ios-active"
   /// Raise the number when the notification's look changes: the old
   /// subscription is then replaced.
   public static let subscriptionID = "relay-notifications-v1"
@@ -42,7 +39,6 @@ public enum CloudRelay {
     public static let messageId = "messageId"
     public static let createdAt = "createdAt"
     public static let count = "count"
-    public static let activeUntil = "activeUntil"
   }
 }
 
@@ -191,49 +187,6 @@ public struct RelayTarget: Equatable, Sendable {
     info["guild"] = guildId
     info["message"] = messageId
     return info
-  }
-}
-
-/// "Aicord on iOS is in front until…": while it's valid the Mac sends nothing,
-/// because iOS notifies by itself.
-public struct ActivityMarker: Equatable, Sendable {
-  public var activeUntil: Date
-
-  /// iOS writes the marker this often while it's active...
-  public static let refreshInterval: TimeInterval = 60
-  /// ...valid for this long, so one late write doesn't open a gap.
-  public static let lifetime: TimeInterval = 150
-  /// After leaving the app iOS keeps the connection about half a minute
-  /// (NotificationStore's background task), and notifies by itself meanwhile.
-  public static let backgroundGrace: TimeInterval = 30
-
-  public init(activeUntil: Date) {
-    self.activeUntil = activeUntil
-  }
-
-  public static func active(now: Date = .now) -> ActivityMarker {
-    ActivityMarker(activeUntil: now.addingTimeInterval(lifetime))
-  }
-
-  public static func leaving(now: Date = .now) -> ActivityMarker {
-    ActivityMarker(activeUntil: now.addingTimeInterval(backgroundGrace))
-  }
-
-  public func isActive(at now: Date = .now) -> Bool { activeUntil > now }
-
-  public func record(zoneID: CKRecordZone.ID = .default) -> CKRecord {
-    let record = CKRecord(
-      recordType: CloudRelay.markerType,
-      recordID: CKRecord.ID(recordName: CloudRelay.markerRecordName, zoneID: zoneID))
-    record[CloudRelay.Field.activeUntil] = activeUntil as NSDate
-    return record
-  }
-
-  public init?(record: CKRecord) {
-    guard record.recordType == CloudRelay.markerType,
-      let date = record[CloudRelay.Field.activeUntil] as? Date
-    else { return nil }
-    self.init(activeUntil: date)
   }
 }
 

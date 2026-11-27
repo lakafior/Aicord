@@ -60,7 +60,6 @@ final class CloudRelayTests: XCTestCase {
     other["channelId"] = "c1" as NSString
     other["messageId"] = "1" as NSString
     XCTAssertNil(RelayNotification(record: other))
-    XCTAssertNil(ActivityMarker(record: other))
   }
 
   func testPushFieldsBecomeActionInfo() {
@@ -68,24 +67,6 @@ final class CloudRelayTests: XCTestCase {
     XCTAssertEqual(target?.actionInfo, ["channel": "c1", "message": "9"])
     XCTAssertNil(RelayTarget(fields: ["guildId": "g1"]))
     XCTAssertNil(RelayTarget(userInfo: ["aps": ["alert": "x"]]))
-  }
-
-  // MARK: - Marker
-
-  func testMarkerValidity() {
-    let active = ActivityMarker.active(now: start)
-    XCTAssertTrue(active.isActive(at: start.addingTimeInterval(ActivityMarker.refreshInterval)))
-    XCTAssertFalse(active.isActive(at: start.addingTimeInterval(ActivityMarker.lifetime)))
-    // one missed refresh still leaves it valid
-    XCTAssertGreaterThan(ActivityMarker.lifetime, 2 * ActivityMarker.refreshInterval)
-
-    let leaving = ActivityMarker.leaving(now: start)
-    XCTAssertTrue(leaving.isActive(at: start.addingTimeInterval(20)))
-    XCTAssertFalse(leaving.isActive(at: start.addingTimeInterval(31)))
-
-    let record = active.record()
-    XCTAssertEqual(record.recordID.recordName, "ios-active")
-    XCTAssertEqual(ActivityMarker(record: record), active)
   }
 
   // MARK: - Bursts

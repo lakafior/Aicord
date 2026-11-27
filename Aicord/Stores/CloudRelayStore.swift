@@ -6,8 +6,9 @@
 //  iOS is closed, the Mac, which keeps the gateway open, saves a
 //  RelayNotification record in the user's private iCloud database, and a
 //  CKQuerySubscription on iOS makes Apple push it as a visible alert. No
-//  server of our own and no push key. While iOS is in front it keeps an
-//  "active until" marker fresh, and the Mac sends nothing.
+//  server of our own and no push key. On iOS it's one of two sources of
+//  message notifications: with it on, iOS shows none of its own, so the Mac
+//  always sends and nothing is ever shown twice.
 //
 //  Builds without the iCloud entitlement (the unsigned IPA for AltStore and
 //  SideStore, CI) never touch CloudKit: creating the container there would
@@ -101,10 +102,9 @@ final class CloudRelayStore {
         UIApplication.shared.registerForRemoteNotifications()
         try await ensureSubscription(in: database)
         availability = .available
-        if UIApplication.shared.applicationState == .active { appBecameActive() }
       #elseif os(macOS)
         // one round trip to know the container answers
-        _ = try await fetchMarker(from: database)
+        try await checkReachable(database)
         availability = .available
         startCleanup()
       #endif
@@ -122,8 +122,6 @@ final class CloudRelayStore {
   private func stop() {
     availability = .off
     #if os(iOS)
-      heartbeat?.cancel()
-      heartbeat = nil
       // no pushes once the option is off (the container exists only when entitled)
       if let database {
         Task {
@@ -174,11 +172,9 @@ final class CloudRelayStore {
     }
   }
 
-  // MARK: - iOS: subscription, marker, delivered notifications
+  // MARK: - iOS: subscription, delivered notifications
 
   #if os(iOS)
-    @ObservationIgnored private var heartbeat: Task<Void, Never>?
-
     /// Once per container: fetched by its ID first, so it's never made twice.
     private func ensureSubscription(in database: CKDatabase) async throws {
       do {
@@ -225,35 +221,6 @@ final class CloudRelayStore {
       subscription.notificationInfo = info
       return subscription
     }
-
-    func appBecameActive() {
-      guard availability == .available, heartbeat == nil else { return }
-      heartbeat = Task { [weak self] in
-        while !Task.isCancelled {
-          await self?.writeMarker(.active())
-          try? await Task.sleep(for: .seconds(ActivityMarker.refreshInterval))
-        }
-      }
-    }
-
-    /// The Mac takes over once NotificationStore's background time is over.
-    func appEnteredBackground() {
-      heartbeat?.cancel()
-      heartbeat = nil
-      guard availability == .available else { return }
-      Task { await writeMarker(.leaving()) }
-    }
-
-    private func writeMarker(_ marker: ActivityMarker) async {
-      guard let database else { return }
-      do {
-        let (saved, _) = try await database.modifyRecords(
-          saving: [marker.record()], deleting: [], savePolicy: .allKeys)
-        reportFailures(saved)
-      } catch {
-        handle(error)
-      }
-    }
   #endif
 
   /// Relay pushes still in Notification Center whose message has been read
@@ -279,7 +246,6 @@ final class CloudRelayStore {
     @ObservationIgnored private var coalescer = RelayCoalescer()
     @ObservationIgnored private var flushTask: Task<Void, Never>?
     @ObservationIgnored private var cleanupTask: Task<Void, Never>?
-    @ObservationIgnored private var marker: (ActivityMarker?, fetched: Date)?
 
     /// A message the Mac notifies about (NotificationStore's rules already
     /// decided, with its preview setting applied to the content).
@@ -308,11 +274,6 @@ final class CloudRelayStore {
 
     private func send(_ notifications: [RelayNotification]) async {
       guard isSending, let database, pausedUntil < .now else { return }
-      if await iOSIsActive(database) {
-        // iOS notifies by itself; what waited in bursts is stale too
-        coalescer.reset()
-        return
-      }
       let records = notifications.map { Self.summarized($0).trimmed.record() }
       do {
         let (saved, _) = try await database.modifyRecords(
@@ -333,29 +294,11 @@ final class CloudRelayStore {
       return out
     }
 
-    /// The marker, fetched at most every 15 seconds.
-    private func iOSIsActive(_ database: CKDatabase) async -> Bool {
-      if let marker, marker.fetched > .now.addingTimeInterval(-15) {
-        return marker.0?.isActive() ?? false
-      }
+    /// Fails when the container doesn't answer; a missing record is an answer.
+    private func checkReachable(_ database: CKDatabase) async throws {
       do {
-        let fetched = try await fetchMarker(from: database)
-        marker = (fetched, .now)
-        return fetched?.isActive() ?? false
-      } catch {
-        handle(error)
-        // unknown: send rather than lose the notification
-        return false
-      }
-    }
-
-    private func fetchMarker(from database: CKDatabase) async throws -> ActivityMarker? {
-      let id = CKRecord.ID(recordName: CloudRelay.markerRecordName)
-      do {
-        return ActivityMarker(record: try await database.record(for: id))
-      } catch let error as CKError where error.code == .unknownItem {
-        return nil
-      }
+        _ = try await database.record(for: CKRecord.ID(recordName: "reachability-check"))
+      } catch let error as CKError where error.code == .unknownItem {}
     }
 
     /// Records older than an hour go, every quarter of an hour.

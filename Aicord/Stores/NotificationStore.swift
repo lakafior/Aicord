@@ -235,7 +235,7 @@ class NotificationStore: DiscordDataStore {
   }
 
   /// Someone's looking at the channel already: the app is in front and it's open.
-  private func isViewing(_ channelId: ChannelSnowflake) -> Bool {
+  func isViewing(_ channelId: ChannelSnowflake) -> Bool {
     guard Self.isAppActive else { return false }
     return AicordAppState.instances.values.contains { state in
       #if os(iOS)
@@ -533,6 +533,10 @@ class NotificationStore: DiscordDataStore {
   /// the Mac also handed to iOS through iCloud (Notifications Through the Mac).
   /// Quiet hours and Do Not Disturb send nothing to iOS: a push can't be quiet.
   private func deliver(_ content: Content, id: String) {
+    #if os(iOS)
+      // message notifications come from one place: here or the Mac's pushes
+      if Prefs.bool(Prefs.macRelayKey) { return }
+    #endif
     if Prefs.bool(Prefs.enabledKey) { post(content, id: id) }
     #if os(macOS)
       if !isQuiet { CloudRelayStore.shared.relay(content, messageId: id) }
@@ -553,45 +557,8 @@ class NotificationStore: DiscordDataStore {
       notification.sound = .default
     }
     let request = UNNotificationRequest(identifier: id, content: notification, trigger: nil)
-    #if os(iOS)
-      // In the background iOS keeps notifying by itself for a while, and the
-      // Mac may push the same message meanwhile; a push can't be held back
-      // here, so the copy that came second goes.
-      if Prefs.bool(Prefs.macRelayKey) {
-        Task { await postDeduplicated(request) }
-        return
-      }
-    #endif
     UNUserNotificationCenter.current().add(request)
   }
-
-  #if os(iOS)
-    /// Messages notified here lately, whose pushes from the Mac are duplicates.
-    @ObservationIgnored private var postedHere: [String] = []
-
-    private func postDeduplicated(_ request: UNNotificationRequest) async {
-      let center = UNUserNotificationCenter.current()
-      let id = request.identifier
-      let relayed = await center.deliveredNotifications().contains {
-        RelayTarget(userInfo: $0.request.content.userInfo)?.messageId == id
-      }
-      if relayed { return }
-      try? await center.add(request)
-      postedHere.append(id)
-      if postedHere.count > 100 { postedHere.removeFirst(postedHere.count - 100) }
-      // pushes arrive within seconds; the background time lasts about half a minute
-      for delay in [3, 8, 20] {
-        try? await Task.sleep(for: .seconds(delay))
-        let duplicates = await center.deliveredNotifications().compactMap { delivered -> String? in
-          guard let target = RelayTarget(userInfo: delivered.request.content.userInfo),
-            let message = target.messageId, postedHere.contains(message)
-          else { return nil }
-          return delivered.request.identifier
-        }
-        if !duplicates.isEmpty { center.removeDeliveredNotifications(withIdentifiers: duplicates) }
-      }
-    }
-  #endif
 
   /// Takes a channel's notifications out of the list once it's been read.
   func clearDelivered(channelId: ChannelSnowflake) {
@@ -781,17 +748,25 @@ final class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelega
     withCompletionHandler completionHandler:
       @escaping @Sendable (UNNotificationPresentationOptions) -> Void
   ) {
-    let options: UNNotificationPresentationOptions
-    if RelayTarget(userInfo: notification.request.content.userInfo) != nil {
-      // a push from the Mac that raced the activity marker: Aicord notifies by itself
-      options = []
-    } else if notification.request.content.interruptionLevel == .passive {
-      options = [.list]
-    } else {
-      options =
-        NotificationPrefs.bool(NotificationPrefs.inAppKey) ? [.banner, .list, .sound] : [.list]
+    let target = RelayTarget(userInfo: notification.request.content.userInfo)
+    let passive = notification.request.content.interruptionLevel == .passive
+    DispatchQueue.main.async {
+      MainActor.assumeIsolated {
+        let options: UNNotificationPresentationOptions
+        if let target,
+          GatewayStore.shared.notifications.isViewing(ChannelSnowflake(target.channelId))
+        {
+          // a push from the Mac about the chat that's open: nothing to show
+          options = []
+        } else if passive {
+          options = [.list]
+        } else {
+          options =
+            NotificationPrefs.bool(NotificationPrefs.inAppKey) ? [.banner, .list, .sound] : [.list]
+        }
+        completionHandler(options)
+      }
     }
-    DispatchQueue.main.async { completionHandler(options) }
   }
 
   func userNotificationCenter(

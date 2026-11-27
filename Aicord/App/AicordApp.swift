@@ -97,11 +97,9 @@ struct AicordApp: App {
           switch phase {
           case .background:
             gatewayStore.notifications.enterBackground()
-            CloudRelayStore.shared.appEnteredBackground()
             SystemIntegration.shared.flushWidgetSnapshot()
           case .active:
             gatewayStore.notifications.endBackground()
-            CloudRelayStore.shared.appBecameActive()
           default: break
           }
         }
