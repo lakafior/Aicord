@@ -40,6 +40,7 @@ class NotificationStore: DiscordDataStore {
         switch event.data {
         case .ready:
           observeBadge()
+          removeReadRelayed()
         case .messageCreate(let message):
           handleMessageCreate(message)
         case .messageDelete(let delete):
@@ -105,7 +106,8 @@ class NotificationStore: DiscordDataStore {
     guard let author = message.author, author.id != me else { return }
     if gw.user.relationships[author.id]?.type == .blocked { return }
     rememberMention(message, me: me)
-    guard Prefs.bool(Prefs.enabledKey) else { return }
+    // the Mac may relay to iOS with its own banners turned off
+    guard Prefs.bool(Prefs.enabledKey) || CloudRelayStore.shared.isSending else { return }
     guard message.type == .default || message.type == .reply else { return }
     // @silent messages never notify, like in Discord
     if message.flags?.contains(.suppressNotifications) == true { return }
@@ -137,7 +139,7 @@ class NotificationStore: DiscordDataStore {
     if let alert, Prefs.preview != .hidden {
       content.subtitle = [alert, content.subtitle].filter { !$0.isEmpty }.joined(separator: " · ")
     }
-    post(content, id: message.id.rawValue)
+    deliver(content, id: message.id.rawValue)
   }
 
   // MARK: - Alerts
@@ -372,7 +374,7 @@ class NotificationStore: DiscordDataStore {
       var content = content(for: message, author: author, text: text, isDM: false)
       content.subtitle = [String(localized: "Important, from a muted channel"), content.subtitle]
         .filter { !$0.isEmpty }.joined(separator: " · ")
-      post(content, id: message.id.rawValue)
+      deliver(content, id: message.id.rawValue)
     }
   }
 
@@ -527,6 +529,16 @@ class NotificationStore: DiscordDataStore {
     return start <= end ? (now >= start && now < end) : (now >= start || now < end)
   }
 
+  /// A message's notification: shown here when notifications are on, and on
+  /// the Mac also handed to iOS through iCloud (Notifications Through the Mac).
+  /// Quiet hours and Do Not Disturb send nothing to iOS: a push can't be quiet.
+  private func deliver(_ content: Content, id: String) {
+    if Prefs.bool(Prefs.enabledKey) { post(content, id: id) }
+    #if os(macOS)
+      if !isQuiet { CloudRelayStore.shared.relay(content, messageId: id) }
+    #endif
+  }
+
   private func post(_ content: Content, id: String) {
     let notification = UNMutableNotificationContent()
     notification.title = content.title
@@ -549,10 +561,27 @@ class NotificationStore: DiscordDataStore {
     let center = UNUserNotificationCenter.current()
     Task {
       let ids = await center.deliveredNotifications()
-        .filter { $0.request.content.threadIdentifier == channelId.rawValue }
+        .filter {
+          $0.request.content.threadIdentifier == channelId.rawValue
+            // pushed through the Mac: no thread, the channel is in the payload
+            || RelayTarget(userInfo: $0.request.content.userInfo)?.channelId == channelId.rawValue
+        }
         .map(\.request.identifier)
       if !ids.isEmpty { center.removeDeliveredNotifications(withIdentifiers: ids) }
     }
+  }
+
+  /// Pushes from the Mac for messages read in the meantime (on the Mac, say).
+  private func removeReadRelayed() {
+    #if os(iOS)
+      CloudRelayStore.removeReadDelivered { [weak self] target in
+        guard let readStates = self?.gateway?.readStates, let message = target.messageId else {
+          return false
+        }
+        return !readStates.isUnread(
+          channelId: ChannelSnowflake(target.channelId), lastMessageId: MessageSnowflake(message))
+      }
+    #endif
   }
 
   // MARK: - Badge
@@ -656,7 +685,13 @@ class NotificationStore: DiscordDataStore {
   private func open(
     guildId: GuildSnowflake?, channelId: ChannelSnowflake, messageId: MessageSnowflake? = nil
   ) {
-    AicordAppState.openExternally(guild: guildId, channel: channelId, message: messageId)
+    Task {
+      // tapped while Aicord wasn't running: the window comes a moment later
+      for _ in 0..<50 where AicordAppState.externalTarget == nil {
+        try? await Task.sleep(for: .milliseconds(200))
+      }
+      AicordAppState.openExternally(guild: guildId, channel: channelId, message: messageId)
+    }
   }
 
   // MARK: - Background (iOS)
@@ -690,6 +725,8 @@ final class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelega
   func userNotificationCenter(
     _ center: UNUserNotificationCenter, willPresent notification: UNNotification
   ) async -> UNNotificationPresentationOptions {
+    // a push from the Mac that raced the activity marker: Aicord notifies by itself
+    if RelayTarget(userInfo: notification.request.content.userInfo) != nil { return [] }
     let passive = notification.request.content.interruptionLevel == .passive
     if passive { return [.list] }
     let showsInApp = await MainActor.run { NotificationPrefs.bool(NotificationPrefs.inAppKey) }
@@ -700,8 +737,10 @@ final class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelega
     _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
   ) async {
     let action = response.actionIdentifier
-    let userInfo = response.notification.request.content.userInfo
-      .reduce(into: [String: String]()) { result, pair in
+    let raw = response.notification.request.content.userInfo
+    let userInfo =
+      RelayTarget(userInfo: raw)?.actionInfo
+      ?? raw.reduce(into: [String: String]()) { result, pair in
         if let key = pair.key as? String, let value = pair.value as? String { result[key] = value }
       }
     let text = (response as? UNTextInputNotificationResponse)?.userText
@@ -730,6 +769,8 @@ enum NotificationPrefs {
   static let quietHoursKey = "Paicord.Notifications.QuietHours"
   static let quietStartKey = "Paicord.Notifications.QuietStart"
   static let quietEndKey = "Paicord.Notifications.QuietEnd"
+  /// Notifications Through the Mac, on both: the Mac sends, iOS subscribes.
+  static let macRelayKey = "Paicord.Notifications.MacRelay"
 
   enum Preview: String { case full, author, hidden }
   enum Badge: String { case off, directMessages, all }

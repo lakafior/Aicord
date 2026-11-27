@@ -50,6 +50,20 @@ struct AicordApp: App {
         // Return false to prevent the app from saving its current state when it is terminated.
         return false
       }
+
+      // Notifications Through the Mac: CloudKit sends the pushes, it only
+      // needs the device registered
+      func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+      ) {}
+
+      func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+      ) {
+        print("[CloudRelay] remote notifications unavailable: \(error.localizedDescription)")
+      }
     }
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
   #endif
@@ -62,6 +76,7 @@ struct AicordApp: App {
     UNUserNotificationCenter.current().delegate = NotificationCenterDelegate.shared
     NotificationStore.registerCategories()
     SystemIntegration.shared.start()
+    Task { @MainActor in CloudRelayStore.shared.update() }
     #if os(macOS)
       // the MCP bridge listens from launch when allowed; tools wait for the gateway
       Task { @MainActor in
@@ -82,8 +97,11 @@ struct AicordApp: App {
           switch phase {
           case .background:
             gatewayStore.notifications.enterBackground()
+            CloudRelayStore.shared.appEnteredBackground()
             SystemIntegration.shared.flushWidgetSnapshot()
-          case .active: gatewayStore.notifications.endBackground()
+          case .active:
+            gatewayStore.notifications.endBackground()
+            CloudRelayStore.shared.appBecameActive()
           default: break
           }
         }
