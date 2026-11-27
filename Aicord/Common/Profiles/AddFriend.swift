@@ -145,7 +145,6 @@ struct AddFriendProfileButton: View {
         }
       }
       .font(.subheadline.weight(.semibold))
-      .buttonStyle(.bordered)
       .disabled(sending)
       .padding(.top, 6)
       .alert(

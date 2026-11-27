@@ -112,22 +112,18 @@ extension MemberSidebarView {
           MarkdownText(content: bio)
         }
 
-        HStack(alignment: .bottom, spacing: 8) {
+        // Add Friend and the conversation actions, one under another
+        VStack(alignment: .leading, spacing: 6) {
           AddFriendProfileButton(user: user)
           if user.id != gw.user.currentUser?.id {
-            DMActionsMenu(
+            DMActionColumn(
               channel: conversation, user: user.id,
               userName: user.global_name ?? user.username
-            ) {
-              Label("More", systemImage: "ellipsis")
-                .labelStyle(.iconOnly)
-            }
-            .menuIndicator(.hidden)
-            .fixedSize()
-            .buttonStyle(.bordered)
-            .help("More actions")
+            )
           }
         }
+        .buttonStyle(ProfileActionButtonStyle())
+        .fixedSize(horizontal: true, vertical: false)
       }
     }
 

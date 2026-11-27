@@ -244,23 +244,40 @@ struct DMContextMenu: ViewModifier {
   }
 }
 
-/// The conversation actions behind a button, for the profile panel.
-struct DMActionsMenu<MenuLabel: View>: View {
+/// The conversation actions as a column of buttons, for the profile panel.
+struct DMActionColumn: View {
   var channel: DiscordChannel?
   var user: UserSnowflake?
   var userName: String?
-  @ViewBuilder var label: () -> MenuLabel
   @State private var confirming: DMAction?
   @State private var error: String?
 
   var body: some View {
-    Menu {
-      DMActionButtons(
-        channel: channel, user: user, userName: userName, confirming: $confirming, error: $error)
-    } label: {
-      label()
-    }
-    .dmActionDialogs($confirming, error: $error)
+    DMActionButtons(
+      channel: channel, user: user, userName: userName, separators: false,
+      confirming: $confirming, error: $error)
+      .dmActionDialogs($confirming, error: $error)
+  }
+}
+
+/// A full-width bordered button for a column of profile actions, so they line
+/// up whatever their titles; destructive ones in red.
+struct ProfileActionButtonStyle: ButtonStyle {
+  @Environment(\.isEnabled) private var isEnabled
+
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .font(.subheadline.weight(.semibold))
+      .foregroundStyle(configuration.role == .destructive ? AnyShapeStyle(.red) : AnyShapeStyle(.primary))
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 10)
+      .padding(.vertical, 6)
+      .background(
+        .secondary.opacity(configuration.isPressed ? 0.3 : 0.15),
+        in: .rect(cornerRadius: 7)
+      )
+      .contentShape(.rect(cornerRadius: 7))
+      .opacity(isEnabled ? 1 : 0.5)
   }
 }
 
@@ -273,19 +290,26 @@ struct DMActionButtons: View {
   /// The other person; taken from the channel when it's a one-to-one DM.
   var user: UserSnowflake?
   var userName: String?
+  /// Dividers between groups; off where the buttons are laid out in a column.
+  var separators = true
   @Binding var confirming: DMAction?
   @Binding var error: String?
 
   init(
     channel: DiscordChannel?, user: UserSnowflake? = nil, userName: String? = nil,
-    confirming: Binding<DMAction?>, error: Binding<String?>
+    separators: Bool = true, confirming: Binding<DMAction?>, error: Binding<String?>
   ) {
     self.channel = channel
+    self.separators = separators
     let recipient = channel?.type == .dm ? channel?.recipients?.first : nil
     self.user = user ?? recipient?.id
     self.userName = userName ?? recipient.map { $0.global_name ?? $0.username }
     self._confirming = confirming
     self._error = error
+  }
+
+  @ViewBuilder private var separator: some View {
+    if separators { Divider() }
   }
 
   var body: some View {
@@ -302,7 +326,7 @@ struct DMActionButtons: View {
     if let user, user != gw.user.currentUser?.id {
       let relationship = gw.user.relationships[user]
       let name = userName ?? ""
-      Divider()
+      separator
       if relationship?.type == .friend {
         Button("Remove Friend", systemImage: "person.badge.minus", role: .destructive) {
           confirming = .removeFriend(user, name: name)
@@ -328,7 +352,7 @@ struct DMActionButtons: View {
     }
 
     if gw.settings.userSettings.appearance.developerMode {
-      Divider()
+      separator
       if let user {
         Button("Copy User ID", systemImage: "number") { copyToPasteboard(user.rawValue) }
       }
@@ -338,7 +362,7 @@ struct DMActionButtons: View {
     }
 
     if let channel {
-      Divider()
+      separator
       if channel.type == .groupDm {
         Button("Leave Group", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
           confirming = .leaveGroup(channel)

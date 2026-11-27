@@ -187,6 +187,7 @@ struct ProfilePopoutView: View {
       }
 
       AddFriendProfileButton(user: user)
+        .buttonStyle(.bordered)
       DMGalleryProfileButton(user: user)
       if user.id != gw.user.currentUser?.id {
         PersonNoteEditor(
