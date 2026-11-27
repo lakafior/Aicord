@@ -20,6 +20,8 @@ from asc_api import APIError, call
 # Nothing to submit in these states: the version is with Apple or already out.
 BUSY = {"WAITING_FOR_REVIEW", "IN_REVIEW", "PROCESSING_FOR_DISTRIBUTION", "READY_FOR_DISTRIBUTION",
         "PENDING_DEVELOPER_RELEASE", "PENDING_APPLE_RELEASE", "ACCEPTED"}
+# Unreleased and not with Apple: a new version number can take it over.
+EDITABLE = {"PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED", "INVALID_BINARY"}
 
 
 def wait_for_build(app, version, build, timeout):
@@ -50,6 +52,22 @@ def main():
 
     app = asc_api.app_id()
     existing, _ = asc_api.ios_version(app, args.version)
+    if not existing:
+        # App Store Connect keeps one unreleased version per platform: one withdrawn
+        # from review (or never sent) is taken over and renumbered
+        versions = call("GET", f"/v1/apps/{app}/appStoreVersions",
+                        query={"filter[platform]": "IOS", "limit": 10})["data"]
+        open_version = next((v for v in versions if v["attributes"]["appVersionState"] in EDITABLE), None)
+        if open_version:
+            old = open_version["attributes"]["versionString"]
+            if args.dry_run:
+                print(f"Dry run: would renumber the unreleased version {old} to {args.version}")
+            else:
+                call("PATCH", f"/v1/appStoreVersions/{open_version['id']}", {"data": {
+                    "type": "appStoreVersions", "id": open_version["id"],
+                    "attributes": {"versionString": args.version}}})
+                print(f"Renumbered the unreleased version {old} to {args.version}")
+                existing = open_version
     if existing and existing["attributes"]["appVersionState"] in BUSY:
         print(f"Version {args.version} is {existing['attributes']['appVersionState']}: nothing to submit")
         return
