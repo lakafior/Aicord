@@ -748,9 +748,9 @@ final class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelega
         if let key = pair.key as? String, let value = pair.value as? String { result[key] = value }
       }
     let text = (response as? UNTextInputNotificationResponse)?.userText
-    if userInfo["channel"] == nil {
-      print("[Notifications] tapped a notification without a channel: \(raw.keys)")
-    }
+    print(
+      "[Notifications] tap \(action), relay: \(RelayTarget(userInfo: raw) != nil), channel: \(userInfo["channel"] ?? "none"), keys: \(raw.keys.map { "\($0)" })"
+    )
     await Task { @MainActor in
       await GatewayStore.shared.notifications.handle(action: action, userInfo: userInfo, text: text)
     }.value

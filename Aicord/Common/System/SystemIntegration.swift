@@ -444,9 +444,11 @@ extension AicordAppState {
     // before the main window shows, any other state is one nobody sees, and
     // the main one restores the last server on appearing: wait for it
     guard let appState = main else {
+      print("[Notifications] open \(channel.rawValue) kept until the window is up")
       pendingExternalOpen = (guild, channel, message)
       return
     }
+    print("[Notifications] open \(channel.rawValue) in guild \(guild?.rawValue ?? "DM")")
     pendingExternalOpen = nil
     if let message {
       appState.open(guild: guild, channel: channel, message: message)
