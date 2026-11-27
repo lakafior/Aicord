@@ -646,9 +646,24 @@ class NotificationStore: DiscordDataStore {
   }
 
   func handle(action: String, userInfo: [String: String], text: String?) async {
-    guard let gw = gateway, let rawChannel = userInfo["channel"] else { return }
+    guard let rawChannel = userInfo["channel"] else { return }
     let channelId = ChannelSnowflake(rawChannel)
     let guildId = userInfo["guild"].map(GuildSnowflake.init)
+    // opening needs no connection: a tap on a push from the Mac launches Aicord
+    // cold, before the gateway is set up
+    if action == UNNotificationDefaultActionIdentifier {
+      if userInfo["jump"] == "1", let messageId = userInfo["message"] {
+        open(guildId: guildId, channelId: channelId, messageId: MessageSnowflake(messageId))
+      } else {
+        open(guildId: guildId, channelId: channelId)
+      }
+      return
+    }
+    // Reply and Mark as Read from a cold launch wait for the connection
+    for _ in 0..<75 where gateway == nil {
+      try? await Task.sleep(for: .milliseconds(200))
+    }
+    guard let gw = gateway else { return }
     switch action {
     case Self.markReadAction:
       await markRead(channelId: channelId, messageId: userInfo["message"])
@@ -659,12 +674,6 @@ class NotificationStore: DiscordDataStore {
       )
       if let message = try? res?.decode() {
         await markRead(channelId: channelId, messageId: message.id.rawValue)
-      }
-    case UNNotificationDefaultActionIdentifier:
-      if userInfo["jump"] == "1", let messageId = userInfo["message"] {
-        open(guildId: guildId, channelId: channelId, messageId: MessageSnowflake(messageId))
-      } else {
-        open(guildId: guildId, channelId: channelId)
       }
     default:
       break
@@ -744,6 +753,9 @@ final class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelega
         if let key = pair.key as? String, let value = pair.value as? String { result[key] = value }
       }
     let text = (response as? UNTextInputNotificationResponse)?.userText
+    if userInfo["channel"] == nil {
+      print("[Notifications] tapped a notification without a channel: \(raw.keys)")
+    }
     await Task { @MainActor in
       await GatewayStore.shared.notifications.handle(action: action, userInfo: userInfo, text: text)
     }.value
