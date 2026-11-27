@@ -69,6 +69,9 @@ struct RootView: View {
         .task {
           AicordAppState.main = appState
           appState.loadPrevGuild()
+          if let (guild, channel, message) = AicordAppState.pendingExternalOpen {
+            AicordAppState.openExternally(guild: guild, channel: channel, message: message)
+          }
           #if os(iOS)
             self.hasLaunchedAlready = true
           #endif

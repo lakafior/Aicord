@@ -694,13 +694,8 @@ class NotificationStore: DiscordDataStore {
   private func open(
     guildId: GuildSnowflake?, channelId: ChannelSnowflake, messageId: MessageSnowflake? = nil
   ) {
-    Task {
-      // tapped while Aicord wasn't running: the window comes a moment later
-      for _ in 0..<50 where AicordAppState.externalTarget == nil {
-        try? await Task.sleep(for: .milliseconds(200))
-      }
-      AicordAppState.openExternally(guild: guildId, channel: channelId, message: messageId)
-    }
+    // tapped while Aicord wasn't running: kept until the main window is up
+    AicordAppState.openExternally(guild: guildId, channel: channelId, message: messageId)
   }
 
   // MARK: - Background (iOS)
