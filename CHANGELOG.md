@@ -2,6 +2,21 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## 0.1.15 (November 2026)
+
+### Notifications
+
+- **New** · Notifications Through the Mac: Aicord on iPhone and iPad can take its message notifications from Aicord on your Mac, so they arrive also while Aicord there is closed. The Mac keeps the Discord connection and hands each notification to the other device through your own iCloud, with no server of ours and no account token leaving your devices. Pick "Message Notifications From: Your Mac" on iPhone or iPad and turn on Notifications Through the Mac on the Mac, both signed in to the same Apple Account. Bursts become one notification plus "N new messages", tapping opens the channel, Reply and Mark as Read work from the notification, and records are deleted from iCloud after an hour. Works only while the Mac is on, awake and running Aicord, and only in builds signed with Aicord's own Apple account (AltStore PAL and the Mac app), not in sideloaded ones
+
+### Mac
+
+- **New** · With the MCP server or Notifications Through the Mac on, closing the last window leaves Aicord running in the menu bar without its windows and Dock icon, so both keep working. The menu shows what runs and opens Aicord again; ⌘Q quits as before, and with both off the red button closes the app as before. Can be turned off in Settings → Advanced
+
+### Fixed
+
+- **Fixed** · Tapping a notification while Aicord was closed crashed it on iPhone, and a notification, widget or link that opened Aicord from closed landed on the last channel instead of its own
+- **Fixed** · Reply and Mark as Read on a notification did nothing while Aicord was closed; they now need the device unlocked
+
 ## 0.1.14 (November 2026)
 
 ### Shortcuts
@@ -599,6 +614,9 @@ Szczegóły, decyzje i pomiary: [SLIM_NOTES](https://github.com/lakafior/Aicord/
 
 ---
 
+### ✅ Etap 11: Aicord dla macOS — praca w tle (27.11)
+   - [x] Tryb w tle: przy włączonym serwerze MCP albo powiadomieniach przez Maca czerwony przycisk ostatniego okna zostawia Aicorda w pasku menu (`MacBackground`, polityka `.accessory`, okna i ich widoki zwolnione, gateway, MCP i przekaźnik działają dalej), powrót z menu, Docka, Spotlight, linku albo powiadomienia otwiera jedno okno. ⌘Q zamyka jak dotąd; przełącznik w Ustawienia → Zaawansowane.
+
 ### ⏳ Etap 11: Aicord dla macOS (noc 30/31.10)
 Szczegóły i lista do sprawdzenia na Macu: [OVERNIGHT](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT.md), punkt 5.
 1. **Interfejs Maca:**
@@ -676,6 +694,11 @@ Szczegóły, decyzje, testy i ryzyka: [INTELLIGENCE_NOTES](https://github.com/la
    - [x] Okno 4 tys. tokenów: odpowiedzi z narzędziami na urządzeniu (Ask, Explain Context) mają limit czasu, czytelne błędy i przy przepełnieniu okna drugą próbę bez narzędzi na przyciętym prompcie. Sprawdzone: Ask na urządzeniu w NAScin #ogólny „Who posted the ipa file and what was it called?” → „Lakafi posted the ipa file and it was called Kite.ipa.” z linkiem do wiadomości.
    - [x] „Index Channel” (menu ✨ w kanale): ostatnie 500–5000 wiadomości pobierane po 100 z przerwą 350 ms, z paskiem postępu i anulowaniem, przez te same filtry co dla modelu, z wektorem zdania; plik JSON w Application Support (`ChannelIndexes/<kanał>.json`, ok. 190 B na wiadomość bez wektora, ok. 2 KB z wektorem). Wyszukiwanie po sensie z przejściem do wiadomości, rozmiar na dysku, „Add New Messages”, „Delete Index” z potwierdzeniem. Ask dokłada do 4 (urządzenie) / 10 (API) starszych wiadomości z indeksu. Sprawdzone na NAScin #ogólny: 925 wiadomości, 173 kB, „kite ipa” → wiadomość z Kite.ipa, usunięcie.
    - [x] Rerankowanie bez indeksu: narzędzie `search` modelu z 25 wyników Discorda oddaje te najbliższe pytaniu (6 na urządzeniu, 15 przez API), a Ask na urządzeniu bierze 5 najnowszych i 15 najlepiej pasujących z ostatnich 50 wiadomości.
+
+### ✅ Etap 14: Reszta do Discorda 1:1 — punkt 1, powiadomienia przez Maca (27.11)
+1. **Powiadomienia:**
+   - [x] Mac jako przekaźnik powiadomień dla zamkniętego Aicorda na iOS, przez CloudKit, bez własnego serwera i klucza `.p8`: Mac zapisuje rekord `RelayNotification` w prywatnej bazie iCloud (kontener `iCloud.net.smigi.aicord`), iOS ma `CKQuerySubscription` z widocznym alertem. Na iOS jedno źródło powiadomień o wiadomościach do wyboru („Tego urządzenia” albo „Twojego Maca”), więc bez dubli i bez znacznika aktywności. Serie łączone (pierwsza od razu, reszta jako „N new messages” po ok. 10 s, limit na godzinę), rekordy starsze niż godzina Mac usuwa co 15 minut, powiadomienia przeczytanych kanałów iOS zdejmuje. Buildy bez entitlementu (niepodpisane IPA, AltStore, SideStore) pokazują „Not available”. Sprawdzone na żywo na NAScin: push przy zamkniętej i otwartej aplikacji, otwieranie kanału, seria, Reply i Mark as Read, Mac w trybie w tle.
+   - [x] Po drodze: asynchroniczne metody `UNUserNotificationCenterDelegate` wywracały zimny start po stuknięciu (SIGABRT w `_performBlockAfterCATransactionCommitSynchronizes:`), teraz completion handlery na głównym wątku; otwieranie z zewnątrz przy zimnym starcie czeka na główne okno (`pendingExternalOpen`); Reply i Mark as Read łączą gateway w tle i wymagają odblokowania.
 
 ### 🧪 Etap 14: Reszta do Discorda 1:1 — punkt 2, odbiór wideo (12.11)
 Napisane i sprawdzone testami pakietu (RTP → ramki H.264 → dekoder systemowy), bez testu na żywej rozmowie: na NAScin nie ma drugiej osoby z kamerą.

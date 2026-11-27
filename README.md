@@ -92,7 +92,7 @@ Aicord is a fork of [Paicord](https://github.com/llsc12/Paicord) by [llsc12](htt
 - **Nearly all of Discord's settings** — privacy, content filters, devices, connections, appearance, chat and notifications, saved to your account so the official apps see them too
 - **One search for everything** — servers, channels, people and messages, with date and regex filters, opening a result right at the message
 - **Intelligence, read-only and on device by default** — translate messages, summarize channels and catch up on servers, ask a channel or explain what a message refers to, with links back to the messages; an OpenAI-compatible API is optional
-- **Notifications that follow your Discord rules** — per server and channel, quiet hours, keywords, Reply and Mark as Read, without a push server
+- **Notifications that follow your Discord rules** — per server and channel, quiet hours, keywords, Reply and Mark as Read, without a push server; on iPhone also while Aicord is closed, sent by Aicord on your Mac through your own iCloud
 - **Messages done properly** — formatting from the edit menu or ⌘B and friends, a Formatted Message editor with a live preview, slash commands and bot buttons, menus and forms, voice messages, polls you can vote in and create, pins, a thread browser, Discord's system lines, forwards, message requests and a spam folder, friend requests and Add Friend, a long-press menu with quick reactions
 - **Tools for moderators** — create a server from scratch or a template, timeout, kick and ban with a reason, channels, categories and roles with every permission and per-channel overrides, AutoMod, emoji and stickers, bans and the audit log, shown only with the right permissions
 - **Invites that open in the app** — create invite links, preview a server before joining, and a Safari extension that sends discord.gg links straight to Aicord
@@ -120,7 +120,7 @@ AI-assisted contributions are welcome. See [CONTRIBUTING.md](.github/CONTRIBUTIN
 
 ## About notifications
 
-Discord's real push notifications go through Apple's push service with Discord's own certificate, so Apple delivers them only to the official Discord app. Aicord can't receive them, and it won't run a server that keeps your account token to forward them. So Aicord notifies you only while it's running: on a Mac that's whenever the app is open, but iOS suspends apps in the background within minutes, after which nothing arrives until you open Aicord again. Keep the official app installed (with its notifications on) if you need to be reached on iPhone.
+Discord's real push notifications go through Apple's push service with Discord's own certificate, so Apple delivers them only to the official Discord app. Aicord can't receive them, and it won't run a server that keeps your account token to forward them. So Aicord notifies you only while it's running: on a Mac that's whenever the app is open, but iOS suspends apps in the background within minutes, after which nothing arrives until you open Aicord again. The exception is Notifications Through the Mac: with Aicord running on your Mac, it sends iPhone and iPad their notifications through your own iCloud account, so they arrive while Aicord there is closed; it needs the Mac on and awake, and a build signed by Aicord (AltStore PAL, not a sideloaded copy). Otherwise keep the official app installed (with its notifications on) if you need to be reached on iPhone.
 
 ## A word of caution
 
