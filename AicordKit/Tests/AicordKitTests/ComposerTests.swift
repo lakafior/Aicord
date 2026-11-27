@@ -1,6 +1,7 @@
 import Foundation
 import ImageIO
 import UniformTypeIdentifiers
+import AVFoundation
 import XCTest
 
 @testable import AicordKit
@@ -208,6 +209,69 @@ class ComposerTests: XCTestCase {
 
   func testNonImagesAreLeftAlone() {
     XCTAssertNil(ImageMetadata.stripped(Data("not an image".utf8)))
+  }
+
+  // MARK: Video location
+
+  /// A two-frame QuickTime movie tagged with a location, like an iPhone's.
+  private func movieWithLocation() async throws -> URL {
+    let folder = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let url = folder.appendingPathComponent("clip.mov")
+    let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
+    let location = AVMutableMetadataItem()
+    location.identifier = .quickTimeMetadataLocationISO6709
+    location.value = "+52.2297+021.0122/" as NSString
+    location.dataType = kCMMetadataBaseDataType_UTF8 as String
+    let title = AVMutableMetadataItem()
+    title.identifier = .quickTimeMetadataTitle
+    title.value = "Clip" as NSString
+    title.dataType = kCMMetadataBaseDataType_UTF8 as String
+    writer.metadata = [location, title]
+    let input = AVAssetWriterInput(
+      mediaType: .video,
+      outputSettings: [
+        AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: 16, AVVideoHeightKey: 16,
+      ])
+    let adaptor = AVAssetWriterInputPixelBufferAdaptor(
+      assetWriterInput: input,
+      sourcePixelBufferAttributes: [
+        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+        kCVPixelBufferWidthKey as String: 16, kCVPixelBufferHeightKey as String: 16,
+      ])
+    writer.add(input)
+    XCTAssertTrue(writer.startWriting())
+    writer.startSession(atSourceTime: .zero)
+    for frame in 0..<2 {
+      while !input.isReadyForMoreMediaData { try await Task.sleep(for: .milliseconds(10)) }
+      var buffer: CVPixelBuffer?
+      CVPixelBufferCreate(nil, 16, 16, kCVPixelFormatType_32BGRA, nil, &buffer)
+      adaptor.append(buffer!, withPresentationTime: CMTime(value: CMTimeValue(frame), timescale: 30))
+    }
+    input.markAsFinished()
+    await writer.finishWriting()
+    XCTAssertEqual(writer.status, .completed)
+    return url
+  }
+
+  func testStripsLocationFromVideo() async throws {
+    let original = try await movieWithLocation()
+    defer { try? FileManager.default.removeItem(at: original.deletingLastPathComponent()) }
+    let hadLocation = await VideoMetadata.hasLocation(original)
+    XCTAssertTrue(hadLocation)
+    let copy = original.deletingLastPathComponent().appendingPathComponent("clean.mov")
+    try await VideoMetadata.strip(original, to: copy)
+    let hasLocation = await VideoMetadata.hasLocation(copy)
+    XCTAssertFalse(hasLocation)
+    let tracks = try await AVURLAsset(url: copy).load(.tracks)
+    XCTAssertEqual(tracks.count, 1)
+  }
+
+  func testOnlyMoviesAreStrippable() {
+    XCTAssertTrue(VideoMetadata.canStrip(.quickTimeMovie))
+    XCTAssertTrue(VideoMetadata.canStrip(.mpeg4Movie))
+    XCTAssertFalse(VideoMetadata.canStrip(.jpeg))
   }
 
   // MARK: Links without Nitro

@@ -182,13 +182,20 @@ class MessageDrainStore: DiscordDataStore {
           pickerItem.supportedContentTypes.first?.preferredFilenameExtension ?? "png"
         if let stripped = ComposerPreferences.strippedPhoto(data) { data = stripped }
         let name = "\(pickerItem.itemIdentifier ?? UUID().uuidString).\(fileExt)"
-        prepared.append(
-          .init(
-            filename: ComposerPreferences.uploadName(for: name), payload: .data(data),
-            size: data.count))
+        let uploadName = ComposerPreferences.uploadName(for: name)
+        // a video from the library: cleaned through a file on disk
+        if let video = try await strippedVideo(data, named: name) {
+          prepared.append(
+            .init(filename: uploadName, payload: .file(video.url), size: video.size,
+              temporaryCopy: video.url))
+          continue
+        }
+        prepared.append(.init(filename: uploadName, payload: .data(data), size: data.count))
       case .file(_, let url, let size):
         let name = ComposerPreferences.uploadName(for: url.lastPathComponent)
-        if let copy = ComposerPreferences.strippedPhoto(at: url) {
+        if let copy = try await ComposerPreferences.strippedVideo(at: url)
+          ?? ComposerPreferences.strippedPhoto(at: url)
+        {
           let copySize = (try? copy.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
           prepared.append(
             .init(filename: name, payload: .file(copy), size: copySize, temporaryCopy: copy))
@@ -202,15 +209,41 @@ class MessageDrainStore: DiscordDataStore {
           prepared.append(
             .init(filename: "\(UUID().uuidString).png", payload: .data(data), size: data.count))
         case .cameraVideo(_, let url):
-          let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-          prepared.append(
-            .init(
-              filename: ComposerPreferences.uploadName(for: url.lastPathComponent),
-              payload: .file(url), size: size))
+          let name = ComposerPreferences.uploadName(for: url.lastPathComponent)
+          if let copy = try await ComposerPreferences.strippedVideo(at: url) {
+            prepared.append(
+              .init(filename: name, payload: .file(copy), size: fileSize(copy),
+                temporaryCopy: copy))
+          } else {
+            prepared.append(.init(filename: name, payload: .file(url), size: fileSize(url)))
+          }
       #endif
       }
     }
     return prepared
+  }
+
+  nonisolated private static func fileSize(_ url: URL) -> Int {
+    (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+  }
+
+  /// A library video's bytes, written out and cleaned when that's on; nil
+  /// for photos and anything else sent as loaded.
+  nonisolated private static func strippedVideo(
+    _ data: Data, named name: String
+  ) async throws -> (url: URL, size: Int)? {
+    guard ComposerPreferences.stripsPhotoMetadata,
+      let type = UTType(filenameExtension: (name as NSString).pathExtension),
+      VideoMetadata.canStrip(type)
+    else { return nil }
+    let folder = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: folder) }
+    let original = folder.appendingPathComponent(name)
+    try data.write(to: original)
+    guard let copy = try await ComposerPreferences.strippedVideo(at: original) else { return nil }
+    return (copy, fileSize(copy))
   }
 
   /// Text as sent, with emoticons turned into emoji when Discord's setting is on.

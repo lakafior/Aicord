@@ -39,6 +39,17 @@ struct ChannelEntity: AppEntity {
 }
 
 struct ChannelEntityQuery: EntityStringQuery {
+  /// The server picked first in Open Channel, which narrows the list to it.
+  @IntentParameterDependency<OpenChannelIntent>(\.$server) var openChannel
+
+  /// Everything, or only the picked server's channels (or only DMs).
+  @MainActor
+  private func candidates() -> [DirectoryEntry] {
+    let all = SystemIntegration.shared.directory()
+    guard let server = openChannel?.server else { return all }
+    return all.filter { server.contains($0) }
+  }
+
   @MainActor
   func entities(for identifiers: [ChannelEntity.ID]) async throws -> [ChannelEntity] {
     let wanted = Set(identifiers)
@@ -50,19 +61,20 @@ struct ChannelEntityQuery: EntityStringQuery {
   @MainActor
   func entities(matching string: String) async throws -> [ChannelEntity] {
     let query = string.trimmingCharacters(in: .whitespaces).trimmingPrefix("#")
-    return SystemIntegration.shared.directory()
-      .filter {
-        $0.name.trimmingPrefix("#").localizedStandardContains(query)
-          || $0.server.localizedStandardContains(query)
-      }
-      .prefix(50)
-      .map(ChannelEntity.init)
+    let found = candidates().filter {
+      $0.name.trimmingPrefix("#").localizedStandardContains(query)
+        || $0.server.localizedStandardContains(query)
+    }
+    // one server's channels in full; across everything, the best few
+    return (openChannel?.server == nil ? Array(found.prefix(50)) : found).map(ChannelEntity.init)
   }
 
-  /// Recent DMs, then the first channels of each server.
+  /// With a server picked, all of its channels; otherwise recent DMs, then
+  /// the first channels of each server.
   @MainActor
   func suggestedEntities() async throws -> [ChannelEntity] {
-    SystemIntegration.shared.directory().prefix(60).map(ChannelEntity.init)
+    let list = candidates()
+    return (openChannel?.server == nil ? Array(list.prefix(60)) : list).map(ChannelEntity.init)
   }
 }
 
@@ -76,6 +88,16 @@ struct ServerEntity: AppEntity {
 
   var displayRepresentation: DisplayRepresentation {
     DisplayRepresentation(title: "\(name)")
+  }
+
+  /// Direct messages and groups, offered where a channel is picked by place.
+  static let directMessagesID = "@me"
+  static var directMessages: ServerEntity {
+    ServerEntity(id: directMessagesID, name: String(localized: "Direct Messages"))
+  }
+
+  func contains(_ entry: DirectoryEntry) -> Bool {
+    id == Self.directMessagesID ? entry.isDirectMessage : entry.link.guildID == id
   }
 }
 
@@ -93,7 +115,7 @@ struct ServerEntityQuery: EntityStringQuery {
   @MainActor
   func entities(for identifiers: [ServerEntity.ID]) async throws -> [ServerEntity] {
     let wanted = Set(identifiers)
-    return all().filter { wanted.contains($0.id) }
+    return ([.directMessages] + all()).filter { wanted.contains($0.id) }
   }
 
   @MainActor
@@ -107,6 +129,14 @@ struct ServerEntityQuery: EntityStringQuery {
   }
 }
 
+/// Open Channel's places: Direct Messages first, then the servers.
+struct PlaceOptionsProvider: DynamicOptionsProvider {
+  @MainActor
+  func results() async throws -> [ServerEntity] {
+    try await [.directMessages] + ServerEntityQuery().suggestedEntities()
+  }
+}
+
 // MARK: - Intents
 
 struct OpenChannelIntent: AppIntent {
@@ -114,11 +144,16 @@ struct OpenChannelIntent: AppIntent {
   static let description = IntentDescription("Opens a server channel or a direct message in Aicord.")
   static let supportedModes: IntentModes = .foreground
 
+  /// Optional: picking it first narrows the channel list to that server, so
+  /// any channel can be reached, not only the first suggested ones.
+  @Parameter(title: "Server", optionsProvider: PlaceOptionsProvider())
+  var server: ServerEntity?
+
   @Parameter(title: "Channel")
   var channel: ChannelEntity
 
   static var parameterSummary: some ParameterSummary {
-    Summary("Open \(\.$channel)")
+    Summary("Open \(\.$channel) in \(\.$server)")
   }
 
   init() {}

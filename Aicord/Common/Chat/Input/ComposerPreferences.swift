@@ -119,6 +119,28 @@ enum ComposerPreferences {
     return file
   }
 
+  /// A copy of the video without its location in a new temporary folder, or
+  /// nil to send the original (the option is off, or it isn't a QuickTime or
+  /// MPEG-4 video). Throws rather than send a video whose location stayed.
+  static func strippedVideo(at url: URL) async throws -> URL? {
+    guard stripsPhotoMetadata,
+      let type = UTType(filenameExtension: url.pathExtension), VideoMetadata.canStrip(type)
+    else { return nil }
+    let access = url.startAccessingSecurityScopedResource()
+    defer { if access { url.stopAccessingSecurityScopedResource() } }
+    let folder = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let file = folder.appendingPathComponent(url.lastPathComponent)
+    do {
+      try await VideoMetadata.strip(url, to: file)
+    } catch {
+      try? FileManager.default.removeItem(at: folder)
+      throw String(localized: "Couldn't remove the location from \(url.lastPathComponent).")
+    }
+    return file
+  }
+
   // MARK: - Upload service
 
   static var uploadServiceKind: UploadServiceKind {

@@ -2,6 +2,25 @@
 
 Everything Aicord has added or fixed on top of [Paicord](https://github.com/llsc12/Paicord). The highlights are in the [README](README.md) and what's still to come in the [roadmap](ROADMAP.md).
 
+## 0.1.14 (November 2026)
+
+### Shortcuts
+
+- **New** · Open Channel can pick a server (or Direct Messages) first, and then lists all of its channels, so any channel can be chosen, not only the first 60
+
+### Messages
+
+- **New** · The Stickers tab has Discord's own sticker packs after your servers' stickers. Anyone can send them, without Nitro, in servers and DMs
+- **New** · "Remove Location from Photos and Videos": MOV and MP4 videos lose their location, device and owner details before upload, without re-encoding. A video whose location can't be removed isn't sent
+
+### Direct messages
+
+- **New** · In the DM profile panel, the conversation actions are a column of buttons under Add Friend, instead of a menu behind a … button
+
+### Fixed
+
+- **Fixed** · Joining a server from an invite link, or sending a friend request from Add Friend, when Discord asks for a captcha: the captcha flashed and closed behind the invite or Add Friend window, and nothing happened
+
 ## 0.1.13 (November 2026)
 
 ### Direct messages
@@ -724,3 +743,10 @@ Zrobione autonomicznie na gałęzi; decyzje i lista do przeklikania w notatkach 
    - [x] Emoji i naklejki bez Nitro (domyślnie wyłączone): linki CDN z pickera w polu wiadomości, reakcje bez zmian. Przy okazji zakładka Stickers (była „Coming Soon”): naklejki serwerów z wyszukiwaniem, wysyłane przez `sticker_ids`.
    - [x] Globalny Quick Switcher na Macu: Carbon `RegisterEventHotKey` (bez Dostępności), pięć skrótów do wyboru, Settings → Keybinds → Global; otwiera switcher w głównym oknie nad innymi aplikacjami.
    - [x] Synchronizacja z trybem skupienia: `AicordFocusFilter` (`SetFocusFilterIntent`) ze statusem i wyciszonymi serwerami; status zmienia otwarta aplikacja (albo przy następnym połączeniu) i wraca po wyłączeniu trybu, wyciszenie tylko lokalnie w powiadomieniach.
+
+### 🧪 Etap 15: Paczka B i D, reszta (27.11)
+   - [x] „Open Channel” w Skrótach: opcjonalny parametr serwera (`PlaceOptionsProvider`, z pozycją Direct Messages `@me`), a lista kanałów zależy od niego (`@IntentParameterDependency`): z wybranym serwerem wszystkie jego kanały, bez niego jak dotąd DM-y i 60 pierwszych. Działanie w aplikacji Skróty nie sprawdzone na żywo.
+   - [x] Usuwanie lokalizacji z filmów (`VideoMetadata` w `AicordKit`): eksport passthrough z `AVMetadataItemFilter.forSharing()` i metadanymi bez pozycji lokalizacji, potem sprawdzenie pliku; gdy lokalizacja zostaje, film nie idzie. Dotyczy filmów z biblioteki, z plików i z aparatu; test z filmem zapisanym przez `AVAssetWriter`.
+   - [x] Standardowe paczki naklejek Discorda w zakładce Stickers (`GET /sticker-packs`, raz na uruchomienie, `StickerPackStore`): po naklejkach serwerów, wysyłane zawsze (darmowe dla wszystkich); naklejki Lottie w pickerze rysowane nieruchomo tym samym rendererem co w wiadomościach.
+   - [x] Captcha nad arkuszami: `.challengeSheets()` pokazuje captchę i MFA z najbardziej wewnętrznego widoku (zaproszenie, Add Friend), stały identyfikator captchy, zamknięcie captchy odpowiada na żądanie.
+   - [x] Panel profilu w DM: akcje rozmowy w kolumnie przycisków pod Add Friend (`DMActionColumn`, `ProfileActionButtonStyle`).

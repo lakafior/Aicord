@@ -93,7 +93,8 @@ private actor LottieStickerCache {
   }
 }
 
-private struct NativeLottieStickerView: View {
+/// Also the still thumbnail of Lottie stickers in the picker.
+struct NativeLottieStickerView: View {
   let url: URL
   let name: String
   var animates: Bool = true

@@ -90,14 +90,11 @@ Paczki 1 i 2 zrobione (szczegóły w CHANGELOG, [PACK1_NOTES](https://github.com
 Wszystko lokalnie i uruchamiane przez użytkownika. Nic, co samo działa z tokenem konta (automatyczne wysyłanie, masowe pobieranie z wielu serwerów w tle, zaplanowane wiadomości), bo Discord traktuje to jak self-bota. Wtyczki w stylu Vencorda, które modyfikują klienta albo wysyłają nietypowy ruch, też podnoszą ryzyko blokady (samo niewysyłanie wskaźnika pisania do nich nie należy, patrz Paczka D).
 1. **Paczka A:** zrobiona 1.11 (galeria, przypomnienia i zapisane, alerty, ghost ping przez usunięcie i przez edycję), szczegóły w `CHANGELOG.md` i [STAGE15A_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/STAGE15A_NOTES.md).
 2. **Paczka B (system Apple):** zrobiona 1.11 (Spotlight, widżet, Live Activity, Skróty, Handoff), szczegóły w `CHANGELOG.md` i [PACK_B_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/PACK_B_NOTES.md).
-   - [ ] Wybór kanału w „Open Channel” przy uruchomieniu nie ma wyszukiwarki i pokazuje tylko 60 pierwszych (DM-y, potem serwery alfabetycznie); przydałby się najpierw wybór serwera.
 3. **Paczka C:** notatki i tagi, eksport do Markdown i PDF, tryb offline zrobione 1.11 ([OVERNIGHT2_NOTES](https://github.com/lakafior/Aicord/blob/efa23601c9df2f55bed5f99ca5902f61bf246732/docs/OVERNIGHT2_NOTES.md)). Zostało:
    - [ ] Codzienny skrót z wybranych kanałów wielu serwerów (rozszerzenie Catch Up), o wybranej porze, z powiadomieniem.
 4. **Formatowanie wiadomości:** formatowanie zaznaczenia i „Formatted Message” zrobione 1.11. Zostało:
    - [ ] Później w arkuszu tryb embed z Etapu 16.
-5. **Paczka D (opcje znane ze Swiftcorda):** zrobiona 10.11 (prywatność pisania, czyszczenie linków, prywatne nazwy i EXIF, dzielenie długich wiadomości, większe pliki przez wybrany serwis, emoji i naklejki bez Nitro, globalny Quick Switcher na Macu, filtr trybu skupienia), szczegóły w `CHANGELOG.md`. Zostało:
-   - [ ] Standardowe paczki naklejek Discorda w zakładce Stickers (dziś tylko naklejki serwerów).
-   - [ ] Usuwanie lokalizacji także z filmów (dziś tylko zdjęcia).
+5. **Paczka D (opcje znane ze Swiftcorda):** zrobiona 10.11 (prywatność pisania, czyszczenie linków, prywatne nazwy i EXIF, dzielenie długich wiadomości, większe pliki przez wybrany serwis, emoji i naklejki bez Nitro, globalny Quick Switcher na Macu, filtr trybu skupienia), a 27.11 lokalizacja z filmów i paczki naklejek Discorda; szczegóły w `CHANGELOG.md`.
 
 ---
 

@@ -57,12 +57,12 @@ struct ComposerSettings: View {
 
     Section {
       toggle("Private File Names", isOn: $privateFilenames)
-      toggle("Remove Location from Photos", isOn: $stripsPhotoMetadata)
+      toggle("Remove Location from Photos and Videos", isOn: $stripsPhotoMetadata)
     } header: {
       Text("Attachments")
     } footer: {
       Text(
-        "Private names upload files under a random name with the same extension (IMG_2041.HEIC becomes k3v9x0q2m7ab.HEIC); spoiler files stay spoilers. Removing location also takes out the camera, lens and date details of JPEG, HEIC, PNG and TIFF photos, keeping their orientation. Videos are sent as they are."
+        "Private names upload files under a random name with the same extension (IMG_2041.HEIC becomes k3v9x0q2m7ab.HEIC); spoiler files stay spoilers. Removing location also takes out the camera, lens and date details of JPEG, HEIC, PNG and TIFF photos, keeping their orientation. From MOV and MP4 videos it takes the location, device and owner details, without re-encoding; a video whose location can't be removed isn't sent."
       )
     }
 
