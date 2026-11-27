@@ -197,7 +197,14 @@ jobs:
         env:
           NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
           NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
-        run: python3 scripts/asc-notarize.py --version "$VERSION" --build "$BUILD"
+        run: |
+          # What's New: the changelog's newest section as plain text (App Store
+          # Connect shows no Markdown), within its 4000 characters
+          awk '/^## /{n++} n==1' CHANGELOG.md | sed -e '1d' -e 's/^### \(.*\)/\1:/' \
+            -e 's/^- \*\*[A-Za-z]*\*\* · /• /' -e 's/\*\*//g' | cat -s | sed '/./,$!d' \
+            | head -c 4000 > whats-new.txt
+          python3 scripts/asc-notarize.py --version "$VERSION" --build "$BUILD" \
+            --whats-new "$(cat whats-new.txt)"
 
       - name: Upload log on failure
         if: failure()
