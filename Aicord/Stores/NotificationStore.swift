@@ -671,10 +671,14 @@ class NotificationStore: DiscordDataStore {
   static let replyAction = "reply"
 
   static func registerCategories() {
+    // unlocked first: the account's token is in the keychain, readable only
+    // while unlocked, and an action may launch Aicord in the background
     let markRead = UNNotificationAction(
-      identifier: markReadAction, title: String(localized: "Mark as Read"))
+      identifier: markReadAction, title: String(localized: "Mark as Read"),
+      options: [.authenticationRequired])
     let reply = UNTextInputNotificationAction(
       identifier: replyAction, title: String(localized: "Reply"),
+      options: [.authenticationRequired],
       textInputButtonTitle: String(localized: "Send"),
       textInputPlaceholder: String(localized: "Message"))
     let category = UNNotificationCategory(
@@ -696,7 +700,12 @@ class NotificationStore: DiscordDataStore {
       }
       return
     }
-    // Reply and Mark as Read from a cold launch wait for the connection
+    // Reply and Mark as Read from a cold launch: iOS starts Aicord in the
+    // background with no window, and only the window's loading view connects
+    if gateway == nil {
+      print("[Notifications] \(action) with no connection: connecting in the background")
+      await GatewayStore.shared.connectIfNeeded()
+    }
     for _ in 0..<75 where gateway == nil {
       try? await Task.sleep(for: .milliseconds(200))
     }
