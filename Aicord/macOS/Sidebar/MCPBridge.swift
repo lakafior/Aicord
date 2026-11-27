@@ -16,6 +16,7 @@
   import AicordKit
   import Foundation
   import Network
+  import Observation
   import os
 
   enum MCPPreferences {
@@ -68,6 +69,7 @@
   }
 
   @MainActor
+  @Observable
   final class MCPBridge {
     static let shared = MCPBridge()
 
@@ -77,9 +79,10 @@
       URL.applicationSupportDirectory.appending(path: "Aicord/mcp-bridge.json")
     }
 
-    private let logger = Logger(subsystem: "net.smigi.aicord", category: "MCPBridge")
-    private var listener: NWListener?
-    private var recentCalls: [Date] = []
+    @ObservationIgnored private let logger = Logger(
+      subsystem: "net.smigi.aicord", category: "MCPBridge")
+    @ObservationIgnored private var listener: NWListener?
+    @ObservationIgnored private var recentCalls: [Date] = []
     private(set) var isRunning = false
 
     /// Starts or stops to match the setting.

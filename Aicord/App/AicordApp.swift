@@ -50,11 +50,35 @@ struct AicordApp: App {
         // Return false to prevent the app from saving its current state when it is terminated.
         return false
       }
+
+      // Notifications Through the Mac: CloudKit sends the pushes, it only
+      // needs the device registered
+      func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+      ) {}
+
+      func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+      ) {
+        print("[CloudRelay] remote notifications unavailable: \(error.localizedDescription)")
+      }
     }
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+  #elseif os(macOS)
+    // closing the last window can leave Aicord running in the menu bar
+    @NSApplicationDelegateAdaptor(MacAppDelegate.self) var appDelegate
+    @State private var background = MacBackground.shared
   #endif
 
   @Environment(\.scenePhase) private var scenePhase
+
+  #if os(macOS)
+    private static let mainWindowID = MacBackground.mainWindowID
+  #else
+    private static let mainWindowID = "main"
+  #endif
 
   init() {
     console.startIntercepting()
@@ -62,6 +86,7 @@ struct AicordApp: App {
     UNUserNotificationCenter.current().delegate = NotificationCenterDelegate.shared
     NotificationStore.registerCategories()
     SystemIntegration.shared.start()
+    Task { @MainActor in CloudRelayStore.shared.update() }
     #if os(macOS)
       // the MCP bridge listens from launch when allowed; tools wait for the gateway
       Task { @MainActor in
@@ -72,7 +97,7 @@ struct AicordApp: App {
   }
 
   var body: some Scene {
-    WindowGroup {
+    WindowGroup(id: Self.mainWindowID) {
       RootView(
         gatewayStore: gatewayStore
       )
@@ -83,7 +108,8 @@ struct AicordApp: App {
           case .background:
             gatewayStore.notifications.enterBackground()
             SystemIntegration.shared.flushWidgetSnapshot()
-          case .active: gatewayStore.notifications.endBackground()
+          case .active:
+            gatewayStore.notifications.endBackground()
           default: break
           }
         }
@@ -132,6 +158,17 @@ struct AicordApp: App {
       .windowResizability(.contentMinSize)
       .restorationBehavior(.disabled)
       .commandsRemoved()
+
+      // while running without a window (MacBackground)
+      MenuBarExtra(
+        isInserted: Binding(get: { background.isHeadless }, set: { _ in })
+      ) {
+        MacBackgroundMenu(
+          background: background, gateway: gatewayStore, relay: CloudRelayStore.shared,
+          mcp: MCPBridge.shared)
+      } label: {
+        MacBackgroundLabel(background: background)
+      }
 
       // the system Settings window: ⌘, and Aicord → Settings…
       Settings {

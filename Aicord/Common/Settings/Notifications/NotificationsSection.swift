@@ -70,6 +70,8 @@ struct NotificationSettings: View {
       Text(alertsFooter)
     }
 
+    MacRelaySection()
+
     if enabled {
       directMessagesSection
       serversSection
@@ -528,6 +530,70 @@ private struct PickerSearch: ViewModifier {
       }
     #else
       content.searchable(text: $text)
+    #endif
+  }
+}
+
+/// Notifications Through the Mac: the Mac hands what it would notify about
+/// to a closed Aicord on iOS, through the user's iCloud.
+private struct MacRelaySection: View {
+  @AppStorage(NotificationPrefs.macRelayKey) private var on = false
+  private var relay = CloudRelayStore.shared
+
+  var body: some View {
+    Section {
+      Group {
+        #if os(macOS)
+          Toggle("Notifications Through the Mac", isOn: $on)
+            .toggleStyle(.switch)
+        #else
+          // one source or the other, so nothing is ever shown twice
+          Picker("Message Notifications From", selection: $on) {
+            Text("This Device").tag(false)
+            Text("Your Mac").tag(true)
+          }
+        #endif
+      }
+      // sideloaded builds have no iCloud: it can only be turned off there
+      .disabled(!CloudRelayStore.isEntitled && !on)
+      .onChange(of: on) { relay.update() }
+      if !CloudRelayStore.isEntitled {
+        LabeledContent("iCloud") {
+          Text("Not available in this version of Aicord").foregroundStyle(.secondary)
+        }
+      } else if on, let status {
+        LabeledContent("iCloud") {
+          Text(status)
+            .foregroundStyle(relay.availability == .available ? Color.secondary : Color.red)
+        }
+      }
+    } header: {
+      #if os(macOS)
+        Text("For iPhone and iPad")
+      #else
+        Text("Message Notifications")
+      #endif
+    } footer: {
+      Text(footer)
+    }
+  }
+
+  private var status: LocalizedStringKey? {
+    switch relay.availability {
+    case .off: nil
+    case .checking: "Checking…"
+    case .available: "Ready"
+    case .notEntitled: "Not available in this version of Aicord"
+    case .noAccount: "Sign in to iCloud in the system settings"
+    case .unreachable(let reason): "Unavailable: \(reason)"
+    }
+  }
+
+  private var footer: LocalizedStringKey {
+    #if os(macOS)
+      "Aicord on your iPhone or iPad can take its message notifications from this Mac instead of notifying by itself, so they arrive also while it's closed. This Mac sends what it would notify about, following its notification settings. Message content goes through your iCloud account and is kept there for up to an hour. Works only while this Mac is on, awake and running Aicord; choose Your Mac on the other device too, signed in to the same Apple Account."
+    #else
+      "This Device: Aicord notifies while it's running, and for about half a minute after you leave it. Your Mac: Aicord on your Mac sends the notifications, also while Aicord here is closed, following the Mac's notification settings, and this device shows none of its own. Message content goes through your iCloud account and is kept there for up to an hour. Works only while your Mac is on, awake and running Aicord with Notifications Through the Mac on, signed in to the same Apple Account."
     #endif
   }
 }

@@ -32,6 +32,7 @@ struct AdvancedSettings: View {
   #if os(macOS)
     @AppStorage(MCPPreferences.enabledKey) private var mcpEnabled = false
     @AppStorage(MCPPreferences.directMessagesKey) private var mcpDirectMessages = false
+    @AppStorage(MacBackground.enabledKey) private var keepsRunning = true
   #endif
 
   var body: some View {
@@ -142,6 +143,17 @@ struct AdvancedSettings: View {
       } footer: {
         Text(
           "Lets an assistant like Claude read your servers, channels and messages through the aicord-mcp helper while Aicord is open. Read-only: it can't send, react or change anything. Only programs on this Mac that have the key from the copied configuration can connect; Reset Key cuts off the old one. Messages your filters hide are left out."
+        )
+      }
+
+      Section {
+        Toggle("Keep Running in the Background", isOn: $keepsRunning)
+          .toggleStyle(.switch)
+      } header: {
+        Text("Background")
+      } footer: {
+        Text(
+          "While the MCP server or Notifications Through the Mac is on, closing the last window keeps Aicord connected in the menu bar, without its windows or Dock icon. Quit Aicord (⌘Q) to stop everything."
         )
       }
     #endif

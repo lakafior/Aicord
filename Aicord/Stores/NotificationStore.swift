@@ -40,6 +40,7 @@ class NotificationStore: DiscordDataStore {
         switch event.data {
         case .ready:
           observeBadge()
+          removeReadRelayed()
         case .messageCreate(let message):
           handleMessageCreate(message)
         case .messageDelete(let delete):
@@ -105,7 +106,8 @@ class NotificationStore: DiscordDataStore {
     guard let author = message.author, author.id != me else { return }
     if gw.user.relationships[author.id]?.type == .blocked { return }
     rememberMention(message, me: me)
-    guard Prefs.bool(Prefs.enabledKey) else { return }
+    // the Mac may relay to iOS with its own banners turned off
+    guard Prefs.bool(Prefs.enabledKey) || CloudRelayStore.shared.isSending else { return }
     guard message.type == .default || message.type == .reply else { return }
     // @silent messages never notify, like in Discord
     if message.flags?.contains(.suppressNotifications) == true { return }
@@ -137,7 +139,7 @@ class NotificationStore: DiscordDataStore {
     if let alert, Prefs.preview != .hidden {
       content.subtitle = [alert, content.subtitle].filter { !$0.isEmpty }.joined(separator: " · ")
     }
-    post(content, id: message.id.rawValue)
+    deliver(content, id: message.id.rawValue)
   }
 
   // MARK: - Alerts
@@ -233,7 +235,7 @@ class NotificationStore: DiscordDataStore {
   }
 
   /// Someone's looking at the channel already: the app is in front and it's open.
-  private func isViewing(_ channelId: ChannelSnowflake) -> Bool {
+  func isViewing(_ channelId: ChannelSnowflake) -> Bool {
     guard Self.isAppActive else { return false }
     return AicordAppState.instances.values.contains { state in
       #if os(iOS)
@@ -372,7 +374,7 @@ class NotificationStore: DiscordDataStore {
       var content = content(for: message, author: author, text: text, isDM: false)
       content.subtitle = [String(localized: "Important, from a muted channel"), content.subtitle]
         .filter { !$0.isEmpty }.joined(separator: " · ")
-      post(content, id: message.id.rawValue)
+      deliver(content, id: message.id.rawValue)
     }
   }
 
@@ -527,6 +529,20 @@ class NotificationStore: DiscordDataStore {
     return start <= end ? (now >= start && now < end) : (now >= start || now < end)
   }
 
+  /// A message's notification: shown here when notifications are on, and on
+  /// the Mac also handed to iOS through iCloud (Notifications Through the Mac).
+  /// Quiet hours and Do Not Disturb send nothing to iOS: a push can't be quiet.
+  private func deliver(_ content: Content, id: String) {
+    #if os(iOS)
+      // message notifications come from one place: here or the Mac's pushes
+      if Prefs.bool(Prefs.macRelayKey) { return }
+    #endif
+    if Prefs.bool(Prefs.enabledKey) { post(content, id: id) }
+    #if os(macOS)
+      if !isQuiet { CloudRelayStore.shared.relay(content, messageId: id) }
+    #endif
+  }
+
   private func post(_ content: Content, id: String) {
     let notification = UNMutableNotificationContent()
     notification.title = content.title
@@ -549,10 +565,27 @@ class NotificationStore: DiscordDataStore {
     let center = UNUserNotificationCenter.current()
     Task {
       let ids = await center.deliveredNotifications()
-        .filter { $0.request.content.threadIdentifier == channelId.rawValue }
+        .filter {
+          $0.request.content.threadIdentifier == channelId.rawValue
+            // pushed through the Mac: no thread, the channel is in the payload
+            || RelayTarget(userInfo: $0.request.content.userInfo)?.channelId == channelId.rawValue
+        }
         .map(\.request.identifier)
       if !ids.isEmpty { center.removeDeliveredNotifications(withIdentifiers: ids) }
     }
+  }
+
+  /// Pushes from the Mac for messages read in the meantime (on the Mac, say).
+  private func removeReadRelayed() {
+    #if os(iOS)
+      CloudRelayStore.removeReadDelivered { [weak self] target in
+        guard let readStates = self?.gateway?.readStates, let message = target.messageId else {
+          return false
+        }
+        return !readStates.isUnread(
+          channelId: ChannelSnowflake(target.channelId), lastMessageId: MessageSnowflake(message))
+      }
+    #endif
   }
 
   // MARK: - Badge
@@ -605,10 +638,14 @@ class NotificationStore: DiscordDataStore {
   static let replyAction = "reply"
 
   static func registerCategories() {
+    // unlocked first: the account's token is in the keychain, readable only
+    // while unlocked, and an action may launch Aicord in the background
     let markRead = UNNotificationAction(
-      identifier: markReadAction, title: String(localized: "Mark as Read"))
+      identifier: markReadAction, title: String(localized: "Mark as Read"),
+      options: [.authenticationRequired])
     let reply = UNTextInputNotificationAction(
       identifier: replyAction, title: String(localized: "Reply"),
+      options: [.authenticationRequired],
       textInputButtonTitle: String(localized: "Send"),
       textInputPlaceholder: String(localized: "Message"))
     let category = UNNotificationCategory(
@@ -617,9 +654,29 @@ class NotificationStore: DiscordDataStore {
   }
 
   func handle(action: String, userInfo: [String: String], text: String?) async {
-    guard let gw = gateway, let rawChannel = userInfo["channel"] else { return }
+    guard let rawChannel = userInfo["channel"] else { return }
     let channelId = ChannelSnowflake(rawChannel)
     let guildId = userInfo["guild"].map(GuildSnowflake.init)
+    // opening needs no connection: a tap on a push from the Mac launches Aicord
+    // cold, before the gateway is set up
+    if action == UNNotificationDefaultActionIdentifier {
+      if userInfo["jump"] == "1", let messageId = userInfo["message"] {
+        open(guildId: guildId, channelId: channelId, messageId: MessageSnowflake(messageId))
+      } else {
+        open(guildId: guildId, channelId: channelId)
+      }
+      return
+    }
+    // Reply and Mark as Read from a cold launch: iOS starts Aicord in the
+    // background with no window, and only the window's loading view connects
+    if gateway == nil {
+      print("[Notifications] \(action) with no connection: connecting in the background")
+      await GatewayStore.shared.connectIfNeeded()
+    }
+    for _ in 0..<75 where gateway == nil {
+      try? await Task.sleep(for: .milliseconds(200))
+    }
+    guard let gw = gateway else { return }
     switch action {
     case Self.markReadAction:
       await markRead(channelId: channelId, messageId: userInfo["message"])
@@ -630,12 +687,6 @@ class NotificationStore: DiscordDataStore {
       )
       if let message = try? res?.decode() {
         await markRead(channelId: channelId, messageId: message.id.rawValue)
-      }
-    case UNNotificationDefaultActionIdentifier:
-      if userInfo["jump"] == "1", let messageId = userInfo["message"] {
-        open(guildId: guildId, channelId: channelId, messageId: MessageSnowflake(messageId))
-      } else {
-        open(guildId: guildId, channelId: channelId)
       }
     default:
       break
@@ -656,6 +707,7 @@ class NotificationStore: DiscordDataStore {
   private func open(
     guildId: GuildSnowflake?, channelId: ChannelSnowflake, messageId: MessageSnowflake? = nil
   ) {
+    // tapped while Aicord wasn't running: kept until the main window is up
     AicordAppState.openExternally(guild: guildId, channel: channelId, message: messageId)
   }
 
@@ -687,27 +739,55 @@ class NotificationStore: DiscordDataStore {
 final class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate, Sendable {
   static let shared = NotificationCenterDelegate()
 
+  // Completion handlers, not the async variants: those finish on a concurrency
+  // thread, and UIKit asserts (SIGABRT in _performBlockAfterCATransactionCommit…)
+  // when a tap launches the app cold. The handlers are called on the main thread.
+
   func userNotificationCenter(
-    _ center: UNUserNotificationCenter, willPresent notification: UNNotification
-  ) async -> UNNotificationPresentationOptions {
+    _ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+    withCompletionHandler completionHandler:
+      @escaping @Sendable (UNNotificationPresentationOptions) -> Void
+  ) {
+    let target = RelayTarget(userInfo: notification.request.content.userInfo)
     let passive = notification.request.content.interruptionLevel == .passive
-    if passive { return [.list] }
-    let showsInApp = await MainActor.run { NotificationPrefs.bool(NotificationPrefs.inAppKey) }
-    return showsInApp ? [.banner, .list, .sound] : [.list]
+    DispatchQueue.main.async {
+      MainActor.assumeIsolated {
+        let options: UNNotificationPresentationOptions
+        if let target,
+          GatewayStore.shared.notifications.isViewing(ChannelSnowflake(target.channelId))
+        {
+          // a push from the Mac about the chat that's open: nothing to show
+          options = []
+        } else if passive {
+          options = [.list]
+        } else {
+          options =
+            NotificationPrefs.bool(NotificationPrefs.inAppKey) ? [.banner, .list, .sound] : [.list]
+        }
+        completionHandler(options)
+      }
+    }
   }
 
   func userNotificationCenter(
-    _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
-  ) async {
+    _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping @Sendable () -> Void
+  ) {
     let action = response.actionIdentifier
-    let userInfo = response.notification.request.content.userInfo
-      .reduce(into: [String: String]()) { result, pair in
+    let raw = response.notification.request.content.userInfo
+    let userInfo =
+      RelayTarget(userInfo: raw)?.actionInfo
+      ?? raw.reduce(into: [String: String]()) { result, pair in
         if let key = pair.key as? String, let value = pair.value as? String { result[key] = value }
       }
     let text = (response as? UNTextInputNotificationResponse)?.userText
-    await Task { @MainActor in
+    print(
+      "[Notifications] tap \(action), relay: \(RelayTarget(userInfo: raw) != nil), channel: \(userInfo["channel"] ?? "none"), keys: \(raw.keys.map { "\($0)" })"
+    )
+    Task { @MainActor in
       await GatewayStore.shared.notifications.handle(action: action, userInfo: userInfo, text: text)
-    }.value
+      completionHandler()
+    }
   }
 }
 
@@ -730,6 +810,8 @@ enum NotificationPrefs {
   static let quietHoursKey = "Paicord.Notifications.QuietHours"
   static let quietStartKey = "Paicord.Notifications.QuietStart"
   static let quietEndKey = "Paicord.Notifications.QuietEnd"
+  /// Notifications Through the Mac, on both: the Mac sends, iOS subscribes.
+  static let macRelayKey = "Paicord.Notifications.MacRelay"
 
   enum Preview: String { case full, author, hidden }
   enum Badge: String { case off, directMessages, all }

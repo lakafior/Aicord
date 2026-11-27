@@ -103,9 +103,9 @@
         !(window is NSPanel) && (window.canBecomeMain || window.isMiniaturized)
           && (window.isVisible || window.isMiniaturized)
       }
-      // SwiftUI names a window after its content's type: the main window
-      // shows RootView; channel windows and Settings are left out otherwise
-      let main = candidates.filter { $0.identifier?.rawValue.contains("RootView") == true }
+      // SwiftUI names a window after its scene (`main-AppWindow-N`); channel
+      // windows and Settings are left out otherwise
+      let main = candidates.filter(MacBackground.isMainWindow)
       let others = candidates.filter { window in
         let id = window.identifier?.rawValue ?? ""
         return !id.contains("Channel") && !id.contains("Settings")
@@ -118,7 +118,8 @@
     /// when it's already up in front.
     func show() {
       guard let state = AicordAppState.main else {
-        NSApp.activate()
+        // no main window (running in the background): open one
+        MacBackground.shared.openMainWindow()
         return
       }
       if NSApp.isActive, state.showingQuickSwitcher {

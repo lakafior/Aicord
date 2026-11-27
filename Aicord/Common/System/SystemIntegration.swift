@@ -434,10 +434,26 @@ extension AicordAppState {
     main ?? instances.values.first(where: { $0 !== sharedEphemeral })
   }
 
+  /// What a tap asked to open before the main window was up (a cold launch from
+  /// a notification or widget); RootView opens it once connected.
+  static var pendingExternalOpen: (GuildSnowflake?, ChannelSnowflake, MessageSnowflake?)?
+
   static func openExternally(
     guild: GuildSnowflake?, channel: ChannelSnowflake, message: MessageSnowflake? = nil
   ) {
-    guard let appState = externalTarget else { return }
+    // before the main window shows, any other state is one nobody sees, and
+    // the main one restores the last server on appearing: wait for it
+    guard let appState = main else {
+      print("[Notifications] open \(channel.rawValue) kept until the window is up")
+      pendingExternalOpen = (guild, channel, message)
+      #if os(macOS)
+        // running without a window: open one, it picks this up
+        MacBackground.shared.openMainWindow()
+      #endif
+      return
+    }
+    print("[Notifications] open \(channel.rawValue) in guild \(guild?.rawValue ?? "DM")")
+    pendingExternalOpen = nil
     if let message {
       appState.open(guild: guild, channel: channel, message: message)
     } else {
