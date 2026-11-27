@@ -12,6 +12,8 @@
 # App Store Connect key (NOTARY_KEY_PATH, NOTARY_KEY_ID, NOTARY_ISSUER_ID) and the Apple Distribution
 # certificate in the keychain. The build is marked AICORD_DISTRIBUTION=altstore-pal, which turns off the
 # GitHub update check (AltStore updates it). VERSION overrides the project's MARKETING_VERSION (CI passes the tag).
+# The app has iCloud (CloudKit) and push for Notifications Through the Mac, so the App ID needs both and the
+# container iCloud.net.smigi.aicord; AICORD_CLOUDKIT=0 builds without them (the option then stays off).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -28,6 +30,16 @@ TEAM="$(grep -B90 'PRODUCT_BUNDLE_IDENTIFIER = net.smigi.aicord;' "$PBX" \
 # App Store Connect refuses a build number it has seen for this version.
 BUILD="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
 echo "Aicord iOS $VERSION ($BUILD), $MODE, team $TEAM"
+
+if [[ "${AICORD_CLOUDKIT:-1}" == 0 ]]; then
+  ENTITLEMENTS=Aicord/Aicord.entitlements
+  cp "$ENTITLEMENTS" "$ENTITLEMENTS.orig"
+  trap 'mv -f "$ENTITLEMENTS.orig" "$ENTITLEMENTS"' EXIT
+  for key in aps-environment com.apple.developer.icloud-container-identifiers com.apple.developer.icloud-services; do
+    /usr/libexec/PlistBuddy -c "Delete :$key" "$ENTITLEMENTS"
+  done
+  echo "Without iCloud and push (AICORD_CLOUDKIT=0)"
+fi
 
 if [[ -n "${NOTARY_KEY_PATH:-}" ]]; then
   AUTH=(-allowProvisioningUpdates
@@ -69,6 +81,7 @@ cat > "$OPTS" <<PLIST
   <key>teamID</key><string>$TEAM</string>
   <key>signingStyle</key><string>automatic</string>
   <key>manageAppVersionAndBuildNumber</key><false/>
+  <key>iCloudContainerEnvironment</key><string>Production</string>
 </dict>
 </plist>
 PLIST

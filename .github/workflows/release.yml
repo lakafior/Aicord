@@ -191,6 +191,9 @@ jobs:
         env:
           NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
           NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          # repository variable AICORD_CLOUDKIT=0: a build without iCloud and push
+          # (Notifications Through the Mac), until the App ID has them
+          AICORD_CLOUDKIT: ${{ vars.AICORD_CLOUDKIT }}
         run: ./scripts/build-ios.sh upload
 
       - name: Submit for notarization

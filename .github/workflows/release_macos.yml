@@ -10,6 +10,9 @@ name: Release macOS
 #   NOTARY_KEY_P8              base64 of an App Store Connect API key (.p8, role Developer)
 #   NOTARY_KEY_ID              that key's ID
 #   NOTARY_ISSUER_ID           the issuer ID shown above the keys
+#   MACOS_PROVISIONING_PROFILE base64 of the Developer ID provisioning profile for net.smigi.aicord
+#                              with iCloud (CloudKit, iCloud.net.smigi.aicord). Optional: without it
+#                              the app is built without iCloud and Notifications Through the Mac stays off.
 #
 # Without MACOS_CERTIFICATE_P12 the job skips itself, so tags still release iOS.
 
@@ -67,6 +70,30 @@ jobs:
           security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
           rm "$RUNNER_TEMP/cert.p12"
 
+      - name: Provisioning profile for iCloud
+        if: env.HAS_CERTIFICATE == 'true'
+        env:
+          PROFILE: ${{ secrets.MACOS_PROVISIONING_PROFILE }}
+        run: |
+          entitlements=Aicord/Aicord-macOS.entitlements
+          if [[ -z "$PROFILE" ]]; then
+            echo "::notice::No MACOS_PROVISIONING_PROFILE secret: building without iCloud."
+            for key in com.apple.developer.icloud-container-identifiers com.apple.developer.icloud-services; do
+              /usr/libexec/PlistBuddy -c "Delete :$key" "$entitlements"
+            done
+            exit 0
+          fi
+          echo "$PROFILE" | base64 --decode > "$RUNNER_TEMP/aicord.provisionprofile"
+          security cms -D -i "$RUNNER_TEMP/aicord.provisionprofile" > "$RUNNER_TEMP/profile.plist"
+          uuid="$(plutil -extract UUID raw "$RUNNER_TEMP/profile.plist")"
+          name="$(plutil -extract Name raw "$RUNNER_TEMP/profile.plist")"
+          for dir in "$HOME/Library/MobileDevice/Provisioning Profiles" \
+                     "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+            mkdir -p "$dir"
+            cp "$RUNNER_TEMP/aicord.provisionprofile" "$dir/$uuid.provisionprofile"
+          done
+          echo "MAC_PROFILE_NAME=$name" >> "$GITHUB_ENV"
+
       - name: Archive
         if: env.HAS_CERTIFICATE == 'true'
         run: |
@@ -77,6 +104,7 @@ jobs:
             MARKETING_VERSION="$version" CURRENT_PROJECT_VERSION='${{ github.run_number }}' \
             DEVELOPMENT_TEAM='${{ secrets.MACOS_TEAM_ID }}' \
             CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Developer ID Application' \
+            AICORD_MAC_PROFILE="${MAC_PROFILE_NAME:-}" \
             OTHER_CODE_SIGN_FLAGS='--timestamp --options=runtime' \
             archive > build-macos.log 2>&1 \
             || { grep -E 'error:|\*\* ARCHIVE' build-macos.log; exit 1; }
@@ -92,8 +120,16 @@ jobs:
             <key>method</key><string>developer-id</string>
             <key>teamID</key><string>${{ secrets.MACOS_TEAM_ID }}</string>
             <key>signingStyle</key><string>manual</string>
-          </dict></plist>
+            <key>iCloudContainerEnvironment</key><string>Production</string>
           PLIST
+          if [[ -n "${MAC_PROFILE_NAME:-}" ]]; then
+            cat >> build/export.plist <<PLIST
+            <key>provisioningProfiles</key><dict>
+              <key>net.smigi.aicord</key><string>$MAC_PROFILE_NAME</string>
+            </dict>
+          PLIST
+          fi
+          echo '</dict></plist>' >> build/export.plist
           xcodebuild -exportArchive -archivePath build/Aicord.xcarchive \
             -exportOptionsPlist build/export.plist -exportPath build/export
 
