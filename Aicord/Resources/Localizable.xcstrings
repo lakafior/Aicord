@@ -86,6 +86,171 @@
         }
       }
     },
+    "Aicord Is Running in the Background" : {
+      "comment" : "The title of the menu bar item's menu while Aicord runs without a window.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aicord działa w tle"
+          }
+        }
+      }
+    },
+    "Background" : {
+      "comment" : "A section header in Advanced settings on the Mac.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W tle"
+          }
+        }
+      }
+    },
+    "Discord: Connected" : {
+      "comment" : "Status in the menu bar item: the Discord connection is up.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord: połączono"
+          }
+        }
+      }
+    },
+    "Discord: Connecting…" : {
+      "comment" : "Status in the menu bar item: the Discord connection is being made.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discord: łączenie…"
+          }
+        }
+      }
+    },
+    "Keep Running in the Background" : {
+      "comment" : "A toggle in Advanced settings on the Mac.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Działaj w tle"
+          }
+        }
+      }
+    },
+    "MCP Server: Not Running" : {
+      "comment" : "Status in the menu bar item: the server is allowed but couldn't start.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwer MCP: nie działa"
+          }
+        }
+      }
+    },
+    "MCP Server: Off" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwer MCP: wyłączony"
+          }
+        }
+      }
+    },
+    "MCP Server: Running" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serwer MCP: działa"
+          }
+        }
+      }
+    },
+    "Notifications Through the Mac: Checking iCloud…" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia przez Maca: sprawdzanie iCloud…"
+          }
+        }
+      }
+    },
+    "Notifications Through the Mac: iCloud Unavailable" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia przez Maca: iCloud niedostępny"
+          }
+        }
+      }
+    },
+    "Notifications Through the Mac: Off" : {
+      "comment" : "Status in the menu bar item.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia przez Maca: wyłączone"
+          }
+        }
+      }
+    },
+    "Notifications Through the Mac: Sending" : {
+      "comment" : "Status in the menu bar item: the Mac sends notifications to iOS.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia przez Maca: wysyłane"
+          }
+        }
+      }
+    },
+    "Open Aicord" : {
+      "comment" : "A menu item that opens the main window again.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz Aicord"
+          }
+        }
+      }
+    },
+    "Quit Aicord" : {
+      "comment" : "A menu item that quits the app, with the MCP server and the relay.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończ Aicord"
+          }
+        }
+      }
+    },
+    "While the MCP server or Notifications Through the Mac is on, closing the last window keeps Aicord connected in the menu bar, without its windows or Dock icon. Quit Aicord (⌘Q) to stop everything." : {
+      "comment" : "The footer of the Background section in Advanced settings on the Mac.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gdy włączony jest serwer MCP albo Powiadomienia przez Maca, zamknięcie ostatniego okna zostawia Aicord połączony na pasku menu, bez okien i ikony w Docku. Zakończ Aicord (⌘Q), żeby zatrzymać wszystko."
+          }
+        }
+      }
+    },
     "·" : {
       "comment" : "A separator between the location and time of a forwarded message.",
       "isCommentAutoGenerated" : true,

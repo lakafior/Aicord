@@ -66,9 +66,19 @@ struct AicordApp: App {
       }
     }
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+  #elseif os(macOS)
+    // closing the last window can leave Aicord running in the menu bar
+    @NSApplicationDelegateAdaptor(MacAppDelegate.self) var appDelegate
+    @State private var background = MacBackground.shared
   #endif
 
   @Environment(\.scenePhase) private var scenePhase
+
+  #if os(macOS)
+    private static let mainWindowID = MacBackground.mainWindowID
+  #else
+    private static let mainWindowID = "main"
+  #endif
 
   init() {
     console.startIntercepting()
@@ -87,7 +97,7 @@ struct AicordApp: App {
   }
 
   var body: some Scene {
-    WindowGroup {
+    WindowGroup(id: Self.mainWindowID) {
       RootView(
         gatewayStore: gatewayStore
       )
@@ -150,6 +160,17 @@ struct AicordApp: App {
       .windowResizability(.contentMinSize)
       .restorationBehavior(.disabled)
       .commandsRemoved()
+
+      // while running without a window (MacBackground)
+      MenuBarExtra(
+        isInserted: Binding(get: { background.isHeadless }, set: { _ in })
+      ) {
+        MacBackgroundMenu(
+          background: background, gateway: gatewayStore, relay: CloudRelayStore.shared,
+          mcp: MCPBridge.shared)
+      } label: {
+        MacBackgroundLabel(background: background)
+      }
 
       // the system Settings window: ⌘, and Aicord → Settings…
       Settings {
