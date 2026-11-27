@@ -726,20 +726,32 @@ class NotificationStore: DiscordDataStore {
 final class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate, Sendable {
   static let shared = NotificationCenterDelegate()
 
+  // Completion handlers, not the async variants: those finish on a concurrency
+  // thread, and UIKit asserts (SIGABRT in _performBlockAfterCATransactionCommit…)
+  // when a tap launches the app cold. The handlers are called on the main thread.
+
   func userNotificationCenter(
-    _ center: UNUserNotificationCenter, willPresent notification: UNNotification
-  ) async -> UNNotificationPresentationOptions {
-    // a push from the Mac that raced the activity marker: Aicord notifies by itself
-    if RelayTarget(userInfo: notification.request.content.userInfo) != nil { return [] }
-    let passive = notification.request.content.interruptionLevel == .passive
-    if passive { return [.list] }
-    let showsInApp = await MainActor.run { NotificationPrefs.bool(NotificationPrefs.inAppKey) }
-    return showsInApp ? [.banner, .list, .sound] : [.list]
+    _ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+    withCompletionHandler completionHandler:
+      @escaping @Sendable (UNNotificationPresentationOptions) -> Void
+  ) {
+    let options: UNNotificationPresentationOptions
+    if RelayTarget(userInfo: notification.request.content.userInfo) != nil {
+      // a push from the Mac that raced the activity marker: Aicord notifies by itself
+      options = []
+    } else if notification.request.content.interruptionLevel == .passive {
+      options = [.list]
+    } else {
+      options =
+        NotificationPrefs.bool(NotificationPrefs.inAppKey) ? [.banner, .list, .sound] : [.list]
+    }
+    DispatchQueue.main.async { completionHandler(options) }
   }
 
   func userNotificationCenter(
-    _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
-  ) async {
+    _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping @Sendable () -> Void
+  ) {
     let action = response.actionIdentifier
     let raw = response.notification.request.content.userInfo
     let userInfo =
@@ -751,9 +763,10 @@ final class NotificationCenterDelegate: NSObject, UNUserNotificationCenterDelega
     print(
       "[Notifications] tap \(action), relay: \(RelayTarget(userInfo: raw) != nil), channel: \(userInfo["channel"] ?? "none"), keys: \(raw.keys.map { "\($0)" })"
     )
-    await Task { @MainActor in
+    Task { @MainActor in
       await GatewayStore.shared.notifications.handle(action: action, userInfo: userInfo, text: text)
-    }.value
+      completionHandler()
+    }
   }
 }
 
