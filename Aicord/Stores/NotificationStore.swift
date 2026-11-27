@@ -553,8 +553,45 @@ class NotificationStore: DiscordDataStore {
       notification.sound = .default
     }
     let request = UNNotificationRequest(identifier: id, content: notification, trigger: nil)
+    #if os(iOS)
+      // In the background iOS keeps notifying by itself for a while, and the
+      // Mac may push the same message meanwhile; a push can't be held back
+      // here, so the copy that came second goes.
+      if Prefs.bool(Prefs.macRelayKey) {
+        Task { await postDeduplicated(request) }
+        return
+      }
+    #endif
     UNUserNotificationCenter.current().add(request)
   }
+
+  #if os(iOS)
+    /// Messages notified here lately, whose pushes from the Mac are duplicates.
+    @ObservationIgnored private var postedHere: [String] = []
+
+    private func postDeduplicated(_ request: UNNotificationRequest) async {
+      let center = UNUserNotificationCenter.current()
+      let id = request.identifier
+      let relayed = await center.deliveredNotifications().contains {
+        RelayTarget(userInfo: $0.request.content.userInfo)?.messageId == id
+      }
+      if relayed { return }
+      try? await center.add(request)
+      postedHere.append(id)
+      if postedHere.count > 100 { postedHere.removeFirst(postedHere.count - 100) }
+      // pushes arrive within seconds; the background time lasts about half a minute
+      for delay in [3, 8, 20] {
+        try? await Task.sleep(for: .seconds(delay))
+        let duplicates = await center.deliveredNotifications().compactMap { delivered -> String? in
+          guard let target = RelayTarget(userInfo: delivered.request.content.userInfo),
+            let message = target.messageId, postedHere.contains(message)
+          else { return nil }
+          return delivered.request.identifier
+        }
+        if !duplicates.isEmpty { center.removeDeliveredNotifications(withIdentifiers: duplicates) }
+      }
+    }
+  #endif
 
   /// Takes a channel's notifications out of the list once it's been read.
   func clearDelivered(channelId: ChannelSnowflake) {
