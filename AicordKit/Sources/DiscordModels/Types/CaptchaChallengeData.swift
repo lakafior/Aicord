@@ -13,7 +13,9 @@ public typealias CaptchaChallengeHandler =
   async -> (CaptchaSubmitData?)
 
 public struct CaptchaChallengeData: Sendable, Identifiable {
-  public var id: String { captchaSessionId ?? UUID().uuidString }
+  /// Fixed for the challenge's lifetime: a sheet keyed on a fresh UUID per
+  /// read would be torn down and shown again on every render.
+  public let id: String
 
   public let captchaKey: [String]
   public let captchaService: String
@@ -39,6 +41,7 @@ public struct CaptchaChallengeData: Sendable, Identifiable {
     self.captchaRqdata = captchaRqdata
     self.captchaRqtoken = captchaRqtoken
     self.shouldServeInvisible = shouldServeInvisible
+    self.id = captchaSessionId ?? UUID().uuidString
   }
 }
 

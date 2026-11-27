@@ -73,6 +73,8 @@ struct AddFriendSheet: View {
       }
       .onAppear { focused = true }
     }
+    // friend requests often ask for a captcha
+    .challengeSheets()
     #if os(macOS)
       .frame(minWidth: 380, idealWidth: 420, minHeight: 260)
     #endif

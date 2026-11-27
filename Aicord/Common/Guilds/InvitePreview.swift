@@ -324,6 +324,8 @@ struct InvitePreviewSheet: View {
           }
         }
     }
+    // Join can ask for a captcha, which has to come up over this sheet
+    .challengeSheets()
     .presentationDetents([.medium, .large])
     #if os(macOS)
       .frame(minWidth: 360, idealWidth: 400, minHeight: 320)

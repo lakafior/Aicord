@@ -20,6 +20,20 @@ final class Challenges {
   var mfaVerification: MFAVerificationData?
   private var mfaContinuation: CheckedContinuation<MFAResponse?, Never>?
 
+  /// Views that can show the challenge sheets, innermost last. Only the last
+  /// one presents: a sheet asked for by the window while another sheet (an
+  /// invite, Add Friend) is already up never shows, or flashes and closes.
+  private(set) var presenters: [UUID] = []
+
+  func register(_ presenter: UUID) {
+    presenters.removeAll { $0 == presenter }
+    presenters.append(presenter)
+  }
+
+  func unregister(_ presenter: UUID) {
+    presenters.removeAll { $0 == presenter }
+  }
+
   func presentCaptcha(_ challenge: CaptchaChallengeData) async
     -> CaptchaSubmitData?
   {

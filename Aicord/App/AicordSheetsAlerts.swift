@@ -16,18 +16,7 @@ struct AicordSheetsAlerts: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .sheet(item: $challenges.captchaChallenge) { challenge in
-        CaptchaSheet(challenge: challenge) { submitData in
-          challenges.completeCaptcha(submitData)
-        }
-        .frame(idealWidth: 400, idealHeight: 400)
-      }
-      .sheet(item: $challenges.mfaVerification) { mfaData in
-        MFASheet(verificationData: mfaData) { response in
-          challenges.completeMFA(response)
-        }
-        .frame(idealWidth: 400, idealHeight: 300)
-      }
+      .challengeSheets(challenges)
       .sheet(
         item: Binding(
           get: { appState.invitePreviewCode.map(InviteCode.init(code:)) },
@@ -93,5 +82,61 @@ private struct SheetErrorAlert: ViewModifier {
         }
       }
     )
+  }
+}
+
+/// The captcha and MFA sheets, shown by whichever presenter is innermost.
+/// Apply inside any sheet whose actions can hit a Discord challenge.
+struct ChallengeSheets: ViewModifier {
+  let challenges: Challenges?
+  @State private var presenter = UUID()
+
+  private var isActive: Bool { challenges?.presenters.last == presenter }
+
+  func body(content: Content) -> some View {
+    content
+      .onAppear { challenges?.register(presenter) }
+      .onDisappear { challenges?.unregister(presenter) }
+      .sheet(
+        item: Binding(
+          get: { isActive ? challenges?.captchaChallenge : nil },
+          // closed by the system (Esc, swipe down): nothing will answer it
+          set: { if $0 == nil, isActive { challenges?.completeCaptcha(nil) } }
+        )
+      ) { challenge in
+        CaptchaSheet(challenge: challenge) { submitData in
+          challenges?.completeCaptcha(submitData)
+        }
+        .frame(idealWidth: 400, idealHeight: 400)
+      }
+      .sheet(
+        item: Binding(
+          get: { isActive ? challenges?.mfaVerification : nil },
+          set: { if $0 == nil, isActive { challenges?.completeMFA(nil) } }
+        )
+      ) { mfaData in
+        MFASheet(verificationData: mfaData) { response in
+          challenges?.completeMFA(response)
+        }
+        .frame(idealWidth: 400, idealHeight: 300)
+      }
+  }
+}
+
+extension View {
+  func challengeSheets(_ challenges: Challenges?) -> some View {
+    modifier(ChallengeSheets(challenges: challenges))
+  }
+
+  /// The challenge sheets from the environment, for views inside a sheet.
+  func challengeSheets() -> some View {
+    modifier(EnvironmentChallengeSheets())
+  }
+}
+
+private struct EnvironmentChallengeSheets: ViewModifier {
+  @Environment(\.challenges) var challenges
+  func body(content: Content) -> some View {
+    content.challengeSheets(challenges)
   }
 }
