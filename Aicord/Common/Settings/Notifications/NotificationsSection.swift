@@ -70,6 +70,8 @@ struct NotificationSettings: View {
       Text(alertsFooter)
     }
 
+    MacRelaySection()
+
     if enabled {
       directMessagesSection
       serversSection
@@ -528,6 +530,57 @@ private struct PickerSearch: ViewModifier {
       }
     #else
       content.searchable(text: $text)
+    #endif
+  }
+}
+
+/// Notifications Through the Mac: the Mac hands what it would notify about
+/// to a closed Aicord on iOS, through the user's iCloud.
+private struct MacRelaySection: View {
+  @AppStorage(NotificationPrefs.macRelayKey) private var on = false
+  private var relay = CloudRelayStore.shared
+
+  var body: some View {
+    Section {
+      Toggle("Notifications Through the Mac", isOn: $on)
+        #if os(macOS)
+          .toggleStyle(.switch)
+        #endif
+        .disabled(relay.availability == .notEntitled && !on)
+        .onChange(of: on) { relay.update() }
+      if on, let status {
+        LabeledContent("iCloud") {
+          Text(status)
+            .foregroundStyle(relay.availability == .available ? Color.secondary : Color.red)
+        }
+      }
+    } header: {
+      #if os(macOS)
+        Text("When Aicord on iPhone Is Closed")
+      #else
+        Text("When Aicord Is Closed")
+      #endif
+    } footer: {
+      Text(footer)
+    }
+  }
+
+  private var status: LocalizedStringKey? {
+    switch relay.availability {
+    case .off: nil
+    case .checking: "Checking…"
+    case .available: "Ready"
+    case .notEntitled: "Not available in this version of Aicord"
+    case .noAccount: "Sign in to iCloud in the system settings"
+    case .unreachable(let reason): "Unavailable: \(reason)"
+    }
+  }
+
+  private var footer: LocalizedStringKey {
+    #if os(macOS)
+      "While Aicord on your iPhone or iPad is closed, this Mac sends it the notifications it would show, following this Mac's notification settings. Message content goes through your iCloud account and is kept there for up to an hour. Works only while this Mac is on, awake and running Aicord; turn the option on on both devices, signed in to the same Apple Account."
+    #else
+      "While Aicord is closed, your Mac sends this device its notifications. Message content goes through your iCloud account and is kept there for up to an hour. Works only while your Mac is on, awake and running Aicord; turn the option on on both devices, signed in to the same Apple Account."
     #endif
   }
 }
